@@ -1,0 +1,57 @@
+---
+title: Joe Perks — Onboarding & Approval Chain
+---
+flowchart TD
+  %% ── Roaster path ─────────────────────────────────────────────────
+  subgraph ROASTER_FLOW["Roaster onboarding — joeperks.com/roasters/apply"]
+    direction TB
+    RA1["Roaster submits 5-step application\njoeperks.com/roasters/apply"]:::action
+    RA2["RoasterApplication created\nstatus = PENDING_REVIEW\nterms_agreed_at set"]:::db
+    RA3["Admin reviews in queue\nadmin.joeperks.com/approvals/roasters"]:::admin
+    RA4{Admin decision}:::decision
+    RA5["Roaster rejected\nrejection email sent"]:::terminal
+    RA6["Roaster record created\nStripe Express account created\nonboarding email sent"]:::action
+    RA7["Roaster completes Stripe KYC\nroasters.joeperks.com/onboarding"]:::action
+    RA8["account.updated webhook\ncharges_enabled + payouts_enabled = true\nRoaster.status = ACTIVE"]:::webhook
+    RA9["Roaster adds products + shipping rates\nroasters.joeperks.com/products"]:::action
+    RA10["Roaster ACTIVE\nready for org partnerships"]:::terminal_ok
+
+    RA1 --> RA2 --> RA3 --> RA4
+    RA4 -->|reject| RA5
+    RA4 -->|approve| RA6 --> RA7 --> RA8 --> RA9 --> RA10
+  end
+
+  %% ── Org path ─────────────────────────────────────────────────────
+  subgraph ORG_FLOW["Org onboarding — joeperks.com/orgs/apply"]
+    direction TB
+    OA1["Org submits 5-step application\njoeperks.com/orgs/apply\nSelects preferred roaster(s)"]:::action
+    OA2["OrgApplication created\nstatus = PENDING_PLATFORM_REVIEW\nRoasterOrgRequest records created"]:::db
+    OA3["Platform admin reviews\nadmin.joeperks.com/approvals/orgs"]:::admin
+    OA4{Platform decision}:::decision
+    OA5["Org rejected\nrejection email sent"]:::terminal
+    OA6["status = PENDING_ROASTER_APPROVAL\nMagicLink created (ROASTER_REVIEW)\nRoaster gets approval email"]:::action
+    OA7["Roaster reviews org at\nroasters.joeperks.com/org-requests/[token]"]:::action
+    OA8{Roaster decision}:::decision
+    OA9["Roaster declines\nBackup roaster contacted\nor org offered alternatives"]:::action
+    OA10["Roaster approves\nstatus = APPROVED\nOrg record created"]:::action
+    OA11["Org completes Stripe Express\norgs.joeperks.com/onboarding"]:::action
+    OA12["Org creates campaign\nSets org_pct (5–25%)\nSelects roaster products"]:::action
+    OA13["Campaign.status = ACTIVE\nStorefront live at joeperks.com/[slug]"]:::terminal_ok
+
+    OA1 --> OA2 --> OA3 --> OA4
+    OA4 -->|reject| OA5
+    OA4 -->|approve| OA6 --> OA7 --> OA8
+    OA8 -->|decline| OA9 --> OA7
+    OA8 -->|approve| OA10 --> OA11 --> OA12 --> OA13
+  end
+
+  %% ── Dependency between flows ─────────────────────────────────────
+  RA10 -.->|"Roaster must be ACTIVE\nbefore orgs can select them"| OA1
+
+  classDef action    fill:#EAF3DE,stroke:#0F6E56,color:#085041
+  classDef db        fill:#EEEDFE,stroke:#534AB7,color:#26215C
+  classDef admin     fill:#FAEEDA,stroke:#BA7517,color:#412402
+  classDef webhook   fill:#E1F5EE,stroke:#1D9E75,color:#04342C
+  classDef decision  fill:#F1EFE8,stroke:#888780,color:#2c2c2a
+  classDef terminal  fill:#FCEBEB,stroke:#A32D2D,color:#501313
+  classDef terminal_ok fill:#EAF3DE,stroke:#1D9E75,color:#04342C,font-weight:bold

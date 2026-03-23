@@ -1,0 +1,84 @@
+---
+title: Joe Perks — Stripe Connect Payment & Payout Flow
+---
+flowchart TD
+  %% ── Charge creation ──────────────────────────────────────────────
+  subgraph CHARGE["1. Charge — buyer pays retail price"]
+    C1["Buyer submits checkout\njoeperks.com/[slug]/checkout"]:::action
+    C2["Server: calculateSplits()\nproduct_subtotal + shipping_amount\nORG% + PLATFORM% + stripe_fee"]:::calc
+    C3["All split amounts FROZEN on Order row\nbefore PaymentIntent created"]:::important
+    C4["stripe.paymentIntents.create({\n  amount: gross_amount,\n  application_fee_amount: platform_amount,\n  metadata: {order_id, campaign_id, roaster_id, org_id}\n})"]:::stripe
+    C5["Buyer pays via Stripe Elements\nCharge lands on PLATFORM account"]:::stripe
+
+    C1 --> C2 --> C3 --> C4 --> C5
+  end
+
+  %% ── Transfer to roaster + org (after hold) ───────────────────────
+  subgraph TRANSFER["2. Transfer — after 7-day delivery hold"]
+    T1["Inngest payout-release job\nruns daily at 09:00"]:::job
+    T2["Query: Orders WHERE\npayout_status=PENDING\nAND payout_eligible_at <= now()"]:::db
+    T3["calculateRoasterPayout()\nDeduct unsettled RoasterDebts\nfrom roaster_amount"]:::calc
+    T4["stripe.transfers.create({\n  amount: net_roaster_amount,\n  destination: roaster.stripe_account_id,\n  source_transaction: stripe_charge_id,\n  transfer_group: order.id\n})"]:::stripe
+    T5["stripe.transfers.create({\n  amount: org_amount,\n  destination: org.stripe_account_id,\n  source_transaction: stripe_charge_id,\n  transfer_group: order.id\n})"]:::stripe
+    T6["Platform retains platform_amount\nNo transfer needed — stays in platform account"]:::stripe
+    T7["Order.payout_status = TRANSFERRED\nOrderEvent PAYOUT_TRANSFERRED created\nCampaign.total_raised += org_amount"]:::db
+
+    T1 --> T2 --> T3 --> T4 & T5 & T6 --> T7
+  end
+
+  %% ── Refund path ──────────────────────────────────────────────────
+  subgraph REFUND["3. Refund — before or after transfer"]
+    RF1{Transfer\nalready sent?}:::decision
+    RF2["stripe.refunds.create({payment_intent})\nStripe fee NOT refunded\nAdd stripe_fee to RoasterDebt if roaster fault"]:::stripe
+    RF3["stripe.transfers.createReversal(transfer_id)\nthen stripe.refunds.create()"]:::stripe
+    RF4["Order.status = REFUNDED\nOrderEvent ORDER_REFUNDED created"]:::db
+
+    RF1 -->|"No — cleanest path\nFunds still on platform"| RF2 --> RF4
+    RF1 -->|"Yes — reversal needed"| RF3 --> RF4
+  end
+
+  %% ── Chargeback path ──────────────────────────────────────────────
+  subgraph CHARGEBACK["4. Chargeback — buyer disputes with bank"]
+    CB1["charge.dispute.created webhook\nStripe holds funds immediately"]:::stripe
+    CB2["DisputeRecord created\nrespond_by = now + 7 days\nAdmin alerted via Sentry"]:::db
+    CB3["Admin compiles evidence:\nOrder events + tracking + buyer IP\nSubmits to Stripe portal"]:::admin
+    CB4{Dispute\noutcome}:::decision
+    CB5["WON: funds released\nNormal payout proceeds"]:::ok
+    CB6["LOST: $15 dispute fee charged\nDetermine fault attribution"]:::bad
+    CB7{Fault\nattribution}:::decision
+    CB8["ROASTER fault:\nRoasterDebt created for\nroaster_amount + stripe_fee + $15\nTransfer reversal attempted"]:::bad
+    CB9["PLATFORM/BUYER_FRAUD:\nPlatform absorbs costs\nRoaster payout protected"]:::ok
+
+    CB1 --> CB2 --> CB3 --> CB4
+    CB4 -->|won| CB5
+    CB4 -->|lost| CB6 --> CB7
+    CB7 -->|roaster| CB8
+    CB7 -->|platform or fraud| CB9
+  end
+
+  %% ── Flow between sections ────────────────────────────────────────
+  CHARGE --> TRANSFER
+  CHARGE --> REFUND
+  TRANSFER --> CHARGEBACK
+
+  %% ── Split math reference ─────────────────────────────────────────
+  subgraph MATH["Split calculation reference (calculateSplits in @joe-perks/stripe)"]
+    M1["gross_amount = product_subtotal + shipping_amount"]:::calc
+    M2["stripe_fee = round(gross * 0.029) + 30 cents"]:::calc
+    M3["org_amount = round(product_subtotal * org_pct)"]:::calc
+    M4["platform_amount = max(round(product_subtotal * platform_fee_pct), platform_fee_floor)"]:::calc
+    M5["roaster_amount = product_subtotal - org_amount - platform_amount - stripe_fee"]:::calc
+    M6["roaster_total = roaster_amount + shipping_amount"]:::calc
+    M7["⚠ shipping_amount is NEVER included in split base\n⚠ All values are integers in cents — no floats\n⚠ Splits are FROZEN on Order at charge time — never recalculated"]:::important
+  end
+
+  classDef action   fill:#EAF3DE,stroke:#0F6E56,color:#085041
+  classDef calc     fill:#EEEDFE,stroke:#534AB7,color:#26215C
+  classDef stripe   fill:#E1F5EE,stroke:#1D9E75,color:#04342C
+  classDef db       fill:#F1EFE8,stroke:#888780,color:#2c2c2a
+  classDef job      fill:#FAEEDA,stroke:#BA7517,color:#412402
+  classDef admin    fill:#FAEEDA,stroke:#BA7517,color:#412402
+  classDef decision fill:#ffffff,stroke:#888780,color:#2c2c2a
+  classDef ok       fill:#EAF3DE,stroke:#1D9E75,color:#04342C
+  classDef bad      fill:#FCEBEB,stroke:#A32D2D,color:#501313
+  classDef important fill:#FAEEDA,stroke:#BA7517,color:#412402,font-weight:bold

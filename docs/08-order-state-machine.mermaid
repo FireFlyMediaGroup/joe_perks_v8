@@ -1,0 +1,35 @@
+---
+title: Joe Perks — Order State Machine & SLA Escalation
+---
+stateDiagram-v2
+  [*]         --> PENDING      : PaymentIntent created\ncreate-intent API
+
+  PENDING     --> CONFIRMED    : payment_intent.succeeded webhook\norder_number generated\nmagic link sent to roaster
+
+  PENDING     --> CANCELLED    : payment_intent.payment_failed webhook
+
+  CONFIRMED   --> SHIPPED      : Roaster enters tracking\nvia magic link or portal\nOrderEvent ORDER_SHIPPED
+
+  CONFIRMED   --> REFUNDED     : Admin manual refund\nor SLA auto-refund at T+96h
+
+  SHIPPED     --> DELIVERED    : Admin confirms OR\ncarrier webhook (Phase 2)\nOrderEvent ORDER_DELIVERED
+
+  SHIPPED     --> REFUNDED     : Admin decision\ne.g. lost in transit
+
+  DELIVERED   --> REFUNDED     : Dispute resolution\nor buyer return
+
+  REFUNDED    --> [*]
+  CANCELLED   --> [*]
+  DELIVERED   --> [*]          : payout_eligible_at reached\npayout job transfers funds
+
+  %% ── Payout state machine (parallel) ─────────────────────────────
+  state "Payout status" as PAYOUT {
+    [*]          --> PAY_PENDING  : Order CONFIRMED
+    PAY_PENDING  --> PAY_HELD     : Dispute opened\ncharge.dispute.created
+    PAY_PENDING  --> PAY_XFERRED  : payout job runs\npayout_eligible_at reached
+    PAY_HELD     --> PAY_XFERRED  : Dispute WON\nfunds released
+    PAY_HELD     --> [*]          : Dispute LOST\nfunds held by Stripe
+    PAY_XFERRED  --> [*]          : Complete
+    PAY_PENDING  --> PAY_FAILED   : Transfer API error
+    PAY_FAILED   --> PAY_PENDING  : Admin retry
+  }

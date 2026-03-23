@@ -1,0 +1,22 @@
+{
+  "name": "@joe-perks/ui",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "clean": "git clean -xdf .cache .turbo dist node_modules",
+    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
+  },
+  "dependencies": {
+    "react": "19.2.4",
+    "zustand": "^5.0.3"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:*",
+    "@types/react": "19.2.14",
+    "typescript": "^5.9.3"
+  },
+  "exports": {
+    ".": "./src/index.ts",
+    "./store/cart": "./src/store/cart.ts"
+  }
+}

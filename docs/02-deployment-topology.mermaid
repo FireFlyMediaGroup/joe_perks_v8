@@ -1,0 +1,75 @@
+---
+title: Joe Perks — Deployment Topology
+---
+graph LR
+  %% ── DNS / Entry points ──────────────────────────────────────────
+  subgraph DNS["DNS — joeperks.com"]
+    direction TB
+    D1["joeperks.com\n+ joeperks.com/[slug]"]
+    D2["roasters.joeperks.com"]
+    D3["orgs.joeperks.com"]
+    D4["admin.joeperks.com"]
+  end
+
+  %% ── Vercel deployments ──────────────────────────────────────────
+  subgraph VERCEL["Vercel — 4 independent deployments"]
+    direction TB
+    V1["joe-perks-web\nNext.js 14 App Router\nStripe webhook handler\nInngest serve route\nBuyer storefronts"]:::app
+    V2["joe-perks-roaster\nNext.js 14 App Router\nClerk auth (ROASTER_ADMIN)\nMagic link pages (no auth)"]:::app
+    V3["joe-perks-org\nNext.js 14 App Router\nClerk auth (ORG_ADMIN)\nCampaign management"]:::app
+    V4["joe-perks-admin\nNext.js 14 App Router\nHTTP Basic Auth (MVP)\nApproval queues + SLA"]:::app
+  end
+
+  %% ── Third-party services ────────────────────────────────────────
+  subgraph SVC["Third-party services"]
+    direction TB
+    NEON[("Neon\nPostgres\nShared DB\n2 branches:\nmain + dev")]:::db
+    CLERK["Clerk\n2 apps:\nRoaster app\nOrg app"]:::svc
+    STRIPE["Stripe\nConnect platform\nExpress accounts\nfor roasters + orgs"]:::svc
+    RESEND["Resend\nTransactional email\n11 templates\nvia packages/email"]:::svc
+    INNGEST["Inngest\n3 jobs:\nsla-check hourly\npayout-release daily\ncart-cleanup daily"]:::svc
+    UPSTASH["Upstash Redis\nRate limiting\nSliding window\nper endpoint"]:::svc
+    SENTRY["Sentry\n4 projects\none per app\nPII-scrubbed"]:::svc
+    POSTHOG["Posthog\nStorefront analytics\nNo PII\nAutocapture off"]:::svc
+    UPLOAD["Uploadthing\nProduct images\nOrg logos\nMVP — R2 Phase 2"]:::svc
+  end
+
+  %% ── DNS → Vercel routing ────────────────────────────────────────
+  D1 --> V1
+  D2 --> V2
+  D3 --> V3
+  D4 --> V4
+
+  %% ── apps/web service connections ────────────────────────────────
+  V1 -->|"All DB reads/writes"| NEON
+  V1 -->|"PaymentIntents\nWebhook events\nTransfers"| STRIPE
+  V1 -->|"Order confirm\nShipped\nDelivered\nImpact email"| RESEND
+  V1 -->|"Serve + trigger jobs"| INNGEST
+  V1 -->|"Checkout rate limit\nOnboarding rate limit"| UPSTASH
+  V1 -->|"Error tracking"| SENTRY
+  V1 -->|"Conversion events"| POSTHOG
+  V1 -->|"Image uploads"| UPLOAD
+
+  %% ── apps/roaster service connections ────────────────────────────
+  V2 -->|"Orders + products\n+ payouts"| NEON
+  V2 -->|"User auth + sync"| CLERK
+  V2 -->|"Stripe dashboard\nlink for roaster"| STRIPE
+  V2 -->|"Approval emails"| RESEND
+  V2 -->|"Error tracking"| SENTRY
+  V2 -->|"Product images"| UPLOAD
+
+  %% ── apps/org service connections ─────────────────────────────────
+  V3 -->|"Campaigns + earnings"| NEON
+  V3 -->|"User auth + sync"| CLERK
+  V3 -->|"Stripe dashboard\nlink for org"| STRIPE
+  V3 -->|"Approval emails"| RESEND
+  V3 -->|"Error tracking"| SENTRY
+
+  %% ── apps/admin service connections ──────────────────────────────
+  V4 -->|"All platform data"| NEON
+  V4 -->|"Transfer management\nRefunds\nDispute evidence"| STRIPE
+  V4 -->|"Error tracking"| SENTRY
+
+  classDef app fill:#0F6E56,stroke:#085041,color:#E1F5EE,font-weight:bold
+  classDef db  fill:#534AB7,stroke:#3C3489,color:#EEEDFE,font-weight:bold
+  classDef svc fill:#BA7517,stroke:#854F0B,color:#FAEEDA

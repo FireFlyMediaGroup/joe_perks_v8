@@ -1,0 +1,268 @@
+---
+title: Joe Perks — Database Entity Relationships (Key Models)
+---
+erDiagram
+
+  %% ── Platform config ──────────────────────────────────────────────
+  PlatformSettings {
+    String  id           PK "singleton"
+    Float   platform_fee_pct    "default 0.05"
+    Int     platform_fee_floor  "default 100 cents"
+    Float   org_pct_min         "default 0.05"
+    Float   org_pct_max         "default 0.25"
+    Float   org_pct_default     "default 0.15"
+    Int     sla_breach_hours    "default 48"
+    Int     payout_hold_days    "default 7"
+    Int     dispute_fee_cents   "default 1500"
+  }
+
+  %% ── Identity ──────────────────────────────────────────────────────
+  User {
+    String   id               PK
+    String   external_auth_id UK "Clerk user ID"
+    String   email            UK
+    UserRole role                "ROASTER_ADMIN | ORG_ADMIN | PLATFORM_ADMIN"
+    String   roaster_id       FK "nullable"
+    String   org_id           FK "nullable"
+    Boolean  is_platform_admin
+  }
+
+  %% ── Roaster entities ─────────────────────────────────────────────
+  RoasterApplication {
+    String            id        PK
+    ApplicationStatus status       "PENDING_REVIEW | APPROVED | REJECTED"
+    String            email     UK
+    String            business_name
+    DateTime          terms_agreed_at
+    String            terms_version
+  }
+
+  Roaster {
+    String                id               PK
+    String                application_id   FK UK
+    RoasterStatus         status              "ONBOARDING | ACTIVE | SUSPENDED"
+    String                email            UK
+    String                stripe_account_id UK "Stripe Express account ID"
+    StripeOnboardingStatus stripe_onboarding
+    Boolean               charges_enabled
+    Boolean               payouts_enabled
+    FulfillerType         fulfiller_type      "ROASTER | PLATFORM"
+    Int                   dispute_count_90d
+  }
+
+  RoasterShippingRate {
+    String  id         PK
+    String  roaster_id FK
+    String  label         "e.g. Standard 3-5 days"
+    String  carrier
+    Int     flat_rate     "cents — 100% passthrough to roaster"
+    Boolean is_default
+  }
+
+  RoasterDebt {
+    String     id         PK
+    String     roaster_id FK
+    String     order_id   FK "nullable"
+    Int        amount        "cents — always positive"
+    DebtReason reason
+    Boolean    settled
+    DateTime   settled_at    "nullable"
+  }
+
+  %% ── Org entities ─────────────────────────────────────────────────
+  OrgApplication {
+    String               id              PK
+    OrgApplicationStatus status             "PENDING_PLATFORM_REVIEW | PENDING_ROASTER_APPROVAL | APPROVED | REJECTED"
+    String               email           UK
+    String               desired_slug    UK
+    Float                desired_org_pct    "5–25%"
+  }
+
+  RoasterOrgRequest {
+    String                 id             PK
+    String                 application_id FK
+    String                 roaster_id     FK
+    RoasterOrgRequestStatus status         "PENDING | APPROVED | DECLINED"
+    Int                    priority          "1=primary, 2=backup"
+  }
+
+  Org {
+    String                id               PK
+    String                application_id   FK UK
+    OrgStatus             status              "ONBOARDING | ACTIVE | SUSPENDED"
+    String                email            UK
+    String                slug             UK "joeperks.com/[slug]"
+    String                stripe_account_id UK
+    StripeOnboardingStatus stripe_onboarding
+  }
+
+  %% ── Catalog ──────────────────────────────────────────────────────
+  Product {
+    String        id         PK
+    String        roaster_id FK
+    String        name
+    RoastLevel    roast_level   "LIGHT | MEDIUM | MEDIUM_DARK | DARK"
+    ProductStatus status        "DRAFT | ACTIVE | ARCHIVED"
+    Boolean       is_collab
+    DateTime      deleted_at    "nullable — soft delete"
+  }
+
+  ProductVariant {
+    String      id           PK
+    String      product_id   FK
+    String      sku          UK "nullable"
+    Int         size_oz         "8 | 12 | 16 | 32"
+    GrindOption grind           "WHOLE_BEAN | GROUND_DRIP | GROUND_ESPRESSO | GROUND_FRENCH_PRESS"
+    Int         wholesale_price "cents — roaster cost to platform"
+    Int         retail_price    "cents — buyer pays this"
+    Boolean     is_available
+    DateTime    deleted_at      "nullable — soft delete"
+  }
+
+  Campaign {
+    String         id         PK
+    String         org_id     FK
+    String         name
+    CampaignStatus status        "DRAFT | ACTIVE | PAUSED | ENDED"
+    Float          org_pct       "SNAPSHOT — frozen at campaign creation"
+    Int            goal_cents    "nullable"
+    Int            total_raised  "denormalized — updated on payout"
+  }
+
+  CampaignItem {
+    String id           PK
+    String campaign_id  FK
+    String product_id   FK
+    String variant_id   FK
+    Int    retail_price    "cents — SNAPSHOT frozen at campaign creation"
+    Int    wholesale_price "cents — SNAPSHOT frozen at campaign creation"
+    Boolean is_featured
+  }
+
+  %% ── Commerce ─────────────────────────────────────────────────────
+  Buyer {
+    String id    PK
+    String email UK
+    String name     "nullable"
+  }
+
+  Order {
+    String        id              PK
+    String        order_number    UK "JP-XXXXX format"
+    String        campaign_id     FK
+    String        roaster_id      FK "explicit — not derived"
+    String        buyer_id        FK "nullable"
+    FulfillerType fulfiller_type     "ROASTER | PLATFORM"
+    Int           product_subtotal   "cents — split base ONLY"
+    Int           shipping_amount    "cents — 100% passthrough, NOT in split"
+    Int           gross_amount       "product_subtotal + shipping_amount"
+    Int           stripe_fee         "cents — on gross_amount"
+    Float         org_pct_snapshot   "FROZEN at charge time"
+    Int           org_amount         "cents — FROZEN at charge time"
+    Int           platform_amount    "cents — FROZEN at charge time"
+    Int           roaster_amount     "cents — FROZEN at charge time"
+    Int           roaster_total      "roaster_amount + shipping_amount"
+    OrderStatus   status             "PENDING|CONFIRMED|SHIPPED|DELIVERED|REFUNDED|CANCELLED"
+    DateTime      fulfill_by         "SLA deadline = created_at + 48h"
+    PayoutStatus  payout_status      "PENDING | HELD | TRANSFERRED | FAILED"
+    DateTime      payout_eligible_at "delivered_at + payout_hold_days"
+    String        stripe_pi_id       UK
+    String        stripe_charge_id   UK "nullable"
+    String        stripe_transfer_id    "nullable — roaster transfer"
+    String        stripe_org_transfer   "nullable — org transfer"
+    String        transfer_group        "= order.id — required for reconciliation"
+    String        tracking_number       "nullable"
+    String        carrier               "nullable"
+    DateTime      shipped_at            "nullable"
+    DateTime      delivered_at          "nullable"
+    String        buyer_ip              "for chargeback evidence"
+    Boolean       is_collab
+  }
+
+  OrderItem {
+    String id           PK
+    String order_id     FK
+    String variant_id   FK
+    String product_name    "SNAPSHOT — display name frozen"
+    String variant_desc    "SNAPSHOT — e.g. 12oz Whole Bean"
+    Int    quantity
+    Int    unit_price       "cents SNAPSHOT"
+    Int    line_total        "unit_price * quantity"
+  }
+
+  %% ── Audit + infra ────────────────────────────────────────────────
+  OrderEvent {
+    String         id          PK
+    String         order_id    FK
+    OrderEventType event_type
+    ActorType      actor_type     "BUYER | ROASTER | ORG | ADMIN | SYSTEM"
+    String         actor_id       "nullable"
+    Json           payload        "nullable — event-specific data"
+    String         ip_address     "nullable"
+    DateTime       created_at     "IMMUTABLE — append-only"
+  }
+
+  DisputeRecord {
+    String          id               PK
+    String          order_id         FK UK
+    String          stripe_dispute_id UK
+    FaultType       fault_attribution  "nullable — ROASTER|PLATFORM|BUYER_FRAUD|UNCLEAR"
+    Boolean         evidence_submitted
+    DisputeOutcome  outcome            "nullable — WON|LOST|WITHDRAWN"
+    DateTime        respond_by         "nullable"
+  }
+
+  MagicLink {
+    String           id         PK
+    String           token      UK "crypto 32 bytes"
+    MagicLinkPurpose purpose       "ORDER_FULFILLMENT | ORG_APPROVAL | ROASTER_REVIEW"
+    String           actor_id      "roaster.id or org.id"
+    ActorType        actor_type
+    Json             payload       "{order_id} or {org_application_id}"
+    DateTime         expires_at    "72h TTL"
+    DateTime         used_at       "nullable — single use enforced"
+  }
+
+  EmailLog {
+    String   id          PK
+    String   to
+    String   template       "e.g. order_confirmation"
+    String   entity_type    "order | application"
+    String   entity_id      "prevents duplicate sends"
+    String   provider_id    "nullable — Resend message ID"
+    DateTime sent_at
+  }
+
+  StripeEvent {
+    String   id              PK
+    String   stripe_event_id UK "idempotency guard"
+    String   event_type
+    DateTime processed_at
+  }
+
+  OrderSequence {
+    String id       PK "singleton"
+    Int    next_val    "atomic increment for JP-XXXXX"
+  }
+
+  %% ── Relationships ─────────────────────────────────────────────────
+  User               ||--o|  Roaster              : "belongs to"
+  User               ||--o|  Org                  : "belongs to"
+  RoasterApplication ||--||  Roaster              : "approved into"
+  OrgApplication     ||--||  Org                  : "approved into"
+  OrgApplication     ||--o{  RoasterOrgRequest     : "requests"
+  Roaster            ||--o{  RoasterShippingRate   : "has"
+  Roaster            ||--o{  RoasterDebt           : "owes"
+  Roaster            ||--o{  Product               : "owns"
+  Product            ||--o{  ProductVariant        : "has"
+  Org                ||--o{  Campaign              : "runs"
+  Campaign           ||--o{  CampaignItem          : "includes"
+  ProductVariant     ||--o{  CampaignItem          : "featured in"
+  Campaign           ||--o{  Order                 : "generates"
+  Roaster            ||--o{  Order                 : "fulfills"
+  Buyer              ||--o{  Order                 : "places"
+  Order              ||--o{  OrderItem             : "contains"
+  Order              ||--o{  OrderEvent            : "emits"
+  Order              ||--o|  DisputeRecord         : "may have"
+  Order              ||--o{  RoasterDebt           : "may generate"
+  ProductVariant     ||--o{  OrderItem             : "referenced by"

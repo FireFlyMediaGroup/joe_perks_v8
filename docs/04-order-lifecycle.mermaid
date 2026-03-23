@@ -1,0 +1,72 @@
+---
+title: Joe Perks — Order Lifecycle & Data Flow
+---
+sequenceDiagram
+  autonumber
+
+  participant B  as Buyer<br/>(browser)
+  participant WEB as apps/web<br/>joeperks.com/[slug]
+  participant DB  as Neon Postgres<br/>(@joe-perks/db)
+  participant STR as Stripe Connect<br/>platform account
+  participant INN as Inngest<br/>background jobs
+  participant R   as apps/roaster<br/>magic link page
+  participant EM  as Resend<br/>(@joe-perks/email)
+
+  rect rgb(234,243,222)
+    Note over B,STR: PHASE 1 — Checkout
+    B->>WEB: POST /api/checkout/create-intent<br/>{items, shipping_rate_id, buyer, campaign_id}
+    WEB->>DB: Validate CampaignItem prices server-side
+    WEB->>WEB: calculateSplits(subtotal, shipping, org_pct, settings)
+    WEB->>STR: stripe.paymentIntents.create({amount, application_fee_amount, metadata})
+    WEB->>DB: Create Order (status=PENDING, all splits frozen)
+    WEB-->>B: {client_secret}
+    B->>STR: stripe.confirmPayment(client_secret)
+    STR-->>B: payment success → redirect to /[slug]/order/[pi_id]
+  end
+
+  rect rgb(238,237,254)
+    Note over WEB,DB: PHASE 2 — Order Creation (webhook)
+    STR->>WEB: POST /api/webhooks/stripe<br/>payment_intent.succeeded
+    WEB->>WEB: constructEvent() — verify signature
+    WEB->>DB: Check StripeEvent for idempotency
+    WEB->>DB: Update Order (status=CONFIRMED, order_number=JP-XXXXX)
+    WEB->>DB: Upsert Buyer by email
+    WEB->>DB: Create MagicLink (purpose=ORDER_FULFILLMENT, 72h TTL)
+    WEB->>DB: Create OrderEvent (ORDER_CREATED, actor=SYSTEM)
+    WEB->>EM: sendEmail(order_confirmation → buyer)
+    WEB->>EM: sendEmail(magic_link_fulfillment → roaster)
+    WEB-->>STR: HTTP 200
+  end
+
+  rect rgb(250,238,218)
+    Note over R,DB: PHASE 3 — Roaster Fulfillment (magic link)
+    EM-->>R: Email with fulfill link → roasters.joeperks.com/fulfill/[token]
+    R->>DB: Validate MagicLink (not expired, not used, purpose=ORDER_FULFILLMENT)
+    R->>DB: Fetch Order with items, splits, shipping address
+    Note over R: Roaster views order details<br/>and payout breakdown
+    R->>DB: Update Order (status=SHIPPED, tracking_number, carrier, shipped_at)
+    R->>DB: Set MagicLink.used_at = now()
+    R->>DB: Create OrderEvent (ORDER_SHIPPED, actor=ROASTER)
+    R->>EM: sendEmail(order_shipped + tracking → buyer)
+  end
+
+  rect rgb(234,243,222)
+    Note over WEB,DB: PHASE 4 — Delivery Confirmation
+    Note over WEB: Admin manually confirms OR<br/>carrier webhook (Phase 2)
+    WEB->>DB: Update Order (status=DELIVERED, delivered_at=now)
+    WEB->>DB: Set payout_eligible_at = delivered_at + 7 days
+    WEB->>DB: Create OrderEvent (ORDER_DELIVERED, actor=ADMIN|SYSTEM)
+    WEB->>EM: sendEmail(order_delivered + impact message → buyer)
+  end
+
+  rect rgb(238,237,254)
+    Note over INN,STR: PHASE 5 — Automated Payout (Inngest daily job)
+    INN->>DB: Query Orders WHERE status=DELIVERED<br/>AND payout_eligible_at <= now()<br/>AND payout_status=PENDING
+    INN->>DB: calculateRoasterPayout() — deduct unsettled RoasterDebts
+    INN->>STR: stripe.transfers.create({roaster_amount → roaster.stripe_account_id})
+    INN->>STR: stripe.transfers.create({org_amount → org.stripe_account_id})
+    INN->>DB: Update Order (payout_status=TRANSFERRED)
+    INN->>DB: Update Campaign.total_raised += org_amount
+    INN->>DB: Settle applicable RoasterDebt rows
+    INN->>DB: Create OrderEvent (PAYOUT_TRANSFERRED, actor=SYSTEM)
+  end

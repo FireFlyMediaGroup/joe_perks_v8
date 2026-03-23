@@ -1,0 +1,92 @@
+---
+title: Joe Perks — Monorepo Project Structure
+---
+%% Joe Perks canonical tree. Implementation notes:
+%% - `apps/web` uses next-forge i18n: routes live under `app/[locale]/...` (plus `app/api/...`).
+%% - Repo root holds `turbo.json`, `pnpm-workspace.yaml`, `package.json`, `.github/` (no `config/` folder).
+%% - Additional next-forge apps/packages (e.g. `apps/email`, `apps/studio`, `@repo/auth`, `@repo/cms`)
+%%   remain for previews, Prisma Studio, CMS, etc.
+
+graph TD
+  ROOT["joe-perks/ (Turborepo + pnpm workspaces)"]:::root
+
+  ROOT --> APPS["apps/"]:::folder
+  ROOT --> PKGS["packages/"]:::folder
+  ROOT --> ROOTCFG["Repo root: turbo.json, pnpm-workspace.yaml, package.json, .env.example, .github/"]:::folder
+
+  %% ── APPS ──────────────────────────────────────────────────────
+  APPS --> WEB["apps/web\njoeperks.com"]:::app
+  APPS --> ROASTER["apps/roaster\nroasters.joeperks.com"]:::app
+  APPS --> ORG["apps/org\norgs.joeperks.com"]:::app
+  APPS --> ADMIN["apps/admin\nadmin.joeperks.com"]:::app
+
+  %% apps/web routes (under app/[locale]/ unless noted)
+  WEB --> WEB_MKT["[locale]/(home)/\nlanding"]:::route
+  WEB --> WEB_RA["[locale]/roasters/apply/"]:::route
+  WEB --> WEB_OA["[locale]/orgs/apply/"]:::route
+  WEB --> WEB_SF["[locale]/[slug]/\nstorefront"]:::route
+  WEB --> WEB_CO["[locale]/[slug]/checkout/"]:::route
+  WEB --> WEB_OR["[locale]/[slug]/order/[pi_id]/"]:::route
+  WEB --> WEB_TM["[locale]/legal/\nterms, privacy"]:::route
+  WEB --> WEB_WH["app/api/webhooks/stripe"]:::api
+  WEB --> WEB_CI["app/api/checkout/create-intent"]:::api
+  WEB --> WEB_OS["app/api/order-status"]:::api
+  WEB --> WEB_INN["app/api/inngest"]:::api
+
+  %% apps/roaster routes
+  ROASTER --> R_DASH["(authenticated)/dashboard/"]:::route
+  ROASTER --> R_FULFILL["fulfill/[token]/"]:::route
+  ROASTER --> R_ORG_REQ["org-requests/[token]/"]:::route
+  ROASTER --> R_PROD["(authenticated)/products/"]:::route
+  ROASTER --> R_SHIP["(authenticated)/settings/shipping/"]:::route
+  ROASTER --> R_PAY["(authenticated)/payouts/"]:::route
+  ROASTER --> R_ONBOARD["(authenticated)/onboarding/"]:::route
+
+  %% apps/org routes
+  ORG --> O_DASH["dashboard/"]:::route
+  ORG --> O_CAMP["campaign/"]:::route
+  ORG --> O_EARN["earnings/"]:::route
+  ORG --> O_STORE["storefront/"]:::route
+  ORG --> O_ONBOARD["onboarding/"]:::route
+
+  %% apps/admin routes
+  ADMIN --> A_HOME["app/page.tsx\nhome / metrics"]:::route
+  ADMIN --> A_AR["approvals/roasters/"]:::route
+  ADMIN --> A_AO["approvals/orgs/"]:::route
+  ADMIN --> A_ORD["orders/"]:::route
+  ADMIN --> A_DISP["disputes/"]:::route
+  ADMIN --> A_SET["settings/"]:::route
+
+  %% ── PACKAGES ───────────────────────────────────────────────────
+  PKGS --> DB["packages/db\n@joe-perks/db"]:::pkg
+  PKGS --> UI["packages/ui\n@joe-perks/ui"]:::pkg
+  PKGS --> STRIPE["packages/stripe\n@joe-perks/stripe"]:::pkg
+  PKGS --> EMAIL["packages/email\n@joe-perks/email"]:::pkg
+  PKGS --> TYPES["packages/types\n@joe-perks/types"]:::pkg
+  PKGS --> NF["+ next-forge packages\n@repo/design-system, auth, cms, …"]:::pkg
+
+  DB --> DB1["prisma/schema.prisma\n26 models when migrated"]:::file
+  DB --> DB2["seed.ts"]:::file
+  DB --> DB3["order-number.ts"]:::file
+  DB --> DB4["index.ts\nPrisma client"]:::file
+
+  UI --> UI1["src/store/cart.ts\nZustand + persist"]:::file
+  UI --> UI2["Use @repo/design-system\nfor shadcn primitives"]:::file
+
+  STRIPE --> ST1["splits.ts"]:::file
+  STRIPE --> ST2["client.ts"]:::file
+  STRIPE --> ST3["ratelimit.ts"]:::file
+
+  EMAIL --> EM1["templates/\nReact Email"]:::file
+  EMAIL --> EM2["send.ts\nsendEmail()"]:::file
+
+  TYPES --> TY1["index.ts"]:::file
+  TYPES --> TY2["slugs.ts\nRESERVED_SLUGS"]:::file
+
+  classDef root    fill:#2E5A3E,stroke:#1D4A2E,color:#ffffff,font-weight:bold
+  classDef folder  fill:#534AB7,stroke:#3C3489,color:#EEEDFE,font-weight:bold
+  classDef app     fill:#0F6E56,stroke:#085041,color:#E1F5EE,font-weight:bold
+  classDef pkg     fill:#BA7517,stroke:#854F0B,color:#FAEEDA,font-weight:bold
+  classDef route   fill:#F1EFE8,stroke:#888780,color:#2c2c2a
+  classDef api     fill:#EEEDFE,stroke:#534AB7,color:#26215C
+  classDef file    fill:#ffffff,stroke:#B4B2A9,color:#5f5e5a
