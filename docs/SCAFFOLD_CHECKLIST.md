@@ -3,7 +3,9 @@
 
 **Version:** 1.1 | **Environment model:** Production + Development + Vercel Preview deployments  
 **Audience:** Developer setting up the project for the first time, or AI coding agents helping with setup  
-**Estimated time:** 3–4 hours for a complete setup (accounts + Vercel); **additional** time for the Joe Perks schema and integration work listed below.
+**Estimated time:** 3–4 hours for a complete setup (accounts + Vercel); **additional** time for the Joe Perks schema and integration work listed below.  
+**Companion tracker:** `docs/SCAFFOLD_PROGRESS.md` — versioned current-state comparison against this checklist.  
+**Story series:** `docs/scaffold-stories/README.md` — one focused scaffold story per workstream, ordered for the dev team.
 
 ---
 
