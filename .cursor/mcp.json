@@ -1,0 +1,7 @@
+{
+  "mcpServers": {
+    "inngest-dev": {
+      "url": "http://localhost:8288/mcp"
+    }
+  }
+}
