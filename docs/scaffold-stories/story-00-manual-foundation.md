@@ -1,7 +1,7 @@
 # Story 00 — Manual Foundation
 
 **Story version:** 0.1  
-**Status:** `Todo`  
+**Status:** `In Progress`  
 **Owner:** Ops / founder / tech lead  
 **Depends on:** none
 
@@ -93,3 +93,4 @@ Story 01 should not start until the team knows which development database to tar
 | Version | Date | Notes |
 |---|---|---|
 | `0.1` | 2026-03-22 | Initial story created. |
+| `0.2` | 2026-03-23 | Accounts created and local env files populated for: Neon (dev branch), Clerk (roaster + org), Inngest, Upstash, Sentry (4 projects), PostHog, UploadThing, admin auth. Deferred: Stripe (waiting on login), Resend (waiting on domain). GitHub branch protection and Vercel setup still pending. |

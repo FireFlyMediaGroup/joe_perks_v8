@@ -29,6 +29,7 @@
 | Review version | Date | Summary |
 |---|---|---|
 | `0.1` | 2026-03-22 | Initial tracker created from `docs/SCAFFOLD_CHECKLIST.md` and current repo state. |
+| `0.2` | 2026-03-23 | Story 00 in progress: 7 of 9 third-party accounts provisioned and local env files populated. Stripe and Resend deferred. Admin auth set. |
 
 ---
 
@@ -78,15 +79,15 @@ These items in the baseline checklist no longer match the repo exactly and shoul
 
 | Baseline area | Status | Evidence / current state | Next step |
 |---|---|---|---|
-| Neon | `Manual` | `packages/db` expects Postgres / Prisma. | Create Neon project, `main` + `dev` branches, collect URLs. |
-| Stripe | `Manual` + `Partial` | `@joe-perks/stripe` package and webhook route exist, but implementation is stubbed. | Create Stripe account and implement package + webhook flow. |
-| Clerk | `Manual` + `Partial` | Auth packages and roaster/org surfaces exist, but full Clerk wiring is not complete. | Create two Clerk apps and wire auth + webhooks. |
-| Resend | `Manual` + `Partial` | Email package exists; sending path is stubbed. | Create Resend account, verify domain, implement `sendEmail()`. |
-| Inngest | `Manual` + `Partial` | Route exists, but functions are not registered yet. | Create account / keys and implement `serve()`. |
-| Upstash | `Manual` | Keys package exists; real rate limit flow still pending. | Create Redis instance and wire checkout limiter. |
-| Sentry | `Manual` + `Partial` | Sentry config files exist in apps / observability package. | Create projects, add DSNs / auth token, optionally add `/api/test-sentry`. |
-| PostHog | `Manual` + `Partial` | Analytics package and env keys exist. | Create project, add keys, validate client/server usage. |
-| UploadThing | `Manual` + `Todo` | Env placeholders exist; no Joe Perks upload flow yet. | Create account and wire upload routes when product/admin image flows are built. |
+| Neon | `Done` | Project `joe_perks_v8` in us-east-1; `production` + `dev` branches; pooled dev URL in `.env` and `packages/db/.env`. | Implement Joe Perks schema (Story 01). |
+| Stripe | `Manual` + `Partial` | `@joe-perks/stripe` package and webhook route exist, but implementation is stubbed. Waiting on account login credentials. | Add test keys to `.env` and `apps/web/.env.local` when available. |
+| Clerk | `Done` | Two Clerk apps created: `Joe Perks Roasters` and `Joe Perks Organizations`. Keys in `apps/roaster/.env.local` and `apps/org/.env.local`. | Wire auth + webhooks (Story 06). |
+| Resend | `Manual` + `Partial` | Email package exists; sending path is stubbed. Waiting on domain verification. | Add token to `.env` when domain is verified. |
+| Inngest | `Done` | Account created, signing key + event key in root `.env`. MCP config at `.cursor/mcp.json`. | Implement `serve()` and register jobs (Story 05). |
+| Upstash | `Done` | Redis instance `joe-perks-ratelimit` created; REST URL + token in root `.env`. | Wire checkout rate limiter (Story 02). |
+| Sentry | `Done` | 4 projects created (`joe_perks-web`, `-roaster`, `-org`, `-admin`). Auth token in root `.env`, per-app DSNs in each `apps/*/.env.local`. | Add `/api/test-sentry` route (Story 07). |
+| PostHog | `Done` | Project created (US hosting). Key + host in `apps/web/.env.local`. Autocapture + session recording disabled. | Validate client/server usage post-scaffold. |
+| UploadThing | `Done` | Account created, token in `apps/web/.env.local`. | Wire upload routes in Sprint 2–3. |
 
 ### Phase 4 — Repository setup
 

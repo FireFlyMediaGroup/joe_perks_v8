@@ -26,7 +26,7 @@ Use these documents like this:
 
 | Order | Story | Status | Why it comes now |
 |---|---|---|---|
-| 00 | `story-00-manual-foundation.md` | `Todo` | External accounts, secrets, and branch/process setup unblock later work. |
+| 00 | `story-00-manual-foundation.md` | `In Progress` | External accounts, secrets, and branch/process setup unblock later work. |
 | 01 | `story-01-db-foundation.md` | `Todo` | The Joe Perks schema is the foundation for payments, emails, jobs, and auth. |
 | 02 | `story-02-stripe-core.md` | `Todo` | Implement the shared Stripe package before wiring app routes. |
 | 03 | `story-03-checkout-webhooks.md` | `Todo` | Checkout, order creation, and Stripe webhook flow depend on DB + Stripe core. |
