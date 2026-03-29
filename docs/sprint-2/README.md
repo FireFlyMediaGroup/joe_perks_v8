@@ -8,6 +8,8 @@
 - Progress tracker: [`docs/SPRINT_2_PROGRESS.md`](../SPRINT_2_PROGRESS.md)
 - Stories: [`docs/sprint-2/stories/`](./stories/)
 
+**Current progress:** US-08-06 and US-02-06 are **Done**. Next story in the recommended sequence: **US-02-01** (roaster application form). Details: [`docs/SPRINT_2_PROGRESS.md`](../SPRINT_2_PROGRESS.md).
+
 ---
 
 ## Sprint 2 objective
@@ -40,6 +42,8 @@ Build the first real user-facing onboarding flows: roaster application form, adm
 | Story ID | Title | Pts | Priority | Dependencies | App/Package |
 |----------|-------|-----|----------|--------------|-------------|
 | US-08-06 | Application received and approval/rejection notifications | 2 | High | US-01-04 | `packages/email` |
+
+Story status in this table matches the tracker: **US-08-06** is implemented (templates + `package.json` exports); `sendEmail()` wiring lands in US-02-01, US-02-02, and US-03-01. **US-02-06** is implemented (`packages/types/src/slug-validation.ts` + `apps/web/app/api/slugs/validate/route.ts`).
 
 ---
 

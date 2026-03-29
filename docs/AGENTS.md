@@ -42,7 +42,7 @@ joe-perks/
 
 See `docs/01-project-structure.mermaid` for routes, API paths, and file-level detail. `apps/web` uses **`app/[locale]/…`** for pages and **`app/api/…`** for route handlers (next-forge i18n).
 
-**Middleware (proxy.ts):** `apps/web/proxy.ts` composes i18n, Clerk auth, Arcjet, and security headers via `@rescale/nemo`. The matcher **must** exclude `api` paths — `/((?!api|_next/static|…)…)` — so route handlers in `app/api/` are not intercepted by the i18n rewrite or auth middleware.
+**Middleware (proxy.ts):** `apps/web/proxy.ts` composes i18n, Clerk auth, Arcjet, and security headers via `@rescale/nemo`. The matcher **must** exclude `api` paths — `/((?!api|_next/static|…)…)` — so route handlers in `app/api/` are not intercepted by the i18n rewrite or auth middleware. **Important:** Next.js 16 does not allow both `middleware.ts` and `proxy.ts` in the same app. `middleware.ts` was removed from `apps/web`, `apps/roaster`, and `apps/org`; `proxy.ts` is the sole middleware entry point. `apps/admin` still uses `middleware.ts` (no `proxy.ts`).
 
 ---
 
@@ -289,19 +289,16 @@ const buyer = await prisma.buyer.upsert({
 ```
 
 ### Rate limiting pattern
-```typescript
-// packages/stripe/ratelimit.ts
-import { Ratelimit } from '@upstash/ratelimit'
-import { Redis } from '@upstash/redis'
 
-export const checkoutLimiter = new Ratelimit({
-  redis: Redis.fromEnv(),
-  limiter: Ratelimit.slidingWindow(5, '1 h'),
-  prefix: 'jp:checkout',
-})
+All rate limiters live in `packages/stripe/src/ratelimit.ts`. **Never** import `@upstash/ratelimit` or `@upstash/redis` directly in apps — use the exported helpers from `@joe-perks/stripe`.
+
+```typescript
+// packages/stripe/src/ratelimit.ts — defines all limiters
+import { limitCheckout } from '@joe-perks/stripe'       // 5 req/hour per IP (checkout)
+import { limitSlugValidation } from '@joe-perks/stripe'  // 30 req/min per IP (slug validation)
 
 // In API route:
-const { success } = await checkoutLimiter.limit(ip)
+const { success } = await limitCheckout(ip)
 if (!success) return Response.json({ error: 'Too many requests' }, { status: 429 })
 ```
 

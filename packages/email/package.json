@@ -25,7 +25,11 @@
     "./templates/contact": "./templates/contact.tsx",
     "./templates/order-confirmation": "./templates/order-confirmation.tsx",
     "./templates/sla": "./templates/sla.tsx",
-    "./templates/welcome": "./templates/welcome.tsx"
+    "./templates/welcome": "./templates/welcome.tsx",
+    "./templates/roaster-application-received": "./templates/roaster-application-received.tsx",
+    "./templates/roaster-approved": "./templates/roaster-approved.tsx",
+    "./templates/roaster-rejected": "./templates/roaster-rejected.tsx",
+    "./templates/org-application-received": "./templates/org-application-received.tsx"
   },
   "devDependencies": {
     "dotenv": "^16.5.0",

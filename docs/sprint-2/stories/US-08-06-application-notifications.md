@@ -2,7 +2,7 @@
 
 **Story ID:** US-08-06 | **Epic:** EP-08 (Notifications)
 **Points:** 2 | **Priority:** High
-**Status:** `Todo`
+**Status:** `Done`
 **Owner:** Frontend (email templates) / Full-stack (wiring)
 **Dependencies:** US-01-04 (Email Pipeline)
 **Depends on this:** Used by US-02-01, US-02-02, US-03-01
@@ -108,22 +108,22 @@ If the corresponding stories (US-02-01, US-02-02, US-03-01) are not yet implemen
 | Create | `packages/email/templates/roaster-approved.tsx` | Email template — approval notification |
 | Create | `packages/email/templates/roaster-rejected.tsx` | Email template — rejection notification |
 | Create | `packages/email/templates/org-application-received.tsx` | Email template — org application confirmation |
-| Modify | `packages/email/index.ts` | Export new templates if needed for the preview app |
+| Modify | `packages/email/package.json` | `exports` entries for each template (consumers import `@joe-perks/email/templates/...`) |
 
 ---
 
 ## Acceptance criteria
 
-- [ ] `roaster-application-received` template renders correctly with `businessName` and `email` props
-- [ ] `roaster-approved` template renders correctly with `businessName` and `loginUrl` props
-- [ ] `roaster-rejected` template renders correctly with `businessName` prop
-- [ ] `org-application-received` template renders correctly with `orgName` and `contactName` props
-- [ ] All templates extend `BaseEmailLayout` for consistent styling
-- [ ] All templates export `PreviewProps` for the React Email preview app (`apps/email`)
-- [ ] All templates have appropriate subject lines
-- [ ] Templates render well on mobile email clients (test via React Email preview)
-- [ ] The `sendEmail()` call pattern is documented in each template file for consumers
-- [ ] No PII is logged when sending — `sendEmail()` handles logging the `EmailLog` record only
+- [x] `roaster-application-received` template renders correctly with `businessName` and `email` props
+- [x] `roaster-approved` template renders correctly with `businessName` and `loginUrl` props
+- [x] `roaster-rejected` template renders correctly with `businessName` prop
+- [x] `org-application-received` template renders correctly with `orgName` and `contactName` props
+- [x] All templates extend `BaseEmailLayout` for consistent styling
+- [x] All templates export `PreviewProps` for the React Email preview app (`apps/email`)
+- [x] All templates have appropriate subject lines (exported `*_SUBJECT` constants for `sendEmail`)
+- [x] Templates render well on mobile email clients (test via React Email preview)
+- [x] The `sendEmail()` call pattern is documented in each template file for consumers
+- [x] No PII is logged when sending — `sendEmail()` handles logging the `EmailLog` record only
 
 ---
 
@@ -164,3 +164,4 @@ If the corresponding stories (US-02-01, US-02-02, US-03-01) are not yet implemen
 | Version | Date | Notes |
 |---------|------|-------|
 | 0.1 | 2026-03-29 | Initial story created for Sprint 2 planning. |
+| 0.2 | 2026-03-29 | Templates implemented; `package.json` exports added. Wiring to server actions remains in US-02-01, US-02-02, US-03-01. |

@@ -78,3 +78,46 @@ export const checkoutLimiter = {
     return limiter.limit(identifier);
   },
 };
+
+// ── Slug validation rate limiter (30 req/min per IP) ─────────────────
+
+const SLUG_PREFIX = "jp:slug-validate";
+const SLUG_LIMIT = 30;
+const SLUG_WINDOW = "1 m";
+
+let slugLimiterSingleton: Ratelimit | undefined;
+let slugLimiterUnavailable = false;
+
+function getSlugLimiter(): Ratelimit | null {
+  if (slugLimiterUnavailable) {
+    return null;
+  }
+  if (slugLimiterSingleton) {
+    return slugLimiterSingleton;
+  }
+  if (!hasUpstashEnv()) {
+    slugLimiterUnavailable = true;
+    return null;
+  }
+  const redis = Redis.fromEnv();
+  slugLimiterSingleton = new Ratelimit({
+    redis,
+    limiter: Ratelimit.slidingWindow(SLUG_LIMIT, SLUG_WINDOW),
+    prefix: SLUG_PREFIX,
+  });
+  return slugLimiterSingleton;
+}
+
+/**
+ * Runs slug-validation rate limit when Redis is configured; otherwise allows the request.
+ */
+export async function limitSlugValidation(identifier: string): Promise<{
+  success: boolean;
+}> {
+  const limiter = getSlugLimiter();
+  if (!limiter) {
+    return { success: true };
+  }
+  const { success } = await limiter.limit(identifier);
+  return { success };
+}

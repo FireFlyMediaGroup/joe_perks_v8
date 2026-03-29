@@ -17,6 +17,7 @@ export {
   getCheckoutLimiter,
   isCheckoutRateLimitConfigured,
   limitCheckout,
+  limitSlugValidation,
 } from "./ratelimit";
 export {
   type RefundChargeParams,

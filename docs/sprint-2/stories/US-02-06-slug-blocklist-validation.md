@@ -2,7 +2,7 @@
 
 **Story ID:** US-02-06 | **Epic:** EP-02 (Roaster Onboarding)
 **Points:** 3 | **Priority:** Medium
-**Status:** `Todo`
+**Status:** `Done`
 **Owner:** Backend
 **Dependencies:** US-01-02 (DB Foundation)
 **Depends on this:** US-03-01 (Org Application Form)
@@ -77,22 +77,22 @@ Create an API route that validates org storefront slugs against two sources: the
 
 ## Acceptance criteria
 
-- [ ] `GET /api/slugs/validate?slug=my-coffee-org` returns `{ available: true }` for a valid, unclaimed slug
-- [ ] Returns `{ available: false, reason: "reserved" }` for slugs in `RESERVED_SLUGS`
-- [ ] Returns `{ available: false, reason: "taken" }` for slugs matching an existing `Org.slug`
-- [ ] Returns `{ available: false, reason: "pending" }` for slugs matching a pending/approved `OrgApplication.desiredSlug`
-- [ ] Returns `{ available: false, reason: "invalid_format" }` for slugs that don't match the format rules (too short, uppercase, special chars, etc.)
-- [ ] Slug format: lowercase `a-z`, digits `0-9`, hyphens `-`, 3-63 characters, no leading/trailing hyphens
-- [ ] Missing `slug` query param returns 400 with `{ error: "slug parameter required" }`
-- [ ] Rate limiting: 30 requests per minute per IP (prevents enumeration)
-- [ ] Route is public (no auth required — org applicants haven't signed up yet)
+- [x] `GET /api/slugs/validate?slug=my-coffee-org` returns `{ available: true }` for a valid, unclaimed slug
+- [x] Returns `{ available: false, reason: "reserved" }` for slugs in `RESERVED_SLUGS`
+- [x] Returns `{ available: false, reason: "taken" }` for slugs matching an existing `Org.slug`
+- [x] Returns `{ available: false, reason: "pending" }` for slugs matching a pending/approved `OrgApplication.desiredSlug`
+- [x] Returns `{ available: false, reason: "invalid_format" }` for slugs that don't match the format rules (too short, uppercase, special chars, etc.)
+- [x] Slug format: lowercase `a-z`, digits `0-9`, hyphens `-`, 3-63 characters, no leading/trailing hyphens
+- [x] Missing `slug` query param returns 400 with `{ error: "slug parameter required" }`
+- [x] Rate limiting: 30 requests per minute per IP (prevents enumeration)
+- [x] Route is public (no auth required — org applicants haven't signed up yet)
 
 ---
 
 ## Suggested implementation steps
 
 1. Create a slug validation utility in `packages/types/src/slug-validation.ts`:
-   - `isValidSlugFormat(slug: string): boolean` — regex for `^[a-z0-9]([a-z0-9-]{1,61}[a-z0-9])?$`
+   - `isValidSlugFormat(slug: string): boolean` — regex for `^[a-z0-9][a-z0-9-]{1,61}[a-z0-9]$` (3-63 chars)
    - `isReservedSlug(slug: string): boolean` — checks against `RESERVED_SLUGS`
    - Export both for reuse in the API route and the org apply form server action
 2. Create the API route at `apps/web/app/api/slugs/validate/route.ts`:
@@ -121,3 +121,5 @@ Create an API route that validates org storefront slugs against two sources: the
 | Version | Date | Notes |
 |---------|------|-------|
 | 0.1 | 2026-03-29 | Initial story created for Sprint 2 planning. |
+| 0.2 | 2026-03-29 | Implemented: `packages/types/src/slug-validation.ts` (`isValidSlugFormat`, `isReservedSlug`), `apps/web/app/api/slugs/validate/route.ts` (GET with format/reserved/DB checks + Upstash rate limiting). |
+| 0.3 | 2026-03-29 | Smoke test fixes: (1) regex changed from `^[a-z0-9]([a-z0-9-]{1,61}[a-z0-9])?$` to `^[a-z0-9][a-z0-9-]{1,61}[a-z0-9]$` to enforce 3-char minimum (old regex allowed 1-char slugs). (2) Rate limiting moved from inline `@upstash/ratelimit` to `limitSlugValidation()` in `@joe-perks/stripe` (Upstash not a direct dep of `apps/web`). All 11 smoke tests passing. |

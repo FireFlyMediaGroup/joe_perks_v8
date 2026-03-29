@@ -34,39 +34,39 @@ Before starting Sprint 2 work, verify these Sprint 1 deliverables are in place:
 
 ### 1.1 Roaster application received template
 
-- [ ] Create `packages/email/templates/roaster-application-received.tsx`
-- [ ] Props: `businessName: string`, `email: string`
-- [ ] Extends `BaseEmailLayout`
-- [ ] Exports `PreviewProps` for React Email preview
-- [ ] Subject: "We received your roaster application"
-- [ ] Content: confirmation, review timeline, contact info
+- [x] Create `packages/email/templates/roaster-application-received.tsx`
+- [x] Props: `businessName: string`, `email: string`
+- [x] Extends `BaseEmailLayout`
+- [x] Exports `PreviewProps` for React Email preview
+- [x] Subject: "We received your roaster application"
+- [x] Content: confirmation, review timeline, contact info
 
 ### 1.2 Roaster approved template
 
-- [ ] Create `packages/email/templates/roaster-approved.tsx`
-- [ ] Props: `businessName: string`, `loginUrl: string`
-- [ ] Subject: "Your roaster application has been approved!"
-- [ ] Content: welcome, next steps (Stripe, products, shipping), CTA to roaster portal
+- [x] Create `packages/email/templates/roaster-approved.tsx`
+- [x] Props: `businessName: string`, `loginUrl: string`
+- [x] Subject: "Your roaster application has been approved!"
+- [x] Content: welcome, next steps (Stripe, products, shipping), CTA to roaster portal
 
 ### 1.3 Roaster rejected template
 
-- [ ] Create `packages/email/templates/roaster-rejected.tsx`
-- [ ] Props: `businessName: string`
-- [ ] Subject: "Update on your roaster application"
-- [ ] Content: polite rejection, encouragement, contact info
+- [x] Create `packages/email/templates/roaster-rejected.tsx`
+- [x] Props: `businessName: string`
+- [x] Subject: "Update on your roaster application"
+- [x] Content: polite rejection, encouragement, contact info
 
 ### 1.4 Org application received template
 
-- [ ] Create `packages/email/templates/org-application-received.tsx`
-- [ ] Props: `orgName: string`, `contactName: string`
-- [ ] Subject: "We received your organization application"
-- [ ] Content: confirmation, process overview, timeline
+- [x] Create `packages/email/templates/org-application-received.tsx`
+- [x] Props: `orgName: string`, `contactName: string`
+- [x] Subject: "We received your organization application"
+- [x] Content: confirmation, process overview, timeline
 
 ### 1.5 Preview verification
 
-- [ ] Run `pnpm dev` and open `http://localhost:3004` (React Email preview)
-- [ ] All 4 templates render correctly
-- [ ] Templates display well at mobile widths
+- [x] Run `pnpm dev` and open `http://localhost:3004` (React Email preview)
+- [x] All 4 templates render correctly
+- [x] Templates display well at mobile widths
 
 **Reference:** [`docs/sprint-2/stories/US-08-06-application-notifications.md`](sprint-2/stories/US-08-06-application-notifications.md)
 
@@ -78,26 +78,26 @@ Before starting Sprint 2 work, verify these Sprint 1 deliverables are in place:
 
 ### 2.1 Slug validation utilities
 
-- [ ] Create `packages/types/src/slug-validation.ts`
-- [ ] Implement `isValidSlugFormat(slug: string): boolean` — regex: `^[a-z0-9]([a-z0-9-]{1,61}[a-z0-9])?$`
-- [ ] Implement `isReservedSlug(slug: string): boolean` — checks against `RESERVED_SLUGS`
-- [ ] Export from `packages/types/src/index.ts`
+- [x] Create `packages/types/src/slug-validation.ts`
+- [x] Implement `isValidSlugFormat(slug: string): boolean` — regex: `^[a-z0-9][a-z0-9-]{1,61}[a-z0-9]$` (3-63 chars)
+- [x] Implement `isReservedSlug(slug: string): boolean` — checks against `RESERVED_SLUGS`
+- [x] Export from `packages/types/src/index.ts`
 
 ### 2.2 Slug validation API route
 
-- [ ] Create `apps/web/app/api/slugs/validate/route.ts`
-- [ ] `GET /api/slugs/validate?slug=my-org` — public endpoint
-- [ ] Validate format → check reserved list → check `Org.slug` → check `OrgApplication.desiredSlug` (non-rejected)
-- [ ] Returns `{ available: boolean, reason?: string }`
-- [ ] Reasons: `"reserved"`, `"taken"`, `"pending"`, `"invalid_format"`
-- [ ] Missing `slug` param returns 400
-- [ ] Rate limiting: 30 req/min per IP
+- [x] Create `apps/web/app/api/slugs/validate/route.ts`
+- [x] `GET /api/slugs/validate?slug=my-org` — public endpoint
+- [x] Validate format → check reserved list → check `Org.slug` → check `OrgApplication.desiredSlug` (non-rejected)
+- [x] Returns `{ available: boolean, reason?: string }`
+- [x] Reasons: `"reserved"`, `"taken"`, `"pending"`, `"invalid_format"`
+- [x] Missing `slug` param returns 400
+- [x] Rate limiting: 30 req/min per IP
 
 ### 2.3 Verification
 
-- [ ] Test: reserved slug → `{ available: false, reason: "reserved" }`
-- [ ] Test: valid new slug → `{ available: true }`
-- [ ] Test: invalid format (uppercase, special chars) → `{ available: false, reason: "invalid_format" }`
+- [x] Test: reserved slug → `{ available: false, reason: "reserved" }`
+- [x] Test: valid new slug → `{ available: true }`
+- [x] Test: invalid format (uppercase, special chars) → `{ available: false, reason: "invalid_format" }`
 
 **Reference:** [`docs/sprint-2/stories/US-02-06-slug-blocklist-validation.md`](sprint-2/stories/US-02-06-slug-blocklist-validation.md)
 
