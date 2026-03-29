@@ -1,7 +1,8 @@
 "use server";
 
-import { resend } from "@joe-perks/email";
+import { sendEmail } from "@joe-perks/email/send";
 import { ContactTemplate } from "@joe-perks/email/templates/contact";
+import { randomUUID } from "node:crypto";
 import { parseError } from "@repo/observability/error";
 import { createRateLimiter, slidingWindow } from "@repo/rate-limit";
 import { headers } from "next/headers";
@@ -31,16 +32,18 @@ export const contact = async (
       }
     }
 
-    if (!(resend && env.RESEND_FROM)) {
+    if (!(env.RESEND_FROM && env.RESEND_TOKEN)) {
       throw new Error("Email is not configured.");
     }
 
-    await resend.emails.send({
-      from: env.RESEND_FROM,
+    await sendEmail({
       to: env.RESEND_FROM,
       subject: "Contact form submission",
       replyTo: email,
       react: <ContactTemplate email={email} message={message} name={name} />,
+      template: "contact",
+      entityType: "contact_form",
+      entityId: randomUUID(),
     });
 
     return {};

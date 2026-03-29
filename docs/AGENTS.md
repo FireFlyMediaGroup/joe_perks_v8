@@ -159,8 +159,8 @@ Turbo starts multiple Next (and related) dev servers on **fixed ports** (see the
 - Admin queries may scope globally — this is intentional.
 
 ### Email sending
-- **Target pattern:** use **`sendEmail()`** from **`@joe-perks/email/send`** — it must own transactional sends and (once implemented) write **`EmailLog`** before send with dedup key **`(entity_id, template)`**.
-- **Current codebase:** `sendEmail()` is a **stub** (throws until `EmailLog` + wiring exist). Existing flows (e.g. web contact) may still use the **`resend`** export from **`@joe-perks/email`** — do not break those until `sendEmail()` is implemented.
+- **Transactional sends:** use **`sendEmail()`** from **`@joe-perks/email/send`** (also re-exported from **`@joe-perks/email`**). It sends via Resend, inserts **`EmailLog`** first, and dedupes on **`(entityType, entityId, template)`** (unique in the schema). On duplicate, the call returns without sending again (idempotent). If Resend fails after the log row is created, the row is deleted so callers can retry.
+- **`resend`** on **`@joe-perks/email`** remains for edge cases; prefer **`sendEmail()`** for product flows.
 - **Never** import the Resend SDK directly inside apps — keep email logic in **`@joe-perks/email`**.
 
 ### Stripe
@@ -201,6 +201,7 @@ RESEND_TOKEN=                    # re_... (Resend API key — validated in @joe-
 RESEND_FROM=                     # optional From: address for Resend
 INNGEST_SIGNING_KEY=             # signkey-...
 INNGEST_EVENT_KEY=               # ...
+PLATFORM_ALERT_EMAIL=            # optional — SLA breach/critical alerts to platform ops (used by `sla-check` job)
 UPSTASH_REDIS_REST_URL=          # https://...upstash.io
 UPSTASH_REDIS_REST_TOKEN=        # ...
 SENTRY_AUTH_TOKEN=               # for source map uploads
@@ -326,7 +327,7 @@ await prisma.stripeEvent.create({ data: { stripe_event_id: event.id, event_type:
 | `payout-release` | `0 9 * * *` (daily 09:00 UTC) | Find payout-eligible orders, create Stripe transfers |
 | `cart-cleanup` | `0 2 * * *` (daily 02:00 UTC) | Log expired cart count (Phase 2: delete expired carts) |
 
-Jobs should be registered at **`apps/web/app/api/inngest/route.ts`** via Inngest **`serve()`**. The route is currently a **stub** — replace with real function registration when implementing Sprint 1 jobs.
+Jobs are registered at **`apps/web/app/api/inngest/route.ts`** via Inngest **`serve()`** (`sla-check`, `payout-release`, `cart-cleanup`). After deploy, sync the app URL in the Inngest dashboard (`/api/inngest` on the web app).
 
 ---
 
@@ -391,7 +392,8 @@ Repo root **`AGENTS.md`** and **`CONVENTIONS.md`** are short pointers to the can
 | Magic link fulfillment (no portal login) | MVP |
 | Roaster portal dashboard | Phase 2 |
 | Platform-generated shipping labels (EasyPost) | Phase 2 |
-| Automated SLA Inngest jobs (full) | Phase 2 |
+| Inngest baseline jobs (`sla-check`, `payout-release`, `cart-cleanup`) | MVP (see `apps/web/lib/inngest/`) |
+| Additional SLA / job automation beyond baseline | Phase 2 |
 | DB-backed cart (abandoned cart recovery) | Phase 2 |
 | Collab mode (platform holds stock, fulfills) | Phase 3 |
 | Custom domains per org | Phase 3 |

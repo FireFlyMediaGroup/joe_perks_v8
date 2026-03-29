@@ -27,13 +27,13 @@ Living document. **Full narrative checklist (accounts, Vercel, CI secrets, ports
 | Add `apps/org` | **Done** | Port **3002**; vanilla CNA — Clerk not wired yet. |
 | Add `apps/admin` | **Done** | Port **3003**; vanilla CNA — basic auth not wired yet. |
 | `packages/database` → `packages/db`, `@joe-perks/db` | **Done** | Imports updated for roaster + tooling paths. |
-| Add `@joe-perks/stripe` (stubs) | **Done** | `packages/stripe` — real implementation Sprint 1+. |
+| Add `@joe-perks/stripe` | **Done** | `packages/stripe` — client, splits, Connect, payouts/refunds helpers. |
 | Add `@joe-perks/types` (stubs) | **Done** | `packages/types`. |
-| Inngest stub on `apps/web` | **Done** | `app/api/inngest/route.ts` + `inngest` dependency. |
-| Upstash on stripe package | **Done** | `@upstash/redis`, `@upstash/ratelimit` in `packages/stripe`; limiter still stubbed. |
+| Inngest jobs on `apps/web` | **Done** | `app/api/inngest/route.ts` — `serve()` + `sla-check` / `payout-release` / `cart-cleanup` (`apps/web/lib/inngest/`). |
+| Upstash on stripe package | **Done** | `@upstash/redis`, `@upstash/ratelimit` in `packages/stripe`; checkout limiter wired. |
 | Bun as *root* package manager | **Partial** | Root uses **pnpm@10.31.0**; apps use `bun --bun` where configured. Migrate to Bun-only if desired. |
 | Root `docs/` with mermaid + `.docx` | **Todo** | Folder exists; add `01-…08` diagrams + PRD/schema/epics docs per `SCAFFOLD.md`. |
-| Replace Prisma with **26-model** Joe Perks schema | **Todo** | Still default **single `Page` model**; replace from `joe_perks_db_schema`, then migrate + seed. |
+| Joe Perks **26-model** Prisma schema | **Done** | `packages/db/prisma/schema.prisma`; migrate + seed per `docs/AGENTS.md`. |
 | UploadThing TODO stubs (no wiring) | **Todo** | Optional explicit stubs in roaster/org per doc; account in Phase 3. |
 | `packages/ui` Zustand cart | **Todo** | Sprint 3 per epic doc. |
 | Magic link system in `packages/db` | **Todo** | Sprint 2 per epic doc. |
@@ -137,13 +137,12 @@ Living document. **Full narrative checklist (accounts, Vercel, CI secrets, ports
 
 ## Quick “still needed” summary (engineering)
 
-1. **Database:** Drop in Joe Perks **26-model** `schema.prisma`, migrate, seed (`PlatformSettings`, `OrderSequence`, etc.).  
-2. **Docs:** Populate **`docs/`** (mermaid + Word exports or links).  
-3. **Auth:** Wire **Clerk org app** into **`apps/org`**; optional **basic auth** for **`apps/admin`**.  
-4. **Repo hygiene:** Root **`AGENTS.md`** and **`CONVENTIONS.md`**; **`git`** remote + **`develop`**; GitHub **secrets** for CI.  
-5. **Optional alignment:** CI + installs on **Bun** only (to match `SCAFFOLD.md` literally), or update `SCAFFOLD.md` to describe **pnpm** as canonical.  
-6. **Later sprints:** UploadThing routes, Zustand cart, magic links, `@joe-perks/stripe` implementation — per epics, not Phase 5 scaffold.
+1. **Auth:** Wire **Clerk** roaster/org apps; **admin** Basic Auth or stronger — see Story 06.  
+2. **Docs:** Continue populating **`docs/`** (mermaid diagrams, Word exports or links) as needed.  
+3. **Repo hygiene:** Root **`docs/AGENTS.md`** and **`docs/CONVENTIONS.md`**; **`git`** remote + **`develop`**; GitHub **secrets** for CI.  
+4. **Optional alignment:** CI + installs on **Bun** only (to match `SCAFFOLD.md` literally), or keep **pnpm** as canonical (current repo).  
+5. **Later sprints:** UploadThing routes, Zustand cart UI, magic-link flows beyond schema — per epics.
 
 ---
 
-*Last reviewed against repo: March 2026 — see `docs/SCAFFOLD_CHECKLIST.md` for checklist aligned with current `pnpm dev`, CI, and Prisma stub state.*
+*Last reviewed against repo: March 2026 — see `docs/SCAFFOLD_CHECKLIST.md` (v1.4+) for the full checklist; DB, Stripe, email, and Inngest baseline jobs are implemented in code.*

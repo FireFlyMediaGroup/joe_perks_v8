@@ -1,6 +1,6 @@
 # Joe Perks — Scaffold Story Series
 
-**Series version:** 0.1  
+**Series version:** 0.2  
 **Baseline checklist:** `docs/SCAFFOLD_CHECKLIST.md`  
 **Current-state tracker:** `docs/SCAFFOLD_PROGRESS.md`
 
@@ -27,11 +27,11 @@ Use these documents like this:
 | Order | Story | Status | Why it comes now |
 |---|---|---|---|
 | 00 | `story-00-manual-foundation.md` | `In Progress` | External accounts, secrets, and branch/process setup unblock later work. |
-| 01 | `story-01-db-foundation.md` | `Todo` | The Joe Perks schema is the foundation for payments, emails, jobs, and auth. |
-| 02 | `story-02-stripe-core.md` | `Todo` | Implement the shared Stripe package before wiring app routes. |
-| 03 | `story-03-checkout-webhooks.md` | `Todo` | Checkout, order creation, and Stripe webhook flow depend on DB + Stripe core. |
-| 04 | `story-04-email-pipeline.md` | `Todo` | Transactional email should use the real schema and event/order data. |
-| 05 | `story-05-inngest-jobs.md` | `Todo` | Background jobs depend on DB, Stripe, and email paths being real. |
+| 01 | `story-01-db-foundation.md` | `Done` | Joe Perks Prisma schema, migrations, seed singletons (`docs/SCAFFOLD_PROGRESS.md`). |
+| 02 | `story-02-stripe-core.md` | `Done` | `@joe-perks/stripe` — client, splits, rate limit, Connect helpers. |
+| 03 | `story-03-checkout-webhooks.md` | `Done` | Checkout PI + order creation; Stripe webhooks with idempotency. |
+| 04 | `story-04-email-pipeline.md` | `Done` | `sendEmail()` + `EmailLog` dedupe; contact form on `@joe-perks/email/send`. |
+| 05 | `story-05-inngest-jobs.md` | `Done` | Inngest `serve()` + `sla-check`, `payout-release`, `cart-cleanup` on `apps/web`. |
 | 06 | `story-06-auth-admin.md` | `Todo` | Protected surfaces should be wired once the domain model is in place. |
 | 07 | `story-07-deploy-verify.md` | `Todo` | Deployment, smoke tests, and go-live checks come after the app scaffold is real. |
 

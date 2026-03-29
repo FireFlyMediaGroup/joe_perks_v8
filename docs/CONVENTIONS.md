@@ -300,7 +300,7 @@ export function AddToCartButton({ item }: { item: CampaignItem }) {
 | TypeScript variables | camelCase | `roasterId`, `orgPctSnapshot` |
 | React components | PascalCase | `ProductCard`, `CartDrawer` |
 | API routes | kebab-case directories | `create-intent/route.ts` |
-| Inngest function IDs | kebab-case | `sla-check`, `payout-release` |
+| Inngest function IDs | kebab-case | `sla-check`, `payout-release`, `cart-cleanup` |
 | Email templates | kebab-case | `order_confirmation`, `magic_link_fulfillment` |
 | Prisma models | PascalCase | `RoasterApplication`, `OrderEvent` |
 | Enums | SCREAMING_SNAKE_CASE | `PENDING_REVIEW`, `ROASTER_ADMIN` |

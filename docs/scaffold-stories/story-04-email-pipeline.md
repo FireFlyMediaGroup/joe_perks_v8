@@ -1,7 +1,7 @@
 # Story 04 — Transactional Email Pipeline
 
-**Story version:** 0.1  
-**Status:** `Todo`  
+**Story version:** 0.3  
+**Status:** `Done`  
 **Owner:** Backend / platform  
 **Depends on:** `story-01-db-foundation.md`, `story-03-checkout-webhooks.md`
 
@@ -15,10 +15,15 @@ Replace the transactional email stub with a real Joe Perks email pipeline that u
 
 ## Current repo evidence
 
-The email package exists, but sending is still intentionally blocked:
+The email pipeline is implemented and smoke-tested:
 
-- `packages/email/send.ts`
-- `packages/email/templates/contact.tsx`
+- `packages/email/send-email.ts` — `sendEmail()` sends via Resend with `EmailLog` dedupe on `(entityType, entityId, template)`.
+- `packages/email/send.ts` — server-only re-export of `sendEmail()` and `SendEmailInput`.
+- `packages/email/index.ts` — re-exports `sendEmail`, `SendEmailInput`, and the raw `resend` client for edge cases.
+- `packages/email/keys.ts` — validates `RESEND_TOKEN` (`re_`-prefixed) and `RESEND_FROM` (email format); empty strings treated as unset.
+- `packages/email/scripts/smoke-email.ts` — smoke test (DB-only dedupe or full Resend+dedupe).
+- `apps/web/app/[locale]/contact/actions/contact.tsx` — contact form uses `@joe-perks/email/send`.
+- `packages/db/prisma/schema.prisma` — `EmailLog` model with `@@unique([entityType, entityId, template])`.
 
 ---
 
@@ -47,12 +52,16 @@ The email package exists, but sending is still intentionally blocked:
 
 ---
 
-## Primary files to change
+## Primary files changed
 
-- `packages/email/send.ts`
-- `packages/email/index.ts`
-- any DB interactions required for `EmailLog`
-- template files used by real flows
+- `packages/email/send-email.ts` — core `sendEmail()` implementation (Resend + `EmailLog` dedupe)
+- `packages/email/send.ts` — server-only facade re-exporting `sendEmail`
+- `packages/email/index.ts` — barrel re-exports (`resend`, `sendEmail`, `SendEmailInput`)
+- `packages/email/keys.ts` — `RESEND_TOKEN` / `RESEND_FROM` validation
+- `packages/email/package.json` — added `@joe-perks/db` dependency, `smoke` script
+- `packages/email/scripts/smoke-email.ts` — Story 04 smoke test
+- `apps/web/app/[locale]/contact/actions/contact.tsx` — migrated to `@joe-perks/email/send`
+- `packages/db/prisma/schema.prisma` — `EmailLog` model (already existed from Story 01)
 
 ---
 
@@ -86,3 +95,5 @@ Story 05 should use this email path for scheduled reminders and escalations inst
 | Version | Date | Notes |
 |---|---|---|
 | `0.1` | 2026-03-22 | Initial story created. |
+| `0.2` | 2026-03-28 | Implemented: `sendEmail()` + `EmailLog` dedupe; contact form migrated; docs updated. |
+| `0.3` | 2026-03-28 | Post-implementation review: updated repo evidence and primary files sections to reflect completed state; all docs verified current. |
