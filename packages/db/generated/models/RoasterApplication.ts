@@ -28,7 +28,14 @@ export type RoasterApplicationMinAggregateOutputType = {
   id: string | null
   status: $Enums.ApplicationStatus | null
   email: string | null
+  contactName: string | null
+  phone: string | null
   businessName: string | null
+  website: string | null
+  description: string | null
+  city: string | null
+  state: string | null
+  coffeeInfo: string | null
   termsAgreedAt: Date | null
   termsVersion: string | null
   createdAt: Date | null
@@ -39,7 +46,14 @@ export type RoasterApplicationMaxAggregateOutputType = {
   id: string | null
   status: $Enums.ApplicationStatus | null
   email: string | null
+  contactName: string | null
+  phone: string | null
   businessName: string | null
+  website: string | null
+  description: string | null
+  city: string | null
+  state: string | null
+  coffeeInfo: string | null
   termsAgreedAt: Date | null
   termsVersion: string | null
   createdAt: Date | null
@@ -50,7 +64,14 @@ export type RoasterApplicationCountAggregateOutputType = {
   id: number
   status: number
   email: number
+  contactName: number
+  phone: number
   businessName: number
+  website: number
+  description: number
+  city: number
+  state: number
+  coffeeInfo: number
   termsAgreedAt: number
   termsVersion: number
   createdAt: number
@@ -63,7 +84,14 @@ export type RoasterApplicationMinAggregateInputType = {
   id?: true
   status?: true
   email?: true
+  contactName?: true
+  phone?: true
   businessName?: true
+  website?: true
+  description?: true
+  city?: true
+  state?: true
+  coffeeInfo?: true
   termsAgreedAt?: true
   termsVersion?: true
   createdAt?: true
@@ -74,7 +102,14 @@ export type RoasterApplicationMaxAggregateInputType = {
   id?: true
   status?: true
   email?: true
+  contactName?: true
+  phone?: true
   businessName?: true
+  website?: true
+  description?: true
+  city?: true
+  state?: true
+  coffeeInfo?: true
   termsAgreedAt?: true
   termsVersion?: true
   createdAt?: true
@@ -85,7 +120,14 @@ export type RoasterApplicationCountAggregateInputType = {
   id?: true
   status?: true
   email?: true
+  contactName?: true
+  phone?: true
   businessName?: true
+  website?: true
+  description?: true
+  city?: true
+  state?: true
+  coffeeInfo?: true
   termsAgreedAt?: true
   termsVersion?: true
   createdAt?: true
@@ -169,7 +211,14 @@ export type RoasterApplicationGroupByOutputType = {
   id: string
   status: $Enums.ApplicationStatus
   email: string
+  contactName: string
+  phone: string | null
   businessName: string
+  website: string | null
+  description: string | null
+  city: string
+  state: string
+  coffeeInfo: string | null
   termsAgreedAt: Date
   termsVersion: string
   createdAt: Date
@@ -201,7 +250,14 @@ export type RoasterApplicationWhereInput = {
   id?: Prisma.StringFilter<"RoasterApplication"> | string
   status?: Prisma.EnumApplicationStatusFilter<"RoasterApplication"> | $Enums.ApplicationStatus
   email?: Prisma.StringFilter<"RoasterApplication"> | string
+  contactName?: Prisma.StringFilter<"RoasterApplication"> | string
+  phone?: Prisma.StringNullableFilter<"RoasterApplication"> | string | null
   businessName?: Prisma.StringFilter<"RoasterApplication"> | string
+  website?: Prisma.StringNullableFilter<"RoasterApplication"> | string | null
+  description?: Prisma.StringNullableFilter<"RoasterApplication"> | string | null
+  city?: Prisma.StringFilter<"RoasterApplication"> | string
+  state?: Prisma.StringFilter<"RoasterApplication"> | string
+  coffeeInfo?: Prisma.StringNullableFilter<"RoasterApplication"> | string | null
   termsAgreedAt?: Prisma.DateTimeFilter<"RoasterApplication"> | Date | string
   termsVersion?: Prisma.StringFilter<"RoasterApplication"> | string
   createdAt?: Prisma.DateTimeFilter<"RoasterApplication"> | Date | string
@@ -213,7 +269,14 @@ export type RoasterApplicationOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   status?: Prisma.SortOrder
   email?: Prisma.SortOrder
+  contactName?: Prisma.SortOrder
+  phone?: Prisma.SortOrderInput | Prisma.SortOrder
   businessName?: Prisma.SortOrder
+  website?: Prisma.SortOrderInput | Prisma.SortOrder
+  description?: Prisma.SortOrderInput | Prisma.SortOrder
+  city?: Prisma.SortOrder
+  state?: Prisma.SortOrder
+  coffeeInfo?: Prisma.SortOrderInput | Prisma.SortOrder
   termsAgreedAt?: Prisma.SortOrder
   termsVersion?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -228,7 +291,14 @@ export type RoasterApplicationWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.RoasterApplicationWhereInput[]
   NOT?: Prisma.RoasterApplicationWhereInput | Prisma.RoasterApplicationWhereInput[]
   status?: Prisma.EnumApplicationStatusFilter<"RoasterApplication"> | $Enums.ApplicationStatus
+  contactName?: Prisma.StringFilter<"RoasterApplication"> | string
+  phone?: Prisma.StringNullableFilter<"RoasterApplication"> | string | null
   businessName?: Prisma.StringFilter<"RoasterApplication"> | string
+  website?: Prisma.StringNullableFilter<"RoasterApplication"> | string | null
+  description?: Prisma.StringNullableFilter<"RoasterApplication"> | string | null
+  city?: Prisma.StringFilter<"RoasterApplication"> | string
+  state?: Prisma.StringFilter<"RoasterApplication"> | string
+  coffeeInfo?: Prisma.StringNullableFilter<"RoasterApplication"> | string | null
   termsAgreedAt?: Prisma.DateTimeFilter<"RoasterApplication"> | Date | string
   termsVersion?: Prisma.StringFilter<"RoasterApplication"> | string
   createdAt?: Prisma.DateTimeFilter<"RoasterApplication"> | Date | string
@@ -240,7 +310,14 @@ export type RoasterApplicationOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   status?: Prisma.SortOrder
   email?: Prisma.SortOrder
+  contactName?: Prisma.SortOrder
+  phone?: Prisma.SortOrderInput | Prisma.SortOrder
   businessName?: Prisma.SortOrder
+  website?: Prisma.SortOrderInput | Prisma.SortOrder
+  description?: Prisma.SortOrderInput | Prisma.SortOrder
+  city?: Prisma.SortOrder
+  state?: Prisma.SortOrder
+  coffeeInfo?: Prisma.SortOrderInput | Prisma.SortOrder
   termsAgreedAt?: Prisma.SortOrder
   termsVersion?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -257,7 +334,14 @@ export type RoasterApplicationScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"RoasterApplication"> | string
   status?: Prisma.EnumApplicationStatusWithAggregatesFilter<"RoasterApplication"> | $Enums.ApplicationStatus
   email?: Prisma.StringWithAggregatesFilter<"RoasterApplication"> | string
+  contactName?: Prisma.StringWithAggregatesFilter<"RoasterApplication"> | string
+  phone?: Prisma.StringNullableWithAggregatesFilter<"RoasterApplication"> | string | null
   businessName?: Prisma.StringWithAggregatesFilter<"RoasterApplication"> | string
+  website?: Prisma.StringNullableWithAggregatesFilter<"RoasterApplication"> | string | null
+  description?: Prisma.StringNullableWithAggregatesFilter<"RoasterApplication"> | string | null
+  city?: Prisma.StringWithAggregatesFilter<"RoasterApplication"> | string
+  state?: Prisma.StringWithAggregatesFilter<"RoasterApplication"> | string
+  coffeeInfo?: Prisma.StringNullableWithAggregatesFilter<"RoasterApplication"> | string | null
   termsAgreedAt?: Prisma.DateTimeWithAggregatesFilter<"RoasterApplication"> | Date | string
   termsVersion?: Prisma.StringWithAggregatesFilter<"RoasterApplication"> | string
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"RoasterApplication"> | Date | string
@@ -268,7 +352,14 @@ export type RoasterApplicationCreateInput = {
   id?: string
   status: $Enums.ApplicationStatus
   email: string
+  contactName: string
+  phone?: string | null
   businessName: string
+  website?: string | null
+  description?: string | null
+  city: string
+  state: string
+  coffeeInfo?: string | null
   termsAgreedAt: Date | string
   termsVersion: string
   createdAt?: Date | string
@@ -280,7 +371,14 @@ export type RoasterApplicationUncheckedCreateInput = {
   id?: string
   status: $Enums.ApplicationStatus
   email: string
+  contactName: string
+  phone?: string | null
   businessName: string
+  website?: string | null
+  description?: string | null
+  city: string
+  state: string
+  coffeeInfo?: string | null
   termsAgreedAt: Date | string
   termsVersion: string
   createdAt?: Date | string
@@ -292,7 +390,14 @@ export type RoasterApplicationUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumApplicationStatusFieldUpdateOperationsInput | $Enums.ApplicationStatus
   email?: Prisma.StringFieldUpdateOperationsInput | string
+  contactName?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.StringFieldUpdateOperationsInput | string
+  state?: Prisma.StringFieldUpdateOperationsInput | string
+  coffeeInfo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   termsAgreedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   termsVersion?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -304,7 +409,14 @@ export type RoasterApplicationUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumApplicationStatusFieldUpdateOperationsInput | $Enums.ApplicationStatus
   email?: Prisma.StringFieldUpdateOperationsInput | string
+  contactName?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.StringFieldUpdateOperationsInput | string
+  state?: Prisma.StringFieldUpdateOperationsInput | string
+  coffeeInfo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   termsAgreedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   termsVersion?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -316,7 +428,14 @@ export type RoasterApplicationCreateManyInput = {
   id?: string
   status: $Enums.ApplicationStatus
   email: string
+  contactName: string
+  phone?: string | null
   businessName: string
+  website?: string | null
+  description?: string | null
+  city: string
+  state: string
+  coffeeInfo?: string | null
   termsAgreedAt: Date | string
   termsVersion: string
   createdAt?: Date | string
@@ -327,7 +446,14 @@ export type RoasterApplicationUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumApplicationStatusFieldUpdateOperationsInput | $Enums.ApplicationStatus
   email?: Prisma.StringFieldUpdateOperationsInput | string
+  contactName?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.StringFieldUpdateOperationsInput | string
+  state?: Prisma.StringFieldUpdateOperationsInput | string
+  coffeeInfo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   termsAgreedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   termsVersion?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -338,7 +464,14 @@ export type RoasterApplicationUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumApplicationStatusFieldUpdateOperationsInput | $Enums.ApplicationStatus
   email?: Prisma.StringFieldUpdateOperationsInput | string
+  contactName?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.StringFieldUpdateOperationsInput | string
+  state?: Prisma.StringFieldUpdateOperationsInput | string
+  coffeeInfo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   termsAgreedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   termsVersion?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -349,7 +482,14 @@ export type RoasterApplicationCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   status?: Prisma.SortOrder
   email?: Prisma.SortOrder
+  contactName?: Prisma.SortOrder
+  phone?: Prisma.SortOrder
   businessName?: Prisma.SortOrder
+  website?: Prisma.SortOrder
+  description?: Prisma.SortOrder
+  city?: Prisma.SortOrder
+  state?: Prisma.SortOrder
+  coffeeInfo?: Prisma.SortOrder
   termsAgreedAt?: Prisma.SortOrder
   termsVersion?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -360,7 +500,14 @@ export type RoasterApplicationMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   status?: Prisma.SortOrder
   email?: Prisma.SortOrder
+  contactName?: Prisma.SortOrder
+  phone?: Prisma.SortOrder
   businessName?: Prisma.SortOrder
+  website?: Prisma.SortOrder
+  description?: Prisma.SortOrder
+  city?: Prisma.SortOrder
+  state?: Prisma.SortOrder
+  coffeeInfo?: Prisma.SortOrder
   termsAgreedAt?: Prisma.SortOrder
   termsVersion?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -371,7 +518,14 @@ export type RoasterApplicationMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   status?: Prisma.SortOrder
   email?: Prisma.SortOrder
+  contactName?: Prisma.SortOrder
+  phone?: Prisma.SortOrder
   businessName?: Prisma.SortOrder
+  website?: Prisma.SortOrder
+  description?: Prisma.SortOrder
+  city?: Prisma.SortOrder
+  state?: Prisma.SortOrder
+  coffeeInfo?: Prisma.SortOrder
   termsAgreedAt?: Prisma.SortOrder
   termsVersion?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -405,7 +559,14 @@ export type RoasterApplicationCreateWithoutRoasterInput = {
   id?: string
   status: $Enums.ApplicationStatus
   email: string
+  contactName: string
+  phone?: string | null
   businessName: string
+  website?: string | null
+  description?: string | null
+  city: string
+  state: string
+  coffeeInfo?: string | null
   termsAgreedAt: Date | string
   termsVersion: string
   createdAt?: Date | string
@@ -416,7 +577,14 @@ export type RoasterApplicationUncheckedCreateWithoutRoasterInput = {
   id?: string
   status: $Enums.ApplicationStatus
   email: string
+  contactName: string
+  phone?: string | null
   businessName: string
+  website?: string | null
+  description?: string | null
+  city: string
+  state: string
+  coffeeInfo?: string | null
   termsAgreedAt: Date | string
   termsVersion: string
   createdAt?: Date | string
@@ -443,7 +611,14 @@ export type RoasterApplicationUpdateWithoutRoasterInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumApplicationStatusFieldUpdateOperationsInput | $Enums.ApplicationStatus
   email?: Prisma.StringFieldUpdateOperationsInput | string
+  contactName?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.StringFieldUpdateOperationsInput | string
+  state?: Prisma.StringFieldUpdateOperationsInput | string
+  coffeeInfo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   termsAgreedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   termsVersion?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -454,7 +629,14 @@ export type RoasterApplicationUncheckedUpdateWithoutRoasterInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumApplicationStatusFieldUpdateOperationsInput | $Enums.ApplicationStatus
   email?: Prisma.StringFieldUpdateOperationsInput | string
+  contactName?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   businessName?: Prisma.StringFieldUpdateOperationsInput | string
+  website?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  city?: Prisma.StringFieldUpdateOperationsInput | string
+  state?: Prisma.StringFieldUpdateOperationsInput | string
+  coffeeInfo?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   termsAgreedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   termsVersion?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -467,7 +649,14 @@ export type RoasterApplicationSelect<ExtArgs extends runtime.Types.Extensions.In
   id?: boolean
   status?: boolean
   email?: boolean
+  contactName?: boolean
+  phone?: boolean
   businessName?: boolean
+  website?: boolean
+  description?: boolean
+  city?: boolean
+  state?: boolean
+  coffeeInfo?: boolean
   termsAgreedAt?: boolean
   termsVersion?: boolean
   createdAt?: boolean
@@ -479,7 +668,14 @@ export type RoasterApplicationSelectCreateManyAndReturn<ExtArgs extends runtime.
   id?: boolean
   status?: boolean
   email?: boolean
+  contactName?: boolean
+  phone?: boolean
   businessName?: boolean
+  website?: boolean
+  description?: boolean
+  city?: boolean
+  state?: boolean
+  coffeeInfo?: boolean
   termsAgreedAt?: boolean
   termsVersion?: boolean
   createdAt?: boolean
@@ -490,7 +686,14 @@ export type RoasterApplicationSelectUpdateManyAndReturn<ExtArgs extends runtime.
   id?: boolean
   status?: boolean
   email?: boolean
+  contactName?: boolean
+  phone?: boolean
   businessName?: boolean
+  website?: boolean
+  description?: boolean
+  city?: boolean
+  state?: boolean
+  coffeeInfo?: boolean
   termsAgreedAt?: boolean
   termsVersion?: boolean
   createdAt?: boolean
@@ -501,14 +704,21 @@ export type RoasterApplicationSelectScalar = {
   id?: boolean
   status?: boolean
   email?: boolean
+  contactName?: boolean
+  phone?: boolean
   businessName?: boolean
+  website?: boolean
+  description?: boolean
+  city?: boolean
+  state?: boolean
+  coffeeInfo?: boolean
   termsAgreedAt?: boolean
   termsVersion?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type RoasterApplicationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "status" | "email" | "businessName" | "termsAgreedAt" | "termsVersion" | "createdAt" | "updatedAt", ExtArgs["result"]["roasterApplication"]>
+export type RoasterApplicationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "status" | "email" | "contactName" | "phone" | "businessName" | "website" | "description" | "city" | "state" | "coffeeInfo" | "termsAgreedAt" | "termsVersion" | "createdAt" | "updatedAt", ExtArgs["result"]["roasterApplication"]>
 export type RoasterApplicationInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   roaster?: boolean | Prisma.RoasterApplication$roasterArgs<ExtArgs>
 }
@@ -524,7 +734,14 @@ export type $RoasterApplicationPayload<ExtArgs extends runtime.Types.Extensions.
     id: string
     status: $Enums.ApplicationStatus
     email: string
+    contactName: string
+    phone: string | null
     businessName: string
+    website: string | null
+    description: string | null
+    city: string
+    state: string
+    coffeeInfo: string | null
     termsAgreedAt: Date
     termsVersion: string
     createdAt: Date
@@ -956,7 +1173,14 @@ export interface RoasterApplicationFieldRefs {
   readonly id: Prisma.FieldRef<"RoasterApplication", 'String'>
   readonly status: Prisma.FieldRef<"RoasterApplication", 'ApplicationStatus'>
   readonly email: Prisma.FieldRef<"RoasterApplication", 'String'>
+  readonly contactName: Prisma.FieldRef<"RoasterApplication", 'String'>
+  readonly phone: Prisma.FieldRef<"RoasterApplication", 'String'>
   readonly businessName: Prisma.FieldRef<"RoasterApplication", 'String'>
+  readonly website: Prisma.FieldRef<"RoasterApplication", 'String'>
+  readonly description: Prisma.FieldRef<"RoasterApplication", 'String'>
+  readonly city: Prisma.FieldRef<"RoasterApplication", 'String'>
+  readonly state: Prisma.FieldRef<"RoasterApplication", 'String'>
+  readonly coffeeInfo: Prisma.FieldRef<"RoasterApplication", 'String'>
   readonly termsAgreedAt: Prisma.FieldRef<"RoasterApplication", 'DateTime'>
   readonly termsVersion: Prisma.FieldRef<"RoasterApplication", 'String'>
   readonly createdAt: Prisma.FieldRef<"RoasterApplication", 'DateTime'>

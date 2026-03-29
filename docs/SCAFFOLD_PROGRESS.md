@@ -43,6 +43,7 @@
 | `1.3` | 2026-03-29 | Sprint 2 US-08-06: `@joe-perks/email` — `roaster-application-received`, `roaster-approved`, `roaster-rejected`, `org-application-received` templates (subject constants + `sendEmail()` docs in each file); `package.json` exports for each. |
 | `1.4` | 2026-03-29 | Sprint 2 US-02-06: `@joe-perks/types` — `isValidSlugFormat` + `isReservedSlug` in `src/slug-validation.ts`; `apps/web/app/api/slugs/validate/route.ts` — public GET endpoint with format/reserved/DB checks + Upstash 30 req/min rate limiting. |
 | `1.5` | 2026-03-29 | Smoke test fixes: (1) Deleted `middleware.ts` from `apps/web`, `apps/org`, `apps/roaster` — Next.js 16 conflicts when both `middleware.ts` and `proxy.ts` exist; middleware logic already in `proxy.ts`. (2) `limitSlugValidation()` added to `@joe-perks/stripe` — Upstash deps live in `packages/stripe`, not in apps. (3) Slug regex fixed to enforce 3-char minimum. |
+| `1.6` | 2026-03-29 | Sprint 2 US-02-01: 5-step roaster application form. Schema migration added `contactName`, `phone`, `website`, `description`, `city`, `state`, `coffeeInfo` to `RoasterApplication`. `limitRoasterApplication()` added to `@joe-perks/stripe` (3 req/hr). Server action with Zod validation + `sendEmail()` wiring. |
 
 ---
 

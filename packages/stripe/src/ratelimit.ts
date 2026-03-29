@@ -79,6 +79,49 @@ export const checkoutLimiter = {
   },
 };
 
+// ── Roaster application rate limiter (3 req/hr per IP) ───────────────
+
+const APP_PREFIX = "jp:roaster-apply";
+const APP_LIMIT = 3;
+const APP_WINDOW = "1 h";
+
+let appLimiterSingleton: Ratelimit | undefined;
+let appLimiterUnavailable = false;
+
+function getAppLimiter(): Ratelimit | null {
+  if (appLimiterUnavailable) {
+    return null;
+  }
+  if (appLimiterSingleton) {
+    return appLimiterSingleton;
+  }
+  if (!hasUpstashEnv()) {
+    appLimiterUnavailable = true;
+    return null;
+  }
+  const redis = Redis.fromEnv();
+  appLimiterSingleton = new Ratelimit({
+    redis,
+    limiter: Ratelimit.slidingWindow(APP_LIMIT, APP_WINDOW),
+    prefix: APP_PREFIX,
+  });
+  return appLimiterSingleton;
+}
+
+/**
+ * Runs roaster-application rate limit when Redis is configured; otherwise allows the request.
+ */
+export async function limitRoasterApplication(identifier: string): Promise<{
+  success: boolean;
+}> {
+  const limiter = getAppLimiter();
+  if (!limiter) {
+    return { success: true };
+  }
+  const { success } = await limiter.limit(identifier);
+  return { success };
+}
+
 // ── Slug validation rate limiter (30 req/min per IP) ─────────────────
 
 const SLUG_PREFIX = "jp:slug-validate";

@@ -109,44 +109,44 @@ Before starting Sprint 2 work, verify these Sprint 1 deliverables are in place:
 
 ### 3.1 Zod validation schema
 
-- [ ] Create `apps/web/app/[locale]/roasters/apply/_lib/schema.ts`
-- [ ] Schema covers all 5 steps: contact (email, phone, name), business (name, website, description), location (city, state), coffee info, terms
-- [ ] Email format validation
-- [ ] Required fields enforced
-- [ ] `termsVersion` must be a non-empty string
+- [x] Create `apps/web/app/[locale]/roasters/apply/_lib/schema.ts`
+- [x] Schema covers all 5 steps: contact (email, phone, name), business (name, website, description), location (city, state), coffee info, terms
+- [x] Email format validation
+- [x] Required fields enforced
+- [x] `termsVersion` must be a non-empty string
 
 ### 3.2 Server action
 
-- [ ] Create `apps/web/app/[locale]/roasters/apply/_actions/submit-application.ts`
-- [ ] Parses and validates full form with Zod
-- [ ] Rate limiting: 3 submissions per IP per hour (Upstash)
-- [ ] Creates `RoasterApplication` with `status = PENDING_REVIEW`, `termsAgreedAt = now()`
-- [ ] Handles duplicate email rejection (unique constraint)
-- [ ] Calls `sendEmail()` with `roaster-application-received` template
-- [ ] Does NOT log PII — only logs application ID
-- [ ] Returns `{ success: true, applicationId }` or `{ error, code }`
+- [x] Create `apps/web/app/[locale]/roasters/apply/_actions/submit-application.ts`
+- [x] Parses and validates full form with Zod
+- [x] Rate limiting: 3 submissions per IP per hour (`limitRoasterApplication()` from `@joe-perks/stripe`)
+- [x] Creates `RoasterApplication` with `status = PENDING_REVIEW`, `termsAgreedAt = now()`
+- [x] Handles duplicate email rejection (unique constraint)
+- [x] Calls `sendEmail()` with `roaster-application-received` template
+- [x] Does NOT log PII — only logs application ID
+- [x] Returns `{ success: true, applicationId }` or `{ error, code }`
 
 ### 3.3 Multi-step form UI
 
-- [ ] Create `apps/web/app/[locale]/roasters/apply/_components/roaster-apply-form.tsx` (client component)
-- [ ] 5-step navigation with forward/back, progress indicator
-- [ ] Create step components (contact, business, location, coffee, terms)
-- [ ] Per-step validation before allowing advancement
-- [ ] Terms checkbox required on final step
-- [ ] Success/confirmation view after submission
-- [ ] Mobile-responsive, 44x44px touch targets
+- [x] Create `apps/web/app/[locale]/roasters/apply/_components/roaster-apply-form.tsx` (client component)
+- [x] 5-step navigation with forward/back, progress indicator
+- [x] Create step components (contact, business, location, coffee, terms)
+- [x] Per-step validation before allowing advancement
+- [x] Terms checkbox required on final step
+- [x] Success/confirmation view after submission
+- [x] Mobile-responsive, 44x44px touch targets
 
 ### 3.4 Page integration
 
-- [ ] Update `apps/web/app/[locale]/roasters/apply/page.tsx` — remove scaffold, render form
-- [ ] Server component shell
+- [x] Update `apps/web/app/[locale]/roasters/apply/page.tsx` — remove scaffold, render form
+- [x] Server component shell
 
 ### 3.5 Verification
 
-- [ ] Submit valid application → `RoasterApplication` created in DB with `status = PENDING_REVIEW`
-- [ ] Duplicate email → rejected
-- [ ] Rate limit → 429 after 3 submissions
-- [ ] `EmailLog` entry created for `roaster-application-received`
+- [x] Submit valid application → `RoasterApplication` created in DB with `status = PENDING_REVIEW`
+- [x] Duplicate email → rejected (P2002 unique constraint)
+- [ ] Rate limit → 429 after 3 submissions (requires Upstash env; `limitRoasterApplication()` tested via code path)
+- [ ] `EmailLog` entry created for `roaster-application-received` (requires Resend env)
 
 **Reference:** [`docs/sprint-2/stories/US-02-01-roaster-application-form.md`](sprint-2/stories/US-02-01-roaster-application-form.md)
 **Diagram:** [`docs/05-approval-chain.mermaid`](05-approval-chain.mermaid) — RA1, RA2

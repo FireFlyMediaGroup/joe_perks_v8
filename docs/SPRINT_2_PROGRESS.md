@@ -1,6 +1,6 @@
 # Joe Perks — Sprint 2 Progress Tracker
 
-**Tracker version:** 0.3
+**Tracker version:** 0.4
 **Baseline document:** [`docs/SPRINT_2_CHECKLIST.md`](SPRINT_2_CHECKLIST.md) (v1.0)
 **Story documents:** [`docs/sprint-2/stories/`](sprint-2/stories/)
 **Sprint overview:** [`docs/sprint-2/README.md`](sprint-2/README.md)
@@ -32,6 +32,7 @@
 | 0.1 | 2026-03-29 | Initial tracker created. All stories at `Todo`. Sprint 2 documentation suite complete. |
 | 0.2 | 2026-03-29 | US-08-06 complete: four application lifecycle templates in `packages/email/templates/`, exports in `@joe-perks/email` `package.json`. |
 | 0.3 | 2026-03-29 | US-02-06 complete: `isValidSlugFormat` + `isReservedSlug` in `packages/types/src/slug-validation.ts`; `GET /api/slugs/validate` route in `apps/web` with format/reserved/DB checks + Upstash 30 req/min rate limiting. |
+| 0.4 | 2026-03-29 | US-02-01 complete: 5-step roaster application form at `apps/web/app/[locale]/roasters/apply/` with Zod validation, react-hook-form, `submitRoasterApplication` server action, `limitRoasterApplication()` (3 req/hr), `sendEmail()` wiring. Schema migration added `contactName`, `phone`, `website`, `description`, `city`, `state`, `coffeeInfo` to `RoasterApplication`. |
 
 ---
 
@@ -41,7 +42,7 @@
 |------|--------|-------|
 | Email templates (US-08-06) | `Done` | Four templates + subject constants; `sendEmail()` wiring deferred to US-02-01 / US-02-02 / US-03-01 |
 | Slug validation (US-02-06) | `Done` | `isValidSlugFormat` + `isReservedSlug` in `packages/types`; `GET /api/slugs/validate` route with format/reserved/DB/rate-limit checks |
-| Roaster apply form (US-02-01) | `Todo` | Scaffold placeholder at `apps/web/app/[locale]/roasters/apply/page.tsx` |
+| Roaster apply form (US-02-01) | `Done` | 5-step multi-step form with Zod validation, react-hook-form, server action, rate limiting, and `sendEmail()` wiring |
 | Admin approval queue (US-02-02) | `Todo` | Scaffold placeholder at `apps/admin/app/approvals/roasters/page.tsx`; HTTP Basic Auth already active |
 | Stripe Connect onboarding (US-02-03) | `Todo` | `POST /api/stripe/connect` route works; `account.updated` webhook works; onboarding page is scaffold |
 | Product & variant CRUD (US-02-04) | `Todo` | Schema models exist; scaffold placeholder at products page |
@@ -74,11 +75,12 @@
 
 | Item | Status | Evidence / current state | Next step |
 |------|--------|--------------------------|-----------|
-| Zod validation schema | `Todo` | Not created. | Create `_lib/schema.ts` |
-| Server action | `Todo` | Not created. | Create `_actions/submit-application.ts` |
-| Multi-step form UI | `Todo` | Scaffold placeholder exists. | Create form components, replace scaffold |
-| Rate limiting | `Todo` | Upstash available. | Add application submission limiter |
-| sendEmail integration | `Todo` | `sendEmail()` available; template needed from Phase 1. | Wire call after DB insert |
+| Zod validation schema | `Done` | `_lib/schema.ts`: `contactSchema`, `businessSchema`, `locationSchema`, `coffeeSchema`, `termsSchema` + merged `applicationSchema`. `US_STATES` enum, `CURRENT_TERMS_VERSION = "1.0"`. | Consumed by server action and form |
+| Server action | `Done` | `_actions/submit-application.ts`: validates with Zod, rate-limits via `limitRoasterApplication()`, creates `RoasterApplication` (status = `PENDING_REVIEW`), calls `sendEmail()` with `roaster-application-received` template. Handles duplicate email (P2002). Logs only `application_id`. | None |
+| Multi-step form UI | `Done` | `_components/roaster-apply-form.tsx` + `step-contact.tsx`, `step-business.tsx`, `step-location.tsx`, `step-coffee.tsx`, `step-terms.tsx`. react-hook-form + zodResolver. Progress bar, forward/back nav, per-step validation, 44px touch targets, success view. | None |
+| Rate limiting | `Done` | `limitRoasterApplication()` in `@joe-perks/stripe` (3 req/hr per IP, prefix `jp:roaster-apply`); gracefully skipped without Upstash env vars | None |
+| sendEmail integration | `Done` | `sendEmail()` called with `roaster-application-received` template on successful submission; failure is caught and logged (does not block success response) | None |
+| Schema migration | `Done` | Migration `20260329214613_add_roaster_application_fields` added `contactName`, `phone?`, `website?`, `description?`, `city`, `state`, `coffeeInfo?` to `RoasterApplication` | None |
 
 ### Phase 4 — Admin Approval Queue (US-02-02)
 

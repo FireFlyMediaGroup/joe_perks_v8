@@ -2,7 +2,7 @@
 
 **Story ID:** US-02-01 | **Epic:** EP-02 (Roaster Onboarding)
 **Points:** 8 | **Priority:** High
-**Status:** `Todo`
+**Status:** `Done`
 **Owner:** Frontend / Full-stack
 **Dependencies:** US-01-02 (DB Foundation), US-01-04 (Email Pipeline)
 **Depends on this:** US-02-02 (Admin Approval Queue)
@@ -25,11 +25,11 @@ Replace the placeholder at `apps/web/app/[locale]/roasters/apply/page.tsx` with 
 
 ## Current repo evidence
 
-- `apps/web/app/[locale]/roasters/apply/page.tsx` exists as a scaffold placeholder (heading + "replace with onboarding flow" text)
-- `RoasterApplication` model exists in `packages/db/prisma/schema.prisma` with fields: `id`, `status` (`ApplicationStatus`), `email`, `businessName`, `termsAgreedAt`, `termsVersion`, `phone`, `website`, `description`, `city`, `state`
+- `apps/web/app/[locale]/roasters/apply/page.tsx` — server component shell rendering `RoasterApplyForm`
+- `RoasterApplication` model in `packages/db/prisma/schema.prisma` with fields: `id`, `status` (`ApplicationStatus`), `email`, `contactName`, `phone?`, `businessName`, `website?`, `description?`, `city`, `state`, `coffeeInfo?`, `termsAgreedAt`, `termsVersion`
 - `ApplicationStatus` enum: `PENDING_REVIEW`, `APPROVED`, `REJECTED`
 - `sendEmail()` available from `@joe-perks/email`
-- Rate limiting via `@joe-perks/stripe` (Upstash-based)
+- Rate limiting via `limitRoasterApplication()` from `@joe-perks/stripe` (3 req/hr per IP)
 
 ---
 
@@ -93,19 +93,19 @@ Replace the placeholder at `apps/web/app/[locale]/roasters/apply/page.tsx` with 
 
 ## Acceptance criteria
 
-- [ ] The form at `/roasters/apply` renders a 5-step multi-step form (not a single long form)
-- [ ] Users can navigate forward and backward between steps
-- [ ] Each step validates its fields before allowing the user to proceed
-- [ ] The final step requires a terms-of-service checkbox before submission
-- [ ] On submission, a `RoasterApplication` is created with `status = PENDING_REVIEW` and `termsAgreedAt = now()`
-- [ ] The `termsVersion` field stores a version string (e.g. `"1.0"`)
-- [ ] Duplicate email submissions are rejected (database `email` unique constraint on `RoasterApplication`)
-- [ ] Rate limiting prevents more than 3 submissions per IP per hour
-- [ ] `sendEmail()` is called with template `roaster-application-received` on successful submission
-- [ ] A confirmation/thank-you screen appears after successful submission
-- [ ] The form is mobile-responsive with minimum 44x44px touch targets
-- [ ] No PII (email, phone, name) is logged — only the application ID
-- [ ] The form placeholder text is removed from the page
+- [x] The form at `/roasters/apply` renders a 5-step multi-step form (not a single long form)
+- [x] Users can navigate forward and backward between steps
+- [x] Each step validates its fields before allowing the user to proceed
+- [x] The final step requires a terms-of-service checkbox before submission
+- [x] On submission, a `RoasterApplication` is created with `status = PENDING_REVIEW` and `termsAgreedAt = now()`
+- [x] The `termsVersion` field stores a version string (e.g. `"1.0"`)
+- [x] Duplicate email submissions are rejected (database `email` unique constraint on `RoasterApplication`)
+- [x] Rate limiting prevents more than 3 submissions per IP per hour
+- [x] `sendEmail()` is called with template `roaster-application-received` on successful submission
+- [x] A confirmation/thank-you screen appears after successful submission
+- [x] The form is mobile-responsive with minimum 44x44px touch targets
+- [x] No PII (email, phone, name) is logged — only the application ID
+- [x] The form placeholder text is removed from the page
 
 ---
 
@@ -139,3 +139,4 @@ Replace the placeholder at `apps/web/app/[locale]/roasters/apply/page.tsx` with 
 | Version | Date | Notes |
 |---------|------|-------|
 | 0.1 | 2026-03-29 | Initial story created for Sprint 2 planning. |
+| 0.2 | 2026-03-29 | Implemented: 5-step form (`_components/roaster-apply-form.tsx` + step-*.tsx), Zod schema (`_lib/schema.ts`), server action (`_actions/submit-application.ts`), `limitRoasterApplication()` in `@joe-perks/stripe`. Schema migration added `contactName`, `phone`, `website`, `description`, `city`, `state`, `coffeeInfo` to `RoasterApplication`. |

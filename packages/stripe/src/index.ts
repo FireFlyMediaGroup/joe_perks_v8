@@ -17,6 +17,7 @@ export {
   getCheckoutLimiter,
   isCheckoutRateLimitConfigured,
   limitCheckout,
+  limitRoasterApplication,
   limitSlugValidation,
 } from "./ratelimit";
 export {

@@ -210,7 +210,14 @@ model RoasterApplication {
   id            String            @id @default(cuid())
   status        ApplicationStatus
   email         String            @unique
+  contactName   String
+  phone         String?
   businessName  String
+  website       String?
+  description   String?
+  city          String
+  state         String
+  coffeeInfo    String?
   termsAgreedAt DateTime
   termsVersion  String
 
