@@ -1,7 +1,7 @@
 # Story 06 — Auth and Admin Protection
 
-**Story version:** 0.1  
-**Status:** `Todo`  
+**Story version:** 0.2  
+**Status:** `Done`  
 **Owner:** Full-stack / platform  
 **Depends on:** `story-01-db-foundation.md`, `story-00-manual-foundation.md`
 
@@ -15,12 +15,13 @@ Move the roaster, org, and admin surfaces beyond placeholder scaffolds by implem
 
 ## Current repo evidence
 
-The apps and shared auth package exist, but the checklist and progress tracker still treat auth/admin as incomplete:
+Implemented in-repo (see revision log `0.2`):
 
-- `apps/roaster`
-- `apps/org`
-- `apps/admin`
-- `packages/auth`
+- `apps/roaster` — Clerk (`middleware.ts` → `proxy.ts`), sign-in/up, webhook `POST /api/webhooks/clerk`, dashboard tenant sample
+- `apps/org` — same pattern; `apps/org/.env.example` for Clerk + URLs
+- `apps/admin` — HTTP Basic Auth (`apps/admin/middleware.ts`); `ADMIN_EMAIL` / `ADMIN_PASSWORD`
+- `packages/auth` — `clerk-webhook.ts` (Svix verify); `provider.tsx` / `proxy.ts` as before
+- `packages/db` — `clerk-user-sync.ts` (`upsertUserFromClerkWebhook`)
 
 ---
 
@@ -89,3 +90,4 @@ Story 07 should assume auth, payments, jobs, and email are sufficiently real to 
 | Version | Date | Notes |
 |---|---|---|
 | `0.1` | 2026-03-22 | Initial story created. |
+| `0.2` | 2026-03-29 | Implemented: `middleware.ts` wiring for `web`/`roaster`/`org` (Clerk + security), org portal Clerk UI, Basic Auth for `admin`, Clerk webhooks → `User` upsert (`packages/db/clerk-user-sync.ts`), tenant-scoped dashboard samples. |

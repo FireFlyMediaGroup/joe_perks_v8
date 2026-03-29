@@ -21,8 +21,11 @@
     ".": "./index.ts",
     "./keys": "./keys.ts",
     "./send": "./send.ts",
+    "./templates/base-layout": "./templates/base-layout.tsx",
     "./templates/contact": "./templates/contact.tsx",
-    "./templates/sla": "./templates/sla.tsx"
+    "./templates/order-confirmation": "./templates/order-confirmation.tsx",
+    "./templates/sla": "./templates/sla.tsx",
+    "./templates/welcome": "./templates/welcome.tsx"
   },
   "devDependencies": {
     "dotenv": "^16.5.0",

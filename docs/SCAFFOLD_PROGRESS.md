@@ -38,6 +38,8 @@
 | `0.8` | 2026-03-28 | Story 03 smoke test — all 5 tests pass (Stripe key valid, webhook rejects unsigned → 400, `stripe trigger` → 200, order-status → 404, checkout validates → 400). Three fixes applied: (1) `apps/web/proxy.ts` matcher now excludes `api` paths so i18n/auth middleware doesn't intercept API routes; (2) `apps/web/load-root-env.ts` + import in `next.config.ts` loads root `.env` into the web app process (Next.js only loads per-app `.env` by default in a monorepo); (3) removed empty-string env overrides (`DATABASE_URL`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`) from `apps/web/.env.local` that were masking root values. |
 | `0.9` | 2026-03-28 | Story 04: Transactional email pipeline. `sendEmail()` in `packages/email/send-email.ts` sends via Resend with `EmailLog` dedupe on `(entityType, entityId, template)`. Web contact form migrated to `@joe-perks/email/send`. Smoke test at `packages/email/scripts/smoke-email.ts` (DB-only dedupe or full Resend+dedupe). No direct Resend imports remain in apps. |
 | `1.0` | 2026-03-29 | Story 05 complete: Inngest `serve()` + three crons; docs (`SCAFFOLD_CHECKLIST` v1.4, `SCAFFOLD.md`, scaffold stories README, `story-05` evidence) aligned with codebase. |
+| `1.1` | 2026-03-29 | Story 06 complete: Clerk for `apps/roaster` + `apps/org` (middleware + UI), HTTP Basic Auth for `apps/admin`, Clerk webhooks → `User` upsert (`packages/db/clerk-user-sync.ts`), `middleware.ts` re-exports for `web`/`roaster`/`org` so `proxy.ts` runs. |
+| `1.2` | 2026-03-29 | Sprint 1 gap closure: (1) US-01-08 — Legal placeholder pages at `/terms/roasters`, `/terms/orgs`, `/privacy-policy` with PENDING LEGAL REVIEW banners. (2) US-01-07 — Sentry SDK wired into `apps/org` and `apps/admin` (instrumentation, sentry configs, `withSentry` in next.config.ts, `@sentry/nextjs` + `@repo/observability` deps); `/api/test-sentry` route added to `apps/web`. (3) US-01-04 — `BaseEmailLayout` shared wrapper, `OrderConfirmationEmail` and `WelcomeEmail` templates added to `@joe-perks/email`. (4) US-01-10 — `PostHogProvider` from `posthog-js/react` added to `@repo/analytics` provider. |
 
 ---
 
@@ -50,10 +52,13 @@
 | CI / PR hygiene | `Done` | PR template, CI workflow, Dependabot are present. |
 | Docs / diagrams / agent guidance | `Done` | `docs/AGENTS.md`, `docs/CONVENTIONS.md`, mermaid diagrams, scaffold docs exist. |
 | Database scaffold | `Done` | `packages/db/prisma/schema.prisma` is the Joe Perks domain model; migrations under `packages/db/prisma/migrations/`; `pnpm migrate` + `bunx prisma db seed` against local Neon. |
-| Email scaffold | `Done` | `sendEmail()` in `packages/email/send.ts` (Resend + `EmailLog` dedupe); web contact form uses it. |
+| Email scaffold | `Done` | `sendEmail()` in `packages/email/send.ts` (Resend + `EmailLog` dedupe); web contact form uses it. `BaseEmailLayout` shared wrapper, `OrderConfirmationEmail`, `WelcomeEmail` templates added. |
 | Stripe scaffold | `Done` | `@joe-perks/stripe` package complete (client, splits, rate limiting, Connect, status mapper). Checkout route creates PaymentIntent + DB order with frozen splits. Webhook handles `account.updated`, `payment_intent.succeeded`, `payment_intent.payment_failed` with idempotency. Order-status GET route. Roaster Connect route. |
 | Inngest scaffold | `Done` | `apps/web/app/api/inngest/route.ts` uses `serve()` with `sla-check` (hourly), `payout-release` (09:00 UTC), `cart-cleanup` (02:00 UTC). Sync the app URL in the Inngest dashboard when deploying. |
-| Auth / admin security | `Partial` | Roaster/org/admin surfaces exist, but Clerk and admin auth are not fully wired. |
+| Auth / admin security | `Done` | Clerk wired for roaster + org (`middleware.ts` → `proxy.ts`, sign-in/up, protected layouts). Admin uses HTTP Basic Auth (`apps/admin/middleware.ts`). Clerk webhooks at `apps/roaster/app/api/webhooks/clerk/route.ts` and `apps/org/app/api/webhooks/clerk/route.ts` upsert `User` via `upsertUserFromClerkWebhook`. Dashboards show tenant ids from DB `User` (see `apps/roaster/.../dashboard/page.tsx`, `apps/org/.../dashboard/page.tsx`). |
+| Sentry (all apps) | `Done` | All four apps (`web`, `roaster`, `org`, `admin`) have `@sentry/nextjs` + `@repo/observability` instrumentation (`instrumentation.ts`, `instrumentation-client.ts`, `sentry.server.config.ts`, `sentry.edge.config.ts`). `withSentry` in `next.config.ts` activates on Vercel. `/api/test-sentry` smoke route on `apps/web`. |
+| Legal pages | `Done` | `/terms/roasters`, `/terms/orgs`, `/privacy-policy` placeholder pages in `apps/web/app/[locale]/` with PENDING LEGAL REVIEW banners. |
+| PostHog provider | `Done` | `PostHogProvider` (from `posthog-js/react`) wraps children in `@repo/analytics` provider; `posthog.init()` runs via `instrumentation-client.ts`. |
 | Vendor / infra accounts | `Manual` | Stripe, Neon, Clerk, Resend, Vercel, DNS, GitHub secrets still require dashboard work. |
 
 ---
@@ -68,6 +73,7 @@ These items in the baseline checklist no longer match the repo exactly and shoul
 4. **Stripe** is fully implemented (Stories 02 + 03, smoke-tested). **Inngest** jobs are wired (Story 05). Prisma schema and seed are real (Story 01).
 5. **Root `.env` loading** — Next.js in a monorepo only loads `.env` from the app directory, not the repo root. `apps/web` uses `load-root-env.ts` (imported in `next.config.ts`) to load the root `.env` via dotenv. Other apps that need root `.env` vars will need a similar loader. Do **not** set empty-string overrides in per-app `.env.local` for variables that have values in root `.env`.
 6. **Middleware API exclusion** — `apps/web/proxy.ts` matcher must exclude `api` paths (`/((?!api|...)`) to prevent i18n/auth/security middleware from intercepting API route handlers.
+7. **Middleware entry file** — Next.js loads Edge middleware from `middleware.ts`. `apps/web`, `apps/roaster`, and `apps/org` use a thin `middleware.ts` that re-exports `default` and `config` from `proxy.ts` so Clerk + security middleware actually run.
 
 ---
 
@@ -91,7 +97,7 @@ These items in the baseline checklist no longer match the repo exactly and shoul
 |---|---|---|---|
 | Neon | `Done` | Project `joe_perks_v8` in us-east-1; `production` + `dev` branches; pooled dev URL in `.env` and `packages/db/.env`. | Apply migrations in other environments with `pnpm migrate:deploy` when deploying. |
 | Stripe | `Manual` + `Done` | Package, checkout, webhooks, order-status, and Connect routes all implemented. | Add `sk_test_` to root `.env`, `pk_test_` to `apps/web/.env.local`, run `stripe listen` for `whsec_`, enable Connect in Dashboard. |
-| Clerk | `Done` | Two Clerk apps created: `Joe Perks Roasters` and `Joe Perks Organizations`. Keys in `apps/roaster/.env.local` and `apps/org/.env.local`. | Wire auth + webhooks (Story 06). |
+| Clerk | `Done` | Two Clerk apps created: `Joe Perks Roasters` and `Joe Perks Organizations`. Keys in `apps/roaster/.env.local` and `apps/org/.env.local`. Auth + user webhooks implemented (Story 06). | Register `POST /api/webhooks/clerk` in each Clerk app for Preview/Production URLs. |
 | Resend | `Manual` + `Done` | `sendEmail()` and contact form send via Resend when `RESEND_TOKEN` / `RESEND_FROM` are set; `EmailLog` requires `DATABASE_URL`. | Verify sending domain in Resend when ready for production. |
 | Inngest | `Done` | Account created, signing key + event key in root `.env`. MCP config at `.cursor/mcp.json`. `serve()` + three cron functions in `apps/web`. | Point the Inngest app URL at `https://<web-host>/api/inngest` (Preview/Production) and verify functions in the dashboard. |
 | Upstash | `Done` | Redis instance `joe-perks-ratelimit` created; REST URL + token in root `.env`. | Wire checkout rate limiter (Story 02). |
@@ -127,7 +133,7 @@ These items in the baseline checklist no longer match the repo exactly and shoul
 | Four Vercel projects | `Manual` | App folders are ready to map to separate projects. | Create/import projects in Vercel. |
 | Vercel env vars | `Manual` | Names are documented in checklist / AGENTS docs. | Add Preview + Production env vars per app. |
 | Custom domains / DNS | `Manual` | Planned in docs only. | Configure domains after projects are created. |
-| Stripe / Inngest / Clerk production endpoints | `Manual` + `Partial` | Stripe webhooks and Inngest `serve()` are implemented; register production URLs in vendor dashboards when deploying. | Register Stripe webhook + Inngest sync URLs per environment. |
+| Stripe / Inngest / Clerk production endpoints | `Manual` + `Partial` | Stripe webhooks and Inngest `serve()` are implemented; Clerk user sync webhooks live on roaster/org (`/api/webhooks/clerk`). Register production URLs in vendor dashboards when deploying. | Register Stripe webhook + Inngest sync + Clerk user webhooks per environment. |
 
 ### Phase 7 — Initial deployment verification
 
@@ -136,7 +142,7 @@ These items in the baseline checklist no longer match the repo exactly and shoul
 | First deploy / green builds | `Manual` | Not verified from repo alone. | Deploy to Vercel Preview and confirm all apps build. |
 | Smoke tests | `Partial` | Local: Story 03 checks (Stripe key, webhook rejection, `stripe trigger`, order-status, checkout validation); **`GET /api/inngest`** returns `function_count: 3` when `pnpm dev` (web) is running; `pnpm db:smoke` passes. Vercel/preview smoke tests not yet run. | Run Vercel smoke tests after deployment. |
 | DB verification | `Partial` | Dev DB migrated + seeded; production alignment uses `packages/db/.env.production`, `pnpm migrate:deploy:prod`, `pnpm db:seed:prod`, `pnpm db:smoke:prod` (see `docs/AGENTS.md`). | Create `.env.production` from Neon main branch, run deploy + seed + smoke, then confirm Studio against prod if needed. |
-| Sentry verification | `Todo` | No dedicated test route yet. | Add `/api/test-sentry` or equivalent, then test. |
+| Sentry verification | `Partial` | `/api/test-sentry` route added to `apps/web`. All four apps have Sentry SDK wired. | Deploy to Vercel and verify errors appear in Sentry dashboard within 30 seconds. |
 | Stripe webhook verification | `Done` | Webhook route implemented and verified. `stripe trigger payment_intent.succeeded` → all events forwarded, all returned HTTP 200. Signature verification and idempotency confirmed. | None — working. |
 
 ### Phase 8 — Branching workflow
@@ -170,9 +176,7 @@ Work these in roughly this order:
 
 4. **Background jobs** — `Done` (Story 05). Inngest `serve()` registers `sla-check`, `payout-release`, and `cart-cleanup`.
 
-5. **Auth and protected surfaces**
-   - Finish Clerk integration for roaster and org apps.
-   - Add admin Basic Auth or stronger admin protection for MVP.
+5. **Auth and protected surfaces** — `Done` (Story 06). Clerk for roaster/org; Basic Auth for admin; Clerk → `User` sync webhooks.
 
 6. **Deployment verification**
    - Add GitHub / Vercel / vendor secrets.

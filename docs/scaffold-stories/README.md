@@ -32,7 +32,7 @@ Use these documents like this:
 | 03 | `story-03-checkout-webhooks.md` | `Done` | Checkout PI + order creation; Stripe webhooks with idempotency. |
 | 04 | `story-04-email-pipeline.md` | `Done` | `sendEmail()` + `EmailLog` dedupe; contact form on `@joe-perks/email/send`. |
 | 05 | `story-05-inngest-jobs.md` | `Done` | Inngest `serve()` + `sla-check`, `payout-release`, `cart-cleanup` on `apps/web`. |
-| 06 | `story-06-auth-admin.md` | `Todo` | Protected surfaces should be wired once the domain model is in place. |
+| 06 | `story-06-auth-admin.md` | `Done` | Clerk for roaster/org, Basic Auth for admin, Clerk webhooks for `User` sync, tenant-scoped dashboard samples. |
 | 07 | `story-07-deploy-verify.md` | `Todo` | Deployment, smoke tests, and go-live checks come after the app scaffold is real. |
 
 ---
