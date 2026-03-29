@@ -8,6 +8,10 @@ import { keys as observability } from "@repo/observability/keys";
 import { keys as rateLimit } from "@repo/rate-limit/keys";
 import { keys as security } from "@repo/security/keys";
 import { createEnv } from "@t3-oss/env-nextjs";
+import { z } from "zod";
+
+const emptyToUndefined = (v: unknown) =>
+  v === "" || v === undefined ? undefined : v;
 
 export const env = createEnv({
   extends: [
@@ -22,6 +26,14 @@ export const env = createEnv({
     stripe(),
   ],
   server: {},
-  client: {},
-  runtimeEnv: {},
+  client: {
+    NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z.preprocess(
+      emptyToUndefined,
+      z.string().startsWith("pk_").optional()
+    ),
+  },
+  runtimeEnv: {
+    NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY:
+      process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
+  },
 });

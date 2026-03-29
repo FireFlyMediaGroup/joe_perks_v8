@@ -1,6 +1,6 @@
 # Joe Perks — Scaffold Progress Tracker
 
-**Tracker version:** 0.2  
+**Tracker version:** 0.4  
 **Baseline document:** `docs/SCAFFOLD_CHECKLIST.md` (v1.1)  
 **Story series:** `docs/scaffold-stories/README.md`  
 **Purpose:** Track what is actually complete in this repository compared with the baseline scaffold checklist, and keep a versioned review log in git.
@@ -33,6 +33,9 @@
 | `0.3` | 2026-03-28 | Story 01: Joe Perks Prisma schema, initial migration, seed singletons (`PlatformSettings`, `OrderSequence`), `generateOrderNumber` in `packages/db/order-number.ts`, Prisma seed wired in `packages/db/prisma.config.ts`. |
 | `0.4` | 2026-03-28 | Production DB workflow: `packages/db/.env.production`, `load-env.ts` + `PRISMA_DATABASE_PROFILE=production`, root scripts `migrate:deploy:prod`, `db:seed:prod`, `db:smoke` / `db:smoke:prod`, `scripts/smoke-db.ts`. |
 | `0.5` | 2026-03-28 | Story 02: `@joe-perks/stripe` — `getStripe()` singleton, `calculateSplits()` / `calculateStripeFeeCents()`, Upstash checkout limiter (`getCheckoutLimiter`, `checkoutLimiter`, `limitCheckout`), `src/splits.test.ts`. Webhook and checkout routes still stubs. |
+| `0.6` | 2026-03-28 | Story 02 finalized: Connect Express helpers (`createExpressConnectedAccount`, `createExpressAccountLink`), `mapStripeAccountToOnboardingStatus` with tests, `assertStripeSecretKeyAllowed` live-key guard, `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` added to `apps/web/env.ts`, `ROASTER_APP_ORIGIN` in `apps/roaster/.env.local`. Webhook route is real (signature + idempotency + `account.updated`); roaster Connect route is real. Checkout route remains stub (Story 03). |
+| `0.7` | 2026-03-28 | Story 03: Checkout route creates PaymentIntent + Order + Buyer upsert + frozen splits + rate limiting. Webhook handles `payment_intent.succeeded` (→ CONFIRMED, HELD, campaign `totalRaised` increment) and `payment_intent.payment_failed` (→ OrderEvent). Order-status GET route returns order by PI id or order id. `generateOrderNumber` exported from `@joe-perks/db`. |
+| `0.8` | 2026-03-28 | Story 03 smoke test — all 5 tests pass (Stripe key valid, webhook rejects unsigned → 400, `stripe trigger` → 200, order-status → 404, checkout validates → 400). Three fixes applied: (1) `apps/web/proxy.ts` matcher now excludes `api` paths so i18n/auth middleware doesn't intercept API routes; (2) `apps/web/load-root-env.ts` + import in `next.config.ts` loads root `.env` into the web app process (Next.js only loads per-app `.env` by default in a monorepo); (3) removed empty-string env overrides (`DATABASE_URL`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`) from `apps/web/.env.local` that were masking root values. |
 
 ---
 
@@ -46,7 +49,7 @@
 | Docs / diagrams / agent guidance | `Done` | `docs/AGENTS.md`, `docs/CONVENTIONS.md`, mermaid diagrams, scaffold docs exist. |
 | Database scaffold | `Done` | `packages/db/prisma/schema.prisma` is the Joe Perks domain model; migrations under `packages/db/prisma/migrations/`; `pnpm migrate` + `bunx prisma db seed` against local Neon. |
 | Email scaffold | `Partial` | Package exists, templates exist, `sendEmail()` is still a stub. |
-| Stripe scaffold | `Partial` | `@joe-perks/stripe` implements client, split math, and rate limiting (`packages/stripe/src`). Checkout API and webhook routes are still not DB-backed. |
+| Stripe scaffold | `Done` | `@joe-perks/stripe` package complete (client, splits, rate limiting, Connect, status mapper). Checkout route creates PaymentIntent + DB order with frozen splits. Webhook handles `account.updated`, `payment_intent.succeeded`, `payment_intent.payment_failed` with idempotency. Order-status GET route. Roaster Connect route. |
 | Inngest scaffold | `Partial` | Route exists, but `serve()` and jobs are not wired. |
 | Auth / admin security | `Partial` | Roaster/org/admin surfaces exist, but Clerk and admin auth are not fully wired. |
 | Vendor / infra accounts | `Manual` | Stripe, Neon, Clerk, Resend, Vercel, DNS, GitHub secrets still require dashboard work. |
@@ -60,7 +63,9 @@ These items in the baseline checklist no longer match the repo exactly and shoul
 1. **Repository metadata** is already updated to the live GitHub remote in `package.json`.
 2. **Root dev flow** is `pnpm`-first, not "run `create-turbo` from scratch" because this repository is already scaffolded.
 3. **Default local dev** excludes `@repo/cms` and `apps/studio` until their required env vars are present.
-4. **Stripe / Inngest** are still scaffold placeholders, so checklist items that assume a complete MVP backend are not yet true. Prisma schema and seed are real (Story 01).
+4. **Stripe** is fully implemented (Stories 02 + 03, smoke-tested). **Inngest** is still a scaffold placeholder. Prisma schema and seed are real (Story 01).
+5. **Root `.env` loading** — Next.js in a monorepo only loads `.env` from the app directory, not the repo root. `apps/web` uses `load-root-env.ts` (imported in `next.config.ts`) to load the root `.env` via dotenv. Other apps that need root `.env` vars will need a similar loader. Do **not** set empty-string overrides in per-app `.env.local` for variables that have values in root `.env`.
+6. **Middleware API exclusion** — `apps/web/proxy.ts` matcher must exclude `api` paths (`/((?!api|...)`) to prevent i18n/auth/security middleware from intercepting API route handlers.
 
 ---
 
@@ -83,7 +88,7 @@ These items in the baseline checklist no longer match the repo exactly and shoul
 | Baseline area | Status | Evidence / current state | Next step |
 |---|---|---|---|
 | Neon | `Done` | Project `joe_perks_v8` in us-east-1; `production` + `dev` branches; pooled dev URL in `.env` and `packages/db/.env`. | Apply migrations in other environments with `pnpm migrate:deploy` when deploying. |
-| Stripe | `Manual` + `Partial` | Shared package: real Stripe client (`getStripe`), splits, checkout rate limiter; webhook and server checkout flows still stubs. | Add test keys to `.env` and `apps/web/.env.local` when exercising payments end-to-end. |
+| Stripe | `Manual` + `Done` | Package, checkout, webhooks, order-status, and Connect routes all implemented. | Add `sk_test_` to root `.env`, `pk_test_` to `apps/web/.env.local`, run `stripe listen` for `whsec_`, enable Connect in Dashboard. |
 | Clerk | `Done` | Two Clerk apps created: `Joe Perks Roasters` and `Joe Perks Organizations`. Keys in `apps/roaster/.env.local` and `apps/org/.env.local`. | Wire auth + webhooks (Story 06). |
 | Resend | `Manual` + `Partial` | Email package exists; sending path is stubbed. Waiting on domain verification. | Add token to `.env` when domain is verified. |
 | Inngest | `Done` | Account created, signing key + event key in root `.env`. MCP config at `.cursor/mcp.json`. | Implement `serve()` and register jobs (Story 05). |
@@ -110,7 +115,7 @@ These items in the baseline checklist no longer match the repo exactly and shoul
 | Root / app env examples | `Done` | `.env.example`, app `.env.example`, package examples exist. | Fill real values locally as services are provisioned. |
 | Port and dev troubleshooting | `Done` | `docs/AGENTS.md` documents freeing busy ports instead of rerouting. | Follow that process when `EADDRINUSE` occurs. |
 | Database migration + seed | `Done` | `packages/db/prisma/schema.prisma` + `prisma/migrations/`; `packages/db/seed.ts` upserts `PlatformSettings` and `OrderSequence` singletons; `prisma.config.ts` loads `packages/db/.env` and defines `migrations.seed`. | Run `pnpm migrate` after schema changes; `bunx prisma db seed` after reset. |
-| Stripe CLI forwarding | `Todo` | Route exists but real webhook handling does not. | Implement webhook route, then validate with `stripe listen`. |
+| Stripe CLI forwarding | `Done` | Webhook route handles `account.updated`, `payment_intent.succeeded`, `payment_intent.payment_failed` with signature verification + idempotency. `stripe listen` verified — `stripe trigger payment_intent.succeeded` returns 200 on all forwarded events. | None — working. |
 | Local app verification | `Partial` | Apps boot locally with current env fallback handling; some routes remain placeholders. | Verify again after real backend work lands. |
 
 ### Phase 6 — Vercel setup
@@ -127,10 +132,10 @@ These items in the baseline checklist no longer match the repo exactly and shoul
 | Baseline area | Status | Evidence / current state | Next step |
 |---|---|---|---|
 | First deploy / green builds | `Manual` | Not verified from repo alone. | Deploy to Vercel Preview and confirm all apps build. |
-| Smoke tests | `Todo` | Checklist exists; app routes are only partly production-ready. | Run after Vercel + env setup. |
+| Smoke tests | `Partial` | Local smoke tests pass (5/5): Stripe key, webhook rejection, `stripe trigger`, order-status, checkout validation. Vercel/preview smoke tests not yet run. | Run Vercel smoke tests after deployment. |
 | DB verification | `Partial` | Dev DB migrated + seeded; production alignment uses `packages/db/.env.production`, `pnpm migrate:deploy:prod`, `pnpm db:seed:prod`, `pnpm db:smoke:prod` (see `docs/AGENTS.md`). | Create `.env.production` from Neon main branch, run deploy + seed + smoke, then confirm Studio against prod if needed. |
 | Sentry verification | `Todo` | No dedicated test route yet. | Add `/api/test-sentry` or equivalent, then test. |
-| Stripe webhook verification | `Todo` | Blocked by stub webhook route. | Implement webhook and verify with Stripe CLI. |
+| Stripe webhook verification | `Done` | Webhook route implemented and verified. `stripe trigger payment_intent.succeeded` → all events forwarded, all returned HTTP 200. Signature verification and idempotency confirmed. | None — working. |
 
 ### Phase 8 — Branching workflow
 
@@ -152,9 +157,12 @@ Work these in roughly this order:
 
 1. **Database foundation** — `Done` (Story 01). Schema, migrations, singleton seed, and `generateOrderNumber` live in `packages/db`.
 
-2. **Payments and order lifecycle**
-   - `@joe-perks/stripe` client, split calculation, and rate limiting are implemented (Story 02).
-   - Replace stub checkout and Stripe webhook routes with DB-backed flows and idempotency.
+2. **Payments and order lifecycle** — `Done` (Stories 02 + 03).
+   - `@joe-perks/stripe` package complete: client, splits, rate limiting, Connect helpers, status mapper.
+   - Checkout route: PaymentIntent + Order/Buyer/Items/Event creation with frozen splits and rate limiting.
+   - Webhook route: signature verification, idempotency, handlers for `account.updated`, `payment_intent.succeeded`, `payment_intent.payment_failed`.
+   - Order-status GET route for post-checkout confirmation.
+   - Roaster Connect onboarding route.
 
 3. **Email and notifications**
    - Implement `sendEmail()` via Resend.

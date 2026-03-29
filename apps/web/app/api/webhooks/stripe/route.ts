@@ -38,7 +38,74 @@ async function handleAccountUpdated(account: Stripe.Account): Promise<void> {
   }
 }
 
-/** Stripe Connect + payments — verify signature, idempotency, then process (see `docs/AGENTS.md`). */
+async function handlePaymentIntentSucceeded(
+  pi: Stripe.PaymentIntent
+): Promise<void> {
+  const orderId = pi.metadata.order_id;
+  if (!orderId) return;
+
+  const order = await database.order.findUnique({
+    where: { id: orderId },
+    select: { campaignId: true, orgAmount: true, status: true },
+  });
+  if (!order || order.status !== "PENDING") return;
+
+  const settings = await database.platformSettings.findUniqueOrThrow({
+    where: { id: "singleton" },
+  });
+
+  const chargeId =
+    typeof pi.latest_charge === "string" ? pi.latest_charge : null;
+
+  await database.$transaction([
+    database.order.update({
+      where: { id: orderId },
+      data: {
+        status: "CONFIRMED",
+        stripeChargeId: chargeId,
+        payoutStatus: "HELD",
+        payoutEligibleAt: new Date(
+          Date.now() + settings.payoutHoldDays * 24 * 60 * 60 * 1000
+        ),
+        fulfillBy: new Date(
+          Date.now() + settings.slaBreachHours * 60 * 60 * 1000
+        ),
+      },
+    }),
+    database.orderEvent.create({
+      data: {
+        orderId,
+        eventType: "PAYMENT_SUCCEEDED",
+        actorType: "SYSTEM",
+        payload: { stripe_pi_id: pi.id },
+      },
+    }),
+    database.campaign.update({
+      where: { id: order.campaignId },
+      data: { totalRaised: { increment: order.orgAmount } },
+    }),
+  ]);
+}
+
+async function handlePaymentIntentFailed(
+  pi: Stripe.PaymentIntent
+): Promise<void> {
+  const orderId = pi.metadata.order_id;
+  if (!orderId) return;
+
+  await database.orderEvent.create({
+    data: {
+      orderId,
+      eventType: "PAYMENT_FAILED",
+      actorType: "SYSTEM",
+      payload: {
+        stripe_pi_id: pi.id,
+        failure_code: pi.last_payment_error?.code ?? null,
+      },
+    },
+  });
+}
+
 export async function POST(request: Request) {
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET?.trim();
   if (!webhookSecret) {
@@ -76,8 +143,20 @@ export async function POST(request: Request) {
   }
 
   try {
-    if (event.type === "account.updated") {
-      await handleAccountUpdated(event.data.object as Stripe.Account);
+    switch (event.type) {
+      case "account.updated":
+        await handleAccountUpdated(event.data.object as Stripe.Account);
+        break;
+      case "payment_intent.succeeded":
+        await handlePaymentIntentSucceeded(
+          event.data.object as Stripe.PaymentIntent
+        );
+        break;
+      case "payment_intent.payment_failed":
+        await handlePaymentIntentFailed(
+          event.data.object as Stripe.PaymentIntent
+        );
+        break;
     }
   } catch (e) {
     console.error("stripe webhook processing failed", {

@@ -1,7 +1,7 @@
 # Story 02 — Stripe Core Package
 
 **Story version:** 0.1  
-**Status:** `Todo`  
+**Status:** `Done`  
 **Owner:** Backend / payments  
 **Depends on:** `story-01-db-foundation.md`
 
@@ -90,3 +90,4 @@ Story 03 should consume this package directly. It should not reimplement Stripe 
 | Version | Date | Notes |
 |---|---|---|
 | `0.1` | 2026-03-22 | Initial story created. |
+| `0.2` | 2026-03-28 | Marked Done: client, splits, rate limit, Connect helpers, account status mapper all implemented with tests. Env validation for publishable key added to web. |

@@ -42,6 +42,8 @@ joe-perks/
 
 See `docs/01-project-structure.mermaid` for routes, API paths, and file-level detail. `apps/web` uses **`app/[locale]/…`** for pages and **`app/api/…`** for route handlers (next-forge i18n).
 
+**Middleware (proxy.ts):** `apps/web/proxy.ts` composes i18n, Clerk auth, Arcjet, and security headers via `@rescale/nemo`. The matcher **must** exclude `api` paths — `/((?!api|_next/static|…)…)` — so route handlers in `app/api/` are not intercepted by the i18n rewrite or auth middleware.
+
 ---
 
 ## Package managers: pnpm and Bun
@@ -190,7 +192,7 @@ Turbo starts multiple Next (and related) dev servers on **fixed ports** (see the
 
 ## Environment variables
 
-### Root `.env` (shared across all apps via turbo pipeline)
+### Root `.env` (shared secrets)
 ```
 DATABASE_URL=                    # Neon Postgres connection string
 STRIPE_SECRET_KEY=               # sk_test_... (dev) or sk_live_... (prod)
@@ -203,6 +205,10 @@ UPSTASH_REDIS_REST_URL=          # https://...upstash.io
 UPSTASH_REDIS_REST_TOKEN=        # ...
 SENTRY_AUTH_TOKEN=               # for source map uploads
 ```
+
+**Root `.env` loading caveat:** Next.js only loads `.env` files from the app's own directory (e.g. `apps/web/`), **not** from the monorepo root. Apps that need root `.env` values use a `load-root-env.ts` loader (imported at the top of `next.config.ts`) that calls `dotenv.config()` pointing at `../../.env`. Currently `apps/web` has this loader — other apps should add one when they need root-level secrets.
+
+**Empty-string overrides:** Do **not** set `STRIPE_SECRET_KEY=""` or similar in per-app `.env.local` for variables that already have values in root `.env`. Next.js merges `.env.local` over `.env` and the empty string will mask the real value. Only add a variable to `.env.local` if you need to override it with a non-empty app-specific value.
 
 ### apps/web `.env.local`
 ```
@@ -217,6 +223,7 @@ UPLOADTHING_APP_ID=
 ```
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=   # Roaster Clerk app
 CLERK_SECRET_KEY=
+ROASTER_APP_ORIGIN=                # optional — public base URL for Stripe Connect return/refresh (default http://localhost:3001)
 ```
 
 ### apps/org `.env.local`
@@ -231,8 +238,12 @@ ADMIN_EMAIL=         # HTTP Basic Auth for MVP
 ADMIN_PASSWORD=      # HTTP Basic Auth for MVP
 ```
 
-### Stripe client (implementation status)
-The **`@joe-perks/stripe`** package is still **stubbed** (`client.ts` / `splits.ts` / `ratelimit.ts`). When you implement the real client, add guards here (e.g. refuse `sk_live_` outside `production`) per security review.
+### Stripe and Stripe Connect
+- **`@joe-perks/stripe`** implements the shared client, split math, checkout rate limiting, and Connect Express helpers. Apps must not import the Stripe SDK directly — use this package.
+- **Secret key** (`STRIPE_SECRET_KEY`) and **webhook signing secret** (`STRIPE_WEBHOOK_SECRET`) live in the **root `.env`** so `apps/web` (webhooks) and any server route using `getStripe()` can read them via Turbo.
+- **Publishable key** (`NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`) goes in **`apps/web/.env.local`** (buyer UI / Elements later). Use the same mode as the secret key (`pk_test_` with `sk_test_`, or live keys only in production).
+- **Connect onboarding** (`POST /api/stripe/connect` on the roaster app) needs the secret key in the environment roaster runs with (typically same root `.env`). Set **`ROASTER_APP_ORIGIN`** in **`apps/roaster/.env.local`** for deployed previews (e.g. `https://roasters.joeperks.com`).
+- Enable **Stripe Connect** in the Dashboard (**Settings → Connect**) before creating Express accounts. For webhooks, add an endpoint pointing at **`/api/webhooks/stripe`** on the marketing/storefront app and subscribe at least to **`account.updated`** (see `docs/SCAFFOLD_CHECKLIST.md`). Local testing: `stripe listen --forward-to localhost:3000/api/webhooks/stripe` and paste the CLI signing secret as `STRIPE_WEBHOOK_SECRET`.
 
 ---
 

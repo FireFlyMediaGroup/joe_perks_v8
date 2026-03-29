@@ -1,7 +1,7 @@
 # Joe Perks — Project Scaffold & Environment Setup Checklist
 ## Complete developer setup guide from zero to first deployment
 
-**Version:** 1.2 | **Environment model:** Production + Development + Vercel Preview deployments  
+**Version:** 1.3 | **Environment model:** Production + Development + Vercel Preview deployments  
 **Audience:** Developer setting up the project for the first time, or AI coding agents helping with setup  
 **Estimated time:** 3–4 hours for a complete setup (accounts + Vercel); **additional** time for the Joe Perks schema and integration work listed below.  
 **Companion tracker:** `docs/SCAFFOLD_PROGRESS.md` — versioned current-state comparison against this checklist.  
@@ -21,14 +21,16 @@
 - [x] **CI** at `.github/workflows/ci.yml`: pnpm 10, `pnpm install --frozen-lockfile`, **`pnpm check`** (Ultracite), **`pnpm turbo build`** with secrets `DATABASE_URL_DEV`, `BASEHUB_TOKEN`, and `SKIP_ENV_VALIDATION=true`.
 - [x] **Dependabot** at `.github/dependabot.yml` (npm + GitHub Actions).
 - [x] Optional integration env vars: empty strings treated as unset in `packages/*/keys.ts` where applicable so **`pnpm dev`** can start without every vendor key filled in.
-- [x] **Stub API routes** on `apps/web`: `api/checkout/create-intent`, `api/order-status`, `api/webhooks/stripe` (501 scaffold), `api/inngest` (stub response).
-- [x] **`@joe-perks/stripe`** package present; **Stripe client and split math are still stubs** (`client.ts` exports a placeholder).
+- [x] **API routes** on `apps/web`: `api/checkout/create-intent` (PaymentIntent + Order creation with frozen splits, rate limiting), `api/order-status` (GET by PI id or order id), `api/webhooks/stripe` (signature verification, idempotency, handlers for `account.updated`, `payment_intent.succeeded`, `payment_intent.payment_failed`), `api/inngest` (stub response). Local smoke test verified with `stripe trigger`.
+- [x] **`@joe-perks/stripe`** package complete: `getStripe()` singleton, `calculateSplits()` / `calculateStripeFeeCents()`, Upstash checkout rate limiter, Connect Express helpers, `mapStripeAccountToOnboardingStatus`, `assertStripeSecretKeyAllowed`. Unit tests passing.
 - [x] **`@joe-perks/email`** with **`sendEmail()` stub** (throws until Resend + `EmailLog` and schema exist per `docs/AGENTS.md`).
+- [x] **Middleware API exclusion**: `apps/web/proxy.ts` matcher excludes `api` paths so i18n/auth/Arcjet middleware does not intercept route handlers.
+- [x] **Root `.env` loading**: `apps/web/load-root-env.ts` (imported in `next.config.ts`) loads root `.env` into the web app process — required because Next.js only auto-loads `.env` from the app directory.
 - [x] **`packages/db`**: Prisma 7 config, Neon adapter, **Joe Perks domain schema** (`packages/db/prisma/schema.prisma`), migrations under `packages/db/prisma/migrations/`, **seed** upserts `PlatformSettings` + `OrderSequence` singletons (`seed.ts`), `generateOrderNumber` in `order-number.ts`. Production deploy path: `pnpm migrate:deploy:prod`, `packages/db/.env.production` (see `docs/AGENTS.md`).
 
 ### Remaining for a complete Joe Perks *technical* scaffold
 - [ ] **Email:** implement **`sendEmail()`** with Resend and `EmailLog` dedupe `(entity_id, template)`.
-- [ ] **Stripe:** implement **`@joe-perks/stripe`** (client, `calculateSplits`, rate limit) and wire **webhooks + checkout** to real Stripe + DB idempotency (`StripeEvent`).
+- [x] **Stripe:** `@joe-perks/stripe` complete (client, `calculateSplits`, rate limit, Connect). Webhooks + checkout wired to real Stripe + DB idempotency (`StripeEvent`). Smoke-tested locally.
 - [ ] **Inngest:** replace stub with **`serve()`** and register **`sla-check`**, **`payout-release`**, **`cart-cleanup`** in `apps/web/app/api/inngest/route.ts`.
 - [ ] **Portals:** Clerk-backed roaster/org flows, admin Basic Auth + platform routes — beyond placeholder pages — per PRD / epics.
 - [ ] **CMS (optional):** set `BASEHUB_TOKEN` for local **`pnpm dev:all`** if marketing/content depends on Basehub.

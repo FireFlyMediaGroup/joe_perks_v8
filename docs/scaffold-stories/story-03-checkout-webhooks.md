@@ -1,7 +1,7 @@
 # Story 03 — Checkout and Stripe Webhooks
 
 **Story version:** 0.1  
-**Status:** `Todo`  
+**Status:** `Done`  
 **Owner:** Backend / web app  
 **Depends on:** `story-01-db-foundation.md`, `story-02-stripe-core.md`
 
@@ -95,3 +95,5 @@ Story 04 and Story 05 should plug into the order lifecycle established here inst
 | Version | Date | Notes |
 |---|---|---|
 | `0.1` | 2026-03-22 | Initial story created. |
+| `0.2` | 2026-03-28 | Marked Done: checkout route (PaymentIntent + Order + Buyer upsert + splits + rate limiting), webhook handlers (`payment_intent.succeeded`, `payment_intent.payment_failed`, `account.updated`), order-status GET. `generateOrderNumber` exported from `@joe-perks/db`. |
+| `0.3` | 2026-03-28 | Smoke test verified — 5/5 pass. Fixes applied: (1) `proxy.ts` matcher excludes `api` paths; (2) `load-root-env.ts` loads root `.env` into web app process; (3) removed empty env overrides from `apps/web/.env.local`. |
