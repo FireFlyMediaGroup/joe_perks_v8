@@ -18,7 +18,112 @@ export { Prisma }
 export * as $Enums from './enums'
 export * from './enums';
 /**
- * Model Page
+ * Model PlatformSettings
  * 
  */
-export type Page = Prisma.PageModel
+export type PlatformSettings = Prisma.PlatformSettingsModel
+/**
+ * Model OrderSequence
+ * 
+ */
+export type OrderSequence = Prisma.OrderSequenceModel
+/**
+ * Model User
+ * 
+ */
+export type User = Prisma.UserModel
+/**
+ * Model RoasterApplication
+ * 
+ */
+export type RoasterApplication = Prisma.RoasterApplicationModel
+/**
+ * Model Roaster
+ * 
+ */
+export type Roaster = Prisma.RoasterModel
+/**
+ * Model RoasterShippingRate
+ * 
+ */
+export type RoasterShippingRate = Prisma.RoasterShippingRateModel
+/**
+ * Model RoasterDebt
+ * 
+ */
+export type RoasterDebt = Prisma.RoasterDebtModel
+/**
+ * Model OrgApplication
+ * 
+ */
+export type OrgApplication = Prisma.OrgApplicationModel
+/**
+ * Model RoasterOrgRequest
+ * 
+ */
+export type RoasterOrgRequest = Prisma.RoasterOrgRequestModel
+/**
+ * Model Org
+ * 
+ */
+export type Org = Prisma.OrgModel
+/**
+ * Model Product
+ * 
+ */
+export type Product = Prisma.ProductModel
+/**
+ * Model ProductVariant
+ * 
+ */
+export type ProductVariant = Prisma.ProductVariantModel
+/**
+ * Model Campaign
+ * 
+ */
+export type Campaign = Prisma.CampaignModel
+/**
+ * Model CampaignItem
+ * 
+ */
+export type CampaignItem = Prisma.CampaignItemModel
+/**
+ * Model Buyer
+ * 
+ */
+export type Buyer = Prisma.BuyerModel
+/**
+ * Model Order
+ * 
+ */
+export type Order = Prisma.OrderModel
+/**
+ * Model OrderItem
+ * 
+ */
+export type OrderItem = Prisma.OrderItemModel
+/**
+ * Model OrderEvent
+ * 
+ */
+export type OrderEvent = Prisma.OrderEventModel
+/**
+ * Model DisputeRecord
+ * 
+ */
+export type DisputeRecord = Prisma.DisputeRecordModel
+/**
+ * Model MagicLink
+ * 
+ */
+export type MagicLink = Prisma.MagicLinkModel
+/**
+ * Model EmailLog
+ * 
+ */
+export type EmailLog = Prisma.EmailLogModel
+/**
+ * Model StripeEvent
+ * 
+ */
+export type StripeEvent = Prisma.StripeEventModel

@@ -51,7 +51,28 @@ export const AnyNull = runtime.AnyNull
 
 
 export const ModelName = {
-  Page: 'Page'
+  PlatformSettings: 'PlatformSettings',
+  OrderSequence: 'OrderSequence',
+  User: 'User',
+  RoasterApplication: 'RoasterApplication',
+  Roaster: 'Roaster',
+  RoasterShippingRate: 'RoasterShippingRate',
+  RoasterDebt: 'RoasterDebt',
+  OrgApplication: 'OrgApplication',
+  RoasterOrgRequest: 'RoasterOrgRequest',
+  Org: 'Org',
+  Product: 'Product',
+  ProductVariant: 'ProductVariant',
+  Campaign: 'Campaign',
+  CampaignItem: 'CampaignItem',
+  Buyer: 'Buyer',
+  Order: 'Order',
+  OrderItem: 'OrderItem',
+  OrderEvent: 'OrderEvent',
+  DisputeRecord: 'DisputeRecord',
+  MagicLink: 'MagicLink',
+  EmailLog: 'EmailLog',
+  StripeEvent: 'StripeEvent'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -70,12 +91,341 @@ export const TransactionIsolationLevel = runtime.makeStrictEnum({
 export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof typeof TransactionIsolationLevel]
 
 
-export const PageScalarFieldEnum = {
+export const PlatformSettingsScalarFieldEnum = {
   id: 'id',
-  name: 'name'
+  platformFeePct: 'platformFeePct',
+  platformFeeFloor: 'platformFeeFloor',
+  orgPctMin: 'orgPctMin',
+  orgPctMax: 'orgPctMax',
+  orgPctDefault: 'orgPctDefault',
+  slaWarnHours: 'slaWarnHours',
+  slaBreachHours: 'slaBreachHours',
+  slaCriticalHours: 'slaCriticalHours',
+  slaAutoRefundHours: 'slaAutoRefundHours',
+  payoutHoldDays: 'payoutHoldDays',
+  disputeFeeCents: 'disputeFeeCents',
+  updatedAt: 'updatedAt'
 } as const
 
-export type PageScalarFieldEnum = (typeof PageScalarFieldEnum)[keyof typeof PageScalarFieldEnum]
+export type PlatformSettingsScalarFieldEnum = (typeof PlatformSettingsScalarFieldEnum)[keyof typeof PlatformSettingsScalarFieldEnum]
+
+
+export const OrderSequenceScalarFieldEnum = {
+  id: 'id',
+  nextVal: 'nextVal'
+} as const
+
+export type OrderSequenceScalarFieldEnum = (typeof OrderSequenceScalarFieldEnum)[keyof typeof OrderSequenceScalarFieldEnum]
+
+
+export const UserScalarFieldEnum = {
+  id: 'id',
+  externalAuthId: 'externalAuthId',
+  email: 'email',
+  role: 'role',
+  roasterId: 'roasterId',
+  orgId: 'orgId',
+  isPlatformAdmin: 'isPlatformAdmin',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
+
+
+export const RoasterApplicationScalarFieldEnum = {
+  id: 'id',
+  status: 'status',
+  email: 'email',
+  businessName: 'businessName',
+  termsAgreedAt: 'termsAgreedAt',
+  termsVersion: 'termsVersion',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type RoasterApplicationScalarFieldEnum = (typeof RoasterApplicationScalarFieldEnum)[keyof typeof RoasterApplicationScalarFieldEnum]
+
+
+export const RoasterScalarFieldEnum = {
+  id: 'id',
+  applicationId: 'applicationId',
+  status: 'status',
+  email: 'email',
+  stripeAccountId: 'stripeAccountId',
+  stripeOnboarding: 'stripeOnboarding',
+  chargesEnabled: 'chargesEnabled',
+  payoutsEnabled: 'payoutsEnabled',
+  fulfillerType: 'fulfillerType',
+  disputeCount90d: 'disputeCount90d',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type RoasterScalarFieldEnum = (typeof RoasterScalarFieldEnum)[keyof typeof RoasterScalarFieldEnum]
+
+
+export const RoasterShippingRateScalarFieldEnum = {
+  id: 'id',
+  roasterId: 'roasterId',
+  label: 'label',
+  carrier: 'carrier',
+  flatRate: 'flatRate',
+  isDefault: 'isDefault',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type RoasterShippingRateScalarFieldEnum = (typeof RoasterShippingRateScalarFieldEnum)[keyof typeof RoasterShippingRateScalarFieldEnum]
+
+
+export const RoasterDebtScalarFieldEnum = {
+  id: 'id',
+  roasterId: 'roasterId',
+  orderId: 'orderId',
+  amount: 'amount',
+  reason: 'reason',
+  settled: 'settled',
+  settledAt: 'settledAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type RoasterDebtScalarFieldEnum = (typeof RoasterDebtScalarFieldEnum)[keyof typeof RoasterDebtScalarFieldEnum]
+
+
+export const OrgApplicationScalarFieldEnum = {
+  id: 'id',
+  status: 'status',
+  email: 'email',
+  desiredSlug: 'desiredSlug',
+  desiredOrgPct: 'desiredOrgPct',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type OrgApplicationScalarFieldEnum = (typeof OrgApplicationScalarFieldEnum)[keyof typeof OrgApplicationScalarFieldEnum]
+
+
+export const RoasterOrgRequestScalarFieldEnum = {
+  id: 'id',
+  applicationId: 'applicationId',
+  roasterId: 'roasterId',
+  status: 'status',
+  priority: 'priority',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type RoasterOrgRequestScalarFieldEnum = (typeof RoasterOrgRequestScalarFieldEnum)[keyof typeof RoasterOrgRequestScalarFieldEnum]
+
+
+export const OrgScalarFieldEnum = {
+  id: 'id',
+  applicationId: 'applicationId',
+  status: 'status',
+  email: 'email',
+  slug: 'slug',
+  stripeAccountId: 'stripeAccountId',
+  stripeOnboarding: 'stripeOnboarding',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type OrgScalarFieldEnum = (typeof OrgScalarFieldEnum)[keyof typeof OrgScalarFieldEnum]
+
+
+export const ProductScalarFieldEnum = {
+  id: 'id',
+  roasterId: 'roasterId',
+  name: 'name',
+  roastLevel: 'roastLevel',
+  status: 'status',
+  isCollab: 'isCollab',
+  deletedAt: 'deletedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ProductScalarFieldEnum = (typeof ProductScalarFieldEnum)[keyof typeof ProductScalarFieldEnum]
+
+
+export const ProductVariantScalarFieldEnum = {
+  id: 'id',
+  productId: 'productId',
+  sku: 'sku',
+  sizeOz: 'sizeOz',
+  grind: 'grind',
+  wholesalePrice: 'wholesalePrice',
+  retailPrice: 'retailPrice',
+  isAvailable: 'isAvailable',
+  deletedAt: 'deletedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ProductVariantScalarFieldEnum = (typeof ProductVariantScalarFieldEnum)[keyof typeof ProductVariantScalarFieldEnum]
+
+
+export const CampaignScalarFieldEnum = {
+  id: 'id',
+  orgId: 'orgId',
+  name: 'name',
+  status: 'status',
+  orgPct: 'orgPct',
+  goalCents: 'goalCents',
+  totalRaised: 'totalRaised',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CampaignScalarFieldEnum = (typeof CampaignScalarFieldEnum)[keyof typeof CampaignScalarFieldEnum]
+
+
+export const CampaignItemScalarFieldEnum = {
+  id: 'id',
+  campaignId: 'campaignId',
+  productId: 'productId',
+  variantId: 'variantId',
+  retailPrice: 'retailPrice',
+  wholesalePrice: 'wholesalePrice',
+  isFeatured: 'isFeatured',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CampaignItemScalarFieldEnum = (typeof CampaignItemScalarFieldEnum)[keyof typeof CampaignItemScalarFieldEnum]
+
+
+export const BuyerScalarFieldEnum = {
+  id: 'id',
+  email: 'email',
+  name: 'name',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BuyerScalarFieldEnum = (typeof BuyerScalarFieldEnum)[keyof typeof BuyerScalarFieldEnum]
+
+
+export const OrderScalarFieldEnum = {
+  id: 'id',
+  orderNumber: 'orderNumber',
+  campaignId: 'campaignId',
+  roasterId: 'roasterId',
+  buyerId: 'buyerId',
+  fulfillerType: 'fulfillerType',
+  productSubtotal: 'productSubtotal',
+  shippingAmount: 'shippingAmount',
+  grossAmount: 'grossAmount',
+  stripeFee: 'stripeFee',
+  orgPctSnapshot: 'orgPctSnapshot',
+  orgAmount: 'orgAmount',
+  platformAmount: 'platformAmount',
+  roasterAmount: 'roasterAmount',
+  roasterTotal: 'roasterTotal',
+  status: 'status',
+  fulfillBy: 'fulfillBy',
+  payoutStatus: 'payoutStatus',
+  payoutEligibleAt: 'payoutEligibleAt',
+  stripePiId: 'stripePiId',
+  stripeChargeId: 'stripeChargeId',
+  stripeTransferId: 'stripeTransferId',
+  stripeOrgTransfer: 'stripeOrgTransfer',
+  transferGroup: 'transferGroup',
+  trackingNumber: 'trackingNumber',
+  carrier: 'carrier',
+  shippedAt: 'shippedAt',
+  deliveredAt: 'deliveredAt',
+  buyerIp: 'buyerIp',
+  isCollab: 'isCollab',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type OrderScalarFieldEnum = (typeof OrderScalarFieldEnum)[keyof typeof OrderScalarFieldEnum]
+
+
+export const OrderItemScalarFieldEnum = {
+  id: 'id',
+  orderId: 'orderId',
+  variantId: 'variantId',
+  productName: 'productName',
+  variantDesc: 'variantDesc',
+  quantity: 'quantity',
+  unitPrice: 'unitPrice',
+  lineTotal: 'lineTotal',
+  createdAt: 'createdAt'
+} as const
+
+export type OrderItemScalarFieldEnum = (typeof OrderItemScalarFieldEnum)[keyof typeof OrderItemScalarFieldEnum]
+
+
+export const OrderEventScalarFieldEnum = {
+  id: 'id',
+  orderId: 'orderId',
+  eventType: 'eventType',
+  actorType: 'actorType',
+  actorId: 'actorId',
+  payload: 'payload',
+  ipAddress: 'ipAddress',
+  createdAt: 'createdAt'
+} as const
+
+export type OrderEventScalarFieldEnum = (typeof OrderEventScalarFieldEnum)[keyof typeof OrderEventScalarFieldEnum]
+
+
+export const DisputeRecordScalarFieldEnum = {
+  id: 'id',
+  orderId: 'orderId',
+  stripeDisputeId: 'stripeDisputeId',
+  faultAttribution: 'faultAttribution',
+  evidenceSubmitted: 'evidenceSubmitted',
+  outcome: 'outcome',
+  respondBy: 'respondBy',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type DisputeRecordScalarFieldEnum = (typeof DisputeRecordScalarFieldEnum)[keyof typeof DisputeRecordScalarFieldEnum]
+
+
+export const MagicLinkScalarFieldEnum = {
+  id: 'id',
+  token: 'token',
+  purpose: 'purpose',
+  actorId: 'actorId',
+  actorType: 'actorType',
+  payload: 'payload',
+  expiresAt: 'expiresAt',
+  usedAt: 'usedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type MagicLinkScalarFieldEnum = (typeof MagicLinkScalarFieldEnum)[keyof typeof MagicLinkScalarFieldEnum]
+
+
+export const EmailLogScalarFieldEnum = {
+  id: 'id',
+  to: 'to',
+  template: 'template',
+  entityType: 'entityType',
+  entityId: 'entityId',
+  providerId: 'providerId',
+  sentAt: 'sentAt'
+} as const
+
+export type EmailLogScalarFieldEnum = (typeof EmailLogScalarFieldEnum)[keyof typeof EmailLogScalarFieldEnum]
+
+
+export const StripeEventScalarFieldEnum = {
+  id: 'id',
+  stripeEventId: 'stripeEventId',
+  eventType: 'eventType',
+  processedAt: 'processedAt'
+} as const
+
+export type StripeEventScalarFieldEnum = (typeof StripeEventScalarFieldEnum)[keyof typeof StripeEventScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -86,10 +436,42 @@ export const SortOrder = {
 export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
 
 
+export const NullableJsonNullValueInput = {
+  DbNull: DbNull,
+  JsonNull: JsonNull
+} as const
+
+export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
+
+
+export const JsonNullValueInput = {
+  JsonNull: JsonNull
+} as const
+
+export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
+
+
 export const QueryMode = {
   default: 'default',
   insensitive: 'insensitive'
 } as const
 
 export type QueryMode = (typeof QueryMode)[keyof typeof QueryMode]
+
+
+export const NullsOrder = {
+  first: 'first',
+  last: 'last'
+} as const
+
+export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
+
+
+export const JsonNullValueFilter = {
+  DbNull: DbNull,
+  JsonNull: JsonNull,
+  AnyNull: AnyNull
+} as const
+
+export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
 

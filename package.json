@@ -31,6 +31,10 @@
     "bump-ui": "bunx shadcn@latest add --all --overwrite -c packages/design-system",
     "migrate": "cd packages/db && bunx prisma format && bunx prisma generate && bunx prisma migrate dev",
     "migrate:deploy": "cd packages/db && bunx prisma generate && bunx prisma migrate deploy",
+    "migrate:deploy:prod": "cd packages/db && PRISMA_DATABASE_PROFILE=production bunx prisma generate && PRISMA_DATABASE_PROFILE=production bunx prisma migrate deploy",
+    "db:smoke": "cd packages/db && bun run ./scripts/smoke-db.ts",
+    "db:smoke:prod": "cd packages/db && PRISMA_DATABASE_PROFILE=production bun run ./scripts/smoke-db.ts",
+    "db:seed:prod": "cd packages/db && PRISMA_DATABASE_PROFILE=production bunx prisma db seed",
     "db:push": "cd packages/db && bunx prisma format && bunx prisma generate && bunx prisma db push",
     "clean": "git clean -xdf node_modules",
     "release": "npm publish"
@@ -57,7 +61,8 @@
     "nypm": "^0.6.5"
   },
   "overrides": {
-    "parse5": "^7.2.1"
+    "parse5": "^7.2.1",
+    "next": "16.2.1"
   },
   "type": "module"
 }

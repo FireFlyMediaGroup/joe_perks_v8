@@ -64,6 +64,16 @@ pnpm typecheck               # turbo typecheck
 pnpm add <pkg> --filter web  # example: add dep to one app
 ```
 
+**Neon production (main branch):** copy the pooled connection string into **`packages/db/.env.production`** (see **`packages/db/.env.production.example`**; file is gitignored). Then:
+
+```bash
+pnpm migrate:deploy:prod   # apply migrations to production
+pnpm db:seed:prod        # PlatformSettings + OrderSequence singletons (first time / after reset)
+pnpm db:smoke:prod       # verify schema + singletons + recent migrations
+```
+
+For a one-off URL without a file, set **`DATABASE_URL`** in the shell (it wins over `.env`); do not set **`PRISMA_DATABASE_PROFILE=production`** in that case.
+
 Default **`pnpm dev`** skips:
 
 - **`@repo/cms`** — `basehub dev` needs **`BASEHUB_TOKEN`** in `packages/cms/.env.local`. Use **`pnpm dev:all`** when you have that token.
@@ -91,7 +101,7 @@ Optional env vars that are **empty strings** in `.env` are treated as **unset** 
 - **Use Bun** when a **script already invokes `bun` or `bunx`** (do not replace those with pnpm unless you change the script).
 - Examples in this repo:
   - Root **`migrate`**, **`db:push`**, etc.: **`bunx prisma …`**
-  - **`packages/db`** Prisma seed: **`prisma.seed`** runs **`bun run ./seed.ts`**
+  - **`packages/db`** Prisma seed: **`prisma.config.ts`** `migrations.seed` is **`bun run ./seed.ts`**
   - Some apps run Next with **`bun --bun next dev`** / **`bun --bun next build`** inside their `package.json` `scripts`. When you run **`pnpm dev`**, Turbo executes those scripts; you usually **do not** type `bun` yourself.
 - **`bunx`** is used like **`npx`** (e.g. one-off CLIs).
 

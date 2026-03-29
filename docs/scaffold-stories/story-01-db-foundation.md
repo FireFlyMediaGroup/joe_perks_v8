@@ -1,7 +1,7 @@
 # Story 01 — Database Foundation
 
 **Story version:** 0.1  
-**Status:** `Todo`  
+**Status:** `Done`  
 **Owner:** Backend / platform  
 **Depends on:** `story-00-manual-foundation.md`
 
@@ -15,10 +15,14 @@ Replace the next-forge Prisma placeholder with the real Joe Perks database found
 
 ## Current repo evidence
 
-The repo still has a stub schema and stub seed:
+Implemented (Story 01 complete):
 
-- `packages/db/prisma/schema.prisma`
-- `packages/db/seed.ts`
+- `packages/db/prisma/schema.prisma` — Joe Perks domain models + enums
+- `packages/db/prisma/migrations/` — initial migration(s), e.g. `20260328161045`
+- `packages/db/seed.ts` — upserts `PlatformSettings` and `OrderSequence` singletons
+- `packages/db/order-number.ts` — atomic `JP-#####` via `OrderSequence`
+- `docs/SCAFFOLD_PROGRESS.md` — database scaffold marked `Done`
+- `docs/SCAFFOLD_CHECKLIST.md` — Phase 5.6 / Remaining / Quick Reference aligned with real schema
 
 ---
 
@@ -98,3 +102,4 @@ Story 02 and Story 03 should assume the schema is real and should build on the d
 | Version | Date | Notes |
 |---|---|---|
 | `0.1` | 2026-03-22 | Initial story created. |
+| `0.2` | 2026-03-28 | Story completed; checklist + progress + AGENTS updated; production migrate/seed/smoke path documented. |

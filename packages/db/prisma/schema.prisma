@@ -1,5 +1,4 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// Joe Perks — domain schema (see docs/06-database-schema.mermaid, docs/AGENTS.md)
 
 generator client {
   provider = "prisma-client"
@@ -7,13 +6,550 @@ generator client {
 }
 
 datasource db {
-  provider     = "postgresql"
-  relationMode = "prisma"
+  provider = "postgresql"
 }
 
-// This is a stub model.
-// Delete it and add your own Prisma models.
-model Page {
-  id   Int    @id @default(autoincrement())
-  name String
+// ── Enums ──────────────────────────────────────────────────────────
+
+enum UserRole {
+  ROASTER_ADMIN
+  ORG_ADMIN
+  PLATFORM_ADMIN
+}
+
+enum ApplicationStatus {
+  PENDING_REVIEW
+  APPROVED
+  REJECTED
+}
+
+enum RoasterStatus {
+  ONBOARDING
+  ACTIVE
+  SUSPENDED
+}
+
+enum OrgApplicationStatus {
+  PENDING_PLATFORM_REVIEW
+  PENDING_ROASTER_APPROVAL
+  APPROVED
+  REJECTED
+}
+
+enum RoasterOrgRequestStatus {
+  PENDING
+  APPROVED
+  DECLINED
+}
+
+enum OrgStatus {
+  ONBOARDING
+  ACTIVE
+  SUSPENDED
+}
+
+enum ProductStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}
+
+enum RoastLevel {
+  LIGHT
+  MEDIUM
+  MEDIUM_DARK
+  DARK
+}
+
+enum GrindOption {
+  WHOLE_BEAN
+  GROUND_DRIP
+  GROUND_ESPRESSO
+  GROUND_FRENCH_PRESS
+}
+
+enum CampaignStatus {
+  DRAFT
+  ACTIVE
+  PAUSED
+  ENDED
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  SHIPPED
+  DELIVERED
+  REFUNDED
+  CANCELLED
+}
+
+enum PayoutStatus {
+  PENDING
+  HELD
+  TRANSFERRED
+  FAILED
+}
+
+enum FulfillerType {
+  ROASTER
+  PLATFORM
+}
+
+enum StripeOnboardingStatus {
+  NOT_STARTED
+  PENDING
+  COMPLETE
+  RESTRICTED
+}
+
+enum DebtReason {
+  DISPUTE_LOSS
+  CHARGEBACK
+  MANUAL_ADJUSTMENT
+  PLATFORM_FEE
+}
+
+enum OrderEventType {
+  ORDER_CREATED
+  PAYMENT_INTENT_CREATED
+  PAYMENT_SUCCEEDED
+  PAYMENT_FAILED
+  ORDER_CONFIRMED
+  FULFILLMENT_VIEWED
+  SHIPPED
+  DELIVERED
+  REFUND_INITIATED
+  REFUND_COMPLETED
+  CANCELLED
+  DISPUTE_OPENED
+  DISPUTE_CLOSED
+  SLA_WARNING
+  SLA_BREACH
+  NOTE_ADDED
+}
+
+enum ActorType {
+  BUYER
+  ROASTER
+  ORG
+  ADMIN
+  SYSTEM
+}
+
+enum MagicLinkPurpose {
+  ORDER_FULFILLMENT
+  ORG_APPROVAL
+  ROASTER_REVIEW
+}
+
+enum FaultType {
+  ROASTER
+  PLATFORM
+  BUYER_FRAUD
+  UNCLEAR
+}
+
+enum DisputeOutcome {
+  WON
+  LOST
+  WITHDRAWN
+}
+
+// ── Platform singletons ────────────────────────────────────────────
+
+model PlatformSettings {
+  id String @id
+
+  platformFeePct   Float @default(0.05)
+  platformFeeFloor Int   @default(100)
+  orgPctMin        Float @default(0.05)
+  orgPctMax        Float @default(0.25)
+  orgPctDefault    Float @default(0.15)
+
+  slaWarnHours       Int @default(24)
+  slaBreachHours     Int @default(48)
+  slaCriticalHours   Int @default(72)
+  slaAutoRefundHours Int @default(96)
+
+  payoutHoldDays  Int @default(7)
+  disputeFeeCents Int @default(1500)
+
+  updatedAt DateTime @updatedAt
+}
+
+model OrderSequence {
+  id      String @id
+  nextVal Int    @default(0)
+}
+
+// ── Identity ─────────────────────────────────────────────────────────
+
+model User {
+  id              String   @id @default(cuid())
+  externalAuthId  String   @unique
+  email           String   @unique
+  role            UserRole
+  roasterId       String?
+  orgId           String?
+  isPlatformAdmin Boolean  @default(false)
+
+  roaster Roaster? @relation(fields: [roasterId], references: [id])
+  org     Org?     @relation(fields: [orgId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([roasterId])
+  @@index([orgId])
+}
+
+// ── Roaster onboarding & profile ───────────────────────────────────────
+
+model RoasterApplication {
+  id            String            @id @default(cuid())
+  status        ApplicationStatus
+  email         String            @unique
+  businessName  String
+  termsAgreedAt DateTime
+  termsVersion  String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  roaster Roaster?
+}
+
+model Roaster {
+  id               String                 @id @default(cuid())
+  applicationId    String                 @unique
+  application      RoasterApplication     @relation(fields: [applicationId], references: [id])
+  status           RoasterStatus
+  email            String                 @unique
+  stripeAccountId  String?                @unique
+  stripeOnboarding StripeOnboardingStatus
+  chargesEnabled   Boolean                @default(false)
+  payoutsEnabled   Boolean                @default(false)
+  fulfillerType    FulfillerType
+  disputeCount90d  Int                    @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users         User[]
+  shippingRates RoasterShippingRate[]
+  debts         RoasterDebt[]
+  products      Product[]
+  orders        Order[]
+  orgRequests   RoasterOrgRequest[]
+}
+
+model RoasterShippingRate {
+  id        String  @id @default(cuid())
+  roasterId String
+  roaster   Roaster @relation(fields: [roasterId], references: [id])
+  label     String
+  carrier   String
+  flatRate  Int
+  isDefault Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([roasterId])
+}
+
+model RoasterDebt {
+  id        String     @id @default(cuid())
+  roasterId String
+  roaster   Roaster    @relation(fields: [roasterId], references: [id])
+  orderId   String?
+  order     Order?     @relation(fields: [orderId], references: [id])
+  amount    Int
+  reason    DebtReason
+  settled   Boolean    @default(false)
+  settledAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([roasterId])
+  @@index([orderId])
+}
+
+// ── Org onboarding & profile ─────────────────────────────────────────
+
+model OrgApplication {
+  id            String               @id @default(cuid())
+  status        OrgApplicationStatus
+  email         String               @unique
+  desiredSlug   String               @unique
+  desiredOrgPct Float
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  org             Org?
+  roasterRequests RoasterOrgRequest[]
+}
+
+model RoasterOrgRequest {
+  id            String                  @id @default(cuid())
+  applicationId String
+  application   OrgApplication          @relation(fields: [applicationId], references: [id])
+  roasterId     String
+  roaster       Roaster                 @relation(fields: [roasterId], references: [id])
+  status        RoasterOrgRequestStatus
+  priority      Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([applicationId, roasterId])
+  @@index([roasterId])
+}
+
+model Org {
+  id               String                 @id @default(cuid())
+  applicationId    String                 @unique
+  application      OrgApplication         @relation(fields: [applicationId], references: [id])
+  status           OrgStatus
+  email            String                 @unique
+  slug             String                 @unique
+  stripeAccountId  String?                @unique
+  stripeOnboarding StripeOnboardingStatus
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users     User[]
+  campaigns Campaign[]
+}
+
+// ── Catalog ──────────────────────────────────────────────────────────
+
+model Product {
+  id         String        @id @default(cuid())
+  roasterId  String
+  roaster    Roaster       @relation(fields: [roasterId], references: [id])
+  name       String
+  roastLevel RoastLevel
+  status     ProductStatus
+  isCollab   Boolean       @default(false)
+  deletedAt  DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  variants      ProductVariant[]
+  campaignItems CampaignItem[]
+
+  @@index([roasterId])
+  @@index([deletedAt])
+}
+
+model ProductVariant {
+  id             String      @id @default(cuid())
+  productId      String
+  product        Product     @relation(fields: [productId], references: [id])
+  sku            String?     @unique
+  sizeOz         Int
+  grind          GrindOption
+  wholesalePrice Int
+  retailPrice    Int
+  isAvailable    Boolean     @default(true)
+  deletedAt      DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  campaignItems CampaignItem[]
+  orderItems    OrderItem[]
+
+  @@index([productId])
+  @@index([deletedAt])
+}
+
+model Campaign {
+  id          String         @id @default(cuid())
+  orgId       String
+  org         Org            @relation(fields: [orgId], references: [id])
+  name        String
+  status      CampaignStatus
+  orgPct      Float
+  goalCents   Int?
+  totalRaised Int            @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  items  CampaignItem[]
+  orders Order[]
+
+  @@index([orgId])
+}
+
+model CampaignItem {
+  id             String         @id @default(cuid())
+  campaignId     String
+  campaign       Campaign       @relation(fields: [campaignId], references: [id])
+  productId      String
+  product        Product        @relation(fields: [productId], references: [id])
+  variantId      String
+  variant        ProductVariant @relation(fields: [variantId], references: [id])
+  retailPrice    Int
+  wholesalePrice Int
+  isFeatured     Boolean        @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([campaignId, variantId])
+  @@index([campaignId])
+}
+
+// ── Commerce ─────────────────────────────────────────────────────────
+
+model Buyer {
+  id    String  @id @default(cuid())
+  email String  @unique
+  name  String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  orders Order[]
+}
+
+model Order {
+  id            String        @id @default(cuid())
+  orderNumber   String        @unique
+  campaignId    String
+  campaign      Campaign      @relation(fields: [campaignId], references: [id])
+  roasterId     String
+  roaster       Roaster       @relation(fields: [roasterId], references: [id])
+  buyerId       String?
+  buyer         Buyer?        @relation(fields: [buyerId], references: [id])
+  fulfillerType FulfillerType
+
+  productSubtotal Int
+  shippingAmount  Int
+  grossAmount     Int
+  stripeFee       Int
+
+  orgPctSnapshot Float
+  orgAmount      Int
+  platformAmount Int
+  roasterAmount  Int
+  roasterTotal   Int
+
+  status           OrderStatus
+  fulfillBy        DateTime
+  payoutStatus     PayoutStatus
+  payoutEligibleAt DateTime?
+
+  stripePiId        String  @unique
+  stripeChargeId    String? @unique
+  stripeTransferId  String?
+  stripeOrgTransfer String?
+  transferGroup     String
+
+  trackingNumber String?
+  carrier        String?
+  shippedAt      DateTime?
+  deliveredAt    DateTime?
+  buyerIp        String
+  isCollab       Boolean   @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  items        OrderItem[]
+  events       OrderEvent[]
+  dispute      DisputeRecord?
+  roasterDebts RoasterDebt[]
+
+  @@index([campaignId])
+  @@index([roasterId])
+  @@index([buyerId])
+}
+
+model OrderItem {
+  id          String         @id @default(cuid())
+  orderId     String
+  order       Order          @relation(fields: [orderId], references: [id])
+  variantId   String
+  variant     ProductVariant @relation(fields: [variantId], references: [id])
+  productName String
+  variantDesc String
+  quantity    Int
+  unitPrice   Int
+  lineTotal   Int
+
+  createdAt DateTime @default(now())
+
+  @@index([orderId])
+}
+
+model OrderEvent {
+  id        String         @id @default(cuid())
+  orderId   String
+  order     Order          @relation(fields: [orderId], references: [id])
+  eventType OrderEventType
+  actorType ActorType
+  actorId   String?
+  payload   Json?
+  ipAddress String?
+  createdAt DateTime       @default(now())
+
+  @@index([orderId])
+}
+
+model DisputeRecord {
+  id                String          @id @default(cuid())
+  orderId           String          @unique
+  order             Order           @relation(fields: [orderId], references: [id])
+  stripeDisputeId   String          @unique
+  faultAttribution  FaultType?
+  evidenceSubmitted Boolean         @default(false)
+  outcome           DisputeOutcome?
+  respondBy         DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model MagicLink {
+  id        String           @id @default(cuid())
+  token     String           @unique
+  purpose   MagicLinkPurpose
+  actorId   String
+  actorType ActorType
+  payload   Json
+  expiresAt DateTime
+  usedAt    DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([token])
+}
+
+model EmailLog {
+  id         String   @id @default(cuid())
+  to         String
+  template   String
+  entityType String
+  entityId   String
+  providerId String?
+  sentAt     DateTime @default(now())
+
+  @@unique([entityType, entityId, template])
+  @@index([entityId])
+}
+
+model StripeEvent {
+  id            String   @id @default(cuid())
+  stripeEventId String   @unique
+  eventType     String
+  processedAt   DateTime @default(now())
 }

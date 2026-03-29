@@ -7,7 +7,8 @@
     "analyze": "prisma generate --no-hints --schema=./prisma/schema.prisma",
     "build": "prisma generate --no-hints --schema=./prisma/schema.prisma",
     "clean": "git clean -xdf .cache .turbo dist node_modules",
-    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
+    "typecheck": "tsc --noEmit --emitDeclarationOnly false",
+    "db:smoke": "bun run ./scripts/smoke-db.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.2",

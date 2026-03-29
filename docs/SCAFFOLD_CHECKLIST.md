@@ -1,7 +1,7 @@
 # Joe Perks — Project Scaffold & Environment Setup Checklist
 ## Complete developer setup guide from zero to first deployment
 
-**Version:** 1.1 | **Environment model:** Production + Development + Vercel Preview deployments  
+**Version:** 1.2 | **Environment model:** Production + Development + Vercel Preview deployments  
 **Audience:** Developer setting up the project for the first time, or AI coding agents helping with setup  
 **Estimated time:** 3–4 hours for a complete setup (accounts + Vercel); **additional** time for the Joe Perks schema and integration work listed below.  
 **Companion tracker:** `docs/SCAFFOLD_PROGRESS.md` — versioned current-state comparison against this checklist.  
@@ -24,10 +24,9 @@
 - [x] **Stub API routes** on `apps/web`: `api/checkout/create-intent`, `api/order-status`, `api/webhooks/stripe` (501 scaffold), `api/inngest` (stub response).
 - [x] **`@joe-perks/stripe`** package present; **Stripe client and split math are still stubs** (`client.ts` exports a placeholder).
 - [x] **`@joe-perks/email`** with **`sendEmail()` stub** (throws until Resend + `EmailLog` and schema exist per `docs/AGENTS.md`).
-- [x] **`packages/db`**: Prisma 7 config, Neon adapter deps, **`seed.ts` stub** (logs only until real schema).
+- [x] **`packages/db`**: Prisma 7 config, Neon adapter, **Joe Perks domain schema** (`packages/db/prisma/schema.prisma`), migrations under `packages/db/prisma/migrations/`, **seed** upserts `PlatformSettings` + `OrderSequence` singletons (`seed.ts`), `generateOrderNumber` in `order-number.ts`. Production deploy path: `pnpm migrate:deploy:prod`, `packages/db/.env.production` (see `docs/AGENTS.md`).
 
 ### Remaining for a complete Joe Perks *technical* scaffold
-- [ ] **Prisma:** replace next-forge **stub schema** (single `Page` model today) with the **full Joe Perks schema** (~26 models), run migrations from `packages/db`, then implement a real **seed** (`PlatformSettings`, `OrderSequence`, etc.).
 - [ ] **Email:** implement **`sendEmail()`** with Resend and `EmailLog` dedupe `(entity_id, template)`.
 - [ ] **Stripe:** implement **`@joe-perks/stripe`** (client, `calculateSplits`, rate limit) and wire **webhooks + checkout** to real Stripe + DB idempotency (`StripeEvent`).
 - [ ] **Inngest:** replace stub with **`serve()`** and register **`sla-check`**, **`payout-release`**, **`cart-cleanup`** in `apps/web/app/api/inngest/route.ts`.
@@ -362,15 +361,15 @@ ADMIN_PASSWORD=use-a-strong-password-here
 
 ### 5.6 Database migrations and seed
 
-**Current state:** Prisma still uses the **next-forge stub schema** (a single `Page` model). The **Joe Perks ~26-model schema** is not in this repo yet — see **“Remaining for a complete Joe Perks technical scaffold”** at the top of this file.
-
-When the real schema is added:
+**Current state:** The repo has the **Joe Perks Prisma schema**, **migrations** under `packages/db/prisma/migrations/`, and a **real seed** for `PlatformSettings` + `OrderSequence` singletons. See **`docs/SCAFFOLD_PROGRESS.md`** and Story 01 (`docs/scaffold-stories/story-01-db-foundation.md`).
 
 ```bash
 # From repo root (uses bunx + packages/db — see root package.json)
-pnpm migrate                    # or: cd packages/db && bunx prisma migrate dev
+pnpm migrate                    # dev: migrate dev + new migration when schema changes
+pnpm migrate:deploy             # apply existing migrations (CI / shared DBs)
+pnpm migrate:deploy:prod        # production Neon: requires packages/db/.env.production
 
-# Seed (today: stub only; will populate PlatformSettings + OrderSequence after schema lands)
+# Seed (singletons)
 cd packages/db && bunx prisma db seed
 
 # Prisma Studio (requires DATABASE_URL — e.g. packages/db/.env)
@@ -589,9 +588,10 @@ After first deploy, verify each surface:
 - [ ] `https://joeperks.com/privacy-policy` → loads with PENDING LEGAL REVIEW banner
 
 ### 7.3 Database verification
-- [ ] Prisma Studio connects to **dev** DB (locally) — use **`pnpm dev:studio`** with `DATABASE_URL` set
-- [ ] **After Joe Perks schema is migrated:** `PlatformSettings` singleton exists with correct default values
-- [ ] **After Joe Perks schema is migrated:** `OrderSequence` singleton exists with `next_val = 1`
+- [ ] Prisma Studio connects to **dev** DB (locally) — use **`pnpm dev:studio`** with `DATABASE_URL` set (`packages/db/.env`)
+- [ ] `PlatformSettings` singleton (`id = singleton`) exists with expected defaults — confirm after **`pnpm migrate`** + **`bunx prisma db seed`**
+- [ ] `OrderSequence` singleton (`id = singleton`) exists — `nextVal` starts at **0** until the first order number is generated (`JP-00001` on first increment)
+- [ ] **Production:** migrations applied (`pnpm migrate:deploy:prod`) and smoke test passes (`pnpm db:smoke:prod`) — see `docs/AGENTS.md`
 
 ### 7.4 Sentry verification
 - [ ] `https://joeperks.com/api/test-sentry` → error appears in Sentry within 30 seconds
@@ -715,7 +715,7 @@ pnpm build                   # turbo build
 pnpm check                   # Ultracite (also used in CI)
 pnpm typecheck               # turbo typecheck
 pnpm migrate                 # from root: prisma migrate dev in packages/db (uses bunx)
-cd packages/db && bunx prisma db seed   # seed (stub until Joe Perks schema exists)
+cd packages/db && bunx prisma db seed   # seed PlatformSettings + OrderSequence singletons
 stripe listen --forward-to localhost:3000/api/webhooks/stripe  # local Stripe webhooks
 ```
 
