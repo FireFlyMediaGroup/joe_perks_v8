@@ -46,6 +46,41 @@ export async function POST(req: Request) {
 }
 ```
 
+### Server actions (portal CRUD)
+
+Portal apps (`apps/roaster`, `apps/org`) use Next.js server actions for mutations instead of API routes. Every action follows this shape:
+
+```typescript
+'use server'
+
+import { database } from '@joe-perks/db'
+import { revalidatePath } from 'next/cache'
+
+import { requireRoasterId } from '../_lib/require-roaster'
+import { productFormSchema } from '../_lib/schema'
+
+export async function createProduct(input: ProductFormInput): Promise<ActionResult> {
+  // 1. Authenticate + resolve tenant
+  const session = await requireRoasterId()
+  if (!session.ok) return { success: false, error: 'Not authorized.' }
+
+  // 2. Validate with Zod
+  const parsed = productFormSchema.safeParse(input)
+  if (!parsed.success) return { success: false, error: parsed.error.issues[0]?.message ?? 'Invalid input' }
+
+  // 3. Mutate — always scope by session tenant ID, never from input
+  const product = await database.product.create({
+    data: { roasterId: session.roasterId, ...parsed.data },
+  })
+
+  // 4. Revalidate affected paths
+  revalidatePath('/products')
+  return { success: true, productId: product.id }
+}
+```
+
+Key differences from API routes: no `Request`/`Response`, uses `revalidatePath` instead of returning JSON, returns a discriminated union result type.
+
 ### Route structure in apps/web
 ```
 app/
@@ -60,6 +95,33 @@ app/
         └── stripe/
             └── route.ts
 ```
+
+### Route structure in portal apps (roaster, org)
+
+Portal route segments colocate actions, components, and lib under private folders:
+
+```
+app/(authenticated)/products/          # route segment
+├── page.tsx                           # server component — list view
+├── new/page.tsx                       # server component — create form shell
+├── [id]/page.tsx                      # server component — detail view
+├── [id]/edit/page.tsx                 # server component — edit form shell
+├── _actions/                          # "use server" mutation functions
+│   ├── product-actions.ts
+│   └── variant-actions.ts
+├── _components/                       # client + server components for this segment
+│   ├── product-form.tsx               # "use client" — create/edit form
+│   ├── product-list.tsx               # table/grid for list page
+│   ├── variant-form.tsx               # "use client" — variant create/edit
+│   └── variant-list.tsx               # variant table with edit/delete
+└── _lib/                              # shared utilities scoped to this segment
+    ├── schema.ts                      # Zod validation schemas
+    ├── require-roaster.ts             # tenant auth helper (reusable)
+    ├── money.ts                       # parseDollarsToCents, formatCentsAsDollars
+    └── format.ts                      # enum display labels
+```
+
+Pages are always server components. Forms are always client components. Actions live in `_actions/` and are imported by client components via `"use server"`. Follow this layout for new portal features (e.g. shipping, payouts).
 
 ---
 
@@ -143,6 +205,32 @@ const splits = calculateSplits(productSubtotal, shippingAmount, orgPct, settings
 const orgAmount = totalPrice * 0.15 // float multiplication on money
 const orgAmount = parseFloat((totalPrice * 0.15).toFixed(2)) // still wrong
 ```
+
+### Dollar-to-cents form input round-trip
+
+Portal forms display prices in dollars but store/transmit cents. Use `parseDollarsToCents` for input and `formatCentsAsDollars` for display (see `products/_lib/money.ts`):
+
+```typescript
+// ✅ Input: user types "19.99" → store 1999
+function parseDollarsToCents(raw: string): { ok: true; cents: number } | { ok: false; error: string } {
+  const n = Number.parseFloat(raw.replace(/^\$/, '').trim())
+  if (Number.isNaN(n) || n <= 0) return { ok: false, error: 'Enter a valid price' }
+  return { ok: true, cents: Math.round(n * 100) }
+}
+
+// ✅ Display: DB has 1999 → show "19.99"
+function formatCentsAsDollars(cents: number): string {
+  return (cents / 100).toFixed(2)
+}
+
+// ✅ Margin warning: alert when (retail − wholesale) / retail < 20%
+function isLowMarginWarning(wholesaleCents: number, retailCents: number): boolean {
+  if (retailCents <= 0) return false
+  return (retailCents - wholesaleCents) / retailCents < 0.2
+}
+```
+
+Reuse these helpers for any dollar input (variant prices, shipping rates, etc.) rather than reimplementing the conversion.
 
 ---
 
@@ -334,6 +422,7 @@ packages/email/        # npm: @joe-perks/email
     ├── sla-breach.tsx
     ├── roaster-application-received.tsx
     ├── roaster-approved.tsx
+    ├── roaster-rejected.tsx
     ├── org-application-received.tsx
     └── org-approved.tsx
 ```

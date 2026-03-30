@@ -2,7 +2,7 @@
 
 **Story ID:** US-02-04 | **Epic:** EP-02 (Roaster Onboarding)
 **Points:** 8 | **Priority:** High
-**Status:** `Todo`
+**Status:** `Done`
 **Owner:** Full-stack
 **Dependencies:** US-02-03 (Stripe Connect Onboarding)
 **Depends on this:** US-02-05 (Shipping Rate Configuration)
@@ -26,13 +26,13 @@ Replace the scaffold page at `apps/roaster/app/(authenticated)/products/page.tsx
 ## Current repo evidence
 
 - `apps/roaster/app/(authenticated)/products/page.tsx` exists as scaffold text ("Catalog management scaffold")
-- `Product` model in schema: `id`, `roasterId`, `name`, `description`, `origin`, `roastLevel` (`RoastLevel`), `status` (`ProductStatus`), `isCollab`, `imageUrl`, `deletedAt`
+- `Product` model in schema: `id`, `roasterId`, `name`, `description`, `origin`, `roastLevel` (`RoastLevel`), `status` (`ProductStatus`), `isCollab`, `imageUrl`, `deletedAt` (display fields added in migration `20260330180000_add_product_display_fields`)
 - `ProductVariant` model in schema: `id`, `productId`, `sku`, `sizeOz`, `grind` (`GrindOption`), `wholesalePrice`, `retailPrice`, `isAvailable`, `deletedAt`
 - `RoastLevel` enum: `LIGHT`, `MEDIUM`, `MEDIUM_DARK`, `DARK`
 - `GrindOption` enum: `WHOLE_BEAN`, `GROUND_DRIP`, `GROUND_ESPRESSO`, `GROUND_FRENCH_PRESS`
 - `ProductStatus` enum: `DRAFT`, `ACTIVE`, `ARCHIVED`
 - Clerk auth is configured for `apps/roaster`
-- UploadThing credentials are in `apps/web/.env.local` (may need to add to `apps/roaster` for product images)
+- UploadThing: roaster app uses `UPLOADTHING_TOKEN` in `apps/roaster/.env.local` (see `docs/AGENTS.md`). Route handlers at `apps/roaster/app/api/uploadthing/`; product form uses `ProductImageField` with upload + URL fallback.
 
 ---
 
@@ -70,8 +70,9 @@ Replace the scaffold page at `apps/roaster/app/(authenticated)/products/page.tsx
 - Minimum retail spread should be reasonable (warn if margin is < 20%)
 
 ### Image upload
-- Optional product image via UploadThing or URL input
+- Optional product image via **UploadThing** (`productImage` route, roaster-authenticated) **or** manual HTTPS URL
 - Store as `imageUrl` on the `Product` record
+- Roaster portal sidebar lists real portal routes (Dashboard, Payments, Products, Shipping, Payouts, Webhooks) with an **Account** section showing Clerk user name/email and `UserButton`
 
 ---
 
@@ -100,26 +101,32 @@ Replace the scaffold page at `apps/roaster/app/(authenticated)/products/page.tsx
 | Create | `apps/roaster/app/(authenticated)/products/_actions/product-actions.ts` | Server actions — create, update, soft-delete product |
 | Create | `apps/roaster/app/(authenticated)/products/_actions/variant-actions.ts` | Server actions — create, update, soft-delete variant |
 | Create | `apps/roaster/app/(authenticated)/products/_lib/schema.ts` | Zod validation schemas for product and variant |
+| Create | `apps/roaster/app/(authenticated)/products/_components/product-image-field.tsx` | UploadThing + URL fallback for `imageUrl` |
+| Create | `apps/roaster/app/api/uploadthing/core.ts`, `route.ts` | UploadThing `productImage` route; Clerk + roaster profile gate |
+| Create | `apps/roaster/lib/uploadthing.ts` | `generateUploadButton` typed with `RoasterFileRouter` |
+| Modify | `apps/roaster/app/(authenticated)/components/sidebar.tsx` | Portal nav + Account (Clerk `useUser`, `UserButton`) |
+| Modify | `apps/roaster/app/(authenticated)/layout.tsx` | `NextSSRPlugin` for UploadThing SSR |
+| Modify | `apps/roaster/app/styles.css`, `apps/roaster/next.config.ts` | `uploadthing/tw/v4` import; `utfs.io` / `ufs.sh` image patterns |
 
 ---
 
 ## Acceptance criteria
 
-- [ ] The products page lists all non-deleted products for the authenticated roaster
-- [ ] Products show: name, roast level, status badge, variant count, image thumbnail
-- [ ] A "New product" button navigates to the creation form
-- [ ] The product form captures: name, description, origin, roast level, status, image
-- [ ] The product detail page lists all non-deleted variants for that product
-- [ ] Variants show: size (oz), grind option, wholesale price, retail price, availability status
-- [ ] Variant prices are entered in dollar format and stored as integer cents
-- [ ] `retailPrice > wholesalePrice` is enforced at both client and server validation
-- [ ] Both prices must be positive
-- [ ] All database queries include `roasterId = session.roasterId` (tenant isolation)
-- [ ] All database queries include `deletedAt: null` (soft delete filtering)
-- [ ] "Delete" soft-deletes the record (`deletedAt = now()`) — no row is removed
+- [x] The products page lists all non-deleted products for the authenticated roaster
+- [x] Products show: name, roast level, status badge, variant count, image thumbnail
+- [x] A "New product" button navigates to the creation form
+- [x] The product form captures: name, description, origin, roast level, status, image
+- [x] The product detail page lists all non-deleted variants for that product
+- [x] Variants show: size (oz), grind option, wholesale price, retail price, availability status
+- [x] Variant prices are entered in dollar format and stored as integer cents
+- [x] `retailPrice > wholesalePrice` is enforced at both client and server validation
+- [x] Both prices must be positive
+- [x] All database queries include `roasterId = session.roasterId` (tenant isolation)
+- [x] All database queries include `deletedAt: null` (soft delete filtering)
+- [x] "Delete" soft-deletes the record (`deletedAt = now()`) — no row is removed
 - [ ] A product with status `DRAFT` can be edited but should not appear in campaign item selection (future enforcement)
-- [ ] Products belonging to other roasters are not visible (tenant isolation)
-- [ ] The scaffold placeholder text is removed
+- [x] Products belonging to other roasters are not visible (tenant isolation)
+- [x] The scaffold placeholder text is removed
 
 ---
 
@@ -156,3 +163,6 @@ Replace the scaffold page at `apps/roaster/app/(authenticated)/products/page.tsx
 | Version | Date | Notes |
 |---------|------|-------|
 | 0.1 | 2026-03-29 | Initial story created for Sprint 2 planning. |
+| 0.2 | 2026-03-30 | Implemented in repo: `apps/roaster/app/(authenticated)/products/`; migration `20260330180000_add_product_display_fields` for optional `description`, `origin`, `imageUrl` on `Product`. |
+| 0.3 | 2026-03-30 | UploadThing on roaster (`UPLOADTHING_TOKEN`, `app/api/uploadthing/`, `lib/uploadthing.ts`, `product-image-field.tsx`, Tailwind `uploadthing/tw/v4`). Replaced demo sidebar with portal nav + Clerk account footer. |
+| 0.4 | 2026-03-30 | Code review: PASS (no must-fix issues). Smoke tests 13/13 (`packages/db/scripts/smoke-products.ts`). Post-review: `docs/AGENTS.md` — `requireRoasterId()` documented. `docs/CONVENTIONS.md` — server action pattern, portal route structure, dollar-to-cents helpers added. |

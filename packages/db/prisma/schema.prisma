@@ -336,14 +336,17 @@ model Org {
 // ── Catalog ──────────────────────────────────────────────────────────
 
 model Product {
-  id         String        @id @default(cuid())
-  roasterId  String
-  roaster    Roaster       @relation(fields: [roasterId], references: [id])
-  name       String
-  roastLevel RoastLevel
-  status     ProductStatus
-  isCollab   Boolean       @default(false)
-  deletedAt  DateTime?
+  id          String        @id @default(cuid())
+  roasterId   String
+  roaster     Roaster       @relation(fields: [roasterId], references: [id])
+  name        String
+  description String?
+  origin      String?
+  imageUrl    String?
+  roastLevel  RoastLevel
+  status      ProductStatus
+  isCollab    Boolean       @default(false)
+  deletedAt   DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

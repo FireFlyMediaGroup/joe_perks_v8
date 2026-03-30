@@ -13,6 +13,9 @@ import { keys as webhooks } from "@repo/webhooks/keys";
 import { createEnv } from "@t3-oss/env-nextjs";
 import { z } from "zod";
 
+const emptyToUndefined = (v: unknown) =>
+  v === "" || v === undefined ? undefined : v;
+
 export const env = createEnv({
   extends: [
     auth(),
@@ -30,9 +33,15 @@ export const env = createEnv({
   ],
   server: {
     ROASTER_APP_ORIGIN: z.string().url().optional(),
+    /** UploadThing API token (dashboard). When unset, product image uploads are disabled; URL field still works. */
+    UPLOADTHING_TOKEN: z.preprocess(
+      emptyToUndefined,
+      z.string().min(1).optional()
+    ),
   },
   client: {},
   runtimeEnv: {
     ROASTER_APP_ORIGIN: process.env.ROASTER_APP_ORIGIN,
+    UPLOADTHING_TOKEN: process.env.UPLOADTHING_TOKEN,
   },
 });

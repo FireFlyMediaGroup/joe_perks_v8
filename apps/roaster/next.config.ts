@@ -24,6 +24,22 @@ if (env.ANALYZE === "true") {
 nextConfig = {
   ...nextConfig,
   turbopack: { ...nextConfig.turbopack, root: monorepoRoot },
+  images: {
+    ...nextConfig.images,
+    remotePatterns: [
+      ...(nextConfig.images?.remotePatterns ?? []),
+      {
+        protocol: "https",
+        hostname: "utfs.io",
+        pathname: "/f/**",
+      },
+      {
+        protocol: "https",
+        hostname: "ufs.sh",
+        pathname: "/**",
+      },
+    ],
+  },
 };
 
 export default nextConfig;

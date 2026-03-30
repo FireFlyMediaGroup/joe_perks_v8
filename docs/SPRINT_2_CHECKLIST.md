@@ -258,62 +258,62 @@ Before starting Sprint 2 work, verify these Sprint 1 deliverables are in place:
 
 ### 6.1 Validation schemas
 
-- [ ] Create `apps/roaster/app/(authenticated)/products/_lib/schema.ts`
-- [ ] Product: name (required), description, origin, roastLevel (enum), status (enum), imageUrl
-- [ ] Variant: sizeOz (positive int), grind (enum), wholesalePrice (positive int cents), retailPrice (positive int cents, > wholesalePrice), isAvailable
+- [x] Create `apps/roaster/app/(authenticated)/products/_lib/schema.ts`
+- [x] Product: name (required), description, origin, roastLevel (enum), status (enum), imageUrl
+- [x] Variant: sizeOz (positive int), grind (enum), wholesalePrice (positive int cents), retailPrice (positive int cents, > wholesalePrice), isAvailable
 
 ### 6.2 Product server actions
 
-- [ ] Create `apps/roaster/app/(authenticated)/products/_actions/product-actions.ts`
-- [ ] `createProduct`: validate, set `roasterId = session.roasterId`, insert
-- [ ] `updateProduct`: validate, verify `roasterId` ownership, update
-- [ ] `deleteProduct`: verify ownership, set `deletedAt = now()` (soft delete)
-- [ ] All queries: `WHERE roasterId = session.roasterId AND deletedAt IS NULL`
+- [x] Create `apps/roaster/app/(authenticated)/products/_actions/product-actions.ts`
+- [x] `createProduct`: validate, set `roasterId = session.roasterId`, insert
+- [x] `updateProduct`: validate, verify `roasterId` ownership, update
+- [x] `deleteProduct`: verify ownership, set `deletedAt = now()` (soft delete); variants under product soft-deleted in same transaction
+- [x] All queries: `WHERE roasterId = session.roasterId AND deletedAt IS NULL`
 
 ### 6.3 Variant server actions
 
-- [ ] Create `apps/roaster/app/(authenticated)/products/_actions/variant-actions.ts`
-- [ ] `createVariant`: validate (incl. retailPrice > wholesalePrice), verify product ownership, insert
-- [ ] `updateVariant`: validate, verify ownership chain, update
-- [ ] `deleteVariant`: verify ownership, soft delete
-- [ ] All queries filter `deletedAt IS NULL`
+- [x] Create `apps/roaster/app/(authenticated)/products/_actions/variant-actions.ts`
+- [x] `createVariant`: validate (incl. retailPrice > wholesalePrice), verify product ownership, insert
+- [x] `updateVariant`: validate, verify ownership chain, update
+- [x] `deleteVariant`: verify ownership, soft delete
+- [x] All queries filter `deletedAt IS NULL`
 
 ### 6.4 Product list page
 
-- [ ] Update `apps/roaster/app/(authenticated)/products/page.tsx` — remove scaffold
-- [ ] Server component querying products with tenant + soft delete filters
-- [ ] Shows: name, roast level, status badge, variant count, image thumbnail
-- [ ] "New product" button linking to create form
+- [x] Update `apps/roaster/app/(authenticated)/products/page.tsx` — remove scaffold
+- [x] Server component querying products with tenant + soft delete filters
+- [x] Shows: name, roast level, status badge, variant count, image thumbnail
+- [x] "New product" button linking to create form
 
 ### 6.5 Product create/edit pages
 
-- [ ] Create `apps/roaster/app/(authenticated)/products/new/page.tsx`
-- [ ] Create `apps/roaster/app/(authenticated)/products/[id]/edit/page.tsx`
-- [ ] Create `_components/product-form.tsx` (client component)
-- [ ] Roast level enum select, status enum select, image URL input
-- [ ] Price inputs display in dollar format, convert to cents on submit
+- [x] Create `apps/roaster/app/(authenticated)/products/new/page.tsx`
+- [x] Create `apps/roaster/app/(authenticated)/products/[id]/edit/page.tsx`
+- [x] Create `_components/product-form.tsx` (client component)
+- [x] Roast level enum select, status enum select, image via **UploadThing** (`productImage` route) and/or HTTPS URL (`_components/product-image-field.tsx`, optional `UPLOADTHING_TOKEN`)
+- [x] Variant price inputs display in dollar format, convert to cents on submit (product form has no prices)
 
 ### 6.6 Product detail page with variants
 
-- [ ] Create `apps/roaster/app/(authenticated)/products/[id]/page.tsx`
-- [ ] Shows product details + variant list
-- [ ] "Add variant" button
-- [ ] Create `_components/variant-form.tsx` (client component) — size, grind select, prices, availability
-- [ ] Create `_components/variant-list.tsx` — table with edit/delete actions
+- [x] Create `apps/roaster/app/(authenticated)/products/[id]/page.tsx`
+- [x] Shows product details + variant list
+- [x] "Add variant" section with `VariantForm`
+- [x] Create `_components/variant-form.tsx` (client component) — size, grind select, prices, availability
+- [x] Create `_components/variant-list.tsx` — table with edit (dialog) / delete actions
 
 ### 6.7 Price validation
 
-- [ ] Client-side: warn if retail < wholesale; block submit
-- [ ] Server-side: enforce `retailPrice > wholesalePrice` and both positive
+- [x] Client-side: warn if margin is under 20% of retail; block submit if retail ≤ wholesale
+- [x] Server-side: enforce `retailPrice > wholesalePrice` and both positive
 
 ### 6.8 Verification
 
-- [ ] Create product → appears in list, stored in DB with `roasterId`
-- [ ] Add variant → prices stored as cents, retailPrice > wholesalePrice enforced
-- [ ] Edit product/variant → changes persisted
-- [ ] Soft delete → `deletedAt` set, item hidden from list, row still in DB
-- [ ] Tenant isolation → cannot see other roasters' products
-- [ ] Money → prices displayed as dollars, stored as cents
+- [x] Create product → appears in list, stored in DB with `roasterId` (code review: verified in `product-actions.ts` + smoke test)
+- [x] Add variant → prices stored as cents, retailPrice > wholesalePrice enforced (code review: Zod `.refine()` + server-side + client-side validation)
+- [x] Edit product/variant → changes persisted (code review: `updateProduct`/`updateVariant` with ownership check)
+- [x] Soft delete → `deletedAt` set, item hidden from list, row still in DB (code review: `$transaction` cascade + smoke test)
+- [x] Tenant isolation → cannot see other roasters' products (code review: `requireRoasterId()` on all actions/pages + smoke test)
+- [x] Money → prices displayed as dollars, stored as cents (code review: `parseDollarsToCents`/`formatCentsAsDollars` + schema `Int` + smoke test)
 
 **Reference:** [`docs/sprint-2/stories/US-02-04-product-variant-creation.md`](sprint-2/stories/US-02-04-product-variant-creation.md)
 **Diagram:** [`docs/06-database-schema.mermaid`](06-database-schema.mermaid) — Product, ProductVariant
@@ -419,27 +419,32 @@ Before starting Sprint 2 work, verify these Sprint 1 deliverables are in place:
 
 ## Cross-cutting concerns
 
+### Roaster shell (US-02-04 follow-up)
+
+- [x] Replace next-forge demo sidebar with portal navigation (Dashboard, Payments/Stripe, Products, Shipping, Payouts, Webhooks) and Account footer with Clerk `useUser` + `UserButton`
+- [x] UploadThing: `apps/roaster/app/api/uploadthing/`, `lib/uploadthing.ts`, `NextSSRPlugin` in `(authenticated)/layout.tsx`, Tailwind v4 import `uploadthing/tw/v4`, image remote patterns for `utfs.io` / `ufs.sh`
+
 ### Document synchronization
 
 After completing each phase, verify alignment with these documents:
 
-| Document | Action |
-|----------|--------|
-| [`docs/SPRINT_2_PROGRESS.md`](SPRINT_2_PROGRESS.md) | Update status for the completed story |
-| [`docs/01-project-structure.mermaid`](01-project-structure.mermaid) | Add any new routes or files created |
-| [`docs/SCAFFOLD_PROGRESS.md`](SCAFFOLD_PROGRESS.md) | Update "Portals" row status from `Partial` if relevant |
-| [`docs/AGENTS.md`](AGENTS.md) | No changes expected unless new patterns are introduced |
-| [`docs/CONVENTIONS.md`](CONVENTIONS.md) | Add any new conventions discovered during implementation |
+| Document                                                            | Action                                                   |
+| ------------------------------------------------------------------- | -------------------------------------------------------- |
+| [`docs/SPRINT_2_PROGRESS.md`](SPRINT_2_PROGRESS.md)                 | Update status for the completed story                    |
+| [`docs/01-project-structure.mermaid`](01-project-structure.mermaid) | Add any new routes or files created                      |
+| [`docs/SCAFFOLD_PROGRESS.md`](SCAFFOLD_PROGRESS.md)                 | Update "Portals" row status from `Partial` if relevant   |
+| [`docs/AGENTS.md`](AGENTS.md)                                       | No changes expected unless new patterns are introduced   |
+| [`docs/CONVENTIONS.md`](CONVENTIONS.md)                             | Add any new conventions discovered during implementation |
 
 ### AGENTS.md rules checklist (apply to every story)
 
-- [ ] Money values stored as `Int` cents — never floats
-- [ ] Tenant isolation: roaster queries scoped by `session.roasterId`
-- [ ] Soft deletes: `Product`/`ProductVariant` queries filter `deletedAt IS NULL`
-- [ ] Email: `sendEmail()` from `@joe-perks/email` — never import Resend directly
-- [ ] Stripe: `@joe-perks/stripe` — never import Stripe SDK in apps
-- [ ] Logging: no PII logged — only IDs and event types
-- [ ] Webhook idempotency: check `StripeEvent` before processing (existing code)
+- [x] Money values stored as `Int` cents — never floats (verified in US-02-04 review: `wholesalePrice`/`retailPrice` as `Int`, `parseDollarsToCents`/`formatCentsAsDollars`)
+- [x] Tenant isolation: roaster queries scoped by `session.roasterId` (verified in US-02-04 review: `requireRoasterId()` on all actions/pages)
+- [x] Soft deletes: `Product`/`ProductVariant` queries filter `deletedAt IS NULL` (verified in US-02-04 review: all queries + cascade in `$transaction`)
+- [x] Email: `sendEmail()` from `@joe-perks/email` — never import Resend directly (N/A for US-02-04; verified for US-02-01/02-02)
+- [x] Stripe: `@joe-perks/stripe` — never import Stripe SDK in apps (N/A for US-02-04; verified for US-02-03)
+- [x] Logging: no PII logged — only IDs and event types (verified in US-02-04 review: no PII in server actions)
+- [x] Webhook idempotency: check `StripeEvent` before processing (existing code, N/A for US-02-04)
 
 ### Testing commands
 
@@ -461,13 +466,13 @@ stripe trigger account.updated
 
 ## Quick reference — Story-to-file mapping
 
-| Story | Phase | Key files |
-|-------|-------|-----------|
-| US-08-06 | 1 | `packages/email/templates/roaster-application-received.tsx`, `roaster-approved.tsx`, `roaster-rejected.tsx`, `org-application-received.tsx` |
-| US-02-06 | 2 | `packages/types/src/slug-validation.ts`, `apps/web/app/api/slugs/validate/route.ts` |
-| US-02-01 | 3 | `apps/web/app/[locale]/roasters/apply/` (page, _actions, _components, _lib) |
-| US-02-02 | 4 | `apps/admin/app/approvals/roasters/` (page, [id], _actions, _components, _lib) + `packages/db/clerk-user-sync.ts` |
-| US-02-03 | 5 | `apps/roaster/app/(authenticated)/onboarding/` (page, _components, _lib, _hooks) + `apps/web/app/api/webhooks/stripe/route.ts` (ACTIVE promotion) |
-| US-02-04 | 6 | `apps/roaster/app/(authenticated)/products/` (page, new, [id], _actions, _components, _lib) |
-| US-02-05 | 7 | `apps/roaster/app/(authenticated)/settings/shipping/` (page, _actions, _components, _lib) |
-| US-03-01 | 8 | `apps/web/app/[locale]/orgs/apply/` (page, _actions, _components, _lib) |
+| Story    | Phase | Key files                                                                                                                                         |
+| -------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| US-08-06 | 1     | `packages/email/templates/roaster-application-received.tsx`, `roaster-approved.tsx`, `roaster-rejected.tsx`, `org-application-received.tsx`       |
+| US-02-06 | 2     | `packages/types/src/slug-validation.ts`, `apps/web/app/api/slugs/validate/route.ts`                                                               |
+| US-02-01 | 3     | `apps/web/app/[locale]/roasters/apply/` (page, _actions, _components, _lib)                                                                       |
+| US-02-02 | 4     | `apps/admin/app/approvals/roasters/` (page, [id], _actions, _components, _lib) + `packages/db/clerk-user-sync.ts`                                 |
+| US-02-03 | 5     | `apps/roaster/app/(authenticated)/onboarding/` (page, _components, _lib, _hooks) + `apps/web/app/api/webhooks/stripe/route.ts` (ACTIVE promotion) |
+| US-02-04 | 6     | `apps/roaster/app/(authenticated)/products/` (page, new, [id], _actions, _components, _lib)                                                       |
+| US-02-05 | 7     | `apps/roaster/app/(authenticated)/settings/shipping/` (page, _actions, _components, _lib)                                                         |
+| US-03-01 | 8     | `apps/web/app/[locale]/orgs/apply/` (page, _actions, _components, _lib)                                                                           |

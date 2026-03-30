@@ -157,6 +157,7 @@ Turbo starts multiple Next (and related) dev servers on **fixed ports** (see the
 - Every org portal query **must** include `WHERE org_id = session.orgId`.
 - Never trust a `roaster_id` or `org_id` from the request body — always read from the verified session.
 - Admin queries may scope globally — this is intentional.
+- **`requireRoasterId()`** (in `products/_lib/require-roaster.ts`) is the canonical helper for roaster portal server actions: it calls `auth()`, resolves the Clerk user to a `User` row, and returns `{ ok: true, roasterId }` or `{ ok: false, error }`. Reuse this helper (or import it from a shared location) in any new roaster portal feature — do not reimplement the auth-to-roasterId lookup.
 
 ### Email sending
 - **Transactional sends:** use **`sendEmail()`** from **`@joe-perks/email/send`** (also re-exported from **`@joe-perks/email`**). It sends via Resend, inserts **`EmailLog`** first, and dedupes on **`(entityType, entityId, template)`** (unique in the schema). On duplicate, the call returns without sending again (idempotent). If Resend fails after the log row is created, the row is deleted so callers can retry.
@@ -225,6 +226,7 @@ UPLOADTHING_APP_ID=
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=   # Roaster Clerk app
 CLERK_SECRET_KEY=
 ROASTER_APP_ORIGIN=                # optional — public base URL for Stripe Connect return/refresh (default http://localhost:3001)
+UPLOADTHING_TOKEN=                 # optional — UploadThing API token (dashboard); enables product image uploads via `/api/uploadthing`
 ```
 
 ### apps/org `.env.local`

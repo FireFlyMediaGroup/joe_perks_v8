@@ -1,6 +1,6 @@
 # Joe Perks — Sprint 2 Progress Tracker
 
-**Tracker version:** 0.8
+**Tracker version:** 0.11
 **Baseline document:** [`docs/SPRINT_2_CHECKLIST.md`](SPRINT_2_CHECKLIST.md) (v1.0)
 **Story documents:** [`docs/sprint-2/stories/`](sprint-2/stories/)
 **Sprint overview:** [`docs/sprint-2/README.md`](sprint-2/README.md)
@@ -37,6 +37,9 @@
 | 0.6 | 2026-03-29 | US-02-02 follow-up: list pagination — `?page=` (1-based), 20 rows per page (`ROASTER_QUEUE_PAGE_SIZE`), `count` + `skip`/`take`, page clamped to valid range; `_lib/queue-url.ts` builds filter/pagination hrefs. `docs/AGENTS.md` clarifies `ADMIN_EMAIL` (Basic Auth) vs `ROASTER_APP_ORIGIN` (roaster portal URL for approval emails). |
 | 0.7 | 2026-03-29 | US-02-03 complete: roaster onboarding page at `apps/roaster/app/(authenticated)/onboarding/` — server `page.tsx` loads `Roaster` Connect fields; `connect-status.tsx` + `start-onboarding-button.tsx`; `_lib/fetch-stripe-connect-url.ts` + `_hooks/use-stripe-refresh-redirect.ts` for `?stripe_return=1` / `?stripe_refresh=1`. Prisma `StripeOnboardingStatus` uses `PENDING` (not `IN_PROGRESS`). |
 | 0.8 | 2026-03-30 | US-02-03 follow-up: `handleAccountUpdated` in `apps/web/app/api/webhooks/stripe/route.ts` now promotes `Roaster.status` from `ONBOARDING` → `ACTIVE` when `stripeOnboarding = COMPLETE` and both `chargesEnabled` + `payoutsEnabled` are true (per RA8 in `05-approval-chain.mermaid`). Guarded: never overrides `SUSPENDED`. |
+| 0.9 | 2026-03-30 | US-02-04 complete: roaster product + variant CRUD at `apps/roaster/app/(authenticated)/products/` (`page.tsx`, `new/`, `[id]/`, `[id]/edit/`, `_actions/`, `_components/`, `_lib/`). Prisma migration `20260330180000_add_product_display_fields` adds optional `description`, `origin`, `imageUrl` on `Product`. Soft-delete product cascades to variants in one transaction. |
+| 0.10 | 2026-03-30 | US-02-04 follow-up: UploadThing on roaster (`UPLOADTHING_TOKEN`, `app/api/uploadthing/`, `lib/uploadthing.ts`, `product-image-field.tsx`, `styles.css` imports `uploadthing/tw/v4`). Portal sidebar replaces next-forge demo (`components/sidebar.tsx`) with Dashboard / Payments / Products / Shipping / Payouts / Webhooks + Account (Clerk `useUser` + `UserButton`). `NextSSRPlugin` in `(authenticated)/layout.tsx`. |
+| 0.11 | 2026-03-30 | US-02-04 review: PASS (no must-fix issues). Smoke tests 13/13 at `packages/db/scripts/smoke-products.ts`. Post-review: `docs/AGENTS.md` — added `requireRoasterId()` to tenant isolation. `docs/CONVENTIONS.md` — added server action pattern, portal route structure (`_actions/`/`_components/`/`_lib/`), dollar-to-cents form helpers, fixed missing `roaster-rejected.tsx` in template listing. |
 
 ---
 
@@ -49,7 +52,7 @@
 | Roaster apply form (US-02-01) | `Done` | 5-step multi-step form with Zod validation, react-hook-form, server action, rate limiting, and `sendEmail()` wiring |
 | Admin approval queue (US-02-02) | `Done` | List + detail at `apps/admin/app/approvals/roasters/`; approve/reject actions; `clerk_pending:` user rows merged on Clerk sign-in |
 | Stripe Connect onboarding (US-02-03) | `Done` | Onboarding UI: `page.tsx` + `_components/connect-status.tsx`, `start-onboarding-button.tsx`, `_lib/fetch-stripe-connect-url.ts`, `_hooks/use-stripe-refresh-redirect.ts`; manual Stripe verification still recommended |
-| Product & variant CRUD (US-02-04) | `Todo` | Schema models exist; scaffold placeholder at products page |
+| Product & variant CRUD (US-02-04) | `Done` | List, new, detail, edit; Zod + server actions; tenant + soft delete; migration for `Product` display fields. **Reviewed:** PASS, 13/13 smoke tests. |
 | Shipping rate config (US-02-05) | `Todo` | Schema model exists; scaffold placeholder at shipping settings page |
 | Org apply form (US-03-01) | `Todo` | Scaffold placeholder at `apps/web/app/[locale]/orgs/apply/page.tsx` |
 
@@ -112,12 +115,13 @@
 
 | Item | Status | Evidence / current state | Next step |
 |------|--------|--------------------------|-----------|
-| Validation schemas | `Todo` | `Product` and `ProductVariant` models in Prisma schema. | Create Zod schemas |
-| Product server actions | `Todo` | Not created. | Create CRUD actions with tenant scoping + soft delete |
-| Variant server actions | `Todo` | Not created. | Create CRUD actions with price validation |
-| Product list page | `Todo` | Scaffold placeholder. | Replace with server component |
-| Product create/edit pages | `Todo` | Not created. | Build form pages |
-| Product detail + variant list | `Todo` | Not created. | Build detail page |
+| Validation schemas | `Done` | `_lib/schema.ts` — product + variant Zod schemas; `_lib/money.ts`, `_lib/format.ts` | None |
+| Product server actions | `Done` | `_actions/product-actions.ts` — create, update, soft-delete; `requireRoasterId()` | Reviewed: PASS |
+| Variant server actions | `Done` | `_actions/variant-actions.ts` — create, update, soft-delete; SKU P2002 handling | Reviewed: PASS |
+| Product list page | `Done` | `products/page.tsx` + `product-list.tsx` | None |
+| Product create/edit pages | `Done` | `new/page.tsx`, `[id]/edit/page.tsx`, `product-form.tsx` | None |
+| Product detail + variant list | `Done` | `[id]/page.tsx`, `variant-list.tsx`, `variant-form.tsx`, delete buttons | None |
+| DB migration | `Done` | `20260330180000_add_product_display_fields` — `description`, `origin`, `imageUrl` on `Product` | Smoke test confirms applied |
 
 ### Phase 7 — Shipping Rate Configuration (US-02-05)
 
@@ -157,11 +161,11 @@ These items from the Sprint 1 scaffold affect Sprint 2 implementation:
 
 After each story completes:
 
-- [x] Update this file's revision log and status columns (US-08-06, US-02-06, US-02-03)
-- [x] Update the story's own status in `docs/sprint-2/stories/US-XX-XX-*.md` (US-08-06, US-02-06, US-02-03)
-- [x] Update [`docs/sprint-2/README.md`](sprint-2/README.md) story table if anything changed (US-08-06, US-02-06, US-02-03)
-- [x] Update [`docs/SCAFFOLD_PROGRESS.md`](SCAFFOLD_PROGRESS.md) snapshot summary (US-08-06 — email row, US-02-06 — types row, US-02-03 — Stripe/auth rows)
-- [x] Verify new files/routes align with [`docs/01-project-structure.mermaid`](01-project-structure.mermaid) — update diagram if new routes were added
+- [x] Update this file's revision log and status columns (US-08-06, US-02-06, US-02-03, US-02-04)
+- [x] Update the story's own status in `docs/sprint-2/stories/US-XX-XX-*.md` (US-08-06, US-02-06, US-02-03, US-02-04)
+- [x] Update [`docs/sprint-2/README.md`](sprint-2/README.md) story table if anything changed (US-08-06, US-02-06, US-02-03, US-02-04)
+- [x] Update [`docs/SCAFFOLD_PROGRESS.md`](SCAFFOLD_PROGRESS.md) snapshot summary (US-08-06 — email row, US-02-06 — types row, US-02-03 — Stripe/auth rows, US-02-04 — products/portals rows)
+- [x] Verify new files/routes align with [`docs/01-project-structure.mermaid`](01-project-structure.mermaid) — update diagram if new routes were added (US-02-04 — `R_PROD`, `R_UT` nodes added)
 - [x] Verify data flows align with [`docs/05-approval-chain.mermaid`](05-approval-chain.mermaid) (US-02-03 onboarding UI)
 - [x] Verify schema usage aligns with [`docs/06-database-schema.mermaid`](06-database-schema.mermaid) (US-02-03 uses `Roaster.stripeOnboarding`, `chargesEnabled`, `payoutsEnabled`, `status` — all present in schema)
-- [x] If new patterns were introduced, update [`docs/CONVENTIONS.md`](CONVENTIONS.md) — no new patterns needed for US-02-03
+- [x] If new patterns were introduced, update [`docs/CONVENTIONS.md`](CONVENTIONS.md) — US-02-04: added server action pattern, portal route structure, dollar-to-cents helpers, fixed template listing

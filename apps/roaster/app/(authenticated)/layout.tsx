@@ -2,8 +2,13 @@ import { auth, currentUser } from "@repo/auth/server";
 import { SidebarProvider } from "@repo/design-system/components/ui/sidebar";
 import { showBetaFeature } from "@repo/feature-flags";
 import { secure } from "@repo/security";
+import { NextSSRPlugin } from "@uploadthing/react/next-ssr-plugin";
 import type { ReactNode } from "react";
+import { Suspense } from "react";
+import { extractRouterConfig } from "uploadthing/server";
+import { roasterFileRouter } from "@/app/api/uploadthing/core";
 import { env } from "@/env";
+
 import { NotificationsProvider } from "./components/notifications-provider";
 import { GlobalSidebar } from "./components/sidebar";
 
@@ -26,6 +31,9 @@ const AppLayout = async ({ children }: AppLayoutProperties) => {
 
   return (
     <NotificationsProvider userId={user.id}>
+      <Suspense>
+        <NextSSRPlugin routerConfig={extractRouterConfig(roasterFileRouter)} />
+      </Suspense>
       <SidebarProvider>
         <GlobalSidebar>
           {betaFeature && (

@@ -8,7 +8,7 @@
 - Progress tracker: [`docs/SPRINT_2_PROGRESS.md`](../SPRINT_2_PROGRESS.md)
 - Stories: [`docs/sprint-2/stories/`](./stories/)
 
-**Current progress:** US-08-06, US-02-06, US-02-01, US-02-02, and US-02-03 are **Done**. Next story in the recommended sequence: **US-02-04** (product and variant creation). Details: [`docs/SPRINT_2_PROGRESS.md`](../SPRINT_2_PROGRESS.md).
+**Current progress:** US-08-06, US-02-06, US-02-01, US-02-02, US-02-03, and US-02-04 are **Done** (US-02-04 reviewed and smoke-tested — PASS, 13/13). Next story in the recommended sequence: **US-02-05** (roaster shipping rate configuration). Details: [`docs/SPRINT_2_PROGRESS.md`](../SPRINT_2_PROGRESS.md).
 
 ---
 
@@ -43,7 +43,7 @@ Build the first real user-facing onboarding flows: roaster application form, adm
 |----------|-------|-----|----------|--------------|-------------|
 | US-08-06 | Application received and approval/rejection notifications | 2 | High | US-01-04 | `packages/email` |
 
-Story status in this table matches the tracker: **US-08-06** is implemented (templates + `package.json` exports). **US-02-06** is implemented (`packages/types/src/slug-validation.ts` + `apps/web/app/api/slugs/validate/route.ts`). **US-02-01** is implemented (5-step form, server action with `sendEmail()` wiring, rate limiting via `limitRoasterApplication()`). **US-02-02** is implemented (`apps/admin/app/approvals/roasters/page.tsx`, `[id]/page.tsx`, approve/reject server actions, `sendEmail()` for approved/rejected). **US-02-03** is implemented (`apps/roaster/app/(authenticated)/onboarding/` — server page, `connect-status` + `start-onboarding-button`, return/refresh query params). Org email wiring remains in US-03-01.
+Story status in this table matches the tracker: **US-08-06** is implemented (templates + `package.json` exports). **US-02-06** is implemented (`packages/types/src/slug-validation.ts` + `apps/web/app/api/slugs/validate/route.ts`). **US-02-01** is implemented (5-step form, server action with `sendEmail()` wiring, rate limiting via `limitRoasterApplication()`). **US-02-02** is implemented (`apps/admin/app/approvals/roasters/page.tsx`, `[id]/page.tsx`, approve/reject server actions, `sendEmail()` for approved/rejected). **US-02-03** is implemented (`apps/roaster/app/(authenticated)/onboarding/` — server page, `connect-status` + `start-onboarding-button`, return/refresh query params). **US-02-04** is implemented (`apps/roaster/app/(authenticated)/products/` — list, new, `[id]` detail, `[id]/edit`, product + variant server actions, Zod schemas, soft deletes, tenant scoping). Migration `20260330180000_add_product_display_fields` adds optional `description`, `origin`, `imageUrl` on `Product`. **UploadThing** product images when `UPLOADTHING_TOKEN` is set (`app/api/uploadthing/`). **Roaster sidebar** is portal navigation + Clerk account section (not demo nav). Org email wiring remains in US-03-01.
 
 ---
 

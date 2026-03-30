@@ -47,6 +47,9 @@
 | `1.7` | 2026-03-29 | Sprint 2 US-02-02: Admin roaster approval queue (`apps/admin/app/approvals/roasters/`), `load-root-env.ts` on admin, `@joe-perks/db` + `@joe-perks/email` deps. Clerk `upsertUserFromClerkWebhook` merges `clerk_pending:*` users by email. |
 | `1.8` | 2026-03-29 | Sprint 2 US-02-03: Roaster Stripe Connect onboarding UI at `apps/roaster/app/(authenticated)/onboarding/` (`connect-status`, `start-onboarding-button`, return/refresh handling). |
 | `1.9` | 2026-03-30 | US-02-03 follow-up: `handleAccountUpdated` webhook promotes `Roaster.status` `ONBOARDING` → `ACTIVE` (per RA8, guarded against `SUSPENDED`). Smoke tests at `packages/db/scripts/smoke-onboarding.ts` (7/7 pass) + `seed-smoke-roaster.ts` for test data. |
+| `1.10` | 2026-03-30 | Sprint 2 US-02-04: Roaster product + variant CRUD at `apps/roaster/app/(authenticated)/products/` (list, new, detail, edit; server actions; Zod; soft deletes). Migration `20260330180000_add_product_display_fields` adds optional `description`, `origin`, `imageUrl` on `Product`. |
+| `1.11` | 2026-03-30 | US-02-04 follow-up: UploadThing (`uploadthing`, `@uploadthing/react`, `UPLOADTHING_TOKEN`, `/api/uploadthing`), portal sidebar + Clerk account section, `NextSSRPlugin` in authenticated layout. |
+| `1.12` | 2026-03-30 | US-02-04 review: PASS. Smoke tests 13/13 (`packages/db/scripts/smoke-products.ts`). Post-review doc updates: `AGENTS.md` — `requireRoasterId()` in tenant isolation; `CONVENTIONS.md` — server action pattern, portal route structure (`_actions/`/`_components/`/`_lib/`), dollar-to-cents form helpers, `roaster-rejected.tsx` template listing. |
 
 ---
 

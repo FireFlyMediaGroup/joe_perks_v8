@@ -28,6 +28,9 @@ export type ProductMinAggregateOutputType = {
   id: string | null
   roasterId: string | null
   name: string | null
+  description: string | null
+  origin: string | null
+  imageUrl: string | null
   roastLevel: $Enums.RoastLevel | null
   status: $Enums.ProductStatus | null
   isCollab: boolean | null
@@ -40,6 +43,9 @@ export type ProductMaxAggregateOutputType = {
   id: string | null
   roasterId: string | null
   name: string | null
+  description: string | null
+  origin: string | null
+  imageUrl: string | null
   roastLevel: $Enums.RoastLevel | null
   status: $Enums.ProductStatus | null
   isCollab: boolean | null
@@ -52,6 +58,9 @@ export type ProductCountAggregateOutputType = {
   id: number
   roasterId: number
   name: number
+  description: number
+  origin: number
+  imageUrl: number
   roastLevel: number
   status: number
   isCollab: number
@@ -66,6 +75,9 @@ export type ProductMinAggregateInputType = {
   id?: true
   roasterId?: true
   name?: true
+  description?: true
+  origin?: true
+  imageUrl?: true
   roastLevel?: true
   status?: true
   isCollab?: true
@@ -78,6 +90,9 @@ export type ProductMaxAggregateInputType = {
   id?: true
   roasterId?: true
   name?: true
+  description?: true
+  origin?: true
+  imageUrl?: true
   roastLevel?: true
   status?: true
   isCollab?: true
@@ -90,6 +105,9 @@ export type ProductCountAggregateInputType = {
   id?: true
   roasterId?: true
   name?: true
+  description?: true
+  origin?: true
+  imageUrl?: true
   roastLevel?: true
   status?: true
   isCollab?: true
@@ -175,6 +193,9 @@ export type ProductGroupByOutputType = {
   id: string
   roasterId: string
   name: string
+  description: string | null
+  origin: string | null
+  imageUrl: string | null
   roastLevel: $Enums.RoastLevel
   status: $Enums.ProductStatus
   isCollab: boolean
@@ -208,6 +229,9 @@ export type ProductWhereInput = {
   id?: Prisma.StringFilter<"Product"> | string
   roasterId?: Prisma.StringFilter<"Product"> | string
   name?: Prisma.StringFilter<"Product"> | string
+  description?: Prisma.StringNullableFilter<"Product"> | string | null
+  origin?: Prisma.StringNullableFilter<"Product"> | string | null
+  imageUrl?: Prisma.StringNullableFilter<"Product"> | string | null
   roastLevel?: Prisma.EnumRoastLevelFilter<"Product"> | $Enums.RoastLevel
   status?: Prisma.EnumProductStatusFilter<"Product"> | $Enums.ProductStatus
   isCollab?: Prisma.BoolFilter<"Product"> | boolean
@@ -223,6 +247,9 @@ export type ProductOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   roasterId?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  description?: Prisma.SortOrderInput | Prisma.SortOrder
+  origin?: Prisma.SortOrderInput | Prisma.SortOrder
+  imageUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   roastLevel?: Prisma.SortOrder
   status?: Prisma.SortOrder
   isCollab?: Prisma.SortOrder
@@ -241,6 +268,9 @@ export type ProductWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.ProductWhereInput | Prisma.ProductWhereInput[]
   roasterId?: Prisma.StringFilter<"Product"> | string
   name?: Prisma.StringFilter<"Product"> | string
+  description?: Prisma.StringNullableFilter<"Product"> | string | null
+  origin?: Prisma.StringNullableFilter<"Product"> | string | null
+  imageUrl?: Prisma.StringNullableFilter<"Product"> | string | null
   roastLevel?: Prisma.EnumRoastLevelFilter<"Product"> | $Enums.RoastLevel
   status?: Prisma.EnumProductStatusFilter<"Product"> | $Enums.ProductStatus
   isCollab?: Prisma.BoolFilter<"Product"> | boolean
@@ -256,6 +286,9 @@ export type ProductOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   roasterId?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  description?: Prisma.SortOrderInput | Prisma.SortOrder
+  origin?: Prisma.SortOrderInput | Prisma.SortOrder
+  imageUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   roastLevel?: Prisma.SortOrder
   status?: Prisma.SortOrder
   isCollab?: Prisma.SortOrder
@@ -274,6 +307,9 @@ export type ProductScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"Product"> | string
   roasterId?: Prisma.StringWithAggregatesFilter<"Product"> | string
   name?: Prisma.StringWithAggregatesFilter<"Product"> | string
+  description?: Prisma.StringNullableWithAggregatesFilter<"Product"> | string | null
+  origin?: Prisma.StringNullableWithAggregatesFilter<"Product"> | string | null
+  imageUrl?: Prisma.StringNullableWithAggregatesFilter<"Product"> | string | null
   roastLevel?: Prisma.EnumRoastLevelWithAggregatesFilter<"Product"> | $Enums.RoastLevel
   status?: Prisma.EnumProductStatusWithAggregatesFilter<"Product"> | $Enums.ProductStatus
   isCollab?: Prisma.BoolWithAggregatesFilter<"Product"> | boolean
@@ -285,6 +321,9 @@ export type ProductScalarWhereWithAggregatesInput = {
 export type ProductCreateInput = {
   id?: string
   name: string
+  description?: string | null
+  origin?: string | null
+  imageUrl?: string | null
   roastLevel: $Enums.RoastLevel
   status: $Enums.ProductStatus
   isCollab?: boolean
@@ -300,6 +339,9 @@ export type ProductUncheckedCreateInput = {
   id?: string
   roasterId: string
   name: string
+  description?: string | null
+  origin?: string | null
+  imageUrl?: string | null
   roastLevel: $Enums.RoastLevel
   status: $Enums.ProductStatus
   isCollab?: boolean
@@ -313,6 +355,9 @@ export type ProductUncheckedCreateInput = {
 export type ProductUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  origin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   roastLevel?: Prisma.EnumRoastLevelFieldUpdateOperationsInput | $Enums.RoastLevel
   status?: Prisma.EnumProductStatusFieldUpdateOperationsInput | $Enums.ProductStatus
   isCollab?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -328,6 +373,9 @@ export type ProductUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   roasterId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  origin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   roastLevel?: Prisma.EnumRoastLevelFieldUpdateOperationsInput | $Enums.RoastLevel
   status?: Prisma.EnumProductStatusFieldUpdateOperationsInput | $Enums.ProductStatus
   isCollab?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -342,6 +390,9 @@ export type ProductCreateManyInput = {
   id?: string
   roasterId: string
   name: string
+  description?: string | null
+  origin?: string | null
+  imageUrl?: string | null
   roastLevel: $Enums.RoastLevel
   status: $Enums.ProductStatus
   isCollab?: boolean
@@ -353,6 +404,9 @@ export type ProductCreateManyInput = {
 export type ProductUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  origin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   roastLevel?: Prisma.EnumRoastLevelFieldUpdateOperationsInput | $Enums.RoastLevel
   status?: Prisma.EnumProductStatusFieldUpdateOperationsInput | $Enums.ProductStatus
   isCollab?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -365,6 +419,9 @@ export type ProductUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   roasterId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  origin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   roastLevel?: Prisma.EnumRoastLevelFieldUpdateOperationsInput | $Enums.RoastLevel
   status?: Prisma.EnumProductStatusFieldUpdateOperationsInput | $Enums.ProductStatus
   isCollab?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -387,6 +444,9 @@ export type ProductCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   roasterId?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  description?: Prisma.SortOrder
+  origin?: Prisma.SortOrder
+  imageUrl?: Prisma.SortOrder
   roastLevel?: Prisma.SortOrder
   status?: Prisma.SortOrder
   isCollab?: Prisma.SortOrder
@@ -399,6 +459,9 @@ export type ProductMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   roasterId?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  description?: Prisma.SortOrder
+  origin?: Prisma.SortOrder
+  imageUrl?: Prisma.SortOrder
   roastLevel?: Prisma.SortOrder
   status?: Prisma.SortOrder
   isCollab?: Prisma.SortOrder
@@ -411,6 +474,9 @@ export type ProductMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   roasterId?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  description?: Prisma.SortOrder
+  origin?: Prisma.SortOrder
+  imageUrl?: Prisma.SortOrder
   roastLevel?: Prisma.SortOrder
   status?: Prisma.SortOrder
   isCollab?: Prisma.SortOrder
@@ -505,6 +571,9 @@ export type ProductUpdateOneRequiredWithoutCampaignItemsNestedInput = {
 export type ProductCreateWithoutRoasterInput = {
   id?: string
   name: string
+  description?: string | null
+  origin?: string | null
+  imageUrl?: string | null
   roastLevel: $Enums.RoastLevel
   status: $Enums.ProductStatus
   isCollab?: boolean
@@ -518,6 +587,9 @@ export type ProductCreateWithoutRoasterInput = {
 export type ProductUncheckedCreateWithoutRoasterInput = {
   id?: string
   name: string
+  description?: string | null
+  origin?: string | null
+  imageUrl?: string | null
   roastLevel: $Enums.RoastLevel
   status: $Enums.ProductStatus
   isCollab?: boolean
@@ -561,6 +633,9 @@ export type ProductScalarWhereInput = {
   id?: Prisma.StringFilter<"Product"> | string
   roasterId?: Prisma.StringFilter<"Product"> | string
   name?: Prisma.StringFilter<"Product"> | string
+  description?: Prisma.StringNullableFilter<"Product"> | string | null
+  origin?: Prisma.StringNullableFilter<"Product"> | string | null
+  imageUrl?: Prisma.StringNullableFilter<"Product"> | string | null
   roastLevel?: Prisma.EnumRoastLevelFilter<"Product"> | $Enums.RoastLevel
   status?: Prisma.EnumProductStatusFilter<"Product"> | $Enums.ProductStatus
   isCollab?: Prisma.BoolFilter<"Product"> | boolean
@@ -572,6 +647,9 @@ export type ProductScalarWhereInput = {
 export type ProductCreateWithoutVariantsInput = {
   id?: string
   name: string
+  description?: string | null
+  origin?: string | null
+  imageUrl?: string | null
   roastLevel: $Enums.RoastLevel
   status: $Enums.ProductStatus
   isCollab?: boolean
@@ -586,6 +664,9 @@ export type ProductUncheckedCreateWithoutVariantsInput = {
   id?: string
   roasterId: string
   name: string
+  description?: string | null
+  origin?: string | null
+  imageUrl?: string | null
   roastLevel: $Enums.RoastLevel
   status: $Enums.ProductStatus
   isCollab?: boolean
@@ -614,6 +695,9 @@ export type ProductUpdateToOneWithWhereWithoutVariantsInput = {
 export type ProductUpdateWithoutVariantsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  origin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   roastLevel?: Prisma.EnumRoastLevelFieldUpdateOperationsInput | $Enums.RoastLevel
   status?: Prisma.EnumProductStatusFieldUpdateOperationsInput | $Enums.ProductStatus
   isCollab?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -628,6 +712,9 @@ export type ProductUncheckedUpdateWithoutVariantsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   roasterId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  origin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   roastLevel?: Prisma.EnumRoastLevelFieldUpdateOperationsInput | $Enums.RoastLevel
   status?: Prisma.EnumProductStatusFieldUpdateOperationsInput | $Enums.ProductStatus
   isCollab?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -640,6 +727,9 @@ export type ProductUncheckedUpdateWithoutVariantsInput = {
 export type ProductCreateWithoutCampaignItemsInput = {
   id?: string
   name: string
+  description?: string | null
+  origin?: string | null
+  imageUrl?: string | null
   roastLevel: $Enums.RoastLevel
   status: $Enums.ProductStatus
   isCollab?: boolean
@@ -654,6 +744,9 @@ export type ProductUncheckedCreateWithoutCampaignItemsInput = {
   id?: string
   roasterId: string
   name: string
+  description?: string | null
+  origin?: string | null
+  imageUrl?: string | null
   roastLevel: $Enums.RoastLevel
   status: $Enums.ProductStatus
   isCollab?: boolean
@@ -682,6 +775,9 @@ export type ProductUpdateToOneWithWhereWithoutCampaignItemsInput = {
 export type ProductUpdateWithoutCampaignItemsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  origin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   roastLevel?: Prisma.EnumRoastLevelFieldUpdateOperationsInput | $Enums.RoastLevel
   status?: Prisma.EnumProductStatusFieldUpdateOperationsInput | $Enums.ProductStatus
   isCollab?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -696,6 +792,9 @@ export type ProductUncheckedUpdateWithoutCampaignItemsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   roasterId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  origin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   roastLevel?: Prisma.EnumRoastLevelFieldUpdateOperationsInput | $Enums.RoastLevel
   status?: Prisma.EnumProductStatusFieldUpdateOperationsInput | $Enums.ProductStatus
   isCollab?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -708,6 +807,9 @@ export type ProductUncheckedUpdateWithoutCampaignItemsInput = {
 export type ProductCreateManyRoasterInput = {
   id?: string
   name: string
+  description?: string | null
+  origin?: string | null
+  imageUrl?: string | null
   roastLevel: $Enums.RoastLevel
   status: $Enums.ProductStatus
   isCollab?: boolean
@@ -719,6 +821,9 @@ export type ProductCreateManyRoasterInput = {
 export type ProductUpdateWithoutRoasterInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  origin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   roastLevel?: Prisma.EnumRoastLevelFieldUpdateOperationsInput | $Enums.RoastLevel
   status?: Prisma.EnumProductStatusFieldUpdateOperationsInput | $Enums.ProductStatus
   isCollab?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -732,6 +837,9 @@ export type ProductUpdateWithoutRoasterInput = {
 export type ProductUncheckedUpdateWithoutRoasterInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  origin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   roastLevel?: Prisma.EnumRoastLevelFieldUpdateOperationsInput | $Enums.RoastLevel
   status?: Prisma.EnumProductStatusFieldUpdateOperationsInput | $Enums.ProductStatus
   isCollab?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -745,6 +853,9 @@ export type ProductUncheckedUpdateWithoutRoasterInput = {
 export type ProductUncheckedUpdateManyWithoutRoasterInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  origin?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   roastLevel?: Prisma.EnumRoastLevelFieldUpdateOperationsInput | $Enums.RoastLevel
   status?: Prisma.EnumProductStatusFieldUpdateOperationsInput | $Enums.ProductStatus
   isCollab?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -797,6 +908,9 @@ export type ProductSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   id?: boolean
   roasterId?: boolean
   name?: boolean
+  description?: boolean
+  origin?: boolean
+  imageUrl?: boolean
   roastLevel?: boolean
   status?: boolean
   isCollab?: boolean
@@ -813,6 +927,9 @@ export type ProductSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   id?: boolean
   roasterId?: boolean
   name?: boolean
+  description?: boolean
+  origin?: boolean
+  imageUrl?: boolean
   roastLevel?: boolean
   status?: boolean
   isCollab?: boolean
@@ -826,6 +943,9 @@ export type ProductSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   id?: boolean
   roasterId?: boolean
   name?: boolean
+  description?: boolean
+  origin?: boolean
+  imageUrl?: boolean
   roastLevel?: boolean
   status?: boolean
   isCollab?: boolean
@@ -839,6 +959,9 @@ export type ProductSelectScalar = {
   id?: boolean
   roasterId?: boolean
   name?: boolean
+  description?: boolean
+  origin?: boolean
+  imageUrl?: boolean
   roastLevel?: boolean
   status?: boolean
   isCollab?: boolean
@@ -847,7 +970,7 @@ export type ProductSelectScalar = {
   updatedAt?: boolean
 }
 
-export type ProductOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "roasterId" | "name" | "roastLevel" | "status" | "isCollab" | "deletedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["product"]>
+export type ProductOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "roasterId" | "name" | "description" | "origin" | "imageUrl" | "roastLevel" | "status" | "isCollab" | "deletedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["product"]>
 export type ProductInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   roaster?: boolean | Prisma.RoasterDefaultArgs<ExtArgs>
   variants?: boolean | Prisma.Product$variantsArgs<ExtArgs>
@@ -872,6 +995,9 @@ export type $ProductPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     id: string
     roasterId: string
     name: string
+    description: string | null
+    origin: string | null
+    imageUrl: string | null
     roastLevel: $Enums.RoastLevel
     status: $Enums.ProductStatus
     isCollab: boolean
@@ -1307,6 +1433,9 @@ export interface ProductFieldRefs {
   readonly id: Prisma.FieldRef<"Product", 'String'>
   readonly roasterId: Prisma.FieldRef<"Product", 'String'>
   readonly name: Prisma.FieldRef<"Product", 'String'>
+  readonly description: Prisma.FieldRef<"Product", 'String'>
+  readonly origin: Prisma.FieldRef<"Product", 'String'>
+  readonly imageUrl: Prisma.FieldRef<"Product", 'String'>
   readonly roastLevel: Prisma.FieldRef<"Product", 'RoastLevel'>
   readonly status: Prisma.FieldRef<"Product", 'ProductStatus'>
   readonly isCollab: Prisma.FieldRef<"Product", 'Boolean'>

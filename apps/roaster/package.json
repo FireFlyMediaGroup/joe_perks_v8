@@ -11,12 +11,12 @@
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
-    "@repo/analytics": "workspace:*",
-    "@repo/auth": "workspace:*",
-    "@repo/collaboration": "workspace:*",
     "@joe-perks/db": "workspace:*",
     "@joe-perks/email": "workspace:*",
     "@joe-perks/stripe": "workspace:*",
+    "@repo/analytics": "workspace:*",
+    "@repo/auth": "workspace:*",
+    "@repo/collaboration": "workspace:*",
     "@repo/design-system": "workspace:*",
     "@repo/feature-flags": "workspace:*",
     "@repo/next-config": "workspace:*",
@@ -27,6 +27,7 @@
     "@repo/webhooks": "workspace:*",
     "@sentry/nextjs": "^10.42.0",
     "@t3-oss/env-nextjs": "^0.13.10",
+    "@uploadthing/react": "^7.3.3",
     "fuse.js": "^7.1.0",
     "import-in-the-middle": "^3.0.0",
     "lucide-react": "^0.577.0",
@@ -35,6 +36,7 @@
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "require-in-the-middle": "8.0.1",
+    "uploadthing": "^7.7.4",
     "zod": "^4.3.6"
   },
   "devDependencies": {
