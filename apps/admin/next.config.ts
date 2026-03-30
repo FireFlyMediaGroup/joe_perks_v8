@@ -1,3 +1,4 @@
+import "./load-root-env";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { withSentry } from "@repo/observability/next-config";

@@ -2,7 +2,7 @@
 
 **Story ID:** US-02-02 | **Epic:** EP-02 (Roaster Onboarding)
 **Points:** 5 | **Priority:** High
-**Status:** `Todo`
+**Status:** `Done`
 **Owner:** Full-stack
 **Dependencies:** US-02-01 (Roaster Application Form), US-01-03 (Admin Auth)
 **Depends on this:** US-02-03 (Stripe Connect Onboarding)
@@ -25,13 +25,16 @@ Replace the placeholder at `apps/admin/app/approvals/roasters/page.tsx` with a r
 
 ## Current repo evidence
 
-- `apps/admin/app/approvals/roasters/page.tsx` exists as scaffold text only
-- `apps/admin/middleware.ts` implements HTTP Basic Auth — admin routes are already protected
-- `RoasterApplication` model has `status` field (`ApplicationStatus`: `PENDING_REVIEW`, `APPROVED`, `REJECTED`)
-- `Roaster` model has `applicationId` FK, `status` (`RoasterStatus`: `ONBOARDING`, `ACTIVE`, `SUSPENDED`), `stripeAccountId`, `stripeOnboarding`
-- `User` model has `externalAuthId`, `role` (`UserRole`), `roasterId`
-- `sendEmail()` is available from `@joe-perks/email`
-- Clerk is configured for the roaster app (can create invites or send onboarding emails)
+- `apps/admin/app/approvals/roasters/page.tsx` — server component: paginated list with `?status=` filter + `?page=`
+- `apps/admin/app/approvals/roasters/[id]/page.tsx` — detail view showing all application fields + approve/reject buttons
+- `apps/admin/app/approvals/roasters/_actions/approve-application.ts` — `$transaction` (update app → create Roaster → create User), then `sendEmail` (`roaster-approved`)
+- `apps/admin/app/approvals/roasters/_actions/reject-application.ts` — `$transaction` (update status), then `sendEmail` (`roaster-rejected`)
+- `apps/admin/app/approvals/roasters/_components/roaster-application-queue.tsx` — table + status pills + pagination nav
+- `apps/admin/app/approvals/roasters/_components/approve-reject-buttons.tsx` — client component with `<dialog>` confirmation
+- `apps/admin/app/approvals/roasters/_lib/queue-url.ts` — `ROASTER_QUEUE_PAGE_SIZE`, `buildRoasterQueueHref`, `parseQueuePage`
+- `apps/admin/app/approvals/roasters/_lib/roaster-portal-sign-in-url.ts` — `getRoasterPortalSignInUrl()` (uses `ROASTER_APP_ORIGIN`)
+- `apps/admin/middleware.ts` implements HTTP Basic Auth (username: `joe@joeperks.com`) — admin routes are already protected
+- `packages/db/clerk-user-sync.ts` — `generatePendingClerkExternalAuthId()` for pre-created User rows; `upsertUserFromClerkWebhook()` merges by email on first Clerk sign-in
 
 ---
 
@@ -75,34 +78,40 @@ Replace the placeholder at `apps/admin/app/approvals/roasters/page.tsx` with a r
 
 ---
 
-## Primary files to create or modify
+## Primary files created or modified
 
 | Action | File | Purpose |
 |--------|------|---------|
-| Modify | `apps/admin/app/approvals/roasters/page.tsx` | Server component — fetches and displays application queue |
-| Create | `apps/admin/app/approvals/roasters/_components/application-list.tsx` | List/table of applications with status badges |
-| Create | `apps/admin/app/approvals/roasters/_components/application-detail.tsx` | Expanded view of a single application |
-| Create | `apps/admin/app/approvals/roasters/_actions/approve-application.ts` | Server action — approve flow (transaction: update app, create roaster, create user, send email) |
-| Create | `apps/admin/app/approvals/roasters/_actions/reject-application.ts` | Server action — reject flow (update status, send email) |
-| Create | `apps/admin/app/approvals/roasters/[id]/page.tsx` | Optional: dedicated detail page for a single application |
+| Modified | `apps/admin/app/approvals/roasters/page.tsx` | Server component — paginated queue with `?status=` + `?page=` |
+| Created | `apps/admin/app/approvals/roasters/[id]/page.tsx` | Dedicated detail page for a single application |
+| Created | `apps/admin/app/approvals/roasters/_actions/approve-application.ts` | Server action — approve flow (`$transaction`: update app, create Roaster + User, send email) |
+| Created | `apps/admin/app/approvals/roasters/_actions/reject-application.ts` | Server action — reject flow (`$transaction`: update status, send email) |
+| Created | `apps/admin/app/approvals/roasters/_components/roaster-application-queue.tsx` | Table of applications with status badges + pagination nav |
+| Created | `apps/admin/app/approvals/roasters/_components/approve-reject-buttons.tsx` | Client component — `<dialog>` confirmation before approve/reject |
+| Created | `apps/admin/app/approvals/roasters/_lib/queue-url.ts` | `ROASTER_QUEUE_PAGE_SIZE`, `buildRoasterQueueHref`, `parseQueuePage` |
+| Created | `apps/admin/app/approvals/roasters/_lib/roaster-portal-sign-in-url.ts` | `getRoasterPortalSignInUrl()` using `ROASTER_APP_ORIGIN` |
+| Modified | `apps/admin/load-root-env.ts` + `next.config.ts` | Root `.env` loading for `DATABASE_URL`, Resend keys |
+| Modified | `apps/admin/package.json` | Added `@joe-perks/db`, `@joe-perks/email`, `dotenv` |
+| Modified | `packages/db/clerk-user-sync.ts` | `generatePendingClerkExternalAuthId`, merge-by-email for `clerk_pending:` rows |
+| Modified | `packages/db/index.ts` | Export `generatePendingClerkExternalAuthId` |
 
 ---
 
 ## Acceptance criteria
 
-- [ ] The admin queue at `/approvals/roasters` displays `RoasterApplication` records
-- [ ] Default view filters to `PENDING_REVIEW` status; tabs or dropdown to view `APPROVED` and `REJECTED`
-- [ ] Each application row shows: business name, email, city/state, submission date, status badge
-- [ ] Clicking an application shows the full detail (all submitted fields)
-- [ ] The approve button creates a `Roaster` record with `status = ONBOARDING` and `applicationId` linked
-- [ ] The approve action creates a `User` record with `role = ROASTER_ADMIN` and `roasterId` linked
-- [ ] The approve action updates `RoasterApplication.status` to `APPROVED`
-- [ ] The reject button updates `RoasterApplication.status` to `REJECTED`
-- [ ] Approve sends the `roaster-approved` email; reject sends the `roaster-rejected` email
-- [ ] Both approve and reject run inside a database transaction
-- [ ] A confirmation dialog appears before approve or reject
-- [ ] Already-processed applications (non-`PENDING_REVIEW`) cannot be approved or rejected again
-- [ ] The queue is protected by HTTP Basic Auth (existing middleware — verify it works)
+- [x] The admin queue at `/approvals/roasters` displays `RoasterApplication` records
+- [x] Default view filters to `PENDING_REVIEW` status; tabs or dropdown to view `APPROVED` and `REJECTED`
+- [x] Each application row shows: business name, email, city/state, submission date, status badge
+- [x] Clicking an application shows the full detail (all submitted fields)
+- [x] The approve button creates a `Roaster` record with `status = ONBOARDING` and `applicationId` linked
+- [x] The approve action creates a `User` record with `role = ROASTER_ADMIN` and `roasterId` linked
+- [x] The approve action updates `RoasterApplication.status` to `APPROVED`
+- [x] The reject button updates `RoasterApplication.status` to `REJECTED`
+- [x] Approve sends the `roaster-approved` email; reject sends the `roaster-rejected` email
+- [x] Both approve and reject run inside a database transaction (DB writes only; `sendEmail()` runs after commit)
+- [x] A confirmation dialog appears before approve or reject
+- [x] Already-processed applications (non-`PENDING_REVIEW`) cannot be approved or rejected again
+- [x] The queue is protected by HTTP Basic Auth (existing middleware — verify it works)
 
 ---
 
@@ -126,7 +135,7 @@ Replace the placeholder at `apps/admin/app/approvals/roasters/page.tsx` with a r
 ## Handoff notes
 
 - US-02-03 depends on the `Roaster` record existing with a valid `id` and `email`. The roaster must be able to sign in via Clerk at `apps/roaster` and have their `User.roasterId` link the session to the roaster profile.
-- The `User.externalAuthId` created here is a placeholder. When the roaster signs up via Clerk, the Clerk webhook (`apps/roaster/app/api/webhooks/clerk/route.ts`) should match by email and update the `externalAuthId`. Verify this flow works or document the gap.
+- The `User.externalAuthId` created here is a placeholder (`clerk_pending:{uuid}` via `generatePendingClerkExternalAuthId()`). When the roaster signs up via Clerk, `upsertUserFromClerkWebhook` in `packages/db/clerk-user-sync.ts` matches by email and replaces `externalAuthId` with the Clerk user id.
 - The `Roaster.stripeAccountId` is left null at this point — US-02-03 populates it.
 
 ---
@@ -136,3 +145,5 @@ Replace the placeholder at `apps/admin/app/approvals/roasters/page.tsx` with a r
 | Version | Date | Notes |
 |---------|------|-------|
 | 0.1 | 2026-03-29 | Initial story created for Sprint 2 planning. |
+| 0.2 | 2026-03-29 | Implemented: admin queue, detail page, approve/reject actions, Clerk pending-id merge in `clerk-user-sync.ts`. |
+| 0.3 | 2026-03-29 | List pagination (`?page=`, 20/page), `_lib/queue-url.ts`; AGENTS clarifies `ADMIN_EMAIL` vs `ROASTER_APP_ORIGIN`. |

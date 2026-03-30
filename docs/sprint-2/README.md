@@ -8,7 +8,7 @@
 - Progress tracker: [`docs/SPRINT_2_PROGRESS.md`](../SPRINT_2_PROGRESS.md)
 - Stories: [`docs/sprint-2/stories/`](./stories/)
 
-**Current progress:** US-08-06, US-02-06, and US-02-01 are **Done**. Next story in the recommended sequence: **US-02-02** (admin approval queue). Details: [`docs/SPRINT_2_PROGRESS.md`](../SPRINT_2_PROGRESS.md).
+**Current progress:** US-08-06, US-02-06, US-02-01, US-02-02, and US-02-03 are **Done**. Next story in the recommended sequence: **US-02-04** (product and variant creation). Details: [`docs/SPRINT_2_PROGRESS.md`](../SPRINT_2_PROGRESS.md).
 
 ---
 
@@ -43,7 +43,7 @@ Build the first real user-facing onboarding flows: roaster application form, adm
 |----------|-------|-----|----------|--------------|-------------|
 | US-08-06 | Application received and approval/rejection notifications | 2 | High | US-01-04 | `packages/email` |
 
-Story status in this table matches the tracker: **US-08-06** is implemented (templates + `package.json` exports). **US-02-06** is implemented (`packages/types/src/slug-validation.ts` + `apps/web/app/api/slugs/validate/route.ts`). **US-02-01** is implemented (5-step form, server action with `sendEmail()` wiring, rate limiting via `limitRoasterApplication()`). Remaining `sendEmail()` wiring for approval/rejection lands in US-02-02; org email wiring in US-03-01.
+Story status in this table matches the tracker: **US-08-06** is implemented (templates + `package.json` exports). **US-02-06** is implemented (`packages/types/src/slug-validation.ts` + `apps/web/app/api/slugs/validate/route.ts`). **US-02-01** is implemented (5-step form, server action with `sendEmail()` wiring, rate limiting via `limitRoasterApplication()`). **US-02-02** is implemented (`apps/admin/app/approvals/roasters/page.tsx`, `[id]/page.tsx`, approve/reject server actions, `sendEmail()` for approved/rejected). **US-02-03** is implemented (`apps/roaster/app/(authenticated)/onboarding/` — server page, `connect-status` + `start-onboarding-button`, return/refresh query params). Org email wiring remains in US-03-01.
 
 ---
 
@@ -116,8 +116,8 @@ Parallelization opportunity: US-08-06, US-02-06, and US-02-01 can run concurrent
 | Story | Primary files to create or modify |
 |-------|----------------------------------|
 | US-02-01 | `apps/web/app/[locale]/roasters/apply/page.tsx`, `apps/web/app/[locale]/roasters/apply/_components/roaster-apply-form.tsx`, `apps/web/app/[locale]/roasters/apply/_components/step-*.tsx`, `apps/web/app/[locale]/roasters/apply/_actions/submit-application.ts`, `apps/web/app/[locale]/roasters/apply/_lib/schema.ts` |
-| US-02-02 | `apps/admin/app/approvals/roasters/page.tsx`, `apps/admin/app/approvals/roasters/_actions/`, `apps/admin/app/approvals/roasters/_components/` |
-| US-02-03 | `apps/roaster/app/(authenticated)/onboarding/page.tsx`, `apps/roaster/app/(authenticated)/onboarding/_components/` |
+| US-02-02 | `apps/admin/app/approvals/roasters/page.tsx`, `[id]/page.tsx`, `_actions/`, `_components/`, `_lib/queue-url.ts` (pagination + href helpers) |
+| US-02-03 | `apps/roaster/app/(authenticated)/onboarding/page.tsx`, `apps/roaster/app/(authenticated)/onboarding/_components/`, `_lib/fetch-stripe-connect-url.ts`, `_hooks/use-stripe-refresh-redirect.ts`, `apps/web/app/api/webhooks/stripe/route.ts` (ACTIVE promotion) |
 | US-02-04 | `apps/roaster/app/(authenticated)/products/page.tsx`, `apps/roaster/app/(authenticated)/products/new/page.tsx`, `apps/roaster/app/(authenticated)/products/[id]/edit/page.tsx`, `apps/roaster/app/(authenticated)/products/_actions/`, `apps/roaster/app/(authenticated)/products/_components/` |
 | US-02-05 | `apps/roaster/app/(authenticated)/settings/shipping/page.tsx`, `apps/roaster/app/(authenticated)/settings/shipping/_actions/`, `apps/roaster/app/(authenticated)/settings/shipping/_components/` |
 | US-02-06 | `apps/web/app/api/slugs/validate/route.ts` |

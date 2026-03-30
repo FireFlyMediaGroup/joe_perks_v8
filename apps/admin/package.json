@@ -10,7 +10,10 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@joe-perks/db": "workspace:*",
+    "@joe-perks/email": "workspace:*",
     "@repo/observability": "workspace:*",
+    "dotenv": "^16.5.0",
     "@sentry/nextjs": "^10.42.0",
     "import-in-the-middle": "^3.0.0",
     "next": "16.2.1",

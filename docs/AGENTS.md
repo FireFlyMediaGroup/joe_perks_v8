@@ -207,7 +207,7 @@ UPSTASH_REDIS_REST_TOKEN=        # ...
 SENTRY_AUTH_TOKEN=               # for source map uploads
 ```
 
-**Root `.env` loading caveat:** Next.js only loads `.env` files from the app's own directory (e.g. `apps/web/`), **not** from the monorepo root. Apps that need root `.env` values use a `load-root-env.ts` loader (imported at the top of `next.config.ts`) that calls `dotenv.config()` pointing at `../../.env`. Currently `apps/web` has this loader — other apps should add one when they need root-level secrets.
+**Root `.env` loading caveat:** Next.js only loads `.env` files from the app's own directory (e.g. `apps/web/`), **not** from the monorepo root. Apps that need root `.env` values use a `load-root-env.ts` loader (imported at the top of `next.config.ts`) that calls `dotenv.config()` pointing at `../../.env`. **`apps/web`** and **`apps/admin`** use this loader so `DATABASE_URL`, Resend keys, and shared URLs are available for Prisma and `sendEmail()` without duplicating secrets in per-app `.env` files.
 
 **Empty-string overrides:** Do **not** set `STRIPE_SECRET_KEY=""` or similar in per-app `.env.local` for variables that already have values in root `.env`. Next.js merges `.env.local` over `.env` and the empty string will mask the real value. Only add a variable to `.env.local` if you need to override it with a non-empty app-specific value.
 
@@ -235,8 +235,9 @@ CLERK_SECRET_KEY=
 
 ### apps/admin `.env.local`
 ```
-ADMIN_EMAIL=         # HTTP Basic Auth for MVP
+ADMIN_EMAIL=         # HTTP Basic Auth for MVP (platform admin login — e.g. joe@joeperks.com)
 ADMIN_PASSWORD=      # HTTP Basic Auth for MVP
+ROASTER_APP_ORIGIN=  # optional — public **roaster portal** base URL for approval emails (login CTA in `roaster-approved`), e.g. https://roasters.joeperks.com — **not** the admin user’s email. Default http://localhost:3001. May be set in root `.env` instead (admin loads root `.env` via `load-root-env.ts`).
 ```
 
 ### Stripe and Stripe Connect

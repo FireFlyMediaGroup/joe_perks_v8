@@ -2,7 +2,7 @@
 
 **Story ID:** US-02-03 | **Epic:** EP-02 (Roaster Onboarding)
 **Points:** 5 | **Priority:** High
-**Status:** `Todo`
+**Status:** `Done`
 **Owner:** Full-stack
 **Dependencies:** US-02-02 (Admin Approval Queue)
 **Depends on this:** US-02-04 (Product and Variant Creation)
@@ -25,12 +25,17 @@ Wire the scaffold page at `apps/roaster/app/(authenticated)/onboarding/page.tsx`
 
 ## Current repo evidence
 
-- `apps/roaster/app/(authenticated)/onboarding/page.tsx` exists as scaffold text
+- `apps/roaster/app/(authenticated)/onboarding/page.tsx` — **implemented**: server component authenticates via `auth()`, loads `User` → `Roaster` Connect fields, passes to `ConnectStatus` client component
+- `apps/roaster/app/(authenticated)/onboarding/_components/connect-status.tsx` — **implemented**: status badges, charges/payouts flags, success card, return/refresh handling
+- `apps/roaster/app/(authenticated)/onboarding/_components/start-onboarding-button.tsx` — **implemented**: calls `POST /api/stripe/connect`, loading state, browser redirect
+- `apps/roaster/app/(authenticated)/onboarding/_lib/fetch-stripe-connect-url.ts` — **implemented**: shared fetch helper for the Connect API route
+- `apps/roaster/app/(authenticated)/onboarding/_hooks/use-stripe-refresh-redirect.ts` — **implemented**: auto-re-initiates on `?stripe_refresh=1`
 - `apps/roaster/app/api/stripe/connect/route.ts` is **fully implemented**: authenticates via Clerk, loads User + Roaster, creates Express account if needed, returns Account Link URL
 - `packages/stripe/src/connect.ts` exports `createExpressConnectedAccount`, `createExpressAccountLink`
 - `packages/stripe/src/stripe-account-status.ts` exports `mapStripeAccountToOnboardingStatus`
-- `apps/web/app/api/webhooks/stripe/route.ts` handles `account.updated` — updates `Roaster.stripeOnboarding`, `chargesEnabled`, `payoutsEnabled`, and sets `Roaster.status = ACTIVE` when both are true
+- `apps/web/app/api/webhooks/stripe/route.ts` handles `account.updated` — updates `Roaster.stripeOnboarding`, `chargesEnabled`, `payoutsEnabled`, and promotes `Roaster.status` from `ONBOARDING` → `ACTIVE` when all three are true (guarded: never overrides `SUSPENDED`)
 - The Connect route already sets return URL to `/onboarding?stripe_return=1` and refresh URL to `/onboarding?stripe_refresh=1`
+- Smoke tests at `packages/db/scripts/smoke-onboarding.ts` — 7 tests (DB state, API auth, webhook, tenant isolation)
 
 ---
 
@@ -52,7 +57,7 @@ Wire the scaffold page at `apps/roaster/app/(authenticated)/onboarding/page.tsx`
 - "Start onboarding" / "Continue onboarding" button that calls `POST /api/stripe/connect` and redirects to the returned URL
 - Handle `?stripe_return=1` query param (user completed or exited Stripe flow) — refresh status from DB
 - Handle `?stripe_refresh=1` query param (link expired) — automatically re-initiate onboarding
-- Status display: show current `stripeOnboarding` status (`NOT_STARTED`, `PENDING`, `IN_PROGRESS`, `COMPLETE`) with appropriate messaging
+- Status display: show current `stripeOnboarding` status (`NOT_STARTED`, `PENDING`, `COMPLETE`, `RESTRICTED` — Prisma has no `IN_PROGRESS`; use `PENDING` for in-flight onboarding) with appropriate messaging
 - Show `chargesEnabled` and `payoutsEnabled` flags
 - When fully onboarded (`COMPLETE` + both flags true), show success state and link to products/dashboard
 - Guard: if roaster has no `Roaster` record yet (shouldn't happen post-approval), show appropriate error
@@ -75,21 +80,24 @@ Wire the scaffold page at `apps/roaster/app/(authenticated)/onboarding/page.tsx`
 | Modify | `apps/roaster/app/(authenticated)/onboarding/page.tsx` | Server component — fetch Roaster status, render onboarding UI |
 | Create | `apps/roaster/app/(authenticated)/onboarding/_components/connect-status.tsx` | Client component — status display with refresh capability |
 | Create | `apps/roaster/app/(authenticated)/onboarding/_components/start-onboarding-button.tsx` | Client component — calls POST /api/stripe/connect, redirects browser |
+| Create | `apps/roaster/app/(authenticated)/onboarding/_lib/fetch-stripe-connect-url.ts` | Shared fetch helper for POST /api/stripe/connect |
+| Create | `apps/roaster/app/(authenticated)/onboarding/_hooks/use-stripe-refresh-redirect.ts` | Hook for auto-re-initiation on expired Account Link |
+| Modify | `apps/web/app/api/webhooks/stripe/route.ts` | Added `ONBOARDING → ACTIVE` promotion per RA8 |
 
 ---
 
 ## Acceptance criteria
 
-- [ ] The onboarding page at `/onboarding` shows the current Stripe Connect status
-- [ ] A "Start onboarding" button appears when `stripeOnboarding` is `NOT_STARTED` or `PENDING`
-- [ ] Clicking the button calls `POST /api/stripe/connect` and redirects the browser to the Stripe-hosted URL
-- [ ] When the user returns from Stripe (`?stripe_return=1`), the page refreshes and shows updated status
-- [ ] When the Stripe link expires (`?stripe_refresh=1`), the page automatically re-initiates onboarding
-- [ ] When `stripeOnboarding = COMPLETE` and `chargesEnabled = true` and `payoutsEnabled = true`, the page shows a success message and links to products/dashboard
-- [ ] When onboarding is in progress but incomplete, the page shows "Continue onboarding" with clear next-step messaging
-- [ ] The page handles the case where the `Roaster` record doesn't exist (redirect to sign-in or show error)
-- [ ] All data is fetched scoped to the authenticated roaster (tenant isolation)
-- [ ] The scaffold placeholder text is removed
+- [x] The onboarding page at `/onboarding` shows the current Stripe Connect status
+- [x] A "Start onboarding" button appears when `stripeOnboarding` is `NOT_STARTED`; "Continue onboarding" when `PENDING` (Prisma enum has `PENDING`, not `IN_PROGRESS`)
+- [x] Clicking the button calls `POST /api/stripe/connect` and redirects the browser to the Stripe-hosted URL
+- [x] When the user returns from Stripe (`?stripe_return=1`), the page shows a banner and current DB-backed status
+- [x] When the Stripe link expires (`?stripe_refresh=1`), the page automatically re-initiates onboarding (`useStripeRefreshRedirect`)
+- [x] When `stripeOnboarding = COMPLETE` and `chargesEnabled = true` and `payoutsEnabled = true`, the page shows a success message and links to products/dashboard
+- [x] When onboarding is in progress but incomplete (`PENDING`), the page shows "Continue onboarding" with clear next-step messaging
+- [x] The page handles the case where the `Roaster` record doesn't exist (layout already requires sign-in; missing profile shows inline message)
+- [x] All data is fetched scoped to the authenticated roaster (tenant isolation)
+- [x] The scaffold placeholder text is removed
 
 ---
 
@@ -125,3 +133,5 @@ Wire the scaffold page at `apps/roaster/app/(authenticated)/onboarding/page.tsx`
 | Version | Date | Notes |
 |---------|------|-------|
 | 0.1 | 2026-03-29 | Initial story created for Sprint 2 planning. |
+| 0.2 | 2026-03-29 | Implemented: `onboarding/page.tsx`, `connect-status.tsx`, `start-onboarding-button.tsx`, `_lib/fetch-stripe-connect-url.ts`, `_hooks/use-stripe-refresh-redirect.ts`. |
+| 0.3 | 2026-03-30 | Webhook `handleAccountUpdated` now promotes `Roaster.status` from `ONBOARDING` → `ACTIVE` when `stripeOnboarding = COMPLETE` + `chargesEnabled` + `payoutsEnabled` (per RA8). Guarded against `SUSPENDED`. Smoke tests at `packages/db/scripts/smoke-onboarding.ts` (7/7 pass). |

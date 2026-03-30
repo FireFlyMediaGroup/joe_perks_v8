@@ -40,7 +40,7 @@ graph TD
   ROASTER --> R_PROD["(authenticated)/products/"]:::route
   ROASTER --> R_SHIP["(authenticated)/settings/shipping/"]:::route
   ROASTER --> R_PAY["(authenticated)/payouts/"]:::route
-  ROASTER --> R_ONBOARD["(authenticated)/onboarding/"]:::route
+  ROASTER --> R_ONBOARD["(authenticated)/onboarding/\npage + _components/"]:::route
 
   %% apps/org routes
   ORG --> O_DASH["dashboard/"]:::route
@@ -51,7 +51,7 @@ graph TD
 
   %% apps/admin routes
   ADMIN --> A_HOME["app/page.tsx\nhome / metrics"]:::route
-  ADMIN --> A_AR["approvals/roasters/"]:::route
+  ADMIN --> A_AR["approvals/roasters/\npage + [id]/"]:::route
   ADMIN --> A_AO["approvals/orgs/"]:::route
   ADMIN --> A_ORD["orders/"]:::route
   ADMIN --> A_DISP["disputes/"]:::route

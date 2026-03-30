@@ -16,12 +16,21 @@ async function handleAccountUpdated(account: Stripe.Account): Promise<void> {
     where: { stripeAccountId: id },
   });
   if (roaster) {
+    const charges = account.charges_enabled ?? false;
+    const payouts = account.payouts_enabled ?? false;
+    const fullyOnboarded = onboarding === "COMPLETE" && charges && payouts;
+
+    // Promote ONBOARDING → ACTIVE per RA8 in 05-approval-chain.mermaid.
+    // Never override SUSPENDED — that's an admin action.
+    const promoteToActive = fullyOnboarded && roaster.status === "ONBOARDING";
+
     await database.roaster.update({
       where: { id: roaster.id },
       data: {
-        chargesEnabled: account.charges_enabled ?? false,
-        payoutsEnabled: account.payouts_enabled ?? false,
+        chargesEnabled: charges,
+        payoutsEnabled: payouts,
         stripeOnboarding: onboarding,
+        ...(promoteToActive && { status: "ACTIVE" }),
       },
     });
     return;
@@ -42,13 +51,17 @@ async function handlePaymentIntentSucceeded(
   pi: Stripe.PaymentIntent
 ): Promise<void> {
   const orderId = pi.metadata.order_id;
-  if (!orderId) return;
+  if (!orderId) {
+    return;
+  }
 
   const order = await database.order.findUnique({
     where: { id: orderId },
     select: { campaignId: true, orgAmount: true, status: true },
   });
-  if (!order || order.status !== "PENDING") return;
+  if (!order || order.status !== "PENDING") {
+    return;
+  }
 
   const settings = await database.platformSettings.findUniqueOrThrow({
     where: { id: "singleton" },
@@ -91,7 +104,9 @@ async function handlePaymentIntentFailed(
   pi: Stripe.PaymentIntent
 ): Promise<void> {
   const orderId = pi.metadata.order_id;
-  if (!orderId) return;
+  if (!orderId) {
+    return;
+  }
 
   await database.orderEvent.create({
     data: {

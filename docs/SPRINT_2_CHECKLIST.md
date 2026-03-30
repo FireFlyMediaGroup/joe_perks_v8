@@ -145,8 +145,8 @@ Before starting Sprint 2 work, verify these Sprint 1 deliverables are in place:
 
 - [x] Submit valid application → `RoasterApplication` created in DB with `status = PENDING_REVIEW`
 - [x] Duplicate email → rejected (P2002 unique constraint)
-- [ ] Rate limit → 429 after 3 submissions (requires Upstash env; `limitRoasterApplication()` tested via code path)
-- [ ] `EmailLog` entry created for `roaster-application-received` (requires Resend env)
+- [ ] Rate limit → 429 after 3 submissions (`limitRoasterApplication()` tested via code path)
+- [x] `EmailLog` entry created for `roaster-application-received` (confirmed: email delivered via Resend)
 
 **Reference:** [`docs/sprint-2/stories/US-02-01-roaster-application-form.md`](sprint-2/stories/US-02-01-roaster-application-form.md)
 **Diagram:** [`docs/05-approval-chain.mermaid`](05-approval-chain.mermaid) — RA1, RA2
@@ -159,48 +159,49 @@ Before starting Sprint 2 work, verify these Sprint 1 deliverables are in place:
 
 ### 4.1 Application list page
 
-- [ ] Update `apps/admin/app/approvals/roasters/page.tsx` — remove scaffold, add server component that queries `RoasterApplication`
-- [ ] Default filter: `status = PENDING_REVIEW`
-- [ ] Tabs or dropdown for `APPROVED`, `REJECTED` views
-- [ ] Each row: business name, email, city/state, submission date, status badge
+- [x] Update `apps/admin/app/approvals/roasters/page.tsx` — remove scaffold, add server component that queries `RoasterApplication`
+- [x] Default filter: `status = PENDING_REVIEW`
+- [x] Tabs or dropdown for `APPROVED`, `REJECTED` views
+- [x] Each row: business name, email, city/state, submission date, status badge
+- [x] Pagination: `?page=` (1-based), 20 rows per page (`ROASTER_QUEUE_PAGE_SIZE` in `_lib/queue-url.ts`), Previous/Next + range summary; invalid/high pages clamped to last page
 
 ### 4.2 Application detail
 
-- [ ] Create detail view (inline expansion or `apps/admin/app/approvals/roasters/[id]/page.tsx`)
-- [ ] Shows all submitted fields from the application
+- [x] Create detail view (inline expansion or `apps/admin/app/approvals/roasters/[id]/page.tsx`)
+- [x] Shows all submitted fields from the application
 
 ### 4.3 Approve server action
 
-- [ ] Create `apps/admin/app/approvals/roasters/_actions/approve-application.ts`
-- [ ] Validates: application exists, status is `PENDING_REVIEW`
-- [ ] `database.$transaction()`:
+- [x] Create `apps/admin/app/approvals/roasters/_actions/approve-application.ts`
+- [x] Validates: application exists, status is `PENDING_REVIEW`
+- [x] `database.$transaction()`:
   - Update `RoasterApplication.status` → `APPROVED`
   - Create `Roaster` record: `status = ONBOARDING`, `applicationId`, `email` from application
   - Create `User` record: `role = ROASTER_ADMIN`, `roasterId`, `email` from application
-- [ ] Call `sendEmail()` with `roaster-approved` template
-- [ ] Revalidate page path
+- [x] Call `sendEmail()` with `roaster-approved` template
+- [x] Revalidate page path
 
 ### 4.4 Reject server action
 
-- [ ] Create `apps/admin/app/approvals/roasters/_actions/reject-application.ts`
-- [ ] Update `RoasterApplication.status` → `REJECTED`
-- [ ] Call `sendEmail()` with `roaster-rejected` template
-- [ ] Revalidate page path
+- [x] Create `apps/admin/app/approvals/roasters/_actions/reject-application.ts`
+- [x] Update `RoasterApplication.status` → `REJECTED`
+- [x] Call `sendEmail()` with `roaster-rejected` template
+- [x] Revalidate page path
 
 ### 4.5 UI components
 
-- [ ] Application list component with table or card layout
-- [ ] Status badges (PENDING_REVIEW = yellow, APPROVED = green, REJECTED = red)
-- [ ] Confirmation dialog before approve/reject
-- [ ] Guard: non-PENDING_REVIEW applications hide approve/reject buttons
+- [x] Application list component with table or card layout
+- [x] Status badges (PENDING_REVIEW = yellow, APPROVED = green, REJECTED = red)
+- [x] Confirmation dialog before approve/reject
+- [x] Guard: non-PENDING_REVIEW applications hide approve/reject buttons
 
 ### 4.6 Verification
 
 - [ ] Create a test `RoasterApplication` (via Phase 3 form or direct DB insert)
 - [ ] Approve → `Roaster` + `User` records created, `EmailLog` entry for `roaster-approved`
 - [ ] Reject → status updated, `EmailLog` entry for `roaster-rejected`
-- [ ] Already-processed application → approve/reject buttons hidden
-- [ ] HTTP Basic Auth protects the page (existing middleware)
+- [x] Already-processed application → approve/reject buttons hidden
+- [x] HTTP Basic Auth protects the page (existing middleware)
 
 **Reference:** [`docs/sprint-2/stories/US-02-02-admin-approval-queue.md`](sprint-2/stories/US-02-02-admin-approval-queue.md)
 **Diagram:** [`docs/05-approval-chain.mermaid`](05-approval-chain.mermaid) — RA3, RA4, RA5, RA6
@@ -213,29 +214,29 @@ Before starting Sprint 2 work, verify these Sprint 1 deliverables are in place:
 
 ### 5.1 Onboarding page
 
-- [ ] Update `apps/roaster/app/(authenticated)/onboarding/page.tsx` — remove scaffold
-- [ ] Server component: authenticates via `auth()`, loads `User` → `Roaster`
-- [ ] Passes Connect status to child components
+- [x] Update `apps/roaster/app/(authenticated)/onboarding/page.tsx` — remove scaffold
+- [x] Server component: authenticates via `auth()`, loads `User` → `Roaster`
+- [x] Passes Connect status to child components
 
 ### 5.2 Connect status component
 
-- [ ] Create `apps/roaster/app/(authenticated)/onboarding/_components/connect-status.tsx` (client)
-- [ ] Displays: `stripeOnboarding` status, `chargesEnabled`, `payoutsEnabled`
-- [ ] Visual indicators for each status: NOT_STARTED, PENDING, IN_PROGRESS, COMPLETE
-- [ ] Handles `?stripe_return=1` (refresh status from DB)
-- [ ] Handles `?stripe_refresh=1` (auto-re-initiate)
+- [x] Create `apps/roaster/app/(authenticated)/onboarding/_components/connect-status.tsx` (client)
+- [x] Displays: `stripeOnboarding` status, `chargesEnabled`, `payoutsEnabled`
+- [x] Visual indicators for each status: NOT_STARTED, PENDING, COMPLETE, RESTRICTED (Prisma has no `IN_PROGRESS`; in-progress maps to `PENDING`)
+- [x] Handles `?stripe_return=1` (refresh status from DB)
+- [x] Handles `?stripe_refresh=1` (auto-re-initiate)
 
 ### 5.3 Start onboarding button
 
-- [ ] Create `apps/roaster/app/(authenticated)/onboarding/_components/start-onboarding-button.tsx` (client)
-- [ ] Calls `POST /api/stripe/connect` via `fetch()`
-- [ ] Loading state while waiting
-- [ ] Redirects browser to returned Stripe URL
-- [ ] Label: "Start onboarding" (NOT_STARTED) or "Continue onboarding" (IN_PROGRESS)
+- [x] Create `apps/roaster/app/(authenticated)/onboarding/_components/start-onboarding-button.tsx` (client)
+- [x] Calls `POST /api/stripe/connect` via `fetch()` (shared `_lib/fetch-stripe-connect-url.ts`)
+- [x] Loading state while waiting
+- [x] Redirects browser to returned Stripe URL
+- [x] Label: "Start onboarding" (`NOT_STARTED`) or "Continue onboarding" (`PENDING`)
 
 ### 5.4 Success state
 
-- [ ] When `stripeOnboarding = COMPLETE` + `chargesEnabled` + `payoutsEnabled`: show success + links to products/dashboard
+- [x] When `stripeOnboarding = COMPLETE` + `chargesEnabled` + `payoutsEnabled`: show success + links to products/dashboard
 
 ### 5.5 Verification
 
@@ -243,8 +244,8 @@ Before starting Sprint 2 work, verify these Sprint 1 deliverables are in place:
 - [ ] Click "Start onboarding" → redirected to Stripe Express
 - [ ] Return from Stripe → page shows updated status
 - [ ] Expired link (`?stripe_refresh=1`) → re-initiates flow
-- [ ] After `account.updated` webhook fires → status reflects COMPLETE (via page refresh)
-- [ ] All data scoped to authenticated roaster (tenant isolation)
+- [ ] After `account.updated` webhook fires → status reflects COMPLETE + `Roaster.status = ACTIVE` (via page refresh)
+- [x] All data scoped to authenticated roaster (tenant isolation)
 
 **Reference:** [`docs/sprint-2/stories/US-02-03-stripe-connect-onboarding.md`](sprint-2/stories/US-02-03-stripe-connect-onboarding.md)
 **Diagram:** [`docs/05-approval-chain.mermaid`](05-approval-chain.mermaid) — RA6, RA7, RA8
@@ -465,8 +466,8 @@ stripe trigger account.updated
 | US-08-06 | 1 | `packages/email/templates/roaster-application-received.tsx`, `roaster-approved.tsx`, `roaster-rejected.tsx`, `org-application-received.tsx` |
 | US-02-06 | 2 | `packages/types/src/slug-validation.ts`, `apps/web/app/api/slugs/validate/route.ts` |
 | US-02-01 | 3 | `apps/web/app/[locale]/roasters/apply/` (page, _actions, _components, _lib) |
-| US-02-02 | 4 | `apps/admin/app/approvals/roasters/` (page, _actions, _components, [id]) |
-| US-02-03 | 5 | `apps/roaster/app/(authenticated)/onboarding/` (page, _components) |
+| US-02-02 | 4 | `apps/admin/app/approvals/roasters/` (page, [id], _actions, _components, _lib) + `packages/db/clerk-user-sync.ts` |
+| US-02-03 | 5 | `apps/roaster/app/(authenticated)/onboarding/` (page, _components, _lib, _hooks) + `apps/web/app/api/webhooks/stripe/route.ts` (ACTIVE promotion) |
 | US-02-04 | 6 | `apps/roaster/app/(authenticated)/products/` (page, new, [id], _actions, _components, _lib) |
 | US-02-05 | 7 | `apps/roaster/app/(authenticated)/settings/shipping/` (page, _actions, _components, _lib) |
 | US-03-01 | 8 | `apps/web/app/[locale]/orgs/apply/` (page, _actions, _components, _lib) |
