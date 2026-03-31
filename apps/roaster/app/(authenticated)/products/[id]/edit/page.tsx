@@ -34,6 +34,10 @@ export default async function EditProductPage({ params }: PageProps) {
     notFound();
   }
 
+  const shippingRateCount = await database.roasterShippingRate.count({
+    where: { roasterId: session.roasterId },
+  });
+
   return (
     <div className="p-6">
       <h1 className="font-semibold text-2xl">Edit product</h1>
@@ -52,6 +56,7 @@ export default async function EditProductPage({ params }: PageProps) {
           }}
           mode="edit"
           productId={product.id}
+          shippingRateCount={shippingRateCount}
           uploadThingEnabled={uploadThingEnabled}
         />
       </div>

@@ -1,3 +1,4 @@
+import { database } from "@joe-perks/db";
 import { env } from "@/env";
 
 import { NoRoasterProfile } from "../_components/no-roaster-profile";
@@ -14,6 +15,10 @@ export default async function NewProductPage() {
     return <NoRoasterProfile title="New product" />;
   }
 
+  const shippingRateCount = await database.roasterShippingRate.count({
+    where: { roasterId: session.roasterId },
+  });
+
   return (
     <div className="p-6">
       <h1 className="font-semibold text-2xl">New product</h1>
@@ -22,7 +27,11 @@ export default async function NewProductPage() {
         wholesale and retail prices.
       </p>
       <div className="mt-8">
-        <ProductForm mode="create" uploadThingEnabled={uploadThingEnabled} />
+        <ProductForm
+          mode="create"
+          shippingRateCount={shippingRateCount}
+          uploadThingEnabled={uploadThingEnabled}
+        />
       </div>
     </div>
   );

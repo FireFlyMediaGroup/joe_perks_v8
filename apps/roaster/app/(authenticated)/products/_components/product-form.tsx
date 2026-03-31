@@ -1,6 +1,11 @@
 "use client";
 
 import type { ProductStatus, RoastLevel } from "@joe-perks/db";
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from "@repo/design-system/components/ui/alert";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
@@ -12,6 +17,7 @@ import {
   SelectValue,
 } from "@repo/design-system/components/ui/select";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
+import { AlertTriangleIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
@@ -51,6 +57,8 @@ interface ProductFormProps {
   };
   readonly mode: ProductFormMode;
   readonly productId?: string;
+  /** Roaster-level shipping rates; used for non-blocking ACTIVE status warning. */
+  readonly shippingRateCount?: number;
   /** When true, `UPLOADTHING_TOKEN` is set server-side and image upload is available. */
   readonly uploadThingEnabled: boolean;
 }
@@ -60,6 +68,7 @@ export function ProductForm({
   productId,
   initial,
   uploadThingEnabled,
+  shippingRateCount = 0,
 }: ProductFormProps) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -189,6 +198,24 @@ export function ProductForm({
           </Select>
         </div>
       </div>
+
+      {status === "ACTIVE" && shippingRateCount === 0 ? (
+        <Alert variant="default">
+          <AlertTriangleIcon />
+          <AlertTitle>No shipping rates configured</AlertTitle>
+          <AlertDescription>
+            Active products are used in campaigns, but buyers need a shipping
+            rate at checkout.{" "}
+            <Link
+              className="font-medium underline underline-offset-4"
+              href="/settings/shipping"
+            >
+              Add a shipping rate
+            </Link>{" "}
+            before going live.
+          </AlertDescription>
+        </Alert>
+      ) : null}
 
       {error ? (
         <p className="text-destructive text-sm" role="alert">
