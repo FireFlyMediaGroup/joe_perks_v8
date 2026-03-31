@@ -2,7 +2,7 @@
 
 **Story ID:** US-03-01 | **Epic:** EP-03 (Org Onboarding)
 **Points:** 8 | **Priority:** High
-**Status:** `Todo`
+**Status:** `Done`
 **Owner:** Frontend / Full-stack
 **Dependencies:** US-01-02 (DB Foundation), US-01-04 (Email Pipeline), US-02-06 (Slug Validation)
 **Depends on this:** None within Sprint 2 (admin org approval is Sprint 3+)
@@ -102,27 +102,27 @@ Replace the placeholder at `apps/web/app/[locale]/orgs/apply/page.tsx` with a re
 
 ## Acceptance criteria
 
-- [ ] The form at `/orgs/apply` renders a 5-step multi-step form
-- [ ] Users can navigate forward and backward between steps
-- [ ] Each step validates its fields before allowing advancement
-- [ ] The slug input validates in real-time against `/api/slugs/validate` (debounced 300ms+)
-- [ ] Slug validation shows: available (green check), taken/reserved (red X with reason), loading state
-- [ ] The roaster selection step shows only `ACTIVE` roasters (queried from DB)
-- [ ] At least one roaster must be selected; optionally a backup roaster with `priority = 2`
-- [ ] The fundraiser percentage (`desiredOrgPct`) is constrained between `PlatformSettings.orgPctMin` and `orgPctMax`
-- [ ] The default percentage value is `PlatformSettings.orgPctDefault`
-- [ ] The final step requires a terms-of-service checkbox
-- [ ] On submission, an `OrgApplication` is created with `status = PENDING_PLATFORM_REVIEW`
-- [ ] `RoasterOrgRequest` records are created for each selected roaster with correct `priority`
-- [ ] Both records are created in a single database transaction
-- [ ] `sendEmail()` is called with template `org-application-received`
-- [ ] Rate limiting prevents more than 3 submissions per IP per hour
-- [ ] Duplicate `desiredSlug` submissions are rejected (unique constraint)
-- [ ] Duplicate `email` submissions are rejected
-- [ ] A confirmation screen appears after successful submission
-- [ ] No PII is logged — only the application ID
-- [ ] The form is mobile-responsive with 44x44px minimum touch targets
-- [ ] The scaffold placeholder text is removed
+- [x] The form at `/orgs/apply` renders a 5-step multi-step form
+- [x] Users can navigate forward and backward between steps
+- [x] Each step validates its fields before allowing advancement
+- [x] The slug input validates in real-time against `/api/slugs/validate` (debounced 350ms)
+- [x] Slug validation shows: available (green check), taken/reserved (red X with reason), loading state
+- [x] The roaster selection step shows only `ACTIVE` roasters (queried from DB)
+- [x] At least one roaster must be selected; optionally a backup roaster with `priority = 2`
+- [x] The fundraiser percentage (`desiredOrgPct`) is constrained between `PlatformSettings.orgPctMin` and `orgPctMax`
+- [x] The default percentage value is `PlatformSettings.orgPctDefault`
+- [x] The final step requires a terms-of-service checkbox
+- [x] On submission, an `OrgApplication` is created with `status = PENDING_PLATFORM_REVIEW`
+- [x] `RoasterOrgRequest` records are created for each selected roaster with correct `priority`
+- [x] Both records are created in a single database transaction
+- [x] `sendEmail()` is called with template `org-application-received`
+- [x] Rate limiting prevents more than 3 submissions per IP per hour (`limitOrgApplication` in `packages/stripe`)
+- [x] Duplicate `desiredSlug` submissions are rejected (unique constraint + server-side re-validation)
+- [x] Duplicate `email` submissions are rejected (unique constraint catch → `DUPLICATE` error code)
+- [x] A confirmation screen appears after successful submission
+- [x] No PII is logged — only the application ID
+- [x] The form is mobile-responsive with 44x44px minimum touch targets
+- [x] The scaffold placeholder text is removed
 
 ---
 
@@ -161,3 +161,4 @@ Replace the placeholder at `apps/web/app/[locale]/orgs/apply/page.tsx` with a re
 | Version | Date | Notes |
 |---------|------|-------|
 | 0.1 | 2026-03-29 | Initial story created for Sprint 2 planning. |
+| 0.2 | 2026-03-31 | Implemented: `orgs/apply/` 5-step form, `_actions/submit-application.ts`, `_lib/schema.ts`, step components (org-info, description, storefront, roaster, terms). Migration `20260330210000_add_org_application_fields` adds contact fields to `OrgApplication`. `limitOrgApplication()` added to `packages/stripe`. |

@@ -32,6 +32,7 @@ graph TD
   WEB --> WEB_CI["app/api/checkout/create-intent"]:::api
   WEB --> WEB_OS["app/api/order-status"]:::api
   WEB --> WEB_INN["app/api/inngest"]:::api
+  WEB --> WEB_SV["app/api/slugs/validate/\nslug uniqueness check"]:::api
 
   %% apps/roaster routes
   ROASTER --> R_DASH["(authenticated)/dashboard/"]:::route
@@ -39,7 +40,7 @@ graph TD
   ROASTER --> R_ORG_REQ["org-requests/[token]/"]:::route
   ROASTER --> R_PROD["(authenticated)/products/\npage, new/, [id]/, [id]/edit/\n_actions, _components, _lib"]:::route
   ROASTER --> R_UT["app/api/uploadthing/\nUploadThing + Clerk"]:::api
-  ROASTER --> R_SHIP["(authenticated)/settings/shipping/"]:::route
+  ROASTER --> R_SHIP["(authenticated)/settings/shipping/\npage + _actions, _components, _lib"]:::route
   ROASTER --> R_PAY["(authenticated)/payouts/"]:::route
   ROASTER --> R_ONBOARD["(authenticated)/onboarding/\npage + _components/"]:::route
 

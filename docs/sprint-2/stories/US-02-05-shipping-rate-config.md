@@ -2,7 +2,7 @@
 
 **Story ID:** US-02-05 | **Epic:** EP-02 (Roaster Onboarding)
 **Points:** 5 | **Priority:** High
-**Status:** `Todo`
+**Status:** `Done`
 **Owner:** Full-stack
 **Dependencies:** US-02-04 (Product and Variant Creation)
 **Depends on this:** None within Sprint 2
@@ -82,17 +82,17 @@ Replace the scaffold page at `apps/roaster/app/(authenticated)/settings/shipping
 
 ## Acceptance criteria
 
-- [ ] The shipping settings page lists all `RoasterShippingRate` records for the authenticated roaster
-- [ ] Each rate shows: label, carrier, flat rate (formatted as dollars), default badge
-- [ ] A "Add rate" button opens a form to create a new rate
-- [ ] The form captures: label (required), carrier (required), flat rate in dollars (converted to cents), is-default toggle
-- [ ] Flat rate must be a positive amount (server-side validation)
-- [ ] Exactly one rate can be marked as default at a time (setting a new default unsets the previous one)
-- [ ] Rates can be edited (label, carrier, flat rate, default status)
-- [ ] Rates can be deleted (if not the only rate — at least one must remain, or show a warning)
-- [ ] All queries are scoped to `roasterId = session.roasterId` (tenant isolation)
-- [ ] If no rates exist, a prompt encourages the roaster to add at least one before listing products
-- [ ] The scaffold placeholder text is removed
+- [x] The shipping settings page lists all `RoasterShippingRate` records for the authenticated roaster
+- [x] Each rate shows: label, carrier, flat rate (formatted as dollars), default badge
+- [x] A "Add rate" button opens a form to create a new rate
+- [x] The form captures: label (required), carrier (required), flat rate in dollars (converted to cents), is-default toggle
+- [x] Flat rate must be a positive amount (server-side validation)
+- [x] Exactly one rate can be marked as default at a time (setting a new default unsets the previous one)
+- [x] Rates can be edited (label, carrier, flat rate, default status)
+- [x] Rates can be deleted (if not the only rate — at least one must remain, or show a warning)
+- [x] All queries are scoped to `roasterId = session.roasterId` (tenant isolation)
+- [x] If no rates exist, a prompt encourages the roaster to add at least one before listing products
+- [x] The scaffold placeholder text is removed
 
 ---
 
@@ -124,3 +124,4 @@ Replace the scaffold page at `apps/roaster/app/(authenticated)/settings/shipping
 | Version | Date | Notes |
 |---------|------|-------|
 | 0.1 | 2026-03-29 | Initial story created for Sprint 2 planning. |
+| 0.2 | 2026-03-30 | Implemented: `settings/shipping/` CRUD, default handling, product-page warnings. |

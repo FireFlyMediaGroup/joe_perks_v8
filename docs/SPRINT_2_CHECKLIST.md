@@ -2,7 +2,7 @@
 
 ## Roaster onboarding, admin approval, Stripe Connect, products, shipping, org application
 
-**Version:** 1.0 | **Sprint:** 2 (Weeks 3-4) | **Points:** 44 | **Stories:** 8
+**Version:** 1.2 | **Sprint:** 2 (Weeks 3-4) | **Points:** 44 | **Stories:** 8
 **Audience:** AI coding agents, developers implementing Sprint 2 stories
 **Companion documents:**
 - Sprint overview: [`docs/sprint-2/README.md`](sprint-2/README.md)
@@ -327,38 +327,38 @@ Before starting Sprint 2 work, verify these Sprint 1 deliverables are in place:
 
 ### 7.1 Validation schema
 
-- [ ] Create `apps/roaster/app/(authenticated)/settings/shipping/_lib/schema.ts`
-- [ ] Fields: label (required), carrier (required), flatRate (positive int cents), isDefault (boolean)
+- [x] Create `apps/roaster/app/(authenticated)/settings/shipping/_lib/schema.ts`
+- [x] Fields: label (required), carrier (required), flatRate (positive int cents), isDefault (boolean)
 
 ### 7.2 Server actions
 
-- [ ] Create `apps/roaster/app/(authenticated)/settings/shipping/_actions/shipping-actions.ts`
-- [ ] `createRate`: validate, scope to session roaster, manage default flag, insert
-- [ ] `updateRate`: validate, verify ownership, manage default flag, update
-- [ ] `deleteRate`: verify ownership, delete (hard delete OK for shipping rates)
-- [ ] Default management: when setting `isDefault = true`, unset all other defaults for that roaster in same transaction
+- [x] Create `apps/roaster/app/(authenticated)/settings/shipping/_actions/shipping-actions.ts`
+- [x] `createRate`: validate, scope to session roaster, manage default flag, insert
+- [x] `updateRate`: validate, verify ownership, manage default flag, update
+- [x] `deleteRate`: verify ownership, delete (hard delete OK for shipping rates)
+- [x] Default management: when setting `isDefault = true`, unset all other defaults for that roaster in same transaction
 
 ### 7.3 Shipping settings page
 
-- [ ] Update `apps/roaster/app/(authenticated)/settings/shipping/page.tsx` — remove scaffold
-- [ ] Server component querying rates for authenticated roaster
-- [ ] Rate list: label, carrier, flat rate (dollar display), default badge
-- [ ] "Add rate" button
-- [ ] Edit and delete actions on each rate
+- [x] Update `apps/roaster/app/(authenticated)/settings/shipping/page.tsx` — remove scaffold
+- [x] Server component querying rates for authenticated roaster
+- [x] Rate list: label, carrier, flat rate (dollar display), default badge
+- [x] "Add rate" button
+- [x] Edit and delete actions on each rate
 
 ### 7.4 Rate form component
 
-- [ ] Create `_components/rate-form.tsx` (client component)
-- [ ] Dollar input → cents conversion on submit
-- [ ] Default toggle
+- [x] Create `_components/rate-form.tsx` (client component)
+- [x] Dollar input → cents conversion on submit
+- [x] Default toggle
 
 ### 7.5 Verification
 
-- [ ] Create rate → stored in DB with `roasterId`, `flatRate` as cents
-- [ ] Set as default → previous default unset
-- [ ] Delete rate → removed from DB
-- [ ] Tenant isolation → only see own rates
-- [ ] No rates → prompt to add one
+- [x] Create rate → stored in DB with `roasterId`, `flatRate` as cents (code review: `createRate` + `parseDollarsToCents`)
+- [x] Set as default → previous default unset (code review: `$transaction` + `updateMany` in actions)
+- [x] Delete rate → removed from DB (code review: `deleteRate`; cannot delete last rate)
+- [x] Tenant isolation → only see own rates (code review: `requireRoasterId()` on all actions + queries)
+- [x] No rates → prompt to add one (empty copy on shipping page + products list alert)
 
 **Reference:** [`docs/sprint-2/stories/US-02-05-shipping-rate-config.md`](sprint-2/stories/US-02-05-shipping-rate-config.md)
 **Diagram:** [`docs/06-database-schema.mermaid`](06-database-schema.mermaid) — RoasterShippingRate
@@ -371,46 +371,46 @@ Before starting Sprint 2 work, verify these Sprint 1 deliverables are in place:
 
 ### 8.1 Zod validation schema
 
-- [ ] Create `apps/web/app/[locale]/orgs/apply/_lib/schema.ts`
-- [ ] Covers: org info (name, contact, email, phone), description, slug, roaster selection + org pct, terms
-- [ ] `desiredOrgPct` constrained by platform settings bounds
-- [ ] Slug format validation (reuse `isValidSlugFormat` from `packages/types`)
+- [x] Create `apps/web/app/[locale]/orgs/apply/_lib/schema.ts`
+- [x] Covers: org info (name, contact, email, phone), description, slug, roaster selection + org pct, terms
+- [x] `desiredOrgPct` constrained by platform settings bounds
+- [x] Slug format validation (reuse `isValidSlugFormat` from `packages/types`)
 
 ### 8.2 Server action
 
-- [ ] Create `apps/web/app/[locale]/orgs/apply/_actions/submit-application.ts`
-- [ ] Validate with Zod
-- [ ] Re-validate slug availability (race condition guard)
-- [ ] Validate `desiredOrgPct` against `PlatformSettings` bounds
-- [ ] `database.$transaction()`: create `OrgApplication` (status = `PENDING_PLATFORM_REVIEW`) + `RoasterOrgRequest` records (with priority)
-- [ ] Call `sendEmail()` with `org-application-received`
-- [ ] Rate limiting: 3 per IP per hour
+- [x] Create `apps/web/app/[locale]/orgs/apply/_actions/submit-application.ts`
+- [x] Validate with Zod
+- [x] Re-validate slug availability (race condition guard)
+- [x] Validate `desiredOrgPct` against `PlatformSettings` bounds
+- [x] `database.$transaction()`: create `OrgApplication` (status = `PENDING_PLATFORM_REVIEW`) + `RoasterOrgRequest` records (with priority)
+- [x] Call `sendEmail()` with `org-application-received`
+- [x] Rate limiting: 3 per IP per hour (`limitOrgApplication` in `packages/stripe`)
 
 ### 8.3 Page server component
 
-- [ ] Update `apps/web/app/[locale]/orgs/apply/page.tsx` — remove scaffold
-- [ ] Load active roasters: `database.roaster.findMany({ where: { status: 'ACTIVE' } })`
-- [ ] Load platform settings: `database.platformSettings.findUnique({ where: { id: 'singleton' } })`
-- [ ] Pass to form as props
+- [x] Update `apps/web/app/[locale]/orgs/apply/page.tsx` — remove scaffold
+- [x] Load active roasters: `database.roaster.findMany({ where: { status: 'ACTIVE' } })`
+- [x] Load platform settings: `database.platformSettings.findUnique({ where: { id: 'singleton' } })`
+- [x] Pass to form as props
 
 ### 8.4 Multi-step form UI
 
-- [ ] Create `_components/org-apply-form.tsx` (client component) — 5-step navigation
-- [ ] Create step components (org info, description, storefront, roaster/split, terms)
-- [ ] Create `_components/slug-input.tsx` — debounced (300ms+) fetch to `/api/slugs/validate`
-- [ ] Create `_components/roaster-selector.tsx` — select primary + optional backup roaster
-- [ ] Create `_components/org-pct-slider.tsx` — slider/input within platform bounds with default value
-- [ ] Terms checkbox on final step
+- [x] Create `_components/org-apply-form.tsx` (client component) — 5-step navigation
+- [x] Create step components: `step-org-info.tsx`, `step-description.tsx`, `step-storefront.tsx`, `step-roaster.tsx`, `step-terms.tsx`
+- [x] Slug validation inline in `step-storefront.tsx` — debounced 350ms fetch to `/api/slugs/validate`, abort on new input
+- [x] Roaster card selector in `step-roaster.tsx` — primary + optional backup with visual feedback
+- [x] Pct slider in `step-roaster.tsx` — Radix `Slider` with min/max from `PlatformSettings`, live $-per-bag example
+- [x] Terms checkbox on final step
 
 ### 8.5 Verification
 
-- [ ] Submit valid application → `OrgApplication` + `RoasterOrgRequest` records in DB
-- [ ] Slug validation inline → shows available/taken/reserved in real time
-- [ ] `desiredOrgPct` within bounds → accepted; outside → rejected
-- [ ] At least one roaster selected → required
-- [ ] Duplicate slug/email → rejected
-- [ ] Rate limit → 429 after 3 submissions
-- [ ] `EmailLog` entry created
+- [x] Submit valid application → `OrgApplication` + `RoasterOrgRequest` records in DB (code review: `$transaction` in server action)
+- [x] Slug validation inline → shows available/taken/reserved in real time (code review: `SlugHint` component + `slugStatusIcon`)
+- [x] `desiredOrgPct` within bounds → accepted; outside → rejected (code review: server action checks `orgPctMin`/`orgPctMax`)
+- [x] At least one roaster selected → required (code review: step 3 validation)
+- [x] Duplicate slug/email → rejected (code review: `P2002` unique constraint catch → `DUPLICATE` error code)
+- [x] Rate limit → 429 after 3 submissions (code review: `limitOrgApplication(ip)` checked before processing)
+- [x] `EmailLog` entry created (code review: `sendEmail()` called with `org-application-received` template)
 
 **Reference:** [`docs/sprint-2/stories/US-03-01-org-application-form.md`](sprint-2/stories/US-03-01-org-application-form.md)
 **Diagram:** [`docs/05-approval-chain.mermaid`](05-approval-chain.mermaid) — OA1, OA2

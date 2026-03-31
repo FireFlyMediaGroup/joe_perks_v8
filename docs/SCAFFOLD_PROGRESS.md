@@ -50,6 +50,8 @@
 | `1.10` | 2026-03-30 | Sprint 2 US-02-04: Roaster product + variant CRUD at `apps/roaster/app/(authenticated)/products/` (list, new, detail, edit; server actions; Zod; soft deletes). Migration `20260330180000_add_product_display_fields` adds optional `description`, `origin`, `imageUrl` on `Product`. |
 | `1.11` | 2026-03-30 | US-02-04 follow-up: UploadThing (`uploadthing`, `@uploadthing/react`, `UPLOADTHING_TOKEN`, `/api/uploadthing`), portal sidebar + Clerk account section, `NextSSRPlugin` in authenticated layout. |
 | `1.12` | 2026-03-30 | US-02-04 review: PASS. Smoke tests 13/13 (`packages/db/scripts/smoke-products.ts`). Post-review doc updates: `AGENTS.md` — `requireRoasterId()` in tenant isolation; `CONVENTIONS.md` — server action pattern, portal route structure (`_actions/`/`_components/`/`_lib/`), dollar-to-cents form helpers, `roaster-rejected.tsx` template listing. |
+| `1.13` | 2026-03-30 | Sprint 2 US-02-05: Roaster flat shipping rates at `apps/roaster/app/(authenticated)/settings/shipping/` (CRUD server actions, Zod schema, default-rate rules, hard delete with last-rate guard). Non-blocking alerts on products list and product form when `ACTIVE` with no rates. |
+| `1.14` | 2026-03-31 | Sprint 2 US-03-01: Org application form at `apps/web/app/[locale]/orgs/apply/` (5-step multi-step form, server action with `$transaction`, debounced slug validation, roaster card selector, pct slider, `sendEmail()`, `limitOrgApplication()` in `packages/stripe`). Migration `20260330210000_add_org_application_fields` + auto-migration `20260331023831` to drop temp defaults. |
 
 ---
 

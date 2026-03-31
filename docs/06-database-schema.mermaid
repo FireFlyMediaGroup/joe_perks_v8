@@ -74,8 +74,14 @@ erDiagram
     String               id              PK
     OrgApplicationStatus status             "PENDING_PLATFORM_REVIEW | PENDING_ROASTER_APPROVAL | APPROVED | REJECTED"
     String               email           UK
+    String               org_name
+    String               contact_name
+    String               phone              "nullable"
+    String               description        "nullable"
     String               desired_slug    UK
     Float                desired_org_pct    "5–25%"
+    DateTime             terms_agreed_at    "nullable"
+    String               terms_version
   }
 
   RoasterOrgRequest {

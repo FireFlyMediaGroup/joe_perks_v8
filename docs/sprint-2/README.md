@@ -8,7 +8,7 @@
 - Progress tracker: [`docs/SPRINT_2_PROGRESS.md`](../SPRINT_2_PROGRESS.md)
 - Stories: [`docs/sprint-2/stories/`](./stories/)
 
-**Current progress:** US-08-06, US-02-06, US-02-01, US-02-02, US-02-03, and US-02-04 are **Done** (US-02-04 reviewed and smoke-tested — PASS, 13/13). Next story in the recommended sequence: **US-02-05** (roaster shipping rate configuration). Details: [`docs/SPRINT_2_PROGRESS.md`](../SPRINT_2_PROGRESS.md).
+**Current progress:** All 8 stories are **Done** — US-08-06, US-02-06, US-02-01, US-02-02, US-02-03, US-02-04, US-02-05, and US-03-01 (US-02-04 reviewed and smoke-tested — PASS, 13/13). Sprint 2 is complete. Details: [`docs/SPRINT_2_PROGRESS.md`](../SPRINT_2_PROGRESS.md).
 
 ---
 
@@ -43,7 +43,7 @@ Build the first real user-facing onboarding flows: roaster application form, adm
 |----------|-------|-----|----------|--------------|-------------|
 | US-08-06 | Application received and approval/rejection notifications | 2 | High | US-01-04 | `packages/email` |
 
-Story status in this table matches the tracker: **US-08-06** is implemented (templates + `package.json` exports). **US-02-06** is implemented (`packages/types/src/slug-validation.ts` + `apps/web/app/api/slugs/validate/route.ts`). **US-02-01** is implemented (5-step form, server action with `sendEmail()` wiring, rate limiting via `limitRoasterApplication()`). **US-02-02** is implemented (`apps/admin/app/approvals/roasters/page.tsx`, `[id]/page.tsx`, approve/reject server actions, `sendEmail()` for approved/rejected). **US-02-03** is implemented (`apps/roaster/app/(authenticated)/onboarding/` — server page, `connect-status` + `start-onboarding-button`, return/refresh query params). **US-02-04** is implemented (`apps/roaster/app/(authenticated)/products/` — list, new, `[id]` detail, `[id]/edit`, product + variant server actions, Zod schemas, soft deletes, tenant scoping). Migration `20260330180000_add_product_display_fields` adds optional `description`, `origin`, `imageUrl` on `Product`. **UploadThing** product images when `UPLOADTHING_TOKEN` is set (`app/api/uploadthing/`). **Roaster sidebar** is portal navigation + Clerk account section (not demo nav). Org email wiring remains in US-03-01.
+Story status in this table matches the tracker: **US-08-06** is implemented (templates + `package.json` exports). **US-02-06** is implemented (`packages/types/src/slug-validation.ts` + `apps/web/app/api/slugs/validate/route.ts`). **US-02-01** is implemented (5-step form, server action with `sendEmail()` wiring, rate limiting via `limitRoasterApplication()`). **US-02-02** is implemented (`apps/admin/app/approvals/roasters/page.tsx`, `[id]/page.tsx`, approve/reject server actions, `sendEmail()` for approved/rejected). **US-02-03** is implemented (`apps/roaster/app/(authenticated)/onboarding/` — server page, `connect-status` + `start-onboarding-button`, return/refresh query params). **US-02-04** is implemented (`apps/roaster/app/(authenticated)/products/` — list, new, `[id]` detail, `[id]/edit`, product + variant server actions, Zod schemas, soft deletes, tenant scoping). Migration `20260330180000_add_product_display_fields` adds optional `description`, `origin`, `imageUrl` on `Product`. **UploadThing** product images when `UPLOADTHING_TOKEN` is set (`app/api/uploadthing/`). **US-02-05** is implemented (`apps/roaster/app/(authenticated)/settings/shipping/` — list, create/edit dialogs, `shipping-actions` + Zod schema, default-rate management, tenant scoping; non-blocking shipping warnings on products list and when `ACTIVE` + zero rates). **US-03-01** is implemented (`apps/web/app/[locale]/orgs/apply/` — 5-step form, `submit-application` server action with `$transaction`, debounced slug validation, roaster card selector, pct slider, `sendEmail()`, `limitOrgApplication()` rate limiting). Migration `20260330210000_add_org_application_fields` adds `orgName`, `contactName`, `phone`, `description`, `termsAgreedAt`, `termsVersion` to `OrgApplication`. **Roaster sidebar** is portal navigation + Clerk account section (not demo nav). Sprint 2 is complete.
 
 ---
 
@@ -119,9 +119,9 @@ Parallelization opportunity: US-08-06, US-02-06, and US-02-01 can run concurrent
 | US-02-02 | `apps/admin/app/approvals/roasters/page.tsx`, `[id]/page.tsx`, `_actions/`, `_components/`, `_lib/queue-url.ts` (pagination + href helpers) |
 | US-02-03 | `apps/roaster/app/(authenticated)/onboarding/page.tsx`, `apps/roaster/app/(authenticated)/onboarding/_components/`, `_lib/fetch-stripe-connect-url.ts`, `_hooks/use-stripe-refresh-redirect.ts`, `apps/web/app/api/webhooks/stripe/route.ts` (ACTIVE promotion) |
 | US-02-04 | `apps/roaster/app/(authenticated)/products/page.tsx`, `apps/roaster/app/(authenticated)/products/new/page.tsx`, `apps/roaster/app/(authenticated)/products/[id]/edit/page.tsx`, `apps/roaster/app/(authenticated)/products/_actions/`, `apps/roaster/app/(authenticated)/products/_components/` |
-| US-02-05 | `apps/roaster/app/(authenticated)/settings/shipping/page.tsx`, `apps/roaster/app/(authenticated)/settings/shipping/_actions/`, `apps/roaster/app/(authenticated)/settings/shipping/_components/` |
+| US-02-05 | `apps/roaster/app/(authenticated)/settings/shipping/page.tsx`, `_actions/shipping-actions.ts`, `_components/rate-form.tsx`, `rate-list.tsx`, `rate-delete-button.tsx`, `_lib/schema.ts` |
 | US-02-06 | `apps/web/app/api/slugs/validate/route.ts` |
-| US-03-01 | `apps/web/app/[locale]/orgs/apply/page.tsx`, `apps/web/app/[locale]/orgs/apply/_components/`, `apps/web/app/[locale]/orgs/apply/_actions/submit-application.ts` |
+| US-03-01 | `apps/web/app/[locale]/orgs/apply/page.tsx`, `_actions/submit-application.ts`, `_lib/schema.ts`, `_components/org-apply-form.tsx`, `step-org-info.tsx`, `step-description.tsx`, `step-storefront.tsx`, `step-roaster.tsx`, `step-terms.tsx` |
 | US-08-06 | `packages/email/templates/roaster-application-received.tsx`, `packages/email/templates/roaster-approved.tsx`, `packages/email/templates/roaster-rejected.tsx`, `packages/email/templates/org-application-received.tsx` |
 
 ---
@@ -167,17 +167,17 @@ These rules from [`docs/AGENTS.md`](../AGENTS.md) apply directly to Sprint 2 wor
 
 ## Prisma models touched by Sprint 2
 
-All models already exist in `packages/db/prisma/schema.prisma`. No migrations are expected unless implementation reveals a gap.
+Two migrations were applied during Sprint 2: `20260330180000_add_product_display_fields` (US-02-04: adds optional `description`, `origin`, `imageUrl` on `Product`) and `20260330210000_add_org_application_fields` (US-03-01: adds `orgName`, `contactName`, `phone`, `description`, `termsAgreedAt`, `termsVersion` on `OrgApplication`).
 
 | Model | Stories | Key fields |
 |-------|---------|------------|
 | `RoasterApplication` | US-02-01, US-02-02 | `status` (`ApplicationStatus`), `email`, `businessName`, `termsAgreedAt`, `termsVersion` |
 | `Roaster` | US-02-02, US-02-03, US-02-04, US-02-05 | `status` (`RoasterStatus`), `stripeAccountId`, `stripeOnboarding` (`StripeOnboardingStatus`), `chargesEnabled`, `payoutsEnabled` |
 | `User` | US-02-02 | `externalAuthId`, `role` (`UserRole`), `roasterId` |
-| `Product` | US-02-04 | `roasterId`, `name`, `roastLevel` (`RoastLevel`), `status` (`ProductStatus`), `deletedAt` |
+| `Product` | US-02-04 | `roasterId`, `name`, `roastLevel` (`RoastLevel`), `status` (`ProductStatus`), `description`, `origin`, `imageUrl`, `deletedAt` |
 | `ProductVariant` | US-02-04 | `productId`, `sizeOz`, `grind` (`GrindOption`), `wholesalePrice`, `retailPrice`, `isAvailable`, `deletedAt` |
 | `RoasterShippingRate` | US-02-05 | `roasterId`, `label`, `carrier`, `flatRate`, `isDefault` |
-| `OrgApplication` | US-03-01 | `status` (`OrgApplicationStatus`), `email`, `desiredSlug`, `desiredOrgPct` |
+| `OrgApplication` | US-03-01 | `status` (`OrgApplicationStatus`), `email`, `orgName`, `contactName`, `phone`, `description`, `desiredSlug`, `desiredOrgPct`, `termsAgreedAt`, `termsVersion` |
 | `RoasterOrgRequest` | US-03-01 | `applicationId`, `roasterId`, `status` (`RoasterOrgRequestStatus`), `priority` |
 | `Org` | US-02-06 | `slug` (uniqueness check) |
 | `EmailLog` | US-08-06 | `entityType`, `entityId`, `template` (dedup) |

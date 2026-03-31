@@ -300,6 +300,7 @@ All rate limiters live in `packages/stripe/src/ratelimit.ts`. **Never** import `
 import { limitCheckout } from '@joe-perks/stripe'            // 5 req/hour per IP (checkout)
 import { limitSlugValidation } from '@joe-perks/stripe'     // 30 req/min per IP (slug validation)
 import { limitRoasterApplication } from '@joe-perks/stripe'  // 3 req/hour per IP (roaster apply)
+import { limitOrgApplication } from '@joe-perks/stripe'      // 3 req/hour per IP (org apply)
 
 // In API route:
 const { success } = await limitCheckout(ip)

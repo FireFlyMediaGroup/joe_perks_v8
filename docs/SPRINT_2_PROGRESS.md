@@ -1,6 +1,6 @@
 # Joe Perks — Sprint 2 Progress Tracker
 
-**Tracker version:** 0.11
+**Tracker version:** 0.13
 **Baseline document:** [`docs/SPRINT_2_CHECKLIST.md`](SPRINT_2_CHECKLIST.md) (v1.0)
 **Story documents:** [`docs/sprint-2/stories/`](sprint-2/stories/)
 **Sprint overview:** [`docs/sprint-2/README.md`](sprint-2/README.md)
@@ -40,6 +40,8 @@
 | 0.9 | 2026-03-30 | US-02-04 complete: roaster product + variant CRUD at `apps/roaster/app/(authenticated)/products/` (`page.tsx`, `new/`, `[id]/`, `[id]/edit/`, `_actions/`, `_components/`, `_lib/`). Prisma migration `20260330180000_add_product_display_fields` adds optional `description`, `origin`, `imageUrl` on `Product`. Soft-delete product cascades to variants in one transaction. |
 | 0.10 | 2026-03-30 | US-02-04 follow-up: UploadThing on roaster (`UPLOADTHING_TOKEN`, `app/api/uploadthing/`, `lib/uploadthing.ts`, `product-image-field.tsx`, `styles.css` imports `uploadthing/tw/v4`). Portal sidebar replaces next-forge demo (`components/sidebar.tsx`) with Dashboard / Payments / Products / Shipping / Payouts / Webhooks + Account (Clerk `useUser` + `UserButton`). `NextSSRPlugin` in `(authenticated)/layout.tsx`. |
 | 0.11 | 2026-03-30 | US-02-04 review: PASS (no must-fix issues). Smoke tests 13/13 at `packages/db/scripts/smoke-products.ts`. Post-review: `docs/AGENTS.md` — added `requireRoasterId()` to tenant isolation. `docs/CONVENTIONS.md` — added server action pattern, portal route structure (`_actions/`/`_components/`/`_lib/`), dollar-to-cents form helpers, fixed missing `roaster-rejected.tsx` in template listing. |
+| 0.12 | 2026-03-30 | US-02-05 complete: roaster shipping rates at `apps/roaster/app/(authenticated)/settings/shipping/` (`page.tsx`, `_actions/shipping-actions.ts`, `_lib/schema.ts`, `rate-form.tsx`, `rate-list.tsx`, `rate-delete-button.tsx`). Default-rate management in transactions; `$transaction` promotes default when needed; cannot delete last rate. Products list + product form (ACTIVE + zero rates) non-blocking alerts. |
+| 0.13 | 2026-03-31 | US-03-01 complete: org application form at `apps/web/app/[locale]/orgs/apply/` (5-step form, server action, Zod schema, rate limiting, `sendEmail()`, debounced slug validation, roaster card selector, pct slider). Migration `20260330210000_add_org_application_fields` adds `orgName`, `contactName`, `phone`, `description`, `termsAgreedAt`, `termsVersion` to `OrgApplication`. `limitOrgApplication()` added to `packages/stripe`. Smoke tests: `smoke-shipping.ts` (12/12) + `smoke-org-apply.ts` (17/17). |
 
 ---
 
@@ -53,8 +55,8 @@
 | Admin approval queue (US-02-02) | `Done` | List + detail at `apps/admin/app/approvals/roasters/`; approve/reject actions; `clerk_pending:` user rows merged on Clerk sign-in |
 | Stripe Connect onboarding (US-02-03) | `Done` | Onboarding UI: `page.tsx` + `_components/connect-status.tsx`, `start-onboarding-button.tsx`, `_lib/fetch-stripe-connect-url.ts`, `_hooks/use-stripe-refresh-redirect.ts`; manual Stripe verification still recommended |
 | Product & variant CRUD (US-02-04) | `Done` | List, new, detail, edit; Zod + server actions; tenant + soft delete; migration for `Product` display fields. **Reviewed:** PASS, 13/13 smoke tests. |
-| Shipping rate config (US-02-05) | `Todo` | Schema model exists; scaffold placeholder at shipping settings page |
-| Org apply form (US-03-01) | `Todo` | Scaffold placeholder at `apps/web/app/[locale]/orgs/apply/page.tsx` |
+| Shipping rate config (US-02-05) | `Done` | CRUD + default handling; `RoasterShippingRate` + tenant scoping; product alerts |
+| Org apply form (US-03-01) | `Done` | 5-step form, server action, Zod schema, debounced slug validation, roaster card selector, pct slider, `sendEmail()`. Migration adds org contact fields. |
 
 ---
 
@@ -127,20 +129,24 @@
 
 | Item | Status | Evidence / current state | Next step |
 |------|--------|--------------------------|-----------|
-| Validation schema | `Todo` | `RoasterShippingRate` model in Prisma schema. | Create Zod schema |
-| Server actions | `Todo` | Not created. | Create CRUD actions with default management |
-| Shipping settings page | `Todo` | Scaffold placeholder. | Replace with real page |
-| Rate form component | `Todo` | Not created. | Create form with dollar-to-cents conversion |
+| Validation schema | `Done` | `_lib/schema.ts` — `shippingRateFieldsSchema` (label, carrier, `flatRateCents` positive int, `isDefault`) | None |
+| Server actions | `Done` | `shipping-actions.ts` — `createRate`, `updateRate`, `deleteRate`; `parseDollarsToCents` from products `_lib/money`; `requireRoasterId()` | None |
+| Shipping settings page | `Done` | `page.tsx` — `findMany` by `roasterId`; `RateList` | None |
+| Rate form component | `Done` | `rate-form.tsx`, `rate-list.tsx`, `rate-delete-button.tsx` | None |
+| Product warnings | `Done` | `products/page.tsx` alert when zero rates; `ProductForm` alert when `ACTIVE` + zero rates | None |
 
 ### Phase 8 — Org Application Form (US-03-01)
 
 | Item | Status | Evidence / current state | Next step |
 |------|--------|--------------------------|-----------|
-| Zod validation schema | `Todo` | `OrgApplication` and `RoasterOrgRequest` models in schema. | Create schema |
-| Server action | `Todo` | Not created. | Create with $transaction for app + requests |
-| Page server component | `Todo` | Scaffold placeholder. | Load active roasters + platform settings |
-| Multi-step form UI | `Todo` | Scaffold placeholder. | Create form with slug validation, roaster selector, pct slider |
-| Slug input component | `Todo` | Validation API from Phase 2 needed. | Create with debounced fetch |
+| Zod validation schema | `Done` | `apps/web/app/[locale]/orgs/apply/_lib/schema.ts` — per-step + full `orgApplicationSchema`; `CURRENT_ORG_TERMS_VERSION`. | None |
+| Server action | `Done` | `_actions/submit-application.ts` — `submitOrgApplication()`; `$transaction` creates `OrgApplication` + `RoasterOrgRequest`(s); re-validates slug; checks pct bounds vs `PlatformSettings`; `limitOrgApplication()`; `sendEmail()`. | None |
+| Page server component | `Done` | `page.tsx` — loads active roasters (with `application.businessName` include) + `platformSettings` singleton; passes to `OrgApplyForm`. | None |
+| Multi-step form UI | `Done` | `org-apply-form.tsx` — 5 steps; step validation; progress bar; success state; nav buttons with loading. | None |
+| Slug input (StepStorefront) | `Done` | `step-storefront.tsx` — debounced 350ms fetch to `/api/slugs/validate`; abort on new input; icons for checking/available/taken. | None |
+| Roaster selector (StepRoaster) | `Done` | `step-roaster.tsx` — card-based primary + optional backup; `RoasterCard` component. | None |
+| Pct slider (StepRoaster) | `Done` | Radix `Slider` in `step-roaster.tsx`; min/max from `PlatformSettings`; live $ example per $20 bag. | None |
+| DB migration | `Done` | `20260330210000_add_org_application_fields` — adds `orgName`, `contactName`, `phone`, `description`, `termsAgreedAt`, `termsVersion` to `OrgApplication`. Second auto-migration drops temporary defaults. | None |
 
 ---
 
@@ -150,7 +156,7 @@ These items from the Sprint 1 scaffold affect Sprint 2 implementation:
 
 1. **Root `.env` loading** — `apps/web` and `apps/admin` both have `load-root-env.ts` (imported in `next.config.ts`). If `apps/roaster` or `apps/org` need root `.env` values (e.g. `DATABASE_URL`), add a similar loader.
 2. **Clerk user sync** — When a roaster signs up via Clerk, the webhook at `apps/roaster/app/api/webhooks/clerk/route.ts` upserts a `User` record. US-02-02 pre-creates the `User` with `clerk_pending:{uuid}`; `upsertUserFromClerkWebhook` links the real Clerk id when the email matches the pending row.
-3. **Roaster sidebar** — `apps/roaster/app/(authenticated)/components/sidebar.tsx` is still next-forge demo nav. Consider updating to real links (dashboard, onboarding, products, shipping) as part of Sprint 2 or as a follow-up.
+3. **Roaster sidebar** — `apps/roaster/app/(authenticated)/components/sidebar.tsx` uses portal nav (Dashboard, Payments, Products, Shipping, etc.); see US-02-04 follow-up.
 4. **Middleware API exclusion** — `apps/web/proxy.ts` matcher already excludes `api` paths. New API routes under `apps/web/app/api/` will work without middleware changes.
 5. **Next.js 16 middleware → proxy migration** — `middleware.ts` files deleted from `apps/web`, `apps/org`, `apps/roaster` (Next.js 16 conflicts when both `middleware.ts` and `proxy.ts` exist). `apps/admin` retains `middleware.ts` (no `proxy.ts`). Middleware logic lives in `proxy.ts` for web/roaster/org.
 6. **Rate limiting imports** — Do not import `@upstash/ratelimit` or `@upstash/redis` directly in apps. Use the limiters from `@joe-perks/stripe` (e.g. `limitCheckout`, `limitSlugValidation`). The Upstash packages are dependencies of `packages/stripe`, not of the apps.
@@ -161,11 +167,11 @@ These items from the Sprint 1 scaffold affect Sprint 2 implementation:
 
 After each story completes:
 
-- [x] Update this file's revision log and status columns (US-08-06, US-02-06, US-02-03, US-02-04)
-- [x] Update the story's own status in `docs/sprint-2/stories/US-XX-XX-*.md` (US-08-06, US-02-06, US-02-03, US-02-04)
-- [x] Update [`docs/sprint-2/README.md`](sprint-2/README.md) story table if anything changed (US-08-06, US-02-06, US-02-03, US-02-04)
-- [x] Update [`docs/SCAFFOLD_PROGRESS.md`](SCAFFOLD_PROGRESS.md) snapshot summary (US-08-06 — email row, US-02-06 — types row, US-02-03 — Stripe/auth rows, US-02-04 — products/portals rows)
-- [x] Verify new files/routes align with [`docs/01-project-structure.mermaid`](01-project-structure.mermaid) — update diagram if new routes were added (US-02-04 — `R_PROD`, `R_UT` nodes added)
+- [x] Update this file's revision log and status columns (US-08-06, US-02-06, US-02-03, US-02-04, US-02-05, US-03-01)
+- [x] Update the story's own status in `docs/sprint-2/stories/US-XX-XX-*.md` (US-08-06, US-02-06, US-02-03, US-02-04, US-02-05, US-03-01)
+- [x] Update [`docs/sprint-2/README.md`](sprint-2/README.md) story table if anything changed (US-08-06, US-02-06, US-02-03, US-02-04, US-02-05, US-03-01)
+- [x] Update [`docs/SCAFFOLD_PROGRESS.md`](SCAFFOLD_PROGRESS.md) snapshot summary (US-08-06 — email row, US-02-06 — types row, US-02-03 — Stripe/auth rows, US-02-04 — products/portals rows, US-02-05 — shipping, US-03-01 — org apply form)
+- [x] Verify new files/routes align with [`docs/01-project-structure.mermaid`](01-project-structure.mermaid) — update diagram if new routes were added (US-02-04 — `R_PROD`, `R_UT` nodes added; US-02-05 — `R_SHIP` detail)
 - [x] Verify data flows align with [`docs/05-approval-chain.mermaid`](05-approval-chain.mermaid) (US-02-03 onboarding UI)
 - [x] Verify schema usage aligns with [`docs/06-database-schema.mermaid`](06-database-schema.mermaid) (US-02-03 uses `Roaster.stripeOnboarding`, `chargesEnabled`, `payoutsEnabled`, `status` — all present in schema)
 - [x] If new patterns were introduced, update [`docs/CONVENTIONS.md`](CONVENTIONS.md) — US-02-04: added server action pattern, portal route structure, dollar-to-cents helpers, fixed template listing

@@ -408,7 +408,7 @@ packages/db/
 packages/stripe/
 ├── client.ts           # export { stripe } — singleton
 ├── splits.ts           # export { calculateSplits }
-└── ratelimit.ts        # export { checkoutLimiter, onboardingLimiter }
+└── ratelimit.ts        # export { limitCheckout, limitRoasterApplication, limitOrgApplication, limitSlugValidation }
 
 packages/email/        # npm: @joe-perks/email
 ├── send.ts             # export { sendEmail }

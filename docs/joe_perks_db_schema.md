@@ -40,7 +40,7 @@ Principles (unchanged from product design):
 | `Roaster` | Core | `stripeAccountId` required; `StripeOnboardingStatus`; no separate `businessName` on row (use application if needed) |
 | `RoasterShippingRate` | Catalog | Flat-rate shipping rows in cents |
 | `RoasterDebt` | Finance | Optional `orderId`; `DebtReason` |
-| `OrgApplication` | Onboarding | `desiredSlug`, `desiredOrgPct` |
+| `OrgApplication` | Onboarding | `orgName`, `contactName`, `phone?`, `description?`, `desiredSlug`, `desiredOrgPct`, `termsAgreedAt`, `termsVersion` |
 | `RoasterOrgRequest` | Onboarding | `@@unique([applicationId, roasterId])` |
 | `Org` | Core | `slug`, `stripeAccountId` |
 | `Product` | Catalog | `roastLevel` required; `deletedAt` soft delete |
