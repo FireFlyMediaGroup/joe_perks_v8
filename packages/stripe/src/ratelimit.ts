@@ -122,6 +122,49 @@ export async function limitRoasterApplication(identifier: string): Promise<{
   return { success };
 }
 
+// ── Org application rate limiter (3 req/hr per IP) ───────────────────
+
+const ORG_APP_PREFIX = "jp:org-apply";
+const ORG_APP_LIMIT = 3;
+const ORG_APP_WINDOW = "1 h";
+
+let orgAppLimiterSingleton: Ratelimit | undefined;
+let orgAppLimiterUnavailable = false;
+
+function getOrgAppLimiter(): Ratelimit | null {
+  if (orgAppLimiterUnavailable) {
+    return null;
+  }
+  if (orgAppLimiterSingleton) {
+    return orgAppLimiterSingleton;
+  }
+  if (!hasUpstashEnv()) {
+    orgAppLimiterUnavailable = true;
+    return null;
+  }
+  const redis = Redis.fromEnv();
+  orgAppLimiterSingleton = new Ratelimit({
+    redis,
+    limiter: Ratelimit.slidingWindow(ORG_APP_LIMIT, ORG_APP_WINDOW),
+    prefix: ORG_APP_PREFIX,
+  });
+  return orgAppLimiterSingleton;
+}
+
+/**
+ * Runs org-application rate limit when Redis is configured; otherwise allows the request.
+ */
+export async function limitOrgApplication(identifier: string): Promise<{
+  success: boolean;
+}> {
+  const limiter = getOrgAppLimiter();
+  if (!limiter) {
+    return { success: true };
+  }
+  const { success } = await limiter.limit(identifier);
+  return { success };
+}
+
 // ── Slug validation rate limiter (30 req/min per IP) ─────────────────
 
 const SLUG_PREFIX = "jp:slug-validate";

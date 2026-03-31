@@ -205,8 +205,14 @@ export const OrgApplicationScalarFieldEnum = {
   id: 'id',
   status: 'status',
   email: 'email',
+  orgName: 'orgName',
+  contactName: 'contactName',
+  phone: 'phone',
+  description: 'description',
   desiredSlug: 'desiredSlug',
   desiredOrgPct: 'desiredOrgPct',
+  termsAgreedAt: 'termsAgreedAt',
+  termsVersion: 'termsVersion',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

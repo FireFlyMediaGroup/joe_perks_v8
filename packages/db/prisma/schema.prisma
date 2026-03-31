@@ -290,8 +290,14 @@ model OrgApplication {
   id            String               @id @default(cuid())
   status        OrgApplicationStatus
   email         String               @unique
+  orgName       String
+  contactName   String
+  phone         String?
+  description   String?
   desiredSlug   String               @unique
   desiredOrgPct Float
+  termsAgreedAt DateTime?
+  termsVersion  String
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

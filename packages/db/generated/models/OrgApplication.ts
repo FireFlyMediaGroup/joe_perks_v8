@@ -38,8 +38,14 @@ export type OrgApplicationMinAggregateOutputType = {
   id: string | null
   status: $Enums.OrgApplicationStatus | null
   email: string | null
+  orgName: string | null
+  contactName: string | null
+  phone: string | null
+  description: string | null
   desiredSlug: string | null
   desiredOrgPct: number | null
+  termsAgreedAt: Date | null
+  termsVersion: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -48,8 +54,14 @@ export type OrgApplicationMaxAggregateOutputType = {
   id: string | null
   status: $Enums.OrgApplicationStatus | null
   email: string | null
+  orgName: string | null
+  contactName: string | null
+  phone: string | null
+  description: string | null
   desiredSlug: string | null
   desiredOrgPct: number | null
+  termsAgreedAt: Date | null
+  termsVersion: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -58,8 +70,14 @@ export type OrgApplicationCountAggregateOutputType = {
   id: number
   status: number
   email: number
+  orgName: number
+  contactName: number
+  phone: number
+  description: number
   desiredSlug: number
   desiredOrgPct: number
+  termsAgreedAt: number
+  termsVersion: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -78,8 +96,14 @@ export type OrgApplicationMinAggregateInputType = {
   id?: true
   status?: true
   email?: true
+  orgName?: true
+  contactName?: true
+  phone?: true
+  description?: true
   desiredSlug?: true
   desiredOrgPct?: true
+  termsAgreedAt?: true
+  termsVersion?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -88,8 +112,14 @@ export type OrgApplicationMaxAggregateInputType = {
   id?: true
   status?: true
   email?: true
+  orgName?: true
+  contactName?: true
+  phone?: true
+  description?: true
   desiredSlug?: true
   desiredOrgPct?: true
+  termsAgreedAt?: true
+  termsVersion?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -98,8 +128,14 @@ export type OrgApplicationCountAggregateInputType = {
   id?: true
   status?: true
   email?: true
+  orgName?: true
+  contactName?: true
+  phone?: true
+  description?: true
   desiredSlug?: true
   desiredOrgPct?: true
+  termsAgreedAt?: true
+  termsVersion?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -195,8 +231,14 @@ export type OrgApplicationGroupByOutputType = {
   id: string
   status: $Enums.OrgApplicationStatus
   email: string
+  orgName: string
+  contactName: string
+  phone: string | null
+  description: string | null
   desiredSlug: string
   desiredOrgPct: number
+  termsAgreedAt: Date | null
+  termsVersion: string
   createdAt: Date
   updatedAt: Date
   _count: OrgApplicationCountAggregateOutputType | null
@@ -228,8 +270,14 @@ export type OrgApplicationWhereInput = {
   id?: Prisma.StringFilter<"OrgApplication"> | string
   status?: Prisma.EnumOrgApplicationStatusFilter<"OrgApplication"> | $Enums.OrgApplicationStatus
   email?: Prisma.StringFilter<"OrgApplication"> | string
+  orgName?: Prisma.StringFilter<"OrgApplication"> | string
+  contactName?: Prisma.StringFilter<"OrgApplication"> | string
+  phone?: Prisma.StringNullableFilter<"OrgApplication"> | string | null
+  description?: Prisma.StringNullableFilter<"OrgApplication"> | string | null
   desiredSlug?: Prisma.StringFilter<"OrgApplication"> | string
   desiredOrgPct?: Prisma.FloatFilter<"OrgApplication"> | number
+  termsAgreedAt?: Prisma.DateTimeNullableFilter<"OrgApplication"> | Date | string | null
+  termsVersion?: Prisma.StringFilter<"OrgApplication"> | string
   createdAt?: Prisma.DateTimeFilter<"OrgApplication"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"OrgApplication"> | Date | string
   org?: Prisma.XOR<Prisma.OrgNullableScalarRelationFilter, Prisma.OrgWhereInput> | null
@@ -240,8 +288,14 @@ export type OrgApplicationOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   status?: Prisma.SortOrder
   email?: Prisma.SortOrder
+  orgName?: Prisma.SortOrder
+  contactName?: Prisma.SortOrder
+  phone?: Prisma.SortOrderInput | Prisma.SortOrder
+  description?: Prisma.SortOrderInput | Prisma.SortOrder
   desiredSlug?: Prisma.SortOrder
   desiredOrgPct?: Prisma.SortOrder
+  termsAgreedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  termsVersion?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   org?: Prisma.OrgOrderByWithRelationInput
@@ -256,7 +310,13 @@ export type OrgApplicationWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.OrgApplicationWhereInput[]
   NOT?: Prisma.OrgApplicationWhereInput | Prisma.OrgApplicationWhereInput[]
   status?: Prisma.EnumOrgApplicationStatusFilter<"OrgApplication"> | $Enums.OrgApplicationStatus
+  orgName?: Prisma.StringFilter<"OrgApplication"> | string
+  contactName?: Prisma.StringFilter<"OrgApplication"> | string
+  phone?: Prisma.StringNullableFilter<"OrgApplication"> | string | null
+  description?: Prisma.StringNullableFilter<"OrgApplication"> | string | null
   desiredOrgPct?: Prisma.FloatFilter<"OrgApplication"> | number
+  termsAgreedAt?: Prisma.DateTimeNullableFilter<"OrgApplication"> | Date | string | null
+  termsVersion?: Prisma.StringFilter<"OrgApplication"> | string
   createdAt?: Prisma.DateTimeFilter<"OrgApplication"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"OrgApplication"> | Date | string
   org?: Prisma.XOR<Prisma.OrgNullableScalarRelationFilter, Prisma.OrgWhereInput> | null
@@ -267,8 +327,14 @@ export type OrgApplicationOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   status?: Prisma.SortOrder
   email?: Prisma.SortOrder
+  orgName?: Prisma.SortOrder
+  contactName?: Prisma.SortOrder
+  phone?: Prisma.SortOrderInput | Prisma.SortOrder
+  description?: Prisma.SortOrderInput | Prisma.SortOrder
   desiredSlug?: Prisma.SortOrder
   desiredOrgPct?: Prisma.SortOrder
+  termsAgreedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  termsVersion?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.OrgApplicationCountOrderByAggregateInput
@@ -285,8 +351,14 @@ export type OrgApplicationScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"OrgApplication"> | string
   status?: Prisma.EnumOrgApplicationStatusWithAggregatesFilter<"OrgApplication"> | $Enums.OrgApplicationStatus
   email?: Prisma.StringWithAggregatesFilter<"OrgApplication"> | string
+  orgName?: Prisma.StringWithAggregatesFilter<"OrgApplication"> | string
+  contactName?: Prisma.StringWithAggregatesFilter<"OrgApplication"> | string
+  phone?: Prisma.StringNullableWithAggregatesFilter<"OrgApplication"> | string | null
+  description?: Prisma.StringNullableWithAggregatesFilter<"OrgApplication"> | string | null
   desiredSlug?: Prisma.StringWithAggregatesFilter<"OrgApplication"> | string
   desiredOrgPct?: Prisma.FloatWithAggregatesFilter<"OrgApplication"> | number
+  termsAgreedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"OrgApplication"> | Date | string | null
+  termsVersion?: Prisma.StringWithAggregatesFilter<"OrgApplication"> | string
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"OrgApplication"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"OrgApplication"> | Date | string
 }
@@ -295,8 +367,14 @@ export type OrgApplicationCreateInput = {
   id?: string
   status: $Enums.OrgApplicationStatus
   email: string
+  orgName: string
+  contactName: string
+  phone?: string | null
+  description?: string | null
   desiredSlug: string
   desiredOrgPct: number
+  termsAgreedAt?: Date | string | null
+  termsVersion: string
   createdAt?: Date | string
   updatedAt?: Date | string
   org?: Prisma.OrgCreateNestedOneWithoutApplicationInput
@@ -307,8 +385,14 @@ export type OrgApplicationUncheckedCreateInput = {
   id?: string
   status: $Enums.OrgApplicationStatus
   email: string
+  orgName: string
+  contactName: string
+  phone?: string | null
+  description?: string | null
   desiredSlug: string
   desiredOrgPct: number
+  termsAgreedAt?: Date | string | null
+  termsVersion: string
   createdAt?: Date | string
   updatedAt?: Date | string
   org?: Prisma.OrgUncheckedCreateNestedOneWithoutApplicationInput
@@ -319,8 +403,14 @@ export type OrgApplicationUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumOrgApplicationStatusFieldUpdateOperationsInput | $Enums.OrgApplicationStatus
   email?: Prisma.StringFieldUpdateOperationsInput | string
+  orgName?: Prisma.StringFieldUpdateOperationsInput | string
+  contactName?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   desiredSlug?: Prisma.StringFieldUpdateOperationsInput | string
   desiredOrgPct?: Prisma.FloatFieldUpdateOperationsInput | number
+  termsAgreedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsVersion?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   org?: Prisma.OrgUpdateOneWithoutApplicationNestedInput
@@ -331,8 +421,14 @@ export type OrgApplicationUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumOrgApplicationStatusFieldUpdateOperationsInput | $Enums.OrgApplicationStatus
   email?: Prisma.StringFieldUpdateOperationsInput | string
+  orgName?: Prisma.StringFieldUpdateOperationsInput | string
+  contactName?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   desiredSlug?: Prisma.StringFieldUpdateOperationsInput | string
   desiredOrgPct?: Prisma.FloatFieldUpdateOperationsInput | number
+  termsAgreedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsVersion?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   org?: Prisma.OrgUncheckedUpdateOneWithoutApplicationNestedInput
@@ -343,8 +439,14 @@ export type OrgApplicationCreateManyInput = {
   id?: string
   status: $Enums.OrgApplicationStatus
   email: string
+  orgName: string
+  contactName: string
+  phone?: string | null
+  description?: string | null
   desiredSlug: string
   desiredOrgPct: number
+  termsAgreedAt?: Date | string | null
+  termsVersion: string
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -353,8 +455,14 @@ export type OrgApplicationUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumOrgApplicationStatusFieldUpdateOperationsInput | $Enums.OrgApplicationStatus
   email?: Prisma.StringFieldUpdateOperationsInput | string
+  orgName?: Prisma.StringFieldUpdateOperationsInput | string
+  contactName?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   desiredSlug?: Prisma.StringFieldUpdateOperationsInput | string
   desiredOrgPct?: Prisma.FloatFieldUpdateOperationsInput | number
+  termsAgreedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsVersion?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -363,8 +471,14 @@ export type OrgApplicationUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumOrgApplicationStatusFieldUpdateOperationsInput | $Enums.OrgApplicationStatus
   email?: Prisma.StringFieldUpdateOperationsInput | string
+  orgName?: Prisma.StringFieldUpdateOperationsInput | string
+  contactName?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   desiredSlug?: Prisma.StringFieldUpdateOperationsInput | string
   desiredOrgPct?: Prisma.FloatFieldUpdateOperationsInput | number
+  termsAgreedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsVersion?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -373,8 +487,14 @@ export type OrgApplicationCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   status?: Prisma.SortOrder
   email?: Prisma.SortOrder
+  orgName?: Prisma.SortOrder
+  contactName?: Prisma.SortOrder
+  phone?: Prisma.SortOrder
+  description?: Prisma.SortOrder
   desiredSlug?: Prisma.SortOrder
   desiredOrgPct?: Prisma.SortOrder
+  termsAgreedAt?: Prisma.SortOrder
+  termsVersion?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -387,8 +507,14 @@ export type OrgApplicationMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   status?: Prisma.SortOrder
   email?: Prisma.SortOrder
+  orgName?: Prisma.SortOrder
+  contactName?: Prisma.SortOrder
+  phone?: Prisma.SortOrder
+  description?: Prisma.SortOrder
   desiredSlug?: Prisma.SortOrder
   desiredOrgPct?: Prisma.SortOrder
+  termsAgreedAt?: Prisma.SortOrder
+  termsVersion?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -397,8 +523,14 @@ export type OrgApplicationMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   status?: Prisma.SortOrder
   email?: Prisma.SortOrder
+  orgName?: Prisma.SortOrder
+  contactName?: Prisma.SortOrder
+  phone?: Prisma.SortOrder
+  description?: Prisma.SortOrder
   desiredSlug?: Prisma.SortOrder
   desiredOrgPct?: Prisma.SortOrder
+  termsAgreedAt?: Prisma.SortOrder
+  termsVersion?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -448,8 +580,14 @@ export type OrgApplicationCreateWithoutRoasterRequestsInput = {
   id?: string
   status: $Enums.OrgApplicationStatus
   email: string
+  orgName: string
+  contactName: string
+  phone?: string | null
+  description?: string | null
   desiredSlug: string
   desiredOrgPct: number
+  termsAgreedAt?: Date | string | null
+  termsVersion: string
   createdAt?: Date | string
   updatedAt?: Date | string
   org?: Prisma.OrgCreateNestedOneWithoutApplicationInput
@@ -459,8 +597,14 @@ export type OrgApplicationUncheckedCreateWithoutRoasterRequestsInput = {
   id?: string
   status: $Enums.OrgApplicationStatus
   email: string
+  orgName: string
+  contactName: string
+  phone?: string | null
+  description?: string | null
   desiredSlug: string
   desiredOrgPct: number
+  termsAgreedAt?: Date | string | null
+  termsVersion: string
   createdAt?: Date | string
   updatedAt?: Date | string
   org?: Prisma.OrgUncheckedCreateNestedOneWithoutApplicationInput
@@ -486,8 +630,14 @@ export type OrgApplicationUpdateWithoutRoasterRequestsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumOrgApplicationStatusFieldUpdateOperationsInput | $Enums.OrgApplicationStatus
   email?: Prisma.StringFieldUpdateOperationsInput | string
+  orgName?: Prisma.StringFieldUpdateOperationsInput | string
+  contactName?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   desiredSlug?: Prisma.StringFieldUpdateOperationsInput | string
   desiredOrgPct?: Prisma.FloatFieldUpdateOperationsInput | number
+  termsAgreedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsVersion?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   org?: Prisma.OrgUpdateOneWithoutApplicationNestedInput
@@ -497,8 +647,14 @@ export type OrgApplicationUncheckedUpdateWithoutRoasterRequestsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumOrgApplicationStatusFieldUpdateOperationsInput | $Enums.OrgApplicationStatus
   email?: Prisma.StringFieldUpdateOperationsInput | string
+  orgName?: Prisma.StringFieldUpdateOperationsInput | string
+  contactName?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   desiredSlug?: Prisma.StringFieldUpdateOperationsInput | string
   desiredOrgPct?: Prisma.FloatFieldUpdateOperationsInput | number
+  termsAgreedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsVersion?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   org?: Prisma.OrgUncheckedUpdateOneWithoutApplicationNestedInput
@@ -508,8 +664,14 @@ export type OrgApplicationCreateWithoutOrgInput = {
   id?: string
   status: $Enums.OrgApplicationStatus
   email: string
+  orgName: string
+  contactName: string
+  phone?: string | null
+  description?: string | null
   desiredSlug: string
   desiredOrgPct: number
+  termsAgreedAt?: Date | string | null
+  termsVersion: string
   createdAt?: Date | string
   updatedAt?: Date | string
   roasterRequests?: Prisma.RoasterOrgRequestCreateNestedManyWithoutApplicationInput
@@ -519,8 +681,14 @@ export type OrgApplicationUncheckedCreateWithoutOrgInput = {
   id?: string
   status: $Enums.OrgApplicationStatus
   email: string
+  orgName: string
+  contactName: string
+  phone?: string | null
+  description?: string | null
   desiredSlug: string
   desiredOrgPct: number
+  termsAgreedAt?: Date | string | null
+  termsVersion: string
   createdAt?: Date | string
   updatedAt?: Date | string
   roasterRequests?: Prisma.RoasterOrgRequestUncheckedCreateNestedManyWithoutApplicationInput
@@ -546,8 +714,14 @@ export type OrgApplicationUpdateWithoutOrgInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumOrgApplicationStatusFieldUpdateOperationsInput | $Enums.OrgApplicationStatus
   email?: Prisma.StringFieldUpdateOperationsInput | string
+  orgName?: Prisma.StringFieldUpdateOperationsInput | string
+  contactName?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   desiredSlug?: Prisma.StringFieldUpdateOperationsInput | string
   desiredOrgPct?: Prisma.FloatFieldUpdateOperationsInput | number
+  termsAgreedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsVersion?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   roasterRequests?: Prisma.RoasterOrgRequestUpdateManyWithoutApplicationNestedInput
@@ -557,8 +731,14 @@ export type OrgApplicationUncheckedUpdateWithoutOrgInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   status?: Prisma.EnumOrgApplicationStatusFieldUpdateOperationsInput | $Enums.OrgApplicationStatus
   email?: Prisma.StringFieldUpdateOperationsInput | string
+  orgName?: Prisma.StringFieldUpdateOperationsInput | string
+  contactName?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   desiredSlug?: Prisma.StringFieldUpdateOperationsInput | string
   desiredOrgPct?: Prisma.FloatFieldUpdateOperationsInput | number
+  termsAgreedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  termsVersion?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   roasterRequests?: Prisma.RoasterOrgRequestUncheckedUpdateManyWithoutApplicationNestedInput
@@ -599,8 +779,14 @@ export type OrgApplicationSelect<ExtArgs extends runtime.Types.Extensions.Intern
   id?: boolean
   status?: boolean
   email?: boolean
+  orgName?: boolean
+  contactName?: boolean
+  phone?: boolean
+  description?: boolean
   desiredSlug?: boolean
   desiredOrgPct?: boolean
+  termsAgreedAt?: boolean
+  termsVersion?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   org?: boolean | Prisma.OrgApplication$orgArgs<ExtArgs>
@@ -612,8 +798,14 @@ export type OrgApplicationSelectCreateManyAndReturn<ExtArgs extends runtime.Type
   id?: boolean
   status?: boolean
   email?: boolean
+  orgName?: boolean
+  contactName?: boolean
+  phone?: boolean
+  description?: boolean
   desiredSlug?: boolean
   desiredOrgPct?: boolean
+  termsAgreedAt?: boolean
+  termsVersion?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["orgApplication"]>
@@ -622,8 +814,14 @@ export type OrgApplicationSelectUpdateManyAndReturn<ExtArgs extends runtime.Type
   id?: boolean
   status?: boolean
   email?: boolean
+  orgName?: boolean
+  contactName?: boolean
+  phone?: boolean
+  description?: boolean
   desiredSlug?: boolean
   desiredOrgPct?: boolean
+  termsAgreedAt?: boolean
+  termsVersion?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["orgApplication"]>
@@ -632,13 +830,19 @@ export type OrgApplicationSelectScalar = {
   id?: boolean
   status?: boolean
   email?: boolean
+  orgName?: boolean
+  contactName?: boolean
+  phone?: boolean
+  description?: boolean
   desiredSlug?: boolean
   desiredOrgPct?: boolean
+  termsAgreedAt?: boolean
+  termsVersion?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type OrgApplicationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "status" | "email" | "desiredSlug" | "desiredOrgPct" | "createdAt" | "updatedAt", ExtArgs["result"]["orgApplication"]>
+export type OrgApplicationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "status" | "email" | "orgName" | "contactName" | "phone" | "description" | "desiredSlug" | "desiredOrgPct" | "termsAgreedAt" | "termsVersion" | "createdAt" | "updatedAt", ExtArgs["result"]["orgApplication"]>
 export type OrgApplicationInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   org?: boolean | Prisma.OrgApplication$orgArgs<ExtArgs>
   roasterRequests?: boolean | Prisma.OrgApplication$roasterRequestsArgs<ExtArgs>
@@ -657,8 +861,14 @@ export type $OrgApplicationPayload<ExtArgs extends runtime.Types.Extensions.Inte
     id: string
     status: $Enums.OrgApplicationStatus
     email: string
+    orgName: string
+    contactName: string
+    phone: string | null
+    description: string | null
     desiredSlug: string
     desiredOrgPct: number
+    termsAgreedAt: Date | null
+    termsVersion: string
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["orgApplication"]>
@@ -1089,8 +1299,14 @@ export interface OrgApplicationFieldRefs {
   readonly id: Prisma.FieldRef<"OrgApplication", 'String'>
   readonly status: Prisma.FieldRef<"OrgApplication", 'OrgApplicationStatus'>
   readonly email: Prisma.FieldRef<"OrgApplication", 'String'>
+  readonly orgName: Prisma.FieldRef<"OrgApplication", 'String'>
+  readonly contactName: Prisma.FieldRef<"OrgApplication", 'String'>
+  readonly phone: Prisma.FieldRef<"OrgApplication", 'String'>
+  readonly description: Prisma.FieldRef<"OrgApplication", 'String'>
   readonly desiredSlug: Prisma.FieldRef<"OrgApplication", 'String'>
   readonly desiredOrgPct: Prisma.FieldRef<"OrgApplication", 'Float'>
+  readonly termsAgreedAt: Prisma.FieldRef<"OrgApplication", 'DateTime'>
+  readonly termsVersion: Prisma.FieldRef<"OrgApplication", 'String'>
   readonly createdAt: Prisma.FieldRef<"OrgApplication", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"OrgApplication", 'DateTime'>
 }
