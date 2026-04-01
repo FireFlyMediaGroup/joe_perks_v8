@@ -331,6 +331,8 @@ model Org {
   slug             String                 @unique
   stripeAccountId  String?                @unique
   stripeOnboarding StripeOnboardingStatus
+  chargesEnabled   Boolean                @default(false)
+  payoutsEnabled   Boolean                @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

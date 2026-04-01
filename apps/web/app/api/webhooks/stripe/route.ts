@@ -40,9 +40,21 @@ async function handleAccountUpdated(account: Stripe.Account): Promise<void> {
     where: { stripeAccountId: id },
   });
   if (org) {
+    const charges = account.charges_enabled ?? false;
+    const payouts = account.payouts_enabled ?? false;
+    const fullyOnboarded = onboarding === "COMPLETE" && charges && payouts;
+
+    // Promote ONBOARDING → ACTIVE per OA11–OA13 in 05-approval-chain.mermaid.
+    const promoteToActive = fullyOnboarded && org.status === "ONBOARDING";
+
     await database.org.update({
       where: { id: org.id },
-      data: { stripeOnboarding: onboarding },
+      data: {
+        chargesEnabled: charges,
+        payoutsEnabled: payouts,
+        stripeOnboarding: onboarding,
+        ...(promoteToActive && { status: "ACTIVE" }),
+      },
     });
   }
 }

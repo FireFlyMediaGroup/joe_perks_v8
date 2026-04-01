@@ -2,7 +2,7 @@
 
 **Story ID:** US-04-02 | **Epic:** EP-04 (Buyer Storefront & Checkout)
 **Points:** 5 | **Priority:** High
-**Status:** `Todo`
+**Status:** `Done`
 **Owner:** Frontend
 **Dependencies:** US-04-01 (Public Org Storefront)
 **Depends on this:** US-04-03 (Three-Step Checkout)
@@ -25,16 +25,11 @@ Expand the minimal Zustand cart store in `packages/ui/src/store/cart.ts` into a 
 
 ## Current repo evidence
 
-- `packages/ui/src/store/cart.ts` exists with **minimal store**:
-  - `CartLine` type: `{ campaignItemId: string; quantity: number }`
-  - Actions: `addLine(line)` (upserts by `campaignItemId`), `clear()`
-  - Uses `zustand/persist` with key `joe-perks-cart`
-  - Comment: "expand when CampaignItem / Cart models ship (Sprint 3+)"
-- `packages/ui/src/index.ts` exports `useCartStore` and `CartLine`
-- `packages/ui/package.json` has `zustand` as dependency
-- No cart UI components exist anywhere in the codebase
-- `apps/web/app/[locale]/[slug]/` will have the storefront from US-04-01
-- `docs/CONVENTIONS.md` documents the storefront component pattern: server fetch + client cart
+- `packages/ui/src/store/cart.ts` — full cart: `CartLine` with display fields; `addLine(ctx, line)` with `AddLineContext` (`campaignId`, `orgSlug`); `removeLine`, `updateQuantity`, `clear`, `getLineCount`, `getTotalQuantity`, `getSubtotalCents`; persist `joe-perks-cart`; invalid legacy persisted rows cleared on rehydrate.
+- `apps/web` depends on `@joe-perks/ui` (`package.json`).
+- Storefront components: `add-to-cart-button.tsx`, `cart-drawer.tsx`, `cart-line-item.tsx`, `cart-trigger.tsx`, `storefront-cart-sync.tsx` (clears cart when navigating to a different org slug).
+- `campaign-header.tsx` accepts optional `actions` (cart trigger).
+- `getStorefrontData` in `_lib/queries.ts` returns `splitPreviewDefaults` for cart estimate; `cart-drawer.tsx` uses `calculateSplits()` from **`@joe-perks/stripe/splits`** (client-safe; do not import main `@joe-perks/stripe` barrel in client components).
 
 ---
 
@@ -61,7 +56,7 @@ Expand the minimal Zustand cart store in `packages/ui/src/store/cart.ts` into a 
 - Add `updateQuantity(campaignItemId, quantity)` action -- removes line if quantity is 0
 - Add derived getters: `lineCount`, `totalQuantity`, `subtotalCents`
 - Maintain existing `addLine` and `clear` methods
-- Keep `persist` middleware with `joe-perks-cart` key
+- Keep `persist` middleware with `joe-perks-cart` storage key
 
 ### Cart UI components
 
@@ -101,63 +96,31 @@ Expand the minimal Zustand cart store in `packages/ui/src/store/cart.ts` into a 
 
 ### Cart store
 
-- [ ] `removeLine(campaignItemId)` removes the line from the cart
-- [ ] `updateQuantity(campaignItemId, quantity)` updates the quantity; removes line if quantity <= 0
-- [ ] `addLine(line)` upserts: if `campaignItemId` exists, replaces the line (existing behavior preserved)
-- [ ] `clear()` removes all lines (existing behavior preserved)
-- [ ] `lineCount` returns the number of unique items in the cart
-- [ ] `totalQuantity` returns the sum of all line quantities
-- [ ] `subtotalCents` returns the sum of `retailPrice * quantity` for all lines
-- [ ] `CartLine` includes: `campaignItemId`, `quantity`, `productName`, `variantDesc`, `retailPrice`, `imageUrl?`
-- [ ] Cart persists across page refresh via `localStorage` (`joe-perks-cart` key)
+- [x] `removeLine(campaignItemId)` removes the line from the cart
+- [x] `updateQuantity(campaignItemId, quantity)` updates the quantity; removes line if quantity <= 0
+- [x] `addLine(ctx, line)` upserts when switching campaigns; increments quantity when same item (cap 99)
+- [x] `clear()` removes all lines (existing behavior preserved)
+- [x] `getLineCount` returns the number of unique items in the cart
+- [x] `getTotalQuantity` returns the sum of all line quantities
+- [x] `getSubtotalCents` returns the sum of `retailPrice * quantity` for all lines
+- [x] `CartLine` includes: `campaignItemId`, `quantity`, `productName`, `variantDesc`, `retailPrice`, `imageUrl?`
+- [x] Cart persists across page refresh via `localStorage` (`joe-perks-cart` key)
 
 ### UI components
 
-- [ ] Product cards have "Add to cart" button
-- [ ] Clicking "Add to cart" adds the item with quantity 1 (or increments if already in cart)
-- [ ] Visual feedback on add (button state change, toast, or animation)
-- [ ] Cart trigger icon in storefront header shows badge with `lineCount`
-- [ ] Clicking cart trigger opens cart drawer
-- [ ] Cart drawer slides from right on desktop, bottom sheet on mobile
-- [ ] Each line item shows: product name, variant description, unit price, quantity, line total
-- [ ] Quantity controls: + and - buttons, minimum 1, maximum 99
-- [ ] Remove button per line item
-- [ ] Cart subtotal displayed at bottom of drawer
-- [ ] "Checkout" button links to `[slug]/checkout`
-- [ ] Empty cart shows appropriate message and link back to storefront
-- [ ] All interactive elements have 44x44px minimum touch targets
-
----
-
-## Suggested implementation steps
-
-1. Expand the cart store (`packages/ui/src/store/cart.ts`):
-   - Extend `CartLine` type with display fields
-   - Add `removeLine`, `updateQuantity` actions
-   - Add computed selectors (or inline derivations) for `lineCount`, `totalQuantity`, `subtotalCents`
-   - Keep `persist` middleware unchanged
-2. Update `packages/ui/src/index.ts` exports if new types are added.
-3. Build `add-to-cart-button.tsx` (client component):
-   - Receives `campaignItemId`, `productName`, `variantDesc`, `retailPrice`, `imageUrl` as props
-   - Calls `useCartStore().addLine()`
-   - Shows visual feedback (e.g. button text changes to "Added" for 2 seconds)
-4. Integrate `AddToCartButton` into `product-card.tsx` from US-04-01.
-5. Build `cart-trigger.tsx` (client component):
-   - Cart icon with badge showing `lineCount`
-   - Controls open/closed state of cart drawer
-6. Build `cart-drawer.tsx` (client component):
-   - Uses Radix `Sheet` or `Dialog` (from `@repo/design-system`) or custom drawer
-   - Maps `useCartStore().lines` to `CartLineItem` components
-   - Shows subtotal from `subtotalCents`
-   - "Checkout" link and "Clear cart" button
-7. Build `cart-line-item.tsx` (client component):
-   - Product info display
-   - Quantity +/- buttons calling `updateQuantity()`
-   - Remove button calling `removeLine()`
-   - Line total display
-8. Wire `CartTrigger` into `storefront-layout.tsx` header.
-9. Wire `CartDrawer` into `storefront-layout.tsx` (rendered at layout level).
-10. Test: add/remove/update quantities, persistence across refresh, mobile UX.
+- [x] Product cards have "Add to cart" button
+- [x] Clicking "Add to cart" adds the item with quantity 1 (or increments if already in cart)
+- [x] Visual feedback on add (button state change, toast, or animation)
+- [x] Cart trigger icon in storefront header shows badge with `lineCount`
+- [x] Clicking cart trigger opens cart drawer
+- [x] Cart drawer slides from right on desktop, bottom sheet on mobile
+- [x] Each line item shows: product name, variant description, unit price, quantity, line total
+- [x] Quantity controls: + and - buttons, minimum 1, maximum 99
+- [x] Remove button per line item
+- [x] Cart subtotal displayed at bottom of drawer
+- [x] "Checkout" button links to `[slug]/checkout`
+- [x] Empty cart shows appropriate message and link back to storefront
+- [x] All interactive elements have 44x44px minimum touch targets
 
 ---
 
@@ -165,7 +128,7 @@ Expand the minimal Zustand cart store in `packages/ui/src/store/cart.ts` into a 
 
 - US-04-03 (Checkout) reads from `useCartStore()` to populate the cart review step and build the `items` array for `POST /api/checkout/create-intent`.
 - The checkout API re-validates all prices from the DB (`CampaignItem.retailPrice`), so client-side price data in the cart is for display only -- it does not affect the charged amount.
-- The `joe-perks-cart` localStorage key may need a campaign ID prefix or clear-on-campaign-change logic if cross-campaign carting becomes an issue. For MVP, a single cart is sufficient.
+- The `joe-perks-cart` localStorage key may need a campaign ID prefix or clear-on-campaign-change logic if cross-campaign carting becomes an issue. For MVP, a single cart is sufficient; `StorefrontCartSync` clears the cart when navigating to a different org slug.
 - Phase 2 will add a DB-backed `Cart` model for abandoned cart recovery. The Zustand store will sync to the DB cart when that feature ships.
 
 ---
@@ -175,3 +138,4 @@ Expand the minimal Zustand cart store in `packages/ui/src/store/cart.ts` into a 
 | Version | Date | Notes |
 |---------|------|-------|
 | 0.1 | 2026-03-30 | Initial story created for Sprint 3 planning. |
+| 0.2 | 2026-04-01 | Marked `Done`. Implementation includes `splitPreviewDefaults` + `calculateSplits` from `@joe-perks/stripe/splits` in cart drawer; `cart-trigger`, `storefront-cart-sync`; `apps/web` → `@joe-perks/ui`. |

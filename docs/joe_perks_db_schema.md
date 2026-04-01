@@ -42,7 +42,7 @@ Principles (unchanged from product design):
 | `RoasterDebt` | Finance | Optional `orderId`; `DebtReason` |
 | `OrgApplication` | Onboarding | `orgName`, `contactName`, `phone?`, `description?`, `desiredSlug`, `desiredOrgPct`, `termsAgreedAt`, `termsVersion` |
 | `RoasterOrgRequest` | Onboarding | `@@unique([applicationId, roasterId])` |
-| `Org` | Core | `slug`, `stripeAccountId` |
+| `Org` | Core | `slug`, `stripeAccountId`, `stripeOnboarding`, `chargesEnabled`, `payoutsEnabled`, `status` |
 | `Product` | Catalog | `roastLevel` required; `deletedAt` soft delete |
 | `ProductVariant` | Catalog | `sizeOz`, `grind`, prices in cents; `deletedAt` |
 | `Campaign` | Commerce | `orgPct` snapshot; `goalCents`, `totalRaised` |

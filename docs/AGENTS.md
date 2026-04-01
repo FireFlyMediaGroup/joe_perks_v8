@@ -158,6 +158,7 @@ Turbo starts multiple Next (and related) dev servers on **fixed ports** (see the
 - Never trust a `roaster_id` or `org_id` from the request body — always read from the verified session.
 - Admin queries may scope globally — this is intentional.
 - **`requireRoasterId()`** (in `products/_lib/require-roaster.ts`) is the canonical helper for roaster portal server actions: it calls `auth()`, resolves the Clerk user to a `User` row, and returns `{ ok: true, roasterId }` or `{ ok: false, error }`. Reuse this helper (or import it from a shared location) in any new roaster portal feature — do not reimplement the auth-to-roasterId lookup.
+- **`requireOrgId()`** (in `apps/org/app/(authenticated)/_lib/require-org.ts`) is the canonical helper for org portal server actions: same pattern, returns `{ ok: true, orgId }` or `{ ok: false, error }`.
 
 ### Email sending
 - **Transactional sends:** use **`sendEmail()`** from **`@joe-perks/email/send`** (also re-exported from **`@joe-perks/email`**). It sends via Resend, inserts **`EmailLog`** first, and dedupes on **`(entityType, entityId, template)`** (unique in the schema). On duplicate, the call returns without sending again (idempotent). If Resend fails after the log row is created, the row is deleted so callers can retry.
@@ -166,6 +167,7 @@ Turbo starts multiple Next (and related) dev servers on **fixed ports** (see the
 
 ### Stripe
 - **Never import Stripe directly in an app** — always use the client from `@joe-perks/stripe`.
+- **Split math in client components:** import `calculateSplits` (and related types) from **`@joe-perks/stripe/splits`** only. The main `@joe-perks/stripe` entry re-exports server-only modules and must not be bundled into client components.
 - The Stripe client is initialized once as a module-level singleton.
 - Webhook handlers must call `stripe.webhooks.constructEvent()` before any processing.
 - Every webhook handler must check `StripeEvent` table for idempotency before processing.
@@ -226,6 +228,7 @@ UPLOADTHING_APP_ID=
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=   # Roaster Clerk app
 CLERK_SECRET_KEY=
 ROASTER_APP_ORIGIN=                # optional — public base URL for Stripe Connect return/refresh (default http://localhost:3001)
+ORG_APP_ORIGIN=                    # optional — org portal base URL for US-03-03 `org-approved` email sign-in CTA (default http://localhost:3002)
 UPLOADTHING_TOKEN=                 # optional — UploadThing API token (dashboard); enables product image uploads via `/api/uploadthing`
 ```
 
@@ -233,6 +236,7 @@ UPLOADTHING_TOKEN=                 # optional — UploadThing API token (dashboa
 ```
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=   # Org Clerk app (separate from roaster)
 CLERK_SECRET_KEY=
+ORG_APP_ORIGIN=                    # optional — public base URL for Stripe Connect return/refresh (default http://localhost:3002); also used for consistent absolute URLs if needed
 ```
 
 ### apps/admin `.env.local`

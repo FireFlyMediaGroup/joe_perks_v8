@@ -24,7 +24,7 @@ graph TD
   WEB --> WEB_MKT["[locale]/(home)/\nlanding"]:::route
   WEB --> WEB_RA["[locale]/roasters/apply/"]:::route
   WEB --> WEB_OA["[locale]/orgs/apply/"]:::route
-  WEB --> WEB_SF["[locale]/[slug]/\nstorefront"]:::route
+  WEB --> WEB_SF["[locale]/[slug]/\npage, cart-drawer, add-to-cart,\nproduct-grid, campaign-header"]:::route
   WEB --> WEB_CO["[locale]/[slug]/checkout/"]:::route
   WEB --> WEB_OR["[locale]/[slug]/order/[pi_id]/"]:::route
   WEB --> WEB_TM["[locale]/legal/\nterms, privacy"]:::route
@@ -45,16 +45,17 @@ graph TD
   ROASTER --> R_ONBOARD["(authenticated)/onboarding/\npage + _components/"]:::route
 
   %% apps/org routes
-  ORG --> O_DASH["dashboard/"]:::route
-  ORG --> O_CAMP["campaign/"]:::route
+  ORG --> O_DASH["(authenticated)/dashboard/"]:::route
+  ORG --> O_ONBOARD["(authenticated)/onboarding/\npage + _components/"]:::route
+  ORG --> O_CAMP["(authenticated)/campaign/\npage + _actions + _components/"]:::route
+  ORG --> O_STRIPE["api/stripe/connect/"]:::route
   ORG --> O_EARN["earnings/"]:::route
   ORG --> O_STORE["storefront/"]:::route
-  ORG --> O_ONBOARD["onboarding/"]:::route
 
   %% apps/admin routes
   ADMIN --> A_HOME["app/page.tsx\nhome / metrics"]:::route
   ADMIN --> A_AR["approvals/roasters/\npage + [id]/"]:::route
-  ADMIN --> A_AO["approvals/orgs/"]:::route
+  ADMIN --> A_AO["approvals/orgs/\npage + [id]/"]:::route
   ADMIN --> A_ORD["orders/"]:::route
   ADMIN --> A_DISP["disputes/"]:::route
   ADMIN --> A_SET["settings/"]:::route
@@ -75,7 +76,7 @@ graph TD
   UI --> UI1["src/store/cart.ts\nZustand + persist"]:::file
   UI --> UI2["Use @repo/design-system\nfor shadcn primitives"]:::file
 
-  STRIPE --> ST1["splits.ts"]:::file
+  STRIPE --> ST1["splits.ts\nexport @joe-perks/stripe/splits\n(client-safe)"]:::file
   STRIPE --> ST2["client.ts"]:::file
   STRIPE --> ST3["ratelimit.ts"]:::file
 

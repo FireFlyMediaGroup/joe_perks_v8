@@ -32,6 +32,8 @@ export type OrgMinAggregateOutputType = {
   slug: string | null
   stripeAccountId: string | null
   stripeOnboarding: $Enums.StripeOnboardingStatus | null
+  chargesEnabled: boolean | null
+  payoutsEnabled: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -44,6 +46,8 @@ export type OrgMaxAggregateOutputType = {
   slug: string | null
   stripeAccountId: string | null
   stripeOnboarding: $Enums.StripeOnboardingStatus | null
+  chargesEnabled: boolean | null
+  payoutsEnabled: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -56,6 +60,8 @@ export type OrgCountAggregateOutputType = {
   slug: number
   stripeAccountId: number
   stripeOnboarding: number
+  chargesEnabled: number
+  payoutsEnabled: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -70,6 +76,8 @@ export type OrgMinAggregateInputType = {
   slug?: true
   stripeAccountId?: true
   stripeOnboarding?: true
+  chargesEnabled?: true
+  payoutsEnabled?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -82,6 +90,8 @@ export type OrgMaxAggregateInputType = {
   slug?: true
   stripeAccountId?: true
   stripeOnboarding?: true
+  chargesEnabled?: true
+  payoutsEnabled?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -94,6 +104,8 @@ export type OrgCountAggregateInputType = {
   slug?: true
   stripeAccountId?: true
   stripeOnboarding?: true
+  chargesEnabled?: true
+  payoutsEnabled?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -179,6 +191,8 @@ export type OrgGroupByOutputType = {
   slug: string
   stripeAccountId: string | null
   stripeOnboarding: $Enums.StripeOnboardingStatus
+  chargesEnabled: boolean
+  payoutsEnabled: boolean
   createdAt: Date
   updatedAt: Date
   _count: OrgCountAggregateOutputType | null
@@ -212,6 +226,8 @@ export type OrgWhereInput = {
   slug?: Prisma.StringFilter<"Org"> | string
   stripeAccountId?: Prisma.StringNullableFilter<"Org"> | string | null
   stripeOnboarding?: Prisma.EnumStripeOnboardingStatusFilter<"Org"> | $Enums.StripeOnboardingStatus
+  chargesEnabled?: Prisma.BoolFilter<"Org"> | boolean
+  payoutsEnabled?: Prisma.BoolFilter<"Org"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Org"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Org"> | Date | string
   application?: Prisma.XOR<Prisma.OrgApplicationScalarRelationFilter, Prisma.OrgApplicationWhereInput>
@@ -227,6 +243,8 @@ export type OrgOrderByWithRelationInput = {
   slug?: Prisma.SortOrder
   stripeAccountId?: Prisma.SortOrderInput | Prisma.SortOrder
   stripeOnboarding?: Prisma.SortOrder
+  chargesEnabled?: Prisma.SortOrder
+  payoutsEnabled?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   application?: Prisma.OrgApplicationOrderByWithRelationInput
@@ -245,6 +263,8 @@ export type OrgWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.OrgWhereInput | Prisma.OrgWhereInput[]
   status?: Prisma.EnumOrgStatusFilter<"Org"> | $Enums.OrgStatus
   stripeOnboarding?: Prisma.EnumStripeOnboardingStatusFilter<"Org"> | $Enums.StripeOnboardingStatus
+  chargesEnabled?: Prisma.BoolFilter<"Org"> | boolean
+  payoutsEnabled?: Prisma.BoolFilter<"Org"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Org"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Org"> | Date | string
   application?: Prisma.XOR<Prisma.OrgApplicationScalarRelationFilter, Prisma.OrgApplicationWhereInput>
@@ -260,6 +280,8 @@ export type OrgOrderByWithAggregationInput = {
   slug?: Prisma.SortOrder
   stripeAccountId?: Prisma.SortOrderInput | Prisma.SortOrder
   stripeOnboarding?: Prisma.SortOrder
+  chargesEnabled?: Prisma.SortOrder
+  payoutsEnabled?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.OrgCountOrderByAggregateInput
@@ -278,6 +300,8 @@ export type OrgScalarWhereWithAggregatesInput = {
   slug?: Prisma.StringWithAggregatesFilter<"Org"> | string
   stripeAccountId?: Prisma.StringNullableWithAggregatesFilter<"Org"> | string | null
   stripeOnboarding?: Prisma.EnumStripeOnboardingStatusWithAggregatesFilter<"Org"> | $Enums.StripeOnboardingStatus
+  chargesEnabled?: Prisma.BoolWithAggregatesFilter<"Org"> | boolean
+  payoutsEnabled?: Prisma.BoolWithAggregatesFilter<"Org"> | boolean
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Org"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Org"> | Date | string
 }
@@ -289,6 +313,8 @@ export type OrgCreateInput = {
   slug: string
   stripeAccountId?: string | null
   stripeOnboarding: $Enums.StripeOnboardingStatus
+  chargesEnabled?: boolean
+  payoutsEnabled?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   application: Prisma.OrgApplicationCreateNestedOneWithoutOrgInput
@@ -304,6 +330,8 @@ export type OrgUncheckedCreateInput = {
   slug: string
   stripeAccountId?: string | null
   stripeOnboarding: $Enums.StripeOnboardingStatus
+  chargesEnabled?: boolean
+  payoutsEnabled?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   users?: Prisma.UserUncheckedCreateNestedManyWithoutOrgInput
@@ -317,6 +345,8 @@ export type OrgUpdateInput = {
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeOnboarding?: Prisma.EnumStripeOnboardingStatusFieldUpdateOperationsInput | $Enums.StripeOnboardingStatus
+  chargesEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  payoutsEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   application?: Prisma.OrgApplicationUpdateOneRequiredWithoutOrgNestedInput
@@ -332,6 +362,8 @@ export type OrgUncheckedUpdateInput = {
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeOnboarding?: Prisma.EnumStripeOnboardingStatusFieldUpdateOperationsInput | $Enums.StripeOnboardingStatus
+  chargesEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  payoutsEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   users?: Prisma.UserUncheckedUpdateManyWithoutOrgNestedInput
@@ -346,6 +378,8 @@ export type OrgCreateManyInput = {
   slug: string
   stripeAccountId?: string | null
   stripeOnboarding: $Enums.StripeOnboardingStatus
+  chargesEnabled?: boolean
+  payoutsEnabled?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -357,6 +391,8 @@ export type OrgUpdateManyMutationInput = {
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeOnboarding?: Prisma.EnumStripeOnboardingStatusFieldUpdateOperationsInput | $Enums.StripeOnboardingStatus
+  chargesEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  payoutsEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -369,6 +405,8 @@ export type OrgUncheckedUpdateManyInput = {
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeOnboarding?: Prisma.EnumStripeOnboardingStatusFieldUpdateOperationsInput | $Enums.StripeOnboardingStatus
+  chargesEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  payoutsEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -386,6 +424,8 @@ export type OrgCountOrderByAggregateInput = {
   slug?: Prisma.SortOrder
   stripeAccountId?: Prisma.SortOrder
   stripeOnboarding?: Prisma.SortOrder
+  chargesEnabled?: Prisma.SortOrder
+  payoutsEnabled?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -398,6 +438,8 @@ export type OrgMaxOrderByAggregateInput = {
   slug?: Prisma.SortOrder
   stripeAccountId?: Prisma.SortOrder
   stripeOnboarding?: Prisma.SortOrder
+  chargesEnabled?: Prisma.SortOrder
+  payoutsEnabled?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -410,6 +452,8 @@ export type OrgMinOrderByAggregateInput = {
   slug?: Prisma.SortOrder
   stripeAccountId?: Prisma.SortOrder
   stripeOnboarding?: Prisma.SortOrder
+  chargesEnabled?: Prisma.SortOrder
+  payoutsEnabled?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -492,6 +536,8 @@ export type OrgCreateWithoutUsersInput = {
   slug: string
   stripeAccountId?: string | null
   stripeOnboarding: $Enums.StripeOnboardingStatus
+  chargesEnabled?: boolean
+  payoutsEnabled?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   application: Prisma.OrgApplicationCreateNestedOneWithoutOrgInput
@@ -506,6 +552,8 @@ export type OrgUncheckedCreateWithoutUsersInput = {
   slug: string
   stripeAccountId?: string | null
   stripeOnboarding: $Enums.StripeOnboardingStatus
+  chargesEnabled?: boolean
+  payoutsEnabled?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   campaigns?: Prisma.CampaignUncheckedCreateNestedManyWithoutOrgInput
@@ -534,6 +582,8 @@ export type OrgUpdateWithoutUsersInput = {
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeOnboarding?: Prisma.EnumStripeOnboardingStatusFieldUpdateOperationsInput | $Enums.StripeOnboardingStatus
+  chargesEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  payoutsEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   application?: Prisma.OrgApplicationUpdateOneRequiredWithoutOrgNestedInput
@@ -548,6 +598,8 @@ export type OrgUncheckedUpdateWithoutUsersInput = {
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeOnboarding?: Prisma.EnumStripeOnboardingStatusFieldUpdateOperationsInput | $Enums.StripeOnboardingStatus
+  chargesEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  payoutsEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   campaigns?: Prisma.CampaignUncheckedUpdateManyWithoutOrgNestedInput
@@ -560,6 +612,8 @@ export type OrgCreateWithoutApplicationInput = {
   slug: string
   stripeAccountId?: string | null
   stripeOnboarding: $Enums.StripeOnboardingStatus
+  chargesEnabled?: boolean
+  payoutsEnabled?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   users?: Prisma.UserCreateNestedManyWithoutOrgInput
@@ -573,6 +627,8 @@ export type OrgUncheckedCreateWithoutApplicationInput = {
   slug: string
   stripeAccountId?: string | null
   stripeOnboarding: $Enums.StripeOnboardingStatus
+  chargesEnabled?: boolean
+  payoutsEnabled?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   users?: Prisma.UserUncheckedCreateNestedManyWithoutOrgInput
@@ -602,6 +658,8 @@ export type OrgUpdateWithoutApplicationInput = {
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeOnboarding?: Prisma.EnumStripeOnboardingStatusFieldUpdateOperationsInput | $Enums.StripeOnboardingStatus
+  chargesEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  payoutsEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   users?: Prisma.UserUpdateManyWithoutOrgNestedInput
@@ -615,6 +673,8 @@ export type OrgUncheckedUpdateWithoutApplicationInput = {
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeOnboarding?: Prisma.EnumStripeOnboardingStatusFieldUpdateOperationsInput | $Enums.StripeOnboardingStatus
+  chargesEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  payoutsEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   users?: Prisma.UserUncheckedUpdateManyWithoutOrgNestedInput
@@ -628,6 +688,8 @@ export type OrgCreateWithoutCampaignsInput = {
   slug: string
   stripeAccountId?: string | null
   stripeOnboarding: $Enums.StripeOnboardingStatus
+  chargesEnabled?: boolean
+  payoutsEnabled?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   application: Prisma.OrgApplicationCreateNestedOneWithoutOrgInput
@@ -642,6 +704,8 @@ export type OrgUncheckedCreateWithoutCampaignsInput = {
   slug: string
   stripeAccountId?: string | null
   stripeOnboarding: $Enums.StripeOnboardingStatus
+  chargesEnabled?: boolean
+  payoutsEnabled?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   users?: Prisma.UserUncheckedCreateNestedManyWithoutOrgInput
@@ -670,6 +734,8 @@ export type OrgUpdateWithoutCampaignsInput = {
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeOnboarding?: Prisma.EnumStripeOnboardingStatusFieldUpdateOperationsInput | $Enums.StripeOnboardingStatus
+  chargesEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  payoutsEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   application?: Prisma.OrgApplicationUpdateOneRequiredWithoutOrgNestedInput
@@ -684,6 +750,8 @@ export type OrgUncheckedUpdateWithoutCampaignsInput = {
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   stripeAccountId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeOnboarding?: Prisma.EnumStripeOnboardingStatusFieldUpdateOperationsInput | $Enums.StripeOnboardingStatus
+  chargesEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  payoutsEnabled?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   users?: Prisma.UserUncheckedUpdateManyWithoutOrgNestedInput
@@ -737,6 +805,8 @@ export type OrgSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = ru
   slug?: boolean
   stripeAccountId?: boolean
   stripeOnboarding?: boolean
+  chargesEnabled?: boolean
+  payoutsEnabled?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   application?: boolean | Prisma.OrgApplicationDefaultArgs<ExtArgs>
@@ -753,6 +823,8 @@ export type OrgSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extension
   slug?: boolean
   stripeAccountId?: boolean
   stripeOnboarding?: boolean
+  chargesEnabled?: boolean
+  payoutsEnabled?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   application?: boolean | Prisma.OrgApplicationDefaultArgs<ExtArgs>
@@ -766,6 +838,8 @@ export type OrgSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extension
   slug?: boolean
   stripeAccountId?: boolean
   stripeOnboarding?: boolean
+  chargesEnabled?: boolean
+  payoutsEnabled?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   application?: boolean | Prisma.OrgApplicationDefaultArgs<ExtArgs>
@@ -779,11 +853,13 @@ export type OrgSelectScalar = {
   slug?: boolean
   stripeAccountId?: boolean
   stripeOnboarding?: boolean
+  chargesEnabled?: boolean
+  payoutsEnabled?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type OrgOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "applicationId" | "status" | "email" | "slug" | "stripeAccountId" | "stripeOnboarding" | "createdAt" | "updatedAt", ExtArgs["result"]["org"]>
+export type OrgOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "applicationId" | "status" | "email" | "slug" | "stripeAccountId" | "stripeOnboarding" | "chargesEnabled" | "payoutsEnabled" | "createdAt" | "updatedAt", ExtArgs["result"]["org"]>
 export type OrgInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   application?: boolean | Prisma.OrgApplicationDefaultArgs<ExtArgs>
   users?: boolean | Prisma.Org$usersArgs<ExtArgs>
@@ -812,6 +888,8 @@ export type $OrgPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
     slug: string
     stripeAccountId: string | null
     stripeOnboarding: $Enums.StripeOnboardingStatus
+    chargesEnabled: boolean
+    payoutsEnabled: boolean
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["org"]>
@@ -1247,6 +1325,8 @@ export interface OrgFieldRefs {
   readonly slug: Prisma.FieldRef<"Org", 'String'>
   readonly stripeAccountId: Prisma.FieldRef<"Org", 'String'>
   readonly stripeOnboarding: Prisma.FieldRef<"Org", 'StripeOnboardingStatus'>
+  readonly chargesEnabled: Prisma.FieldRef<"Org", 'Boolean'>
+  readonly payoutsEnabled: Prisma.FieldRef<"Org", 'Boolean'>
   readonly createdAt: Prisma.FieldRef<"Org", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Org", 'DateTime'>
 }

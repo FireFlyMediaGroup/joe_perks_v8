@@ -16,6 +16,7 @@
     "@joe-perks/email": "workspace:*",
     "@joe-perks/stripe": "workspace:*",
     "@joe-perks/types": "workspace:*",
+    "@joe-perks/ui": "workspace:*",
     "@radix-ui/react-icons": "^1.3.2",
     "@repo/analytics": "workspace:*",
     "@repo/cms": "workspace:*",

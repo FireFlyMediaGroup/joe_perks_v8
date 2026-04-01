@@ -2,7 +2,7 @@
 
 **Story ID:** US-04-01 | **Epic:** EP-04 (Buyer Storefront & Checkout)
 **Points:** 8 | **Priority:** High
-**Status:** `Todo`
+**Status:** `Done`
 **Owner:** Frontend / Full-stack
 **Dependencies:** US-03-04 (Org Stripe Connect + Campaign)
 **Depends on this:** US-04-02 (Zustand Cart), US-04-05 (Shipping Guard)
@@ -26,7 +26,10 @@ Replace the scaffold at `apps/web/app/[locale]/[slug]/page.tsx` with a real org 
 
 ## Current repo evidence
 
-- `apps/web/app/[locale]/[slug]/page.tsx` exists as **scaffold** -- reserved-slug guard via `RESERVED_SLUGS` from `@joe-perks/types`, placeholder "Storefront" copy
+- `apps/web/app/[locale]/[slug]/page.tsx` — server component: `getStorefrontData`, `notFound()` guards, `generateMetadata`; reserved-slug guard via `RESERVED_SLUGS` from `@joe-perks/types`
+- `_lib/queries.ts` — `getStorefrontData(slug)` (ACTIVE org + ACTIVE campaign + filtered items); `_lib/format.ts` — cents + roast/grind labels
+- `_components/` — `storefront-layout.tsx`, `campaign-header.tsx`, `product-grid.tsx`, `product-card.tsx` (disabled add-to-cart placeholder for US-04-02)
+- `pnpm db:smoke:us-04-01` — Prisma path + HTTP 404 guards (`packages/db/scripts/smoke-us-04-01-storefront.ts`)
 - `RESERVED_SLUGS` in `packages/types/src/slugs.ts` -- blocks known routes like `roasters`, `orgs`, `blog`, etc.
 - `Org` model: `slug` (unique), `status` (`OrgStatus`)
 - `Campaign` model: `orgId`, `status` (`CampaignStatus`: `DRAFT`, `ACTIVE`, `PAUSED`, `ENDED`), `orgPct`, `goalCents`, `totalRaised`, `name`
@@ -91,30 +94,30 @@ Replace the scaffold at `apps/web/app/[locale]/[slug]/page.tsx` with a real org 
 | Create | `apps/web/app/[locale]/[slug]/_components/campaign-header.tsx` | Org name, campaign name, fundraiser info, goal progress |
 | Create | `apps/web/app/[locale]/[slug]/_components/product-grid.tsx` | Server component -- grid of product cards |
 | Create | `apps/web/app/[locale]/[slug]/_components/product-card.tsx` | Individual product display card |
-| Create | `apps/web/app/[locale]/[slug]/_lib/queries.ts` | DB query helpers for storefront data loading |
+| Create | `apps/web/app/[locale]/[slug]/_lib/queries.ts` | DB query helpers for storefront data loading (`getStorefrontData`) |
 
 ---
 
 ## Acceptance criteria
 
-- [ ] Navigating to `joeperks.com/[slug]` with an active campaign shows the storefront
-- [ ] Non-existent slug returns 404
-- [ ] Org with no active campaign returns 404
-- [ ] Reserved slug (e.g. `roasters`, `orgs`) returns 404 (existing guard preserved)
-- [ ] Campaign header shows org name, campaign name
-- [ ] If `goalCents` is set, a progress bar shows `totalRaised / goalCents`
-- [ ] Fundraiser percentage displayed ("X% of every purchase supports [org name]")
-- [ ] Product grid shows all campaign items with images, names, roast levels
-- [ ] Prices displayed from `CampaignItem.retailPrice` (not `ProductVariant.retailPrice`)
-- [ ] Prices formatted as dollars: `$XX.XX`
-- [ ] Featured items (`isFeatured`) are visually distinguished
-- [ ] Variant options (size, grind) displayed on cards
-- [ ] Deleted products (`deletedAt IS NOT NULL`) are hidden
-- [ ] Unavailable variants (`isAvailable = false`) are hidden
-- [ ] Layout is mobile-first responsive (single column < 640px, multi-column >= 640px)
-- [ ] Touch targets are minimum 44x44px
-- [ ] Page renders as server component (no client-side data fetching)
-- [ ] Scaffold placeholder text is removed
+- [x] Navigating to `joeperks.com/[slug]` with an active campaign shows the storefront
+- [x] Non-existent slug returns 404
+- [x] Org with no active campaign returns 404
+- [x] Reserved slug (e.g. `roasters`, `orgs`) returns 404 (existing guard preserved)
+- [x] Campaign header shows org name, campaign name
+- [x] If `goalCents` is set, a progress bar shows `totalRaised / goalCents`
+- [x] Fundraiser percentage displayed ("X% of every purchase supports [org name]")
+- [x] Product grid shows all campaign items with images, names, roast levels
+- [x] Prices displayed from `CampaignItem.retailPrice` (not `ProductVariant.retailPrice`)
+- [x] Prices formatted as dollars: `$XX.XX`
+- [x] Featured items (`isFeatured`) are visually distinguished
+- [x] Variant options (size, grind) displayed on cards
+- [x] Deleted products (`deletedAt IS NOT NULL`) are hidden
+- [x] Unavailable variants (`isAvailable = false`) are hidden
+- [x] Layout is mobile-first responsive (single column < 640px, multi-column >= 640px)
+- [x] Touch targets are minimum 44x44px
+- [x] Page renders as server component (no client-side data fetching)
+- [x] Scaffold placeholder text is removed
 
 ---
 
@@ -159,3 +162,5 @@ Replace the scaffold at `apps/web/app/[locale]/[slug]/page.tsx` with a real org 
 | Version | Date | Notes |
 |---------|------|-------|
 | 0.1 | 2026-03-30 | Initial story created for Sprint 3 planning. |
+| 0.2 | 2026-03-31 | Implemented in repo: `getStorefrontData`, layout + header + grid + cards, disabled add-to-cart placeholder. |
+| 0.3 | 2026-03-31 | Docs + smoke: `Current repo evidence` aligned with code; `pnpm db:smoke:us-04-01`; sprint README / checklist / `SCAFFOLD_PROGRESS` / `CONVENTIONS` pointers updated. |

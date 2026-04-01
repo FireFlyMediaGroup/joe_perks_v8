@@ -15,7 +15,9 @@
     "build": "prisma generate --no-hints --schema=./prisma/schema.prisma",
     "clean": "git clean -xdf .cache .turbo dist node_modules",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false",
-    "db:smoke": "bun run ./scripts/smoke-db.ts"
+    "db:smoke": "bun run ./scripts/smoke-db.ts",
+    "db:smoke:us-03-02": "bun run ./scripts/smoke-us-03-02-admin-org-queue.ts",
+    "db:smoke:sprint-3": "bun run ./scripts/smoke-sprint-3.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.2",

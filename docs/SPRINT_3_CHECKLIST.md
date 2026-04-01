@@ -38,49 +38,49 @@ Before starting Sprint 3 work, verify these Sprint 2 deliverables are in place:
 
 ### 1.1 Application list page
 
-- [ ] Update `apps/admin/app/approvals/orgs/page.tsx` -- remove scaffold, add server component querying `OrgApplication`
-- [ ] Default filter: `status = PENDING_PLATFORM_REVIEW`
-- [ ] Tabs or dropdown for `PENDING_ROASTER_APPROVAL`, `APPROVED`, `REJECTED` views
-- [ ] Each row: org name, contact name, email, desired slug, desired org %, submission date, status badge
-- [ ] Include `RoasterOrgRequest` info (selected roaster names, priorities)
-- [ ] Pagination: `?page=` (1-based), 20 rows per page, Previous/Next + range summary
+- [x] Update `apps/admin/app/approvals/orgs/page.tsx` -- remove scaffold, add server component querying `OrgApplication`
+- [x] Default filter: `status = PENDING_PLATFORM_REVIEW`
+- [x] Tabs or dropdown for `PENDING_ROASTER_APPROVAL`, `APPROVED`, `REJECTED` views
+- [x] Each row: org name, contact name, email, desired slug, desired org %, submission date, status badge
+- [x] Include `RoasterOrgRequest` info (selected roaster names, priorities)
+- [x] Pagination: `?page=` (1-based), 20 rows per page, Previous/Next + range summary
 
 ### 1.2 Application detail
 
-- [ ] Create `apps/admin/app/approvals/orgs/[id]/page.tsx`
-- [ ] Shows all submitted fields from the application
-- [ ] Shows selected roaster(s) with priority and current request status
-- [ ] Shows platform settings bounds for org % (context for admin review)
+- [x] Create `apps/admin/app/approvals/orgs/[id]/page.tsx`
+- [x] Shows all submitted fields from the application
+- [x] Shows selected roaster(s) with priority and current request status
+- [x] Shows platform settings bounds for org % (context for admin review)
 
 ### 1.3 Approve server action
 
-- [ ] Create `apps/admin/app/approvals/orgs/_actions/approve-application.ts`
-- [ ] Validates: application exists, status is `PENDING_PLATFORM_REVIEW`
-- [ ] `database.$transaction()`:
+- [x] Create `apps/admin/app/approvals/orgs/_actions/approve-application.ts`
+- [x] Validates: application exists, status is `PENDING_PLATFORM_REVIEW`
+- [x] `database.$transaction()`:
   - Update `OrgApplication.status` to `PENDING_ROASTER_APPROVAL`
   - Update primary `RoasterOrgRequest.status` to `PENDING` (should already be, but confirm)
   - Create `MagicLink` with `purpose = ROASTER_REVIEW`, `actorId = roasterId`, `expiresAt = now + 72h`
-- [ ] Call `sendEmail()` with roaster review email template (link to `roasters.joeperks.com/org-requests/[token]`)
-- [ ] Revalidate page path
+- [x] Call `sendEmail()` with roaster review email template (link to `roasters.joeperks.com/org-requests/[token]`)
+- [x] Revalidate page path
 
 ### 1.4 Reject server action
 
-- [ ] Create `apps/admin/app/approvals/orgs/_actions/reject-application.ts`
-- [ ] Update `OrgApplication.status` to `REJECTED`
-- [ ] Call `sendEmail()` with org rejection template
-- [ ] Revalidate page path
+- [x] Create `apps/admin/app/approvals/orgs/_actions/reject-application.ts`
+- [x] Update `OrgApplication.status` to `REJECTED`
+- [x] Call `sendEmail()` with org rejection template
+- [x] Revalidate page path
 
 ### 1.5 Email templates
 
-- [ ] Create `packages/email/templates/org-roaster-review.tsx` -- email to roaster with magic link CTA
-- [ ] Create `packages/email/templates/org-rejected.tsx` -- email to org applicant on platform rejection
+- [x] Create `packages/email/templates/org-roaster-review.tsx` -- email to roaster with magic link CTA
+- [x] Create `packages/email/templates/org-rejected.tsx` -- email to org applicant on platform rejection
 
 ### 1.6 UI components
 
-- [ ] Application list component with table layout
-- [ ] Status badges (PENDING_PLATFORM_REVIEW = yellow, PENDING_ROASTER_APPROVAL = blue, APPROVED = green, REJECTED = red)
-- [ ] Confirmation dialog before approve/reject
-- [ ] Guard: non-PENDING_PLATFORM_REVIEW applications hide approve/reject buttons
+- [x] Application list component with table layout
+- [x] Status badges (PENDING_PLATFORM_REVIEW = yellow, PENDING_ROASTER_APPROVAL = blue, APPROVED = green, REJECTED = red)
+- [x] Confirmation dialog before approve/reject
+- [x] Guard: non-PENDING_PLATFORM_REVIEW applications hide approve/reject buttons
 
 ### 1.7 Verification
 
@@ -102,46 +102,46 @@ Before starting Sprint 3 work, verify these Sprint 2 deliverables are in place:
 
 ### 2.1 Magic link page
 
-- [ ] Create `apps/roaster/app/org-requests/[token]/page.tsx` (server component, NO auth required)
-- [ ] Validate token: exists, `purpose = ROASTER_REVIEW`, `expiresAt > now()`, `usedAt IS NULL`
-- [ ] Load `RoasterOrgRequest` + `OrgApplication` details from token payload
-- [ ] Display org info: name, description, desired slug, desired org %, contact info
+- [x] Create `apps/roaster/app/org-requests/[token]/page.tsx` (server component, NO auth required)
+- [x] Validate token: exists, `purpose = ROASTER_REVIEW`, `expiresAt > now()`, `usedAt IS NULL`
+- [x] Load `RoasterOrgRequest` + `OrgApplication` details from token payload
+- [x] Display org info: name, description, desired slug, desired org %, contact info
 
 ### 2.2 Approve server action
 
-- [ ] Create `apps/roaster/app/org-requests/_actions/approve-org.ts`
-- [ ] Re-validate token (race condition guard)
-- [ ] `database.$transaction()`:
+- [x] Create `apps/roaster/app/org-requests/_actions/approve-org.ts`
+- [x] Re-validate token (race condition guard)
+- [x] `database.$transaction()`:
   - Set `MagicLink.usedAt = now()`
   - Update `RoasterOrgRequest.status` to `APPROVED`
   - Update `OrgApplication.status` to `APPROVED`
   - Create `Org` record: `slug = desiredSlug`, `status = ONBOARDING`, `applicationId`, `email`
   - Create `User` record: `role = ORG_ADMIN`, `orgId`, `email`
-- [ ] Call `sendEmail()` with org approved template (link to `orgs.joeperks.com`)
-- [ ] Show success confirmation
+- [x] Call `sendEmail()` with org approved template (link to `orgs.joeperks.com`)
+- [x] Show success confirmation
 
 ### 2.3 Decline server action
 
-- [ ] Create `apps/roaster/app/org-requests/_actions/decline-org.ts`
-- [ ] Re-validate token
-- [ ] `database.$transaction()`:
+- [x] Create `apps/roaster/app/org-requests/_actions/decline-org.ts`
+- [x] Re-validate token
+- [x] `database.$transaction()`:
   - Set `MagicLink.usedAt = now()`
   - Update `RoasterOrgRequest.status` to `DECLINED`
   - Check for backup roaster (`priority = 2`): if exists, create new `MagicLink` for backup roaster, send review email
   - If no backup: update `OrgApplication.status` to `REJECTED`, send rejection email to org
-- [ ] Show confirmation with appropriate message
+- [x] Show confirmation with appropriate message
 
 ### 2.4 Email templates
 
-- [ ] Create `packages/email/templates/org-approved.tsx` -- email to org with login CTA
-- [ ] Create `packages/email/templates/org-declined.tsx` -- email to org when all roasters decline
+- [x] Create `packages/email/templates/org-approved.tsx` -- email to org with login CTA
+- [x] Create `packages/email/templates/org-declined.tsx` -- email to org when all roasters decline
 
 ### 2.5 UI components
 
-- [ ] Org details display component
-- [ ] Approve/decline buttons with confirmation dialogs
-- [ ] Expired/used token error state
-- [ ] Success/decline confirmation states
+- [x] Org details display component
+- [x] Approve/decline buttons with confirmation dialogs
+- [x] Expired/used token error state
+- [x] Success/decline confirmation states
 
 ### 2.6 Verification
 
@@ -164,44 +164,43 @@ Before starting Sprint 3 work, verify these Sprint 2 deliverables are in place:
 
 ### 3.1 Org Stripe Connect onboarding
 
-- [ ] Update `apps/org/app/(authenticated)/onboarding/page.tsx` -- remove scaffold
-- [ ] Create `apps/org/app/api/stripe/connect/route.ts` -- mirrors roaster Connect route
-- [ ] Server component: authenticate via Clerk `auth()`, load `User` -> `Org`
-- [ ] Create `_components/connect-status.tsx` -- displays Stripe Connect status
-- [ ] Create `_components/start-onboarding-button.tsx` -- calls POST /api/stripe/connect
-- [ ] Handle `?stripe_return=1` and `?stripe_refresh=1` query params
-- [ ] Success state when `stripeOnboarding = COMPLETE` + `chargesEnabled` + `payoutsEnabled`
+- [x] Update `apps/org/app/(authenticated)/onboarding/page.tsx` -- remove scaffold
+- [x] Create `apps/org/app/api/stripe/connect/route.ts` -- mirrors roaster Connect route
+- [x] Server component: authenticate via Clerk `auth()`, load `User` -> `Org`
+- [x] Create `_components/connect-status.tsx` -- displays Stripe Connect status
+- [x] Create `_components/start-onboarding-button.tsx` -- calls POST /api/stripe/connect
+- [x] Handle `?stripe_return=1` and `?stripe_refresh=1` query params
+- [x] Success state when `stripeOnboarding = COMPLETE` + `chargesEnabled` + `payoutsEnabled`
 
 ### 3.2 Webhook update for org Connect
 
-- [ ] Update `apps/web/app/api/webhooks/stripe/route.ts` -- handle `account.updated` for org accounts
-- [ ] Promote `Org.status` from `ONBOARDING` to `ACTIVE` when Connect is complete
+- [x] Update `apps/web/app/api/webhooks/stripe/route.ts` -- handle `account.updated` for org accounts
+- [x] Promote `Org.status` from `ONBOARDING` to `ACTIVE` when Connect is complete
 
 ### 3.3 Campaign creation page
 
-- [ ] Update `apps/org/app/(authenticated)/campaign/page.tsx` -- remove scaffold
-- [ ] Server component: load org, approved roaster, roaster's products + variants (active, non-deleted)
-- [ ] Gate access: require `Org.status = ACTIVE` (Stripe onboarding complete)
+- [x] Update `apps/org/app/(authenticated)/campaign/page.tsx` -- remove scaffold
+- [x] Server component: load org, approved roaster, roaster's products + variants (active, non-deleted)
+- [x] Gate access: require `Org.status = ACTIVE` (Stripe onboarding complete)
 
 ### 3.4 Campaign validation schema
 
-- [ ] Create `apps/org/app/(authenticated)/campaign/_lib/schema.ts`
-- [ ] Fields: name (required), goalCents (optional positive int), items array with variantId + retail/wholesale prices
+- [x] Create `apps/org/app/(authenticated)/campaign/_lib/schema.ts`
+- [x] Fields: name (required), goalCents (optional positive int), items array with variantId + retail/wholesale prices
 
 ### 3.5 Campaign server actions
 
-- [ ] Create `apps/org/app/(authenticated)/campaign/_actions/campaign-actions.ts`
-- [ ] `createCampaign`: validate, scope to `session.orgId`, snapshot prices from `ProductVariant` to `CampaignItem`, set `orgPct` from `Org.application.desiredOrgPct`
-- [ ] `updateCampaign`: validate ownership, update name/goal
-- [ ] `activateCampaign`: validate at least one `CampaignItem`, at least one shipping rate exists for roaster, transition `status` to `ACTIVE`
+- [x] Create `apps/org/app/(authenticated)/campaign/_actions/campaign-actions.ts`
+- [x] `saveCampaignDraft`: validate, scope to `session.orgId`, snapshot prices from `ProductVariant` to `CampaignItem`, set `orgPct` from `Org.application.desiredOrgPct` (replaces separate create/update for draft)
+- [x] `activateCampaign`: validate at least one `CampaignItem`, at least one shipping rate exists for roaster, transition `status` to `ACTIVE`
 
 ### 3.6 Campaign form UI
 
-- [ ] Create `_components/campaign-form.tsx` (client component)
-- [ ] Product/variant selection from approved roaster's catalog
-- [ ] Price display from `ProductVariant` (snapshots to `CampaignItem` on save)
-- [ ] Campaign name and optional goal
-- [ ] Activate button with guard checks
+- [x] Create `_components/campaign-form.tsx` (client component)
+- [x] Product/variant selection from approved roaster's catalog
+- [x] Price display from `ProductVariant` (snapshots to `CampaignItem` on save)
+- [x] Campaign name and optional goal
+- [x] Activate button with guard checks
 
 ### 3.7 Verification
 
@@ -223,30 +222,31 @@ Before starting Sprint 3 work, verify these Sprint 2 deliverables are in place:
 
 ### 4.1 Storefront page
 
-- [ ] Update `apps/web/app/[locale]/[slug]/page.tsx` -- remove scaffold
-- [ ] Server component: load `Org` by slug, load active `Campaign` with `CampaignItem`s + `Product` + `ProductVariant`
-- [ ] Guard: if org not found or no active campaign, return `notFound()`
-- [ ] No authentication required (public page)
+- [x] Update `apps/web/app/[locale]/[slug]/page.tsx` -- remove scaffold
+- [x] Server component: load `Org` by slug, load active `Campaign` with `CampaignItem`s + `Product` + `ProductVariant`
+- [x] Guard: if org not found or no active campaign, return `notFound()`
+- [x] No authentication required (public page)
+- [x] `_lib/queries.ts`: `getStorefrontData` returns `splitPreviewDefaults` (PlatformSettings + default roaster shipping rate) for **US-04-02** cart estimate — see Phase 6.8
 
 ### 4.2 Storefront layout
 
-- [ ] Create `apps/web/app/[locale]/[slug]/_components/storefront-layout.tsx`
-- [ ] Org branding header (org name, campaign name, goal progress if goalCents set)
-- [ ] Responsive layout: mobile-first, adapts to tablet and desktop
+- [x] Create `apps/web/app/[locale]/[slug]/_components/storefront-layout.tsx`
+- [x] Org branding header (org name, campaign name, goal progress if goalCents set)
+- [x] Responsive layout: mobile-first, adapts to tablet and desktop
 
 ### 4.3 Product grid
 
-- [ ] Create `apps/web/app/[locale]/[slug]/_components/product-grid.tsx` (server component)
-- [ ] Create `apps/web/app/[locale]/[slug]/_components/product-card.tsx`
-- [ ] Display: product image, name, roast level, price from `CampaignItem.retailPrice`, variant options
-- [ ] Featured items (`isFeatured`) displayed prominently
-- [ ] Filter `Product.deletedAt IS NULL` and `ProductVariant.deletedAt IS NULL` and `isAvailable = true`
+- [x] Create `apps/web/app/[locale]/[slug]/_components/product-grid.tsx` (server component)
+- [x] Create `apps/web/app/[locale]/[slug]/_components/product-card.tsx`
+- [x] Display: product image, name, roast level, price from `CampaignItem.retailPrice`, variant options
+- [x] Featured items (`isFeatured`) displayed prominently
+- [x] Filter `Product.deletedAt IS NULL` and `ProductVariant.deletedAt IS NULL` and `isAvailable = true`
 
 ### 4.4 Campaign header
 
-- [ ] Create `apps/web/app/[locale]/[slug]/_components/campaign-header.tsx`
-- [ ] Org name, campaign name, fundraiser percentage display
-- [ ] Goal progress bar if `goalCents` is set (`totalRaised / goalCents`)
+- [x] Create `apps/web/app/[locale]/[slug]/_components/campaign-header.tsx`
+- [x] Org name, campaign name, fundraiser percentage display
+- [x] Goal progress bar if `goalCents` is set (`totalRaised / goalCents`)
 
 ### 4.5 Verification
 
@@ -300,60 +300,65 @@ Before starting Sprint 3 work, verify these Sprint 2 deliverables are in place:
 
 ### 6.1 Expand cart store
 
-- [ ] Update `packages/ui/src/store/cart.ts`:
+- [x] Update `packages/ui/src/store/cart.ts`:
   - Add `removeLine(campaignItemId: string)` -- remove by campaign item ID
   - Add `updateQuantity(campaignItemId: string, quantity: number)` -- update quantity (remove if 0)
   - Add `lineCount` computed getter -- total number of unique items
   - Add `totalQuantity` computed getter -- sum of all quantities
-- [ ] Keep existing `addLine` and `clear` methods
-- [ ] Maintain `persist` middleware with `joe-perks-cart` storage key
+- [x] Keep existing `addLine` and `clear` methods (`addLine` takes `AddLineContext` + line; switches campaign when `campaignId` changes)
+- [x] Maintain `persist` middleware with `joe-perks-cart` storage key
 
 ### 6.2 Cart line metadata
 
-- [ ] Expand `CartLine` type to include display metadata:
+- [x] Expand `CartLine` type to include display metadata:
   - `productName: string`
   - `variantDesc: string`
   - `retailPrice: number` (cents, from `CampaignItem.retailPrice`)
   - `imageUrl?: string`
-- [ ] This data is stored client-side for display only; checkout API re-validates from DB
+- [x] This data is stored client-side for display only; checkout API re-validates from DB
 
 ### 6.3 Add-to-cart button
 
-- [ ] Create `apps/web/app/[locale]/[slug]/_components/add-to-cart-button.tsx` (client component)
-- [ ] Uses `useCartStore().addLine()` with campaign item data
-- [ ] Visual feedback on add (toast or button state change)
-- [ ] Quantity selector if product already in cart
+- [x] Create `apps/web/app/[locale]/[slug]/_components/add-to-cart-button.tsx` (client component)
+- [x] Uses `useCartStore().addLine()` with campaign item data
+- [x] Visual feedback on add (toast or button state change)
+- [x] Quantity selector if product already in cart
 
 ### 6.4 Cart drawer
 
-- [ ] Create `apps/web/app/[locale]/[slug]/_components/cart-drawer.tsx` (client component)
-- [ ] Sheet/drawer component: slides from right on desktop, bottom sheet on mobile
-- [ ] Shows cart line items with quantity controls (+/- buttons)
-- [ ] Shows subtotal (sum of `retailPrice * quantity` for all lines)
-- [ ] "Checkout" button linking to `[slug]/checkout`
-- [ ] "Clear cart" action
-- [ ] Empty cart state
+- [x] Create `apps/web/app/[locale]/[slug]/_components/cart-drawer.tsx` (client component)
+- [x] Sheet/drawer component: slides from right on desktop, bottom sheet on mobile
+- [x] Shows cart line items with quantity controls (+/- buttons)
+- [x] Shows subtotal (sum of `retailPrice * quantity` for all lines)
+- [x] "Checkout" button linking to `[slug]/checkout`
+- [x] "Clear cart" action
+- [x] Empty cart state
 
 ### 6.5 Cart line item component
 
-- [ ] Create `apps/web/app/[locale]/[slug]/_components/cart-line-item.tsx` (client component)
-- [ ] Displays: product name, variant description, unit price, quantity controls, line total
-- [ ] Remove button per item
+- [x] Create `apps/web/app/[locale]/[slug]/_components/cart-line-item.tsx` (client component)
+- [x] Displays: product name, variant description, unit price, quantity controls, line total
+- [x] Remove button per item
 
 ### 6.6 Cart trigger
 
-- [ ] Cart icon in storefront header with badge showing `lineCount`
-- [ ] Clicking opens cart drawer
+- [x] Cart icon in storefront header with badge showing `lineCount`
+- [x] Clicking opens cart drawer
 
 ### 6.7 Verification
 
-- [ ] Add item --> appears in cart with correct price from `CampaignItem.retailPrice`
-- [ ] Update quantity --> subtotal recalculates
-- [ ] Remove item --> item disappears from cart
-- [ ] Clear cart --> all items removed
-- [ ] Cart persists across page refresh (localStorage)
-- [ ] Cart badge shows correct count
-- [ ] Mobile: bottom sheet UX with 44x44px touch targets
+- [x] Add item --> appears in cart with correct price from `CampaignItem.retailPrice`
+- [x] Update quantity --> subtotal recalculates
+- [x] Remove item --> item disappears from cart
+- [x] Clear cart --> all items removed
+- [x] Cart persists across page refresh (localStorage)
+- [x] Cart badge shows correct count
+- [x] Mobile: bottom sheet UX with 44x44px touch targets
+
+### 6.8 Split estimate in cart (shipped with US-04-02)
+
+- [x] `getStorefrontData` returns `splitPreviewDefaults` (`PlatformSettings` + default `RoasterShippingRate` for the campaign roaster)
+- [x] Cart drawer shows estimated coffee subtotal, shipping (default rate or "At checkout"), estimated fundraiser amount for org, estimated total — using `calculateSplits()` imported from **`@joe-perks/stripe/splits`** (do **not** import the main `@joe-perks/stripe` barrel in client components; it pulls `server-only` modules)
 
 **Reference:** [`docs/sprint-3/stories/US-04-02-zustand-cart.md`](sprint-3/stories/US-04-02-zustand-cart.md)
 **Rules:** [`docs/AGENTS.md`](AGENTS.md) -- money-as-cents; [`docs/CONVENTIONS.md`](CONVENTIONS.md) -- client component for cart interaction
@@ -529,13 +534,13 @@ After completing each phase, verify alignment with these documents:
 | [`docs/05-approval-chain.mermaid`](05-approval-chain.mermaid) | Verify org approval flow matches OA3-OA13 |
 | [`docs/06-database-schema.mermaid`](06-database-schema.mermaid) | Verify model usage aligns with ERD |
 | [`docs/SCAFFOLD_PROGRESS.md`](SCAFFOLD_PROGRESS.md) | Update status for cart, storefront, checkout rows |
-| [`docs/AGENTS.md`](AGENTS.md) | No changes expected unless new patterns introduced |
+| [`docs/AGENTS.md`](AGENTS.md) | Update when new platform rules (e.g. `@joe-perks/stripe/splits` for client) |
 | [`docs/CONVENTIONS.md`](CONVENTIONS.md) | Add new conventions discovered during implementation (e.g. org portal patterns) |
 
 ### AGENTS.md rules checklist (apply to every story)
 
 - [ ] Money values stored as `Int` cents -- never floats
-- [ ] Split calculations use `calculateSplits()` from `@joe-perks/stripe`
+- [ ] Split calculations use `calculateSplits()` — server/API from `@joe-perks/stripe`; client UI from `@joe-perks/stripe/splits` only
 - [ ] `CampaignItem.retailPrice` used for storefront/checkout -- never `ProductVariant.retailPrice`
 - [ ] Tenant isolation: org queries scoped by `session.orgId`, roaster by `session.roasterId`
 - [ ] Soft deletes: `Product`/`ProductVariant` queries filter `deletedAt IS NULL`
@@ -552,6 +557,12 @@ pnpm dev                    # Start all apps
 pnpm typecheck              # Type-check all packages
 pnpm check                  # Lint + format (Ultracite)
 pnpm build                  # Build all apps (CI equivalent)
+
+# DB / Sprint 3 smoke (requires DATABASE_URL in packages/db/.env)
+pnpm db:smoke               # Singletons + recent migrations
+pnpm db:smoke:sprint-3      # EP-03 migration, Org/Campaign invariants, optional HTTP probes
+pnpm db:smoke:us-04-01      # Storefront Prisma path (incl. splitPreviewDefaults mirror) + optional HTTP guards (127.0.0.1:3000; skip on refused / 5xx)
+pnpm db:smoke:us-03-02      # Admin org queue + MagicLink structure (deeper US-03-02 checks)
 
 # Stripe local testing
 stripe listen --forward-to localhost:3000/api/webhooks/stripe
@@ -571,7 +582,7 @@ stripe trigger account.updated
 | US-03-02 | 1 | `apps/admin/app/approvals/orgs/` (page, [id], _actions, _components, _lib), `packages/email/templates/org-roaster-review.tsx`, `org-rejected.tsx` |
 | US-03-03 | 2 | `apps/roaster/app/org-requests/[token]/` (page, _actions, _components), `packages/email/templates/org-approved.tsx`, `org-declined.tsx` |
 | US-03-04 | 3 | `apps/org/app/(authenticated)/onboarding/` (page, _components), `apps/org/app/(authenticated)/campaign/` (page, _actions, _components, _lib), `apps/org/app/api/stripe/connect/route.ts` |
-| US-04-01 | 4 | `apps/web/app/[locale]/[slug]/page.tsx`, `_components/storefront-layout.tsx`, `product-grid.tsx`, `product-card.tsx`, `campaign-header.tsx` |
+| US-04-01 | 4 | `apps/web/app/[locale]/[slug]/page.tsx`, `_lib/queries.ts`, `_lib/format.ts`, `_components/storefront-layout.tsx`, `product-grid.tsx`, `product-card.tsx`, `campaign-header.tsx`; `packages/db/scripts/smoke-us-04-01-storefront.ts` |
 | US-08-01 | 5 | `packages/email/templates/order-confirmation.tsx`, `apps/web/app/api/webhooks/stripe/route.ts` |
 | US-04-02 | 6 | `packages/ui/src/store/cart.ts`, `apps/web/app/[locale]/[slug]/_components/cart-drawer.tsx`, `cart-line-item.tsx`, `add-to-cart-button.tsx` |
 | US-04-03 | 7 | `apps/web/app/[locale]/[slug]/checkout/` (page, _components/checkout-form, step-cart-review, step-shipping, step-payment, _lib/schema) |

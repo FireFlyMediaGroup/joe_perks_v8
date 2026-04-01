@@ -29,7 +29,11 @@
     "./templates/roaster-application-received": "./templates/roaster-application-received.tsx",
     "./templates/roaster-approved": "./templates/roaster-approved.tsx",
     "./templates/roaster-rejected": "./templates/roaster-rejected.tsx",
-    "./templates/org-application-received": "./templates/org-application-received.tsx"
+    "./templates/org-application-received": "./templates/org-application-received.tsx",
+    "./templates/org-roaster-review": "./templates/org-roaster-review.tsx",
+    "./templates/org-rejected": "./templates/org-rejected.tsx",
+    "./templates/org-approved": "./templates/org-approved.tsx",
+    "./templates/org-declined": "./templates/org-declined.tsx"
   },
   "devDependencies": {
     "dotenv": "^16.5.0",

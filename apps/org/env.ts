@@ -4,10 +4,15 @@ import { keys as core } from "@repo/next-config/keys";
 import { keys as observability } from "@repo/observability/keys";
 import { keys as security } from "@repo/security/keys";
 import { createEnv } from "@t3-oss/env-nextjs";
+import { z } from "zod";
 
 export const env = createEnv({
   extends: [auth(), core(), database(), observability(), security()],
-  server: {},
+  server: {
+    ORG_APP_ORIGIN: z.string().url().optional(),
+  },
   client: {},
-  runtimeEnv: {},
+  runtimeEnv: {
+    ORG_APP_ORIGIN: process.env.ORG_APP_ORIGIN,
+  },
 });

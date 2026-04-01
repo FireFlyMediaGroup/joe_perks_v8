@@ -241,6 +241,8 @@ export const OrgScalarFieldEnum = {
   slug: 'slug',
   stripeAccountId: 'stripeAccountId',
   stripeOnboarding: 'stripeOnboarding',
+  chargesEnabled: 'chargesEnabled',
+  payoutsEnabled: 'payoutsEnabled',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

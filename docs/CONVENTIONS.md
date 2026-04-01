@@ -81,6 +81,8 @@ export async function createProduct(input: ProductFormInput): Promise<ActionResu
 
 Key differences from API routes: no `Request`/`Response`, uses `revalidatePath` instead of returning JSON, returns a discriminated union result type.
 
+**Org portal:** import `requireOrgId` from `apps/org/app/(authenticated)/_lib/require-org.ts` and scope mutations with `session.orgId` (same shape as `requireRoasterId`).
+
 ### Route structure in apps/web
 ```
 app/
@@ -355,6 +357,10 @@ await logOrderEvent(
 
 ## Component patterns (apps/web storefront)
 
+**Data loading:** `getStorefrontData(slug)` in `apps/web/app/[locale]/[slug]/_lib/queries.ts` loads `Org` (ACTIVE), active `Campaign`, and `CampaignItem` rows with product/variant filters. It also returns **`splitPreviewDefaults`** (`PlatformSettings` + default roaster `RoasterShippingRate`) for the cart drawer estimate — reuse the same query for checkout (US-04-03) instead of duplicating.
+
+**Split math in the browser:** Use `calculateSplits()` from **`@joe-perks/stripe/splits`**. Do **not** import the main `@joe-perks/stripe` package in client components — the barrel re-exports `server-only` modules (`client.ts`, `ratelimit.ts`, etc.) and will break `next build`.
+
 ```typescript
 // ✅ Server component for data fetching
 export default async function ProductGrid({ campaignId }: { campaignId: string }) {
@@ -364,18 +370,16 @@ export default async function ProductGrid({ campaignId }: { campaignId: string }
 
 // ✅ Client component for cart interaction
 'use client'
-import { useCart } from '@joe-perks/ui'
+import { useCartStore } from '@joe-perks/ui'
+import { calculateSplits } from '@joe-perks/stripe/splits'
 
-export function AddToCartButton({ item }: { item: CampaignItem }) {
-  const { addItem } = useCart()
-  return <button onClick={() => addItem({ variant_id: item.variant_id, unit_price: item.retail_price, ... })}>
-    Add to cart
-  </button>
+export function CartDrawer({ splitPreviewDefaults }: { splitPreviewDefaults: SplitPreviewDefaults }) {
+  const lines = useCartStore((s) => s.lines)
+  // … compute subtotalCents from lines, then calculateSplits({ productSubtotalCents, shippingAmountCents, orgPct, … })
 }
 
-// ✅ Mobile-first: bottom sheet on mobile, side drawer on desktop
-// Cart drawer: class="fixed bottom-0 md:right-0 md:top-0 md:bottom-auto"
-// Touch targets: min-h-[44px] min-w-[44px] on all interactive elements
+// ✅ Mobile-first: bottom sheet on mobile, side drawer on desktop (see `cart-drawer.tsx` + `useIsMobile`)
+// Touch targets: min 44×44px on interactive controls
 ```
 
 ---

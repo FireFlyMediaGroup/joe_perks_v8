@@ -2,7 +2,7 @@
 
 **Story ID:** US-03-02 | **Epic:** EP-03 (Org Onboarding)
 **Points:** 5 | **Priority:** High
-**Status:** `Todo`
+**Status:** `Done`
 **Owner:** Full-stack
 **Dependencies:** US-03-01 (Org Application Form), US-02-02 (Admin Roaster Approval Queue)
 **Depends on this:** US-03-03 (Roaster Magic Link Org Review)
@@ -25,8 +25,8 @@ Build the platform admin approval queue for org applications at `admin.joeperks.
 
 ## Current repo evidence
 
-- `apps/admin/app/approvals/orgs/page.tsx` exists as **scaffold stub** ("Queue scaffold.")
-- `apps/admin/app/approvals/roasters/` is **fully implemented** (US-02-02) -- use as pattern reference for list, detail, actions, components
+- `apps/admin/app/approvals/orgs/` -- **implemented**: list with status filters + pagination, `[id]/` detail, approve/reject server actions, `MagicLink` + emails
+- `apps/admin/app/approvals/roasters/` is **fully implemented** (US-02-02) -- pattern reference for list, detail, actions, components
 - `OrgApplication` model in schema: `status` (`OrgApplicationStatus`: `PENDING_PLATFORM_REVIEW`, `PENDING_ROASTER_APPROVAL`, `APPROVED`, `REJECTED`), `orgName`, `contactName`, `email`, `desiredSlug`, `desiredOrgPct`, `termsAgreedAt`, `termsVersion`
 - `RoasterOrgRequest` model: `applicationId`, `roasterId`, `status` (`RoasterOrgRequestStatus`: `PENDING`, `APPROVED`, `DECLINED`), `priority` (1 = primary, 2 = backup)
 - `MagicLink` model: `token` (unique), `purpose` (`MagicLinkPurpose`: includes `ROASTER_REVIEW`), `actorId`, `actorType`, `payload` (Json), `expiresAt`, `usedAt`
@@ -91,23 +91,23 @@ Build the platform admin approval queue for org applications at `admin.joeperks.
 
 ## Acceptance criteria
 
-- [ ] The admin queue at `/approvals/orgs` shows org applications with default filter `PENDING_PLATFORM_REVIEW`
-- [ ] Status tabs/dropdown allows filtering by `PENDING_ROASTER_APPROVAL`, `APPROVED`, `REJECTED`
-- [ ] Each row shows: org name, contact name, desired slug, desired org %, submission date, status badge
-- [ ] Clicking a row opens the detail view with all submitted fields
-- [ ] Detail view shows selected roaster(s) with priority (primary/backup) and request status
-- [ ] Approve button requires confirmation dialog
-- [ ] On approve: `OrgApplication.status` transitions to `PENDING_ROASTER_APPROVAL`
-- [ ] On approve: `MagicLink` created with `purpose = ROASTER_REVIEW`, `expiresAt = now + 72h`, `actorId = primary roasterId`
-- [ ] On approve: roaster receives email with magic link to `roasters.joeperks.com/org-requests/[token]`
-- [ ] Reject button requires confirmation dialog
-- [ ] On reject: `OrgApplication.status` transitions to `REJECTED`
-- [ ] On reject: org receives rejection email
-- [ ] Non-`PENDING_PLATFORM_REVIEW` applications hide approve/reject buttons
-- [ ] Pagination works with 20 rows per page
-- [ ] HTTP Basic Auth protects the page (existing middleware)
-- [ ] No PII logged -- only application ID and magic link token ID
-- [ ] `EmailLog` entries created for all sent emails (dedup)
+- [x] The admin queue at `/approvals/orgs` shows org applications with default filter `PENDING_PLATFORM_REVIEW`
+- [x] Status tabs/dropdown allows filtering by `PENDING_ROASTER_APPROVAL`, `APPROVED`, `REJECTED`
+- [x] Each row shows: org name, contact name, desired slug, desired org %, submission date, status badge
+- [x] Clicking a row opens the detail view with all submitted fields
+- [x] Detail view shows selected roaster(s) with priority (primary/backup) and request status
+- [x] Approve button requires confirmation dialog
+- [x] On approve: `OrgApplication.status` transitions to `PENDING_ROASTER_APPROVAL`
+- [x] On approve: `MagicLink` created with `purpose = ROASTER_REVIEW`, `expiresAt = now + 72h`, `actorId = primary roasterId`
+- [x] On approve: roaster receives email with magic link to `roasters.joeperks.com/org-requests/[token]` (via `ROASTER_APP_ORIGIN`)
+- [x] Reject button requires confirmation dialog
+- [x] On reject: `OrgApplication.status` transitions to `REJECTED`
+- [x] On reject: org receives rejection email
+- [x] Non-`PENDING_PLATFORM_REVIEW` applications hide approve/reject buttons
+- [x] Pagination works with 20 rows per page
+- [x] HTTP Basic Auth protects the page (existing middleware)
+- [x] No PII logged -- only application ID and magic link id (row `id`)
+- [x] `EmailLog` entries created for all sent emails (dedup)
 
 ---
 
@@ -138,6 +138,18 @@ Build the platform admin approval queue for org applications at `admin.joeperks.
 
 ---
 
+## Smoke tests (automated)
+
+From repo root (requires `DATABASE_URL` in `packages/db/.env`; optional admin on port **3003** for HTTP check):
+
+```bash
+pnpm db:smoke:us-03-02
+```
+
+Script: [`packages/db/scripts/smoke-us-03-02-admin-org-queue.ts`](../../../packages/db/scripts/smoke-us-03-02-admin-org-queue.ts) — validates admin list query shape, `PlatformSettings`, `MagicLink` `ROASTER_REVIEW` row shape when present, integrity when `PENDING_ROASTER_APPROVAL` rows exist, primary roaster request when `PENDING_PLATFORM_REVIEW` rows exist, and `GET /approvals/orgs` on localhost (401/503/200).
+
+---
+
 ## Handoff notes
 
 - The `MagicLink` created here is consumed by US-03-03 (roaster reviews org at `roasters.joeperks.com/org-requests/[token]`). The token URL format must match what the roaster app expects.
@@ -152,3 +164,5 @@ Build the platform admin approval queue for org applications at `admin.joeperks.
 | Version | Date | Notes |
 |---------|------|-------|
 | 0.1 | 2026-03-30 | Initial story created for Sprint 3 planning. |
+| 0.2 | 2026-03-31 | Implemented admin org queue, detail, actions, templates; status `Done`. |
+| 0.3 | 2026-03-31 | Added `pnpm db:smoke:us-03-02` smoke script. |

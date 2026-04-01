@@ -2,7 +2,7 @@
 
 **Story ID:** US-03-03 | **Epic:** EP-03 (Org Onboarding)
 **Points:** 5 | **Priority:** High
-**Status:** `Todo`
+**Status:** `Done`
 **Owner:** Full-stack
 **Dependencies:** US-03-02 (Admin Org Approval Queue), US-01-04 (Email Pipeline)
 **Depends on this:** US-03-04 (Org Stripe Connect + Campaign)
@@ -92,27 +92,27 @@ Build the roaster-facing magic link page at `roasters.joeperks.com/org-requests/
 
 ## Acceptance criteria
 
-- [ ] Page at `/org-requests/[token]` is accessible WITHOUT authentication
-- [ ] Valid token shows org application details: org name, description, desired slug, desired org %, contact info
-- [ ] Expired token (`expiresAt <= now()`) shows clear error message
-- [ ] Already-used token (`usedAt IS NOT NULL`) shows clear error message
-- [ ] Invalid/missing token shows error message
-- [ ] Wrong purpose token shows error message
-- [ ] Approve button requires confirmation dialog
-- [ ] On approve: `MagicLink.usedAt` set to `now()` BEFORE any other mutation
-- [ ] On approve: `RoasterOrgRequest.status` updated to `APPROVED`
-- [ ] On approve: `OrgApplication.status` updated to `APPROVED`
-- [ ] On approve: `Org` record created with `slug = desiredSlug`, `status = ONBOARDING`, `applicationId`, `email`
-- [ ] On approve: `User` record created with `role = ORG_ADMIN`, `orgId`, `email`, `externalAuthId = generatePendingClerkExternalAuthId()`
-- [ ] On approve: org receives email with link to `orgs.joeperks.com` (login CTA)
-- [ ] On approve: success confirmation shown on the page
-- [ ] Decline button requires confirmation dialog
-- [ ] On decline: `MagicLink.usedAt` set to `now()` BEFORE any other mutation
-- [ ] On decline: `RoasterOrgRequest.status` updated to `DECLINED`
-- [ ] On decline with backup roaster (priority = 2): new `MagicLink` created for backup, review email sent to backup roaster
-- [ ] On decline without backup: `OrgApplication.status` updated to `REJECTED`, org receives decline email
-- [ ] All mutations wrapped in `$transaction`
-- [ ] No PII logged -- only IDs
+- [x] Page at `/org-requests/[token]` is accessible WITHOUT authentication
+- [x] Valid token shows org application details: org name, description, desired slug, desired org %, contact info
+- [x] Expired token (`expiresAt <= now()`) shows clear error message
+- [x] Already-used token (`usedAt IS NOT NULL`) shows clear error message
+- [x] Invalid/missing token shows error message
+- [x] Wrong purpose token shows error message
+- [x] Approve button requires confirmation dialog
+- [x] On approve: `MagicLink.usedAt` set to `now()` BEFORE any other mutation
+- [x] On approve: `RoasterOrgRequest.status` updated to `APPROVED`
+- [x] On approve: `OrgApplication.status` updated to `APPROVED`
+- [x] On approve: `Org` record created with `slug = desiredSlug`, `status = ONBOARDING`, `applicationId`, `email`
+- [x] On approve: `User` record created with `role = ORG_ADMIN`, `orgId`, `email`, `externalAuthId = generatePendingClerkExternalAuthId()`
+- [x] On approve: org receives email with link to `orgs.joeperks.com` (login CTA)
+- [x] On approve: success confirmation shown on the page
+- [x] Decline button requires confirmation dialog
+- [x] On decline: `MagicLink.usedAt` set to `now()` BEFORE any other mutation
+- [x] On decline: `RoasterOrgRequest.status` updated to `DECLINED`
+- [x] On decline with backup roaster (priority = 2): new `MagicLink` created for backup, review email sent to backup roaster
+- [x] On decline without backup: `OrgApplication.status` updated to `REJECTED`, org receives decline email
+- [x] All mutations wrapped in `$transaction`
+- [x] No PII logged -- only IDs
 
 ---
 
@@ -163,3 +163,4 @@ Build the roaster-facing magic link page at `roasters.joeperks.com/org-requests/
 | Version | Date | Notes |
 |---------|------|-------|
 | 0.1 | 2026-03-30 | Initial story created for Sprint 3 planning. |
+| 0.2 | 2026-03-31 | Implemented in repo: roaster `org-requests/[token]`, approve/decline actions, templates, backup routing. |

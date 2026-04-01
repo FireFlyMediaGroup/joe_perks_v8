@@ -33,6 +33,8 @@ export const env = createEnv({
   ],
   server: {
     ROASTER_APP_ORIGIN: z.string().url().optional(),
+    /** Org portal base URL for approval emails (US-03-03). Default http://localhost:3002 */
+    ORG_APP_ORIGIN: z.string().url().optional(),
     /** UploadThing API token (dashboard). When unset, product image uploads are disabled; URL field still works. */
     UPLOADTHING_TOKEN: z.preprocess(
       emptyToUndefined,
@@ -42,6 +44,7 @@ export const env = createEnv({
   client: {},
   runtimeEnv: {
     ROASTER_APP_ORIGIN: process.env.ROASTER_APP_ORIGIN,
+    ORG_APP_ORIGIN: process.env.ORG_APP_ORIGIN,
     UPLOADTHING_TOKEN: process.env.UPLOADTHING_TOKEN,
   },
 });

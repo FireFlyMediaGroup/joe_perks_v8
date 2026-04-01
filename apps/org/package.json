@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@joe-perks/db": "workspace:*",
+    "@joe-perks/stripe": "workspace:*",
     "@repo/auth": "workspace:*",
     "@repo/design-system": "workspace:*",
     "@repo/next-config": "workspace:*",

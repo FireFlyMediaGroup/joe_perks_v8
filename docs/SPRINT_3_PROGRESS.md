@@ -1,6 +1,6 @@
 # Joe Perks -- Sprint 3 Progress Tracker
 
-**Tracker version:** 0.1
+**Tracker version:** 0.6
 **Baseline document:** [`docs/SPRINT_3_CHECKLIST.md`](SPRINT_3_CHECKLIST.md) (v1.0)
 **Story documents:** [`docs/sprint-3/stories/`](sprint-3/stories/)
 **Sprint overview:** [`docs/sprint-3/README.md`](sprint-3/README.md)
@@ -30,6 +30,11 @@
 | Review version | Date | Summary |
 |----------------|------|---------|
 | 0.1 | 2026-03-30 | Initial tracker created. All stories at `Todo`. Sprint 3 documentation suite complete. |
+| 0.2 | 2026-03-31 | US-03-02 complete: admin org queue, detail, approve/reject, email templates, `MagicLink` on approve. |
+| 0.3 | 2026-03-31 | US-03-03 complete: `apps/roaster/app/org-requests/[token]`, approve/decline actions, `org-approved` + `org-declined` templates, backup roaster routing. |
+| 0.4 | 2026-03-31 | US-03-04 complete: org Stripe Connect (`api/stripe/connect`, `(authenticated)/onboarding`), `Org.chargesEnabled`/`payoutsEnabled`, webhook org promotion, campaign draft/activate (`(authenticated)/campaign`). |
+| 0.5 | 2026-03-31 | US-04-01 complete: buyer storefront at `[locale]/[slug]/` — `getStorefrontData`, `StorefrontLayout`, `CampaignHeader`, `ProductGrid`, `ProductCard`; reserved-slug guard; `CampaignItem.retailPrice` display. |
+| 0.6 | 2026-04-01 | US-04-02 complete: Zustand cart (`removeLine`, `updateQuantity`, `getLineCount`, `getTotalQuantity`, `getSubtotalCents`, campaign context); `add-to-cart-button`, `cart-drawer`, `cart-line-item`, `cart-trigger`, `storefront-cart-sync`; `CampaignHeader` actions slot; `apps/web` depends on `@joe-perks/ui`. Cart estimate: `splitPreviewDefaults` from `getStorefrontData`, `calculateSplits` via `@joe-perks/stripe/splits` in client. Smoke scripts + `packages/stripe` `./splits` export aligned. |
 
 ---
 
@@ -37,11 +42,11 @@
 
 | Area | Status | Notes |
 |------|--------|-------|
-| Admin org approval queue (US-03-02) | `Todo` | `apps/admin/app/approvals/orgs/page.tsx` is a scaffold stub |
-| Roaster magic link org review (US-03-03) | `Todo` | No `org-requests/[token]` route exists in `apps/roaster` |
-| Org Stripe Connect + campaign (US-03-04) | `Todo` | `apps/org/app/onboarding/page.tsx` and `campaign/page.tsx` are stubs |
-| Public org storefront (US-04-01) | `Todo` | `apps/web/app/[locale]/[slug]/page.tsx` is a scaffold stub |
-| Zustand cart (US-04-02) | `Todo` | `packages/ui/src/store/cart.ts` has minimal store (addLine + clear only) |
+| Admin org approval queue (US-03-02) | `Done` | List + `[id]` detail, `_actions/approve-application.ts` + `reject-application.ts`, `org-roaster-review` + `org-rejected` templates |
+| Roaster magic link org review (US-03-03) | `Done` | `apps/roaster/app/org-requests/[token]/page.tsx`, `_actions/approve-org.ts`, `_actions/decline-org.ts`, `org-approved.tsx`, `org-declined.tsx` |
+| Org Stripe Connect + campaign (US-03-04) | `Done` | `(authenticated)/onboarding`, `api/stripe/connect`, `(authenticated)/campaign` + `_actions`, webhook org `account.updated` |
+| Public org storefront (US-04-01) | `Done` | `page.tsx` + `_lib/queries.ts` (`getStorefrontData`, `splitPreviewDefaults` for cart estimate), `_components/storefront-layout`, `campaign-header`, `product-grid`, `product-card` |
+| Zustand cart (US-04-02) | `Done` | `packages/ui/src/store/cart.ts`; `_components/add-to-cart-button`, `cart-drawer`, `cart-line-item`, `cart-trigger`, `storefront-cart-sync`; `calculateSplits` from `@joe-perks/stripe/splits` in `cart-drawer` |
 | Three-step checkout (US-04-03) | `Todo` | `apps/web/app/[locale]/[slug]/checkout/page.tsx` is a scaffold; `create-intent` API exists |
 | Order confirmation page (US-04-04) | `Todo` | `apps/web/app/[locale]/[slug]/order/[pi_id]/page.tsx` is a scaffold; `order-status` API exists |
 | Order confirmation email (US-08-01) | `Todo` | `packages/email/templates/order-confirmation.tsx` template exists; not wired into webhook |
@@ -55,42 +60,43 @@
 
 | Item | Status | Evidence / current state | Next step |
 |------|--------|--------------------------|-----------|
-| Application list page | `Todo` | `apps/admin/app/approvals/orgs/page.tsx` -- scaffold stub ("Queue scaffold.") | Remove scaffold, build list with filters + pagination |
-| Application detail view | `Todo` | No `[id]/page.tsx` exists | Create detail page |
-| Approve server action | `Todo` | No `_actions/` directory under `approvals/orgs/` | Create action with MagicLink + email |
-| Reject server action | `Todo` | -- | Create action with status update + email |
-| Email templates | `Todo` | `org-roaster-review.tsx` and `org-rejected.tsx` do not exist | Create templates |
-| UI components | `Todo` | -- | Build list, badges, dialogs |
+| Application list page | `Done` | `apps/admin/app/approvals/orgs/page.tsx` + `org-queue.tsx` with filters + pagination | — |
+| Application detail view | `Done` | `apps/admin/app/approvals/orgs/[id]/page.tsx` + `org-detail.tsx` | — |
+| Approve server action | `Done` | `_actions/approve-application.ts` — `MagicLink` + `sendEmail` | — |
+| Reject server action | `Done` | `_actions/reject-application.ts` | — |
+| Email templates | `Done` | `packages/email/templates/org-roaster-review.tsx`, `org-rejected.tsx` | — |
+| UI components | `Done` | `org-queue`, `org-detail`, `approve-reject-buttons` | — |
 
 ### Phase 2 -- Roaster Magic Link Org Review (US-03-03)
 
 | Item | Status | Evidence / current state | Next step |
 |------|--------|--------------------------|-----------|
-| Magic link page | `Todo` | No `apps/roaster/app/org-requests/` route exists | Create `[token]/page.tsx` |
-| Approve server action | `Todo` | -- | Create with Org + User creation |
-| Decline server action | `Todo` | -- | Create with backup roaster escalation |
-| Email templates | `Todo` | `org-approved.tsx` and `org-declined.tsx` do not exist | Create templates |
-| UI components | `Todo` | -- | Build org details display, approve/decline |
+| Magic link page | `Done` | `apps/roaster/app/org-requests/[token]/page.tsx` + `token-error.tsx` | — |
+| Approve server action | `Done` | `_actions/approve-org.ts` — `Org` + `User`, `sendEmail` `org-approved` | — |
+| Decline server action | `Done` | `_actions/decline-org.ts` — backup `MagicLink` + `org-roaster-review`, or `REJECTED` + `org-declined` | — |
+| Email templates | `Done` | `packages/email/templates/org-approved.tsx`, `org-declined.tsx` | — |
+| UI components | `Done` | `org-review-details.tsx`, `review-actions.tsx` | — |
 
 ### Phase 3 -- Org Stripe Connect + Campaign (US-03-04)
 
 | Item | Status | Evidence / current state | Next step |
 |------|--------|--------------------------|-----------|
-| Org Stripe Connect page | `Todo` | `apps/org/app/onboarding/page.tsx` -- stub ("Stripe Connect Express scaffold.") | Remove scaffold, build Connect UI |
-| Org Connect API route | `Todo` | No `apps/org/app/api/stripe/connect/` route exists | Create route mirroring roaster |
-| Webhook org promotion | `Todo` | `account.updated` handler only handles roasters | Add org account handling |
-| Campaign page | `Todo` | `apps/org/app/campaign/page.tsx` -- stub ("Create and edit campaign scaffold.") | Remove scaffold, build campaign CRUD |
-| Campaign server actions | `Todo` | -- | Create CRUD actions |
-| Campaign form UI | `Todo` | -- | Build product selector, form |
+| Org Stripe Connect page | `Done` | `apps/org/app/(authenticated)/onboarding/page.tsx` + `connect-status`, `start-onboarding-button` | — |
+| Org Connect API route | `Done` | `apps/org/app/api/stripe/connect/route.ts` | — |
+| Webhook org promotion | `Done` | `apps/web/.../webhooks/stripe/route.ts` — org `chargesEnabled`/`payoutsEnabled`, ONBOARDING→ACTIVE | — |
+| Campaign page | `Done` | `apps/org/app/(authenticated)/campaign/page.tsx` + `campaign-form`, `product-selector` | — |
+| Campaign server actions | `Done` | `_actions/campaign-actions.ts` — `saveCampaignDraft`, `activateCampaign` | — |
+| Campaign form UI | `Done` | Product selector, name/goal, activate guards | — |
 
 ### Phase 4 -- Public Org Storefront (US-04-01)
 
 | Item | Status | Evidence / current state | Next step |
 |------|--------|--------------------------|-----------|
-| Storefront page | `Todo` | `apps/web/app/[locale]/[slug]/page.tsx` -- scaffold with reserved-slug guard | Remove scaffold, build storefront |
-| Storefront layout | `Todo` | No `_components/` under `[slug]/` | Create layout component |
-| Product grid | `Todo` | -- | Create grid + card components |
-| Campaign header | `Todo` | -- | Create header with org branding |
+| Storefront page | `Done` | `page.tsx` — `getStorefrontData`, `notFound()` guards, `generateMetadata` | — |
+| Storefront layout | `Done` | `_components/storefront-layout.tsx` | — |
+| Product grid | `Done` | `_components/product-grid.tsx`, `product-card.tsx` | — |
+| Campaign header | `Done` | `_components/campaign-header.tsx` — optional `actions` slot (cart, US-04-02) | — |
+| Storefront query | `Done` | `_lib/queries.ts` — `splitPreviewDefaults` (PlatformSettings + default roaster shipping) for US-04-02 cart estimate | — |
 
 ### Phase 5 -- Order Confirmation Email (US-08-01)
 
@@ -103,11 +109,12 @@
 
 | Item | Status | Evidence / current state | Next step |
 |------|--------|--------------------------|-----------|
-| Cart store expansion | `Todo` | `packages/ui/src/store/cart.ts` -- addLine + clear only | Add removeLine, updateQuantity, getters |
-| Cart line metadata | `Todo` | `CartLine` has `campaignItemId` + `quantity` only | Add display fields |
-| Add-to-cart button | `Todo` | -- | Create component |
-| Cart drawer | `Todo` | -- | Create drawer/sheet component |
-| Cart line item | `Todo` | -- | Create line item component |
+| Cart store expansion | `Done` | `packages/ui/src/store/cart.ts` — `addLine(ctx)`, `removeLine`, `updateQuantity`, `clear`, `getLineCount`, `getTotalQuantity`, `getSubtotalCents`, campaign switch on `addLine` | — |
+| Cart line metadata | `Done` | `CartLine` includes `productName`, `variantDesc`, `retailPrice`, `imageUrl?` | — |
+| Add-to-cart button | `Done` | `_components/add-to-cart-button.tsx` | — |
+| Cart drawer | `Done` | `_components/cart-drawer.tsx` — Sheet right / bottom mobile; estimate rows (coffee, shipping, org, total) via `calculateSplits` from `@joe-perks/stripe/splits` | — |
+| Cart line item | `Done` | `_components/cart-line-item.tsx` | — |
+| Cart trigger + sync | `Done` | `_components/cart-trigger.tsx`; `storefront-cart-sync.tsx` clears cart on org slug change | — |
 
 ### Phase 7 -- Three-Step Checkout (US-04-03)
 
@@ -141,12 +148,14 @@
 
 These items from previous sprints affect Sprint 3 implementation:
 
-1. **Root `.env` loading** -- `apps/web` and `apps/admin` have `load-root-env.ts`. If `apps/org` needs root `.env` values (e.g. `DATABASE_URL`, `STRIPE_SECRET_KEY`), add a similar loader.
+1. **Root `.env` loading** -- `apps/web`, `apps/admin`, and **`apps/org`** use `load-root-env.ts` (imported from `next.config.ts`) so `DATABASE_URL` and Stripe keys from the monorepo root `.env` are available for Prisma and Connect routes in dev.
 2. **Clerk user sync** -- `apps/org` has a Clerk webhook at `apps/org/app/api/webhooks/clerk/route.ts`. US-03-03 pre-creates the `User` with `clerk_pending:{uuid}`; the webhook should link the real Clerk ID on org admin sign-up (same pattern as roaster in US-02-02).
 3. **Middleware API exclusion** -- `apps/web/proxy.ts` matcher already excludes `api` paths. New API routes under `apps/web/app/api/` work without changes.
-4. **`requireRoasterId()` pattern** -- Sprint 3 org portal work should create a `requireOrgId()` equivalent for tenant isolation in org portal server actions.
+4. **`requireOrgId()`** -- Implemented at `apps/org/app/(authenticated)/_lib/require-org.ts` for org portal server actions (mirrors `requireRoasterId()`).
 5. **Checkout API** -- `POST /api/checkout/create-intent` is fully implemented. It validates campaign items, roaster status, shipping rate, calculates splits, creates PaymentIntent + Order. The checkout UI calls this existing endpoint.
 6. **Order status API** -- `GET /api/order-status?pi=[pi_id]` is implemented. The confirmation page polls this endpoint.
+7. **Sprint 3 DB smoke** -- `pnpm db:smoke:sprint-3` (`packages/db/scripts/smoke-sprint-3.ts`) checks EP-03 migration, Org/Campaign invariants, and optional HTTP probes on ports 3001–3003. HTTP probes **skip** (not fail) when a local app returns **5xx** so misconfigured dev servers do not block DB validation.
+8. **US-04-01 storefront smoke** -- `pnpm db:smoke:us-04-01` mirrors `getStorefrontData` including `splitPreviewDefaults`; reserved/missing slug HTTP checks **skip** on connection refused or **5xx** from `web` on port 3000.
 
 ---
 
@@ -163,3 +172,5 @@ After each story completes:
 - [ ] Verify checkout flow aligns with [`docs/04-order-lifecycle.mermaid`](04-order-lifecycle.mermaid) (EP-04 stories)
 - [ ] Verify schema usage aligns with [`docs/06-database-schema.mermaid`](06-database-schema.mermaid)
 - [ ] If new patterns were introduced, update [`docs/CONVENTIONS.md`](CONVENTIONS.md)
+
+**Last full sync (US-04-02, 2026-04-01):** progress + story + README current progress + story-to-file mapping + `SCAFFOLD_PROGRESS` revision `1.19` + snapshot row; `01-project-structure.mermaid` storefront + `packages/stripe` splits export; `SPRINT_3_CHECKLIST` Phase 6 complete + 6.8 split estimate; `CONVENTIONS.md` + `AGENTS.md` client `calculateSplits` import; smoke scripts (`us-04-01`, `sprint-3`) HTTP skip behavior. OA13 / order-lifecycle / ERD unchanged.
