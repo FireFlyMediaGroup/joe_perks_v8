@@ -525,6 +525,21 @@ model OrderEvent {
   @@index([orderId])
 }
 
+model AdminActionLog {
+  id         String   @id @default(cuid())
+  actorLabel String
+  actionType String
+  targetType String
+  targetId   String
+  note       String?
+  payload    Json?
+  createdAt  DateTime @default(now())
+
+  @@index([actionType])
+  @@index([targetType, targetId])
+  @@index([createdAt])
+}
+
 model DisputeRecord {
   id                String          @id @default(cuid())
   orderId           String          @unique

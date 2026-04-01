@@ -2,7 +2,7 @@
 
 ## Admin dashboard, chargebacks, platform settings, and account controls
 
-**Version:** 1.1 | **Sprint:** 5 (Weeks 9-10) | **Points:** 26 | **Stories:** 5
+**Version:** 1.5 | **Sprint:** 5 (Weeks 9-10) | **Points:** 26 | **Stories:** 5
 **Audience:** AI coding agents, developers implementing Sprint 5 stories
 **Companion documents:**
 - Sprint overview: [`docs/sprint-5/README.md`](sprint-5/README.md)
@@ -22,7 +22,7 @@ Before starting Sprint 5 work, verify these Sprint 4 deliverables are in place o
 - [x] `packages/db/log-event.ts` -- `logOrderEvent()` helper and order events API support
 - [x] `packages/db/prisma/schema.prisma` -- `PlatformSettings`, `DisputeRecord`, `RoasterDebt`, `OrderEvent`, `Roaster.status`, `Org.status`
 - [x] `apps/web/app/api/webhooks/stripe/route.ts` -- webhook foundation with Stripe signature verification and `StripeEvent` idempotency
-- [x] `apps/admin/app/settings/page.tsx` -- scaffold route exists
+- [x] `apps/admin/app/settings/` -- platform settings editor (US-07-02): load singleton, validate, save, `AdminActionLog` audit
 - [x] `apps/admin/app/disputes/page.tsx` -- scaffold route exists
 - [x] `apps/admin/app/page.tsx` -- admin home route exists and can be replaced
 
@@ -42,27 +42,39 @@ These decisions align Sprint 5 to the current repo and should be treated as the 
 
 ---
 
+## Package A -- Shared Foundations
+
+> **Status:** Implemented. These shared helpers land before the story-specific admin surfaces.
+
+- [x] Add `AdminActionLog` model to `packages/db/prisma/schema.prisma`
+- [x] Add `packages/db/admin-action-log.ts` with `logAdminAction()`
+- [x] Export the new audit helper from `@joe-perks/db`
+- [x] Add a shared admin actor helper for normalized HTTP Basic admin identity
+- [x] Add `apps/admin/app/orders/_lib/sla.ts` with shared `PlatformSettings`-driven SLA state logic
+
+---
+
 ## Phase 1 -- Admin Orders with SLA Flags (US-07-01)
 
 > **Why first:** Highest-value admin workflow and dependency for later dashboard/account stories.
 
 ### 1.1 Upgrade the orders query
 
-- [ ] Extend `apps/admin/app/orders/page.tsx` query with campaign/org label, payout status, `fulfillBy`, and any dispute summary needed for row badges
-- [ ] Replace the current fixed 200-row cap with explicit server pagination at 50 rows per page
-- [ ] Add filter inputs for status, roaster, org, and date range
+- [x] Extend `apps/admin/app/orders/page.tsx` query with campaign/org label, payout status, `fulfillBy`, and dispute summary for row badges
+- [x] Replace the current fixed 200-row cap with explicit server pagination at 50 rows per page
+- [x] Add filter inputs for status, roaster, org, and date range
 
 ### 1.2 SLA indicator logic
 
-- [ ] Add a shared SLA state helper using `PlatformSettings`
-- [ ] Render row-level SLA badges: green / amber / red / grey
-- [ ] Add page-level SLA summary cards: Critical / Warning / On Track
+- [x] Add a shared SLA state helper using `PlatformSettings`
+- [x] Render row-level SLA badges: green / amber / red / grey
+- [x] Add page-level SLA summary cards: Critical / Warning / On Track
 
 ### 1.3 Order detail expansion
 
-- [ ] Show payout breakdown, dispute record (if present), and all relevant order fields on the detail page
-- [ ] Keep Sprint 5 admin actions to `Mark Delivered` plus a non-destructive `Contact Roaster` convenience action (`mailto:` or equivalent)
-- [ ] Log high-risk order-level admin actions through `OrderEvent` and `AdminActionLog` as appropriate
+- [x] Show payout breakdown, dispute record (if present), and all relevant order fields on the detail page
+- [x] Keep Sprint 5 admin actions to `Mark Delivered` plus a non-destructive `Contact Roaster` convenience action (`mailto:` or equivalent)
+- [x] Keep order-surface actions low-risk; no new high-risk order mutation was introduced, and existing delivery confirmation continues to write `OrderEvent`
 
 **Reference:** [`docs/sprint-5/stories/US-07-01-admin-order-list-sla-flags.md`](sprint-5/stories/US-07-01-admin-order-list-sla-flags.md)
 
@@ -74,20 +86,20 @@ These decisions align Sprint 5 to the current repo and should be treated as the 
 
 ### 2.1 Settings form
 
-- [ ] Replace `apps/admin/app/settings/page.tsx` scaffold with server-loaded current settings
-- [ ] Add labeled inputs for all supported `PlatformSettings` fields in the current schema
-- [ ] Add helper text describing what each field controls
+- [x] Replace `apps/admin/app/settings/page.tsx` scaffold with server-loaded current settings
+- [x] Add labeled inputs for all supported `PlatformSettings` fields in the current schema
+- [x] Add helper text describing what each field controls
 
 ### 2.2 Validation and save flow
 
-- [ ] Create server actions for update + confirmation flow
-- [ ] Validate percentages, hours, day ranges, and floor/fee values
-- [ ] Save to the `PlatformSettings` singleton and revalidate the page
+- [x] Create server actions for update + confirmation flow
+- [x] Validate percentages, hours, day ranges, and floor/fee values
+- [x] Save to the `PlatformSettings` singleton and revalidate the page
 
 ### 2.3 Audit trail
 
-- [ ] Add `AdminActionLog` model/helper with fields for actor label, action type, target type, target ID, note, payload, and timestamp
-- [ ] Record settings changes with before/after summary and optional note
+- [x] Add `AdminActionLog` model/helper with fields for actor label, action type, target type, target ID, note, payload, and timestamp
+- [x] Record settings changes with before/after summary and optional note
 
 **Reference:** [`docs/sprint-5/stories/US-07-02-platform-settings-editor.md`](sprint-5/stories/US-07-02-platform-settings-editor.md)
 
@@ -180,9 +192,9 @@ These decisions align Sprint 5 to the current repo and should be treated as the 
 
 ### Document sync checklist
 
-- [ ] `docs/sprint-5/README.md` kept in sync with actual implementation status
-- [ ] `docs/SPRINT_5_PROGRESS.md` updated after each story lands
-- [ ] Story documents updated with real evidence and checked acceptance criteria
+- [x] `docs/sprint-5/README.md` kept in sync with actual implementation status
+- [x] `docs/SPRINT_5_PROGRESS.md` updated after each story lands
+- [x] Story documents updated with real evidence and checked acceptance criteria (US-07-01 / US-07-02 Done; see story files)
 - [ ] `docs/01-project-structure.mermaid` updated for new admin routes
 - [ ] `docs/06-database-schema.mermaid` updated if dispute/account audit schema changes
 - [ ] `docs/07-stripe-payment-flow.mermaid` updated if the implemented dispute flow differs from the planned one
@@ -216,6 +228,12 @@ pnpm typecheck
 pnpm check
 pnpm build
 
+# Admin — US-07-01 / US-07-02 Vitest (SLA helper + settings validation)
+pnpm --filter admin test
+
+# Admin — HTTP smoke for /orders + /settings (requires admin on :3003 + ADMIN_EMAIL / ADMIN_PASSWORD)
+pnpm admin:smoke:us-07
+
 # Email preview
 pnpm --filter email dev
 
@@ -232,8 +250,8 @@ npx inngest-cli@latest dev
 
 | Story | Phase | Key files |
 |-------|-------|-----------|
-| US-07-01 | 1 | `apps/admin/app/orders/page.tsx`, `apps/admin/app/orders/_components/order-list.tsx`, `apps/admin/app/orders/[id]/page.tsx` |
-| US-07-02 | 2 | `apps/admin/app/settings/page.tsx`, `apps/admin/app/settings/_actions/`, `AdminActionLog` helper/model |
+| US-07-01 | 1 | `apps/admin/app/orders/page.tsx`, `apps/admin/app/orders/_components/order-list.tsx`, `apps/admin/app/orders/[id]/page.tsx`, `apps/admin/app/orders/_lib/sla.ts`, `apps/admin/__tests__/us-07-01-*.test.ts` |
+| US-07-02 | 2 | `apps/admin/app/settings/` (`page.tsx`, `_actions/`, `_components/`, `_lib/`), `AdminActionLog` on save; `apps/admin/__tests__/us-07-02-*.test.ts` |
 | US-06-02 | 3 | `apps/web/app/api/webhooks/stripe/route.ts`, dispute/admin detail surfaces, possible schema updates |
 | US-07-03 | 4 | `apps/admin/app/page.tsx`, dashboard components |
 | US-07-04 | 5 | `apps/admin/app/roasters/`, `apps/admin/app/orgs/`, suspend/reactivate actions, `apps/roaster/app/(authenticated)/dashboard/page.tsx`, `apps/org/app/(authenticated)/dashboard/page.tsx`, storefront guards |

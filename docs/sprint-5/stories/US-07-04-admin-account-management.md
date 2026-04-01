@@ -2,7 +2,7 @@
 
 **Story ID:** US-07-04 | **Epic:** EP-07 (Admin Dashboard)
 **Points:** 3 | **Priority:** Low
-**Status:** `Todo`
+**Status:** `Partial`
 **Owner:** Full-stack
 **Dependencies:** US-07-01
 **Depends on this:** None
@@ -30,6 +30,7 @@ Give platform admins a lifecycle-management surface for roaster and org accounts
 - Admin approval flows exist for applications, but there are no admin routes for general account lifecycle management after approval.
 - No storefront guard currently blocks new orders based on roaster suspension state.
 - `apps/roaster/app/(authenticated)/dashboard/page.tsx` and `apps/org/app/(authenticated)/dashboard/page.tsx` already exist and are natural homes for suspended-state guidance and reactivation-request UX.
+- Package A now provides `AdminActionLog` plus a shared admin actor helper, giving suspend/reactivate flows a common audit foundation before the lifecycle UI lands.
 
 ---
 
@@ -119,3 +120,4 @@ Give platform admins a lifecycle-management surface for roaster and org accounts
 |---------|------|-------|
 | 0.1 | 2026-04-01 | Initial Sprint 5 story created from source planning doc and current repo review. |
 | 0.2 | 2026-04-01 | Normalized to a request/review reactivation workflow with suspended-portal UX, admin readiness checks, and `AdminActionLog` replacing the source-story `ApplicationEvent` concept. |
+| 0.3 | 2026-04-01 | Package A landed: shared admin audit/actor helpers now exist in the repo and this story status is now `Partial`. |

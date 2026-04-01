@@ -69,6 +69,7 @@ export const ModelName = {
   Order: 'Order',
   OrderItem: 'OrderItem',
   OrderEvent: 'OrderEvent',
+  AdminActionLog: 'AdminActionLog',
   DisputeRecord: 'DisputeRecord',
   MagicLink: 'MagicLink',
   EmailLog: 'EmailLog',
@@ -391,6 +392,20 @@ export const OrderEventScalarFieldEnum = {
 } as const
 
 export type OrderEventScalarFieldEnum = (typeof OrderEventScalarFieldEnum)[keyof typeof OrderEventScalarFieldEnum]
+
+
+export const AdminActionLogScalarFieldEnum = {
+  id: 'id',
+  actorLabel: 'actorLabel',
+  actionType: 'actionType',
+  targetType: 'targetType',
+  targetId: 'targetId',
+  note: 'note',
+  payload: 'payload',
+  createdAt: 'createdAt'
+} as const
+
+export type AdminActionLogScalarFieldEnum = (typeof AdminActionLogScalarFieldEnum)[keyof typeof AdminActionLogScalarFieldEnum]
 
 
 export const DisputeRecordScalarFieldEnum = {

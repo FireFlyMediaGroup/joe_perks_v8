@@ -375,7 +375,7 @@ All thresholds are configurable in `PlatformSettings` singleton — never hardco
 | `docs/03-package-dependencies.mermaid` | Which apps import which packages, external API connections |
 | `docs/04-order-lifecycle.mermaid`      | Sequence diagram: checkout → webhook → fulfill → payout    |
 | `docs/05-approval-chain.mermaid`       | Roaster and org onboarding + approval workflows            |
-| `docs/06-database-schema.mermaid`      | ERD with all 26 models, key fields, and relationships      |
+| `docs/06-database-schema.mermaid`      | ERD with all 27 models, key fields, and relationships      |
 | `docs/07-stripe-payment-flow.mermaid`  | Charge → transfer → refund → chargeback flows              |
 | `docs/08-order-state-machine.mermaid`  | Order and payout status state machines                     |
 

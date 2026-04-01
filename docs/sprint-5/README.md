@@ -8,7 +8,7 @@
 - Progress tracker: [`docs/SPRINT_5_PROGRESS.md`](../SPRINT_5_PROGRESS.md)
 - Stories: [`docs/sprint-5/stories/`](./stories/)
 
-**Current progress:** Sprint 5 is documented, normalized, and ready for implementation planning, but not yet implemented. The repo already contains useful groundwork: Sprint 4 delivered the admin order list/detail flow, payout job, SLA automation, `DisputeRecord` schema, and admin scaffolds for disputes, settings, and home. No Sprint 5 story is fully complete on `main` today.
+**Current progress:** Sprint 5 implementation is underway. Package A is in the repo; `US-07-01` (admin orders + SLA) and `US-07-02` (platform settings editor with audit) are implemented. Dispute webhooks, dashboard metrics, and account lifecycle flows remain.
 
 ---
 
@@ -23,8 +23,8 @@ Extend the platform into an operational admin surface: add chargeback webhook ha
 Before implementation, these repo realities should guide Sprint 5 work:
 
 - `DisputeRecord`, `FaultType`, `DisputeOutcome`, `RoasterDebt`, and dispute-related diagram coverage already exist, but the Stripe webhook currently does **not** handle `charge.dispute.*`.
-- `apps/admin/app/orders/` already exists, but it is a simplified MVP list/detail flow with a 200-row cap, status tabs, and no SLA indicator column, filter bar, refund action, manual payout action, or dispute panel.
-- `apps/admin/app/settings/page.tsx` and `apps/admin/app/disputes/page.tsx` are scaffolds only.
+- `apps/admin/app/orders/` is the US-07-01 surface: 50 rows per page, filters (status, roaster, org, date range), SLA column and summary cards, payout/dispute context on list and detail, plus low-risk actions (`Mark Delivered`, `Contact Roaster`). Manual refund/payout remain out of Sprint 5 scope.
+- `apps/admin/app/settings/` is the US-07-02 `PlatformSettings` editor (validation, save, acknowledgment, `AdminActionLog` with before/after; Vitest covers validation + SLA helper). `apps/admin/app/disputes/page.tsx` is still a scaffold.
 - `apps/admin/app/page.tsx` is still the default Next.js starter page.
 - `Roaster.status` and `Org.status` already support `SUSPENDED`, and the Stripe `account.updated` webhook already avoids re-promoting suspended roasters, but there are no admin lifecycle management pages yet.
 - Several source-story terms do **not** exist in schema/code as named. Sprint 5 is normalized below so implementation can start from one coherent plan instead of resolving naming churn mid-build.
@@ -39,7 +39,7 @@ These decisions normalize Sprint 5 to the current platform architecture and best
 - **Debt reasons:** keep the current `DebtReason` enum. Use `DISPUTE_LOSS` for Stripe dispute fee and non-refundable Stripe processing fee; use `CHARGEBACK` for unrecovered principal / payout-reversal shortfall when a separate row is useful.
 - **Dispute state source of truth:** do **not** add `Order.isDisputed`. Admin list/detail UI should derive dispute state from the `DisputeRecord` relation.
 - **Settings scope:** drop `PlatformSettings.min_retail_spread_pct` from Sprint 5. It is not in the current schema and is not required by the screenshot scope.
-- **Admin audit trail:** replace the vague `ApplicationEvent` reference with a focused `AdminActionLog` planned model/helper for settings changes, suspension/reactivation, dispute fault attribution, and other high-risk admin actions.
+- **Admin audit trail:** replace the vague `ApplicationEvent` reference with the shared `AdminActionLog` model/helper for settings changes, suspension/reactivation, dispute fault attribution, and other high-risk admin actions.
 - **Orders admin MVP scope:** keep US-07-01 focused on visibility and low-risk actions. `Mark Delivered` remains in scope; `Contact Roaster` is a `mailto:` convenience action; destructive financial actions like manual refund and manual payout are deferred until after Sprint 5 unless explicitly reprioritized.
 - **Dispute threshold enforcement:** if a roaster reaches 3+ roaster-fault disputes in a trailing 90-day window, automatically set `Roaster.status = SUSPENDED`, write `AdminActionLog`, and notify admin. Reactivation remains a manual admin review action under US-07-04.
 - **Reactivation UX:** reactivation is a request-and-review workflow, not a blind toggle. Suspended roasters/orgs should see a read-only status page/banner, the suspension reason category, what is blocked, a remediation checklist, and a `Request Reactivation` action. Admin sees a readiness panel before reactivation: open disputes, unsettled debt, Stripe readiness, and open undelivered orders, with optional explicit override confirmation if reactivating despite blockers.
@@ -63,16 +63,16 @@ Use this sequence when breaking Sprint 5 into development tasks:
 
 ## New shared primitives
 
-Sprint 5 should introduce these shared building blocks up front:
+Sprint 5 uses these shared building blocks up front:
 
 | Primitive | Purpose | Likely location |
 |-----------|---------|-----------------|
 | `AdminActionLog` model | Durable audit trail for high-risk admin actions | `packages/db/prisma/schema.prisma` |
 | `logAdminAction()` helper | Thin helper around `AdminActionLog` writes | `packages/db/admin-action-log.ts` |
-| `getOrderSlaState()` helper | Shared SLA color/state logic for orders UI | `apps/admin/app/orders/_lib/sla.ts` or equivalent |
-| Shared admin actor helper | Normalize HTTP Basic admin identity for audit writes | `apps/admin` shared lib and/or `packages/types` |
+| `getOrderSlaState()` helper | Shared SLA color/state logic for orders UI | `apps/admin/app/orders/_lib/sla.ts` |
+| Shared admin actor helper | Normalize HTTP Basic admin identity for audit writes | `packages/types/src/admin-basic-auth.ts` |
 
-Recommended `AdminActionLog` fields for Sprint 5: `id`, `actorLabel`, `actionType`, `targetType`, `targetId`, `note`, `payload`, `createdAt`.
+Implemented `AdminActionLog` fields for Sprint 5: `id`, `actorLabel`, `actionType`, `targetType`, `targetId`, `note`, `payload`, `createdAt`.
 
 ---
 
@@ -107,7 +107,7 @@ These items are intentionally deferred so Sprint 5 stays buildable and safe:
 | US-07-03 | Basic metrics dashboard for admin | 5 | Medium | US-05-01, US-07-01 | `apps/admin`, `packages/db` |
 | US-07-04 | Admin can manage roaster and org accounts: suspend, reactivate | 3 | Low | US-07-01 | `apps/admin`, `apps/web`, `packages/db`, `packages/email` |
 
-**Story implementation status:** All Sprint 5 stories remain planned. See [`docs/SPRINT_5_PROGRESS.md`](../SPRINT_5_PROGRESS.md) for the codebase-readiness snapshot.
+**Story implementation status:** Package A, `US-07-01`, and `US-07-02` are implemented on `main`. See [`docs/SPRINT_5_PROGRESS.md`](../SPRINT_5_PROGRESS.md) for the current Sprint 5 snapshot and remaining work.
 
 ---
 
@@ -226,7 +226,7 @@ These diagrams are the source of truth for Sprint 5 flows. If implementation cha
 | `RoasterDebt` | US-06-02, US-07-04 | Debt recovery after lost disputes and admin lifecycle visibility |
 | `Roaster` | US-06-02, US-07-03, US-07-04 | `status`, `disputeCount90d`, Stripe onboarding and payout flags |
 | `Org` | US-07-03, US-07-04 | `status`, Stripe onboarding and payout flags |
-| `AdminActionLog` (planned) | US-06-02, US-07-02, US-07-04 | Admin audit trail for settings changes, fault attribution, automatic suspension, suspension/reactivation, and reactivation requests |
+| `AdminActionLog` | US-06-02, US-07-02, US-07-04 | Admin audit trail for settings changes, fault attribution, automatic suspension, suspension/reactivation, and reactivation requests |
 
 ---
 

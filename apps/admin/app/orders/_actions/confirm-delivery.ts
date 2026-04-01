@@ -3,7 +3,7 @@
 import { database } from "@joe-perks/db";
 import { sendEmail } from "@joe-perks/email/send";
 import OrderDeliveredEmail from "@joe-perks/email/templates/order-delivered";
-import { getAdminBasicAuthCredentials } from "@joe-perks/types";
+import { getAdminActorLabel } from "@joe-perks/types";
 import { revalidatePath } from "next/cache";
 import { createElement } from "react";
 
@@ -12,7 +12,7 @@ export type ConfirmDeliveryResult = { ok: true } | { ok: false; error: string };
 export async function confirmDelivery(
   orderId: string
 ): Promise<ConfirmDeliveryResult> {
-  const adminActorId = getAdminBasicAuthCredentials()?.email ?? "platform-admin";
+  const adminActorId = getAdminActorLabel();
   const settings = await database.platformSettings.findUniqueOrThrow({
     where: { id: "singleton" },
   });

@@ -108,6 +108,11 @@ export type OrderItem = Prisma.OrderItemModel
  */
 export type OrderEvent = Prisma.OrderEventModel
 /**
+ * Model AdminActionLog
+ * 
+ */
+export type AdminActionLog = Prisma.AdminActionLogModel
+/**
  * Model DisputeRecord
  * 
  */

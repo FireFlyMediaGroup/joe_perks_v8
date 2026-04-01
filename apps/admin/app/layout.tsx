@@ -33,8 +33,17 @@ export default function RootLayout({
             <a className="font-medium text-zinc-900 dark:text-zinc-50" href="/">
               Admin home
             </a>
-            <a className="text-zinc-600 underline dark:text-zinc-400" href="/orders">
+            <a
+              className="text-zinc-600 underline dark:text-zinc-400"
+              href="/orders"
+            >
               Orders
+            </a>
+            <a
+              className="text-zinc-600 underline dark:text-zinc-400"
+              href="/settings"
+            >
+              Settings
             </a>
           </nav>
         </header>

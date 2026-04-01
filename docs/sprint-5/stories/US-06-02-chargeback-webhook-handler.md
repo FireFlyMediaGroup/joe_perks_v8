@@ -2,7 +2,7 @@
 
 **Story ID:** US-06-02 | **Epic:** EP-06 (Payments & Payouts)
 **Points:** 8 | **Priority:** High
-**Status:** `Todo`
+**Status:** `Partial`
 **Owner:** Full-stack
 **Dependencies:** US-06-01 (Payout job), US-01-05 (Stripe checkout API)
 **Depends on this:** None
@@ -29,6 +29,7 @@ Handle `charge.dispute.created` and `charge.dispute.closed` webhook events so th
 - `apps/web/app/api/webhooks/stripe/route.ts` currently handles `account.updated`, `payment_intent.succeeded`, and `payment_intent.payment_failed`, but not `charge.dispute.*`.
 - `apps/admin/app/disputes/page.tsx` exists only as a scaffold.
 - Sprint 4 already established the webhook idempotency pattern (`StripeEvent`) and payout/debt plumbing (`RoasterDebt`, `run-payout-release.ts`).
+- Package A now provides `AdminActionLog` plus `logAdminAction()` for fault attribution, auto-suspension, and other high-risk admin dispute actions.
 
 ---
 
@@ -110,3 +111,4 @@ Handle `charge.dispute.created` and `charge.dispute.closed` webhook events so th
 |---------|------|-------|
 | 0.1 | 2026-04-01 | Initial Sprint 5 story created from source planning doc and current repo review. |
 | 0.2 | 2026-04-01 | Normalized to current schema: keep `DISPUTE_OPENED` / `DISPUTE_CLOSED`, use `DisputeRecord` as source of truth, and map debt creation onto existing `DebtReason` values. |
+| 0.3 | 2026-04-01 | Package A landed: shared admin audit schema/helper now exists in the repo and this story status is now `Partial`. |

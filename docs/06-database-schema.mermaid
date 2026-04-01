@@ -210,6 +210,17 @@ erDiagram
     DateTime       created_at     "IMMUTABLE — append-only"
   }
 
+  AdminActionLog {
+    String   id          PK
+    String   actor_label
+    String   action_type
+    String   target_type
+    String   target_id
+    String   note           "nullable"
+    Json     payload        "nullable — audit metadata only"
+    DateTime created_at
+  }
+
   DisputeRecord {
     String          id               PK
     String          order_id         FK UK

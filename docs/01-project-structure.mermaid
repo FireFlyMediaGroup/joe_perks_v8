@@ -57,7 +57,7 @@ graph TD
   ADMIN --> A_HOME["app/page.tsx\nhome / metrics"]:::route
   ADMIN --> A_AR["approvals/roasters/\npage + [id]/"]:::route
   ADMIN --> A_AO["approvals/orgs/\npage + [id]/"]:::route
-  ADMIN --> A_ORD["orders/\npage, [id]/, _actions, _components,\nevent-timeline, layout nav"]:::route
+  ADMIN --> A_ORD["orders/\npage, [id]/, _actions, _components,\n_lib/sla.ts, event-timeline, layout nav"]:::route
   ADMIN --> A_DISP["disputes/"]:::route
   ADMIN --> A_SET["settings/"]:::route
 
@@ -69,10 +69,10 @@ graph TD
   PKGS --> TYPES["packages/types\n@joe-perks/types"]:::pkg
   PKGS --> NF["+ next-forge packages\n@repo/design-system, auth, cms, …"]:::pkg
 
-  DB --> DB1["prisma/schema.prisma\n26 models when migrated"]:::file
+  DB --> DB1["prisma/schema.prisma\n27 models when migrated"]:::file
   DB --> DB2["seed.ts"]:::file
   DB --> DB3["order-number.ts"]:::file
-  DB --> DB4["index.ts, log-event.ts\nPrisma client + logOrderEvent"]:::file
+  DB --> DB4["index.ts, log-event.ts,\nadmin-action-log.ts\nPrisma client + audit helpers"]:::file
 
   UI --> UI1["src/store/cart.ts\nZustand + persist"]:::file
   UI --> UI2["Use @repo/design-system\nfor shadcn primitives"]:::file

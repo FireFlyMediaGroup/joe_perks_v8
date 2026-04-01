@@ -2,7 +2,7 @@
 
 **Story ID:** US-07-01 | **Epic:** EP-07 (Admin Dashboard)
 **Points:** 5 | **Priority:** High
-**Status:** `Todo`
+**Status:** `Done`
 **Owner:** Full-stack
 **Dependencies:** US-05-01, US-01-03
 **Depends on this:** US-07-03, US-07-04
@@ -25,10 +25,12 @@ Turn the admin orders area into an operational monitoring surface so platform ad
 
 ## Current repo evidence
 
-- `apps/admin/app/orders/page.tsx` already renders an order list.
-- `apps/admin/app/orders/_components/order-list.tsx` already shows order number, roaster, buyer, created/shipped dates, tracking, and status tabs.
-- Sprint 4 already added order detail, delivery confirmation, and event timeline support.
-- SLA timing data already exists in the system through `Order.fulfillBy` and the `PlatformSettings` SLA fields.
+- SLA timing data exists via `Order.fulfillBy` and `PlatformSettings` SLA fields; Sprint 4 order detail, delivery confirmation, and timeline remain the baseline.
+- Package A now provides `apps/admin/app/orders/_lib/sla.ts` with shared `getOrderSlaState()` logic for `PlatformSettings`-driven row badges and summary rollups.
+- `apps/admin/app/orders/page.tsx` now loads campaign/org labels, payout status, dispute callouts, status/roaster/org/date filters, and explicit 50/page pagination.
+- `apps/admin/app/orders/_components/order-list.tsx` now renders row-level SLA badges plus page-level Critical / Warning / On Track rollups.
+- `apps/admin/app/orders/[id]/page.tsx` and `_components/order-detail.tsx` now show richer payout/dispute context and expose the approved low-risk actions: `Mark Delivered` and `Contact Roaster`.
+- Vitest: `apps/admin/__tests__/us-07-01-sla.test.ts` covers `getOrderSlaState()`; see `docs/SPRINT_5_CHECKLIST.md` for `pnpm --filter admin test` and `pnpm admin:smoke:us-07`.
 
 ---
 
@@ -63,13 +65,13 @@ Turn the admin orders area into an operational monitoring surface so platform ad
 
 ## Acceptance criteria
 
-- [ ] Admin orders page shows all key fields needed for ops triage, including SLA state
-- [ ] SLA indicator colors are derived from `PlatformSettings` / `fulfillBy`
-- [ ] Page-level SLA summary cards surface critical / warning / on-track counts
-- [ ] Filters support at least the approved MVP subset of status, roaster, org, and date range
-- [ ] Order detail shows payout breakdown, full event timeline, and dispute state when present
-- [ ] The only Sprint 5 action buttons on this surface are `Mark Delivered` and a non-destructive `Contact Roaster` action
-- [ ] Any new admin actions create durable audit/event records
+- [x] Admin orders page shows all key fields needed for ops triage, including SLA state
+- [x] SLA indicator colors are derived from `PlatformSettings` / `fulfillBy`
+- [x] Page-level SLA summary cards surface critical / warning / on-track counts
+- [x] Filters support at least the approved MVP subset of status, roaster, org, and date range
+- [x] Order detail shows payout breakdown, full event timeline, and dispute state when present
+- [x] The only Sprint 5 action buttons on this surface are `Mark Delivered` and a non-destructive `Contact Roaster` action
+- [x] Any new admin actions create durable audit/event records
 
 ---
 
@@ -107,3 +109,5 @@ Turn the admin orders area into an operational monitoring surface so platform ad
 |---------|------|-------|
 | 0.1 | 2026-04-01 | Initial Sprint 5 story created from source planning doc and current repo review. |
 | 0.2 | 2026-04-01 | Normalized to a visibility-first admin MVP: 50/page pagination, richer filters/columns, and only low-risk actions on the order surface. |
+| 0.3 | 2026-04-01 | Package A landed: shared admin SLA helper now exists in the repo and this story status is now `Partial`. |
+| 0.4 | 2026-04-01 | Story implemented: orders page now has 50/page pagination, SLA rollups/badges, richer filters/columns, payout/dispute detail context, and only the approved low-risk actions. |

@@ -2,7 +2,7 @@
 
 **Story ID:** US-07-02 | **Epic:** EP-07 (Admin Dashboard)
 **Points:** 5 | **Priority:** Medium
-**Status:** `Todo`
+**Status:** `Done`
 **Owner:** Full-stack
 **Dependencies:** US-01-02, US-01-03
 **Depends on this:** None
@@ -26,8 +26,10 @@ Replace the admin settings scaffold with an editor for platform business rules s
 ## Current repo evidence
 
 - `packages/db/prisma/schema.prisma` already defines the `PlatformSettings` singleton with fee, org %, SLA, payout-hold, and dispute-fee fields.
-- `apps/admin/app/settings/page.tsx` exists but is only a placeholder scaffold.
+- `apps/admin/app/settings/page.tsx` server-loads the singleton and renders `PlatformSettingsForm` (`_components/platform-settings-form.tsx`) with `_lib/validate-platform-settings.ts` and `_actions/update-platform-settings.ts`.
 - Sprint 4 code already reads `PlatformSettings` at request/runtime in the payment webhook and SLA job.
+- Settings saves write `AdminActionLog` rows (`PLATFORM_SETTINGS_UPDATED`) with `before` / `after` JSON snapshots, actor label from `getAdminActorLabel()`, and optional note.
+- Vitest: `apps/admin/__tests__/us-07-02-validate-platform-settings.test.ts`; optional HTTP smoke: `pnpm admin:smoke:us-07` (see `docs/SPRINT_5_CHECKLIST.md`).
 
 ---
 
@@ -56,18 +58,18 @@ Replace the admin settings scaffold with an editor for platform business rules s
 | Modify | `apps/admin/app/settings/page.tsx` | Replace scaffold with editor |
 | Create | `apps/admin/app/settings/_actions/` | Server actions for update flow |
 | Create / Modify | validation helper(s) under the settings route | Shared input validation |
-| Create | `packages/db/admin-action-log.ts` and related schema support | Audit settings changes |
+| Done | `packages/db/admin-action-log.ts` and related schema support | Audit settings changes (implemented in Package A; settings save uses `adminActionLog.create` in the update transaction) |
 
 ---
 
 ## Acceptance criteria
 
-- [ ] Admin settings page loads the current `PlatformSettings` singleton values
-- [ ] All supported current-schema fields are editable with labels and brief descriptions
-- [ ] Save flow validates percentages, hours, days, and fee amounts
-- [ ] Save flow clearly warns that changes affect future orders/operations
-- [ ] Changes take effect without a deploy or restart
-- [ ] Settings changes are written to an admin audit trail
+- [x] Admin settings page loads the current `PlatformSettings` singleton values
+- [x] All supported current-schema fields are editable with labels and brief descriptions
+- [x] Save flow validates percentages, hours, days, and fee amounts
+- [x] Save flow clearly warns that changes affect future orders/operations
+- [x] Changes take effect without a deploy or restart
+- [x] Settings changes are written to an admin audit trail
 
 ---
 
@@ -102,3 +104,5 @@ Replace the admin settings scaffold with an editor for platform business rules s
 |---------|------|-------|
 | 0.1 | 2026-04-01 | Initial Sprint 5 story created from source planning doc and current repo review. |
 | 0.2 | 2026-04-01 | Normalized to the current `PlatformSettings` schema and updated to require `AdminActionLog` coverage for settings changes. |
+| 0.3 | 2026-04-01 | Package A landed: shared admin audit schema/helper now exists in the repo and this story status is now `Partial`. |
+| 0.4 | 2026-04-01 | Story implemented: full editor, validation, acknowledgment, `AdminActionLog` with before/after; status `Done`. |

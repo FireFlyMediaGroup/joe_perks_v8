@@ -3,6 +3,10 @@ export interface ParsedBasicAuth {
   user: string;
 }
 
+export interface AdminActor {
+  actorLabel: string;
+}
+
 export function parseBasicAuthHeader(
   header: string | null
 ): ParsedBasicAuth | null {
@@ -26,9 +30,10 @@ export function parseBasicAuthHeader(
   }
 }
 
-export function getAdminBasicAuthCredentials():
-  | { email: string; password: string }
-  | null {
+export function getAdminBasicAuthCredentials(): {
+  email: string;
+  password: string;
+} | null {
   const email = process.env.ADMIN_EMAIL?.trim();
   const password = process.env.ADMIN_PASSWORD?.trim();
   if (!(email && password)) {
@@ -36,6 +41,19 @@ export function getAdminBasicAuthCredentials():
   }
 
   return { email, password };
+}
+
+export function getAdminActor(): AdminActor | null {
+  const credentials = getAdminBasicAuthCredentials();
+  if (!credentials) {
+    return null;
+  }
+
+  return { actorLabel: credentials.email };
+}
+
+export function getAdminActorLabel(fallback = "platform-admin"): string {
+  return getAdminActor()?.actorLabel ?? fallback;
 }
 
 export function verifyAdminBasicAuthHeader(header: string | null): boolean {

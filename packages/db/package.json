@@ -5,6 +5,7 @@
   "types": "./index.ts",
   "exports": {
     ".": "./index.ts",
+    "./admin-action-log": "./admin-action-log.ts",
     "./keys": "./keys.ts",
     "./database": "./database.ts",
     "./clerk-user-sync": "./clerk-user-sync.ts",

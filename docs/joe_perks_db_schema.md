@@ -51,6 +51,7 @@ Principles (unchanged from product design):
 | `Order` | Commerce | Frozen splits; `buyerIp` required string; **no** embedded shipping address columns in MVP schema |
 | `OrderItem` | Commerce | `productName`, `variantDesc`, line pricing snapshots |
 | `OrderEvent` | Audit | Append-only |
+| `AdminActionLog` | Audit | High-risk admin actions: actor label, action type, target, note, payload, timestamp |
 | `DisputeRecord` | Finance | One per order (`orderId` unique) |
 
 ### 1.2 Not in the current Prisma schema (planned / doc legacy)

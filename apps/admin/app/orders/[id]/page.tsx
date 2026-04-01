@@ -25,6 +25,7 @@ export default async function AdminOrderDetailPage({ params }: Props) {
           },
         },
       },
+      dispute: true,
       events: { orderBy: { createdAt: "asc" } },
       items: true,
       roaster: {
@@ -40,15 +41,29 @@ export default async function AdminOrderDetailPage({ params }: Props) {
     notFound();
   }
 
+  const contactHref = `mailto:${order.roaster.email}?subject=${encodeURIComponent(
+    `Order ${order.orderNumber} follow-up`
+  )}&body=${encodeURIComponent(
+    `Hi,\n\nI'm following up about order ${order.orderNumber}.\n\nThanks,\nJoe Perks Admin`
+  )}`;
+
   return (
     <div className="mx-auto max-w-4xl p-6 md:p-8">
       <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
         <Link className="text-sm text-zinc-600 underline" href="/orders">
           ← Orders
         </Link>
-        {order.status === "SHIPPED" ? (
-          <ConfirmDeliveryButton orderId={order.id} />
-        ) : null}
+        <div className="flex flex-wrap gap-3">
+          <Link
+            className="inline-flex min-h-11 items-center rounded-full border border-zinc-300 px-4 py-2 font-medium text-sm text-zinc-700 dark:border-zinc-700 dark:text-zinc-200"
+            href={contactHref}
+          >
+            Contact Roaster
+          </Link>
+          {order.status === "SHIPPED" ? (
+            <ConfirmDeliveryButton orderId={order.id} />
+          ) : null}
+        </div>
       </div>
 
       <OrderDetail order={order} />

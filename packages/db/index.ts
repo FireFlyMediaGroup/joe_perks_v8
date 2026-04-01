@@ -1,5 +1,6 @@
 import "server-only";
 
+export { logAdminAction } from "./admin-action-log";
 export {
   generatePendingClerkExternalAuthId,
   upsertUserFromClerkWebhook,

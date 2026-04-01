@@ -12,7 +12,7 @@ graph TD
 
   %% ── Shared packages ─────────────────────────────────────────────
   subgraph PKGS["packages — shared internal libraries"]
-    DB["@joe-perks/db\n─────────────────\nPrisma 5.x client\n26 models, all enums\ncalculateSplits() host\norder number generation\nEmailLog dedup queries"]:::pkg
+    DB["@joe-perks/db\n─────────────────\nPrisma client\nAdminActionLog + order events\norder number generation\nEmailLog dedup queries"]:::pkg
 
     UI["@joe-perks/ui\n─────────────────\nshadcn/ui components\nbrand theme CSS vars\nuseCartStore Zustand\nLocalStorage cart persist"]:::pkg
 
