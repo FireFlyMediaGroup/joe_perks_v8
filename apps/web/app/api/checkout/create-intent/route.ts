@@ -28,10 +28,173 @@ const GRIND_LABELS: Record<string, string> = {
   GROUND_FRENCH_PRESS: "Ground (French Press)",
 };
 
+interface CheckoutOrderItemData {
+  lineTotal: number;
+  productName: string;
+  quantity: number;
+  unitPrice: number;
+  variantDesc: string;
+  variantId: string;
+}
+
 function getClientIp(request: Request): string {
   const forwarded = request.headers.get("x-forwarded-for");
-  if (forwarded) return forwarded.split(",")[0].trim();
+  if (forwarded) {
+    return forwarded.split(",")[0].trim();
+  }
   return request.headers.get("x-real-ip")?.trim() ?? "0.0.0.0";
+}
+
+async function loadActiveCampaign(campaignId: string) {
+  const campaign = await database.campaign.findUnique({
+    where: { id: campaignId },
+    include: { org: true },
+  });
+
+  if (!campaign) {
+    return null;
+  }
+
+  if (campaign.status !== "ACTIVE" || campaign.org.status !== "ACTIVE") {
+    return null;
+  }
+
+  return campaign;
+}
+
+async function loadCampaignItemsForCheckout(input: {
+  campaignId: string;
+  items: Array<{ campaignItemId: string; quantity: number }>;
+}) {
+  const campaignItemIds = input.items.map((item) => item.campaignItemId);
+  const campaignItems = await database.campaignItem.findMany({
+    where: { id: { in: campaignItemIds }, campaignId: input.campaignId },
+    include: { product: true, variant: true },
+  });
+
+  if (campaignItems.length !== campaignItemIds.length) {
+    return { campaignItems: null, error: "One or more items not found in this campaign" };
+  }
+
+  for (const campaignItem of campaignItems) {
+    if (
+      campaignItem.product.deletedAt ||
+      campaignItem.variant.deletedAt ||
+      !campaignItem.variant.isAvailable
+    ) {
+      return {
+        campaignItems: null,
+        error: `Item "${campaignItem.product.name}" is no longer available`,
+      };
+    }
+  }
+
+  return { campaignItems, error: null };
+}
+
+function buildOrderItemsData(
+  campaignItems: Awaited<ReturnType<typeof loadCampaignItemsForCheckout>> extends {
+    campaignItems: infer T;
+  }
+    ? NonNullable<T>
+    : never,
+  items: Array<{ campaignItemId: string; quantity: number }>
+) {
+  const quantityMap = new Map(items.map((item) => [item.campaignItemId, item.quantity]));
+
+  const orderItemsData: CheckoutOrderItemData[] = [];
+  for (const campaignItem of campaignItems) {
+    const quantity = quantityMap.get(campaignItem.id);
+    if (!quantity) {
+      return { error: "One or more checkout quantities are invalid", orderItemsData: null };
+    }
+
+    orderItemsData.push({
+      lineTotal: campaignItem.retailPrice * quantity,
+      productName: campaignItem.product.name,
+      quantity,
+      unitPrice: campaignItem.retailPrice,
+      variantDesc: `${campaignItem.variant.sizeOz}oz, ${GRIND_LABELS[campaignItem.variant.grind] ?? campaignItem.variant.grind}`,
+      variantId: campaignItem.variantId,
+    });
+  }
+
+  return { error: null, orderItemsData };
+}
+
+async function loadCheckoutContext(
+  body: z.infer<typeof checkoutSchema>
+): Promise<
+  | {
+      campaign: NonNullable<Awaited<ReturnType<typeof loadActiveCampaign>>>;
+      orderItemsData: CheckoutOrderItemData[];
+      roaster: NonNullable<Awaited<ReturnType<typeof database.roaster.findUnique>>>;
+      roasterId: string;
+      shippingRate: NonNullable<
+        Awaited<ReturnType<typeof database.roasterShippingRate.findUnique>>
+      >;
+    }
+  | { error: string; status: number }
+> {
+  const campaign = await loadActiveCampaign(body.campaignId);
+  if (!campaign) {
+    return { error: "Campaign not found or inactive", status: 404 };
+  }
+
+  const { campaignItems, error: campaignItemsError } =
+    await loadCampaignItemsForCheckout({
+      campaignId: campaign.id,
+      items: body.items,
+    });
+  if (campaignItemsError || !campaignItems) {
+    return {
+      error: campaignItemsError ?? "Items are unavailable",
+      status: 400,
+    };
+  }
+
+  const roasterIds = new Set(campaignItems.map((ci) => ci.product.roasterId));
+  if (roasterIds.size !== 1) {
+    return { error: "Multi-roaster orders are not supported", status: 400 };
+  }
+
+  const [roasterId] = roasterIds;
+  if (!roasterId) {
+    return { error: "Roaster is unavailable", status: 400 };
+  }
+
+  const roaster = await database.roaster.findUnique({
+    where: { id: roasterId },
+  });
+  if (!roaster || roaster.status !== "ACTIVE") {
+    return { error: "Roaster is unavailable", status: 400 };
+  }
+
+  const shippingRate = await database.roasterShippingRate.findUnique({
+    where: { id: body.shippingRateId },
+  });
+  if (!shippingRate || shippingRate.roasterId !== roasterId) {
+    return { error: "Invalid shipping rate", status: 400 };
+  }
+
+  const { error: orderItemsError, orderItemsData } = buildOrderItemsData(
+    campaignItems,
+    body.items
+  );
+  if (orderItemsError || !orderItemsData) {
+    return {
+      error: orderItemsError ?? "Checkout items are invalid",
+      status: 400,
+    };
+  }
+
+  return {
+    campaign,
+    orderItemsData,
+    roaster,
+    roasterId,
+    shippingRate,
+  };
 }
 
 export async function POST(request: Request) {
@@ -52,85 +215,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Too many requests" }, { status: 429 });
   }
 
-  const campaign = await database.campaign.findUnique({
-    where: { id: body.campaignId },
-    include: { org: true },
-  });
-  if (!campaign || campaign.status !== "ACTIVE") {
-    return NextResponse.json(
-      { error: "Campaign not found or inactive" },
-      { status: 404 }
-    );
+  const context = await loadCheckoutContext(body);
+  if ("error" in context) {
+    return NextResponse.json({ error: context.error }, { status: context.status });
   }
 
-  const campaignItemIds = body.items.map((i) => i.campaignItemId);
-  const campaignItems = await database.campaignItem.findMany({
-    where: { id: { in: campaignItemIds }, campaignId: campaign.id },
-    include: { product: true, variant: true },
-  });
-  if (campaignItems.length !== campaignItemIds.length) {
-    return NextResponse.json(
-      { error: "One or more items not found in this campaign" },
-      { status: 400 }
-    );
-  }
-
-  for (const ci of campaignItems) {
-    if (
-      ci.product.deletedAt ||
-      ci.variant.deletedAt ||
-      !ci.variant.isAvailable
-    ) {
-      return NextResponse.json(
-        { error: `Item "${ci.product.name}" is no longer available` },
-        { status: 400 }
-      );
-    }
-  }
-
-  const roasterIds = new Set(campaignItems.map((ci) => ci.product.roasterId));
-  if (roasterIds.size !== 1) {
-    return NextResponse.json(
-      { error: "Multi-roaster orders are not supported" },
-      { status: 400 }
-    );
-  }
-  const roasterId = campaignItems[0].product.roasterId;
-
-  const roaster = await database.roaster.findUnique({
-    where: { id: roasterId },
-  });
-  if (!roaster || roaster.status !== "ACTIVE") {
-    return NextResponse.json(
-      { error: "Roaster is unavailable" },
-      { status: 400 }
-    );
-  }
-
-  const shippingRate = await database.roasterShippingRate.findUnique({
-    where: { id: body.shippingRateId },
-  });
-  if (!shippingRate || shippingRate.roasterId !== roasterId) {
-    return NextResponse.json(
-      { error: "Invalid shipping rate" },
-      { status: 400 }
-    );
-  }
-
-  const quantityMap = new Map(
-    body.items.map((i) => [i.campaignItemId, i.quantity])
-  );
-  const orderItemsData = campaignItems.map((ci) => {
-    const qty = quantityMap.get(ci.id)!;
-    return {
-      variantId: ci.variantId,
-      productName: ci.product.name,
-      variantDesc: `${ci.variant.sizeOz}oz, ${GRIND_LABELS[ci.variant.grind] ?? ci.variant.grind}`,
-      quantity: qty,
-      unitPrice: ci.retailPrice,
-      lineTotal: ci.retailPrice * qty,
-    };
-  });
+  const { campaign, orderItemsData, roaster, roasterId, shippingRate } = context;
 
   const productSubtotalCents = orderItemsData.reduce(
     (sum, item) => sum + item.lineTotal,
@@ -235,7 +325,7 @@ export async function POST(request: Request) {
       });
     });
   } catch (err) {
-    await stripe.paymentIntents.cancel(pi.id).catch(() => {});
+    await stripe.paymentIntents.cancel(pi.id).catch(() => undefined);
     console.error("checkout db transaction failed", {
       order_id: orderId,
       stripe_pi_id: pi.id,

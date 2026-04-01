@@ -4,8 +4,8 @@ import { database } from "@joe-perks/db";
 import { revalidatePath } from "next/cache";
 import type { ZodError } from "zod";
 
+import { requireActiveRoasterId } from "../../../_lib/require-active-roaster";
 import { parseDollarsToCents } from "../../../products/_lib/money";
-import { requireRoasterId } from "../../../products/_lib/require-roaster";
 import { shippingRateFieldsSchema } from "../_lib/schema";
 
 export type ShippingRateActionResult =
@@ -27,9 +27,15 @@ export async function createRate(input: {
   flatRateDollars: string;
   isDefault: boolean;
 }): Promise<ShippingRateActionResult> {
-  const session = await requireRoasterId();
+  const session = await requireActiveRoasterId();
   if (!session.ok) {
-    return { success: false, error: "You must be signed in as a roaster." };
+    return {
+      success: false,
+      error:
+        session.error === "suspended"
+          ? "Your account is suspended. Review the status message on your dashboard."
+          : "You must be signed in as a roaster.",
+    };
   }
 
   const parsedMoney = parseDollarsToCents(input.flatRateDollars);
@@ -86,9 +92,15 @@ export async function updateRate(
     isDefault: boolean;
   }
 ): Promise<ShippingRateActionResult> {
-  const session = await requireRoasterId();
+  const session = await requireActiveRoasterId();
   if (!session.ok) {
-    return { success: false, error: "You must be signed in as a roaster." };
+    return {
+      success: false,
+      error:
+        session.error === "suspended"
+          ? "Your account is suspended. Review the status message on your dashboard."
+          : "You must be signed in as a roaster.",
+    };
   }
 
   const existing = await database.roasterShippingRate.findFirst({
@@ -162,9 +174,15 @@ export async function updateRate(
 export async function deleteRate(
   rateId: string
 ): Promise<ShippingRateActionResult> {
-  const session = await requireRoasterId();
+  const session = await requireActiveRoasterId();
   if (!session.ok) {
-    return { success: false, error: "You must be signed in as a roaster." };
+    return {
+      success: false,
+      error:
+        session.error === "suspended"
+          ? "Your account is suspended. Review the status message on your dashboard."
+          : "You must be signed in as a roaster.",
+    };
   }
 
   const existing = await database.roasterShippingRate.findFirst({

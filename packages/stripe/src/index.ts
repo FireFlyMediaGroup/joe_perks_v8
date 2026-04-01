@@ -19,6 +19,11 @@ export {
   transferToConnectedAccount,
 } from "./payouts";
 export {
+  type ReverseTransferIfPossibleInput,
+  type ReverseTransferIfPossibleResult,
+  reverseTransferIfPossible,
+} from "./dispute-reversal";
+export {
   checkoutLimiter,
   getCheckoutLimiter,
   isCheckoutRateLimitConfigured,

@@ -57,6 +57,9 @@ importers:
       '@joe-perks/email':
         specifier: workspace:*
         version: link:../../packages/email
+      '@joe-perks/stripe':
+        specifier: workspace:*
+        version: link:../../packages/stripe
       '@joe-perks/types':
         specifier: workspace:*
         version: link:../../packages/types

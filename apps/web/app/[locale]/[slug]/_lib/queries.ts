@@ -63,11 +63,28 @@ export async function getStorefrontData(
   }
 
   const campaign = await database.campaign.findFirst({
-    where: { orgId: org.id, status: "ACTIVE" },
+    where: {
+      items: {
+        some: {
+          product: {
+            deletedAt: null,
+            roaster: { status: "ACTIVE" },
+            status: "ACTIVE",
+          },
+          variant: { deletedAt: null, isAvailable: true },
+        },
+      },
+      orgId: org.id,
+      status: "ACTIVE",
+    },
     include: {
       items: {
         where: {
-          product: { deletedAt: null },
+          product: {
+            deletedAt: null,
+            roaster: { status: "ACTIVE" },
+            status: "ACTIVE",
+          },
           variant: { deletedAt: null, isAvailable: true },
         },
         orderBy: [{ isFeatured: "desc" }, { id: "asc" }],

@@ -8,7 +8,7 @@
 - Progress tracker: [`docs/SPRINT_5_PROGRESS.md`](../SPRINT_5_PROGRESS.md)
 - Stories: [`docs/sprint-5/stories/`](./stories/)
 
-**Current progress:** Sprint 5 implementation is underway. Package A is in the repo; `US-07-01` (admin orders + SLA) and `US-07-02` (platform settings editor with audit) are implemented. Dispute webhooks, dashboard metrics, and account lifecycle flows remain.
+**Current progress:** Sprint 5 implementation is complete. Package A plus `US-06-02` (chargeback webhook + dispute admin surface), `US-07-01` (admin orders + SLA), `US-07-02` (platform settings editor with audit), `US-07-03` (admin dashboard metrics + `OrderEvent` feed), and `US-07-04` (account suspension/reactivation flows) are implemented.
 
 ---
 
@@ -22,11 +22,11 @@ Extend the platform into an operational admin surface: add chargeback webhook ha
 
 Before implementation, these repo realities should guide Sprint 5 work:
 
-- `DisputeRecord`, `FaultType`, `DisputeOutcome`, `RoasterDebt`, and dispute-related diagram coverage already exist, but the Stripe webhook currently does **not** handle `charge.dispute.*`.
+- `DisputeRecord`, `FaultType`, `DisputeOutcome`, and `RoasterDebt` already existed; `apps/web/app/api/webhooks/stripe/route.ts` now handles `charge.dispute.created` / `charge.dispute.closed`, creates dispute timeline events, and applies roaster-fault recovery via `RoasterDebt` plus auto-suspension at the 3-dispute threshold.
 - `apps/admin/app/orders/` is the US-07-01 surface: 50 rows per page, filters (status, roaster, org, date range), SLA column and summary cards, payout/dispute context on list and detail, plus low-risk actions (`Mark Delivered`, `Contact Roaster`). Manual refund/payout remain out of Sprint 5 scope.
-- `apps/admin/app/settings/` is the US-07-02 `PlatformSettings` editor (validation, save, acknowledgment, `AdminActionLog` with before/after; Vitest covers validation + SLA helper). `apps/admin/app/disputes/page.tsx` is still a scaffold.
-- `apps/admin/app/page.tsx` is still the default Next.js starter page.
-- `Roaster.status` and `Org.status` already support `SUSPENDED`, and the Stripe `account.updated` webhook already avoids re-promoting suspended roasters, but there are no admin lifecycle management pages yet.
+- `apps/admin/app/settings/` is the US-07-02 `PlatformSettings` editor (validation, save, acknowledgment, `AdminActionLog` with before/after; Vitest covers validation + SLA helper). `apps/admin/app/disputes/` is now the US-06-02 admin surface with open/closed filtering, fault attribution, and evidence export.
+- `apps/admin/app/page.tsx` is now the US-07-03 dashboard: seven server-rendered metric cards, links into orders/disputes where available, a manual refresh action, and the latest 20 `OrderEvent` rows.
+- `Roaster.status` and `Org.status` now back real lifecycle tooling: admin `roasters/` and `orgs/` list/detail pages support suspend/reactivate review, the Stripe `account.updated` webhook still avoids re-promoting suspended roasters, portal dashboards show suspended-state guidance plus reactivation requests, and storefront eligibility now blocks suspended accounts earlier.
 - Several source-story terms do **not** exist in schema/code as named. Sprint 5 is normalized below so implementation can start from one coherent plan instead of resolving naming churn mid-build.
 
 ---
@@ -107,7 +107,7 @@ These items are intentionally deferred so Sprint 5 stays buildable and safe:
 | US-07-03 | Basic metrics dashboard for admin | 5 | Medium | US-05-01, US-07-01 | `apps/admin`, `packages/db` |
 | US-07-04 | Admin can manage roaster and org accounts: suspend, reactivate | 3 | Low | US-07-01 | `apps/admin`, `apps/web`, `packages/db`, `packages/email` |
 
-**Story implementation status:** Package A, `US-07-01`, and `US-07-02` are implemented on `main`. See [`docs/SPRINT_5_PROGRESS.md`](../SPRINT_5_PROGRESS.md) for the current Sprint 5 snapshot and remaining work.
+**Story implementation status:** Package A plus `US-06-02`, `US-07-01`, `US-07-02`, `US-07-03`, and `US-07-04` are implemented on `main`. See [`docs/SPRINT_5_PROGRESS.md`](../SPRINT_5_PROGRESS.md) for the current Sprint 5 snapshot.
 
 ---
 
