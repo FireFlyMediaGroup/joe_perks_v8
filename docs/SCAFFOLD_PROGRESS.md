@@ -57,6 +57,7 @@
 | `1.17` | 2026-03-31 | Sprint 3 US-03-04: Org Stripe Connect (`apps/org/app/api/stripe/connect/route.ts`, `(authenticated)/onboarding/`), `Org.chargesEnabled`/`payoutsEnabled` + migration `20260331120000_org_charges_payouts`, webhook org `account.updated` promotion. Campaign draft/activate at `(authenticated)/campaign/` (`requireOrgId`, `campaign-actions.ts`). Root `load-root-env` for org `next.config.ts`. |
 | `1.18` | 2026-03-31 | Sprint 3 US-04-01: Buyer org storefront at `apps/web/app/[locale]/[slug]/` — `getStorefrontData` in `_lib/queries.ts`, `StorefrontLayout`, `CampaignHeader`, `ProductGrid`, `ProductCard` (disabled add-to-cart for US-04-02). |
 | `1.19` | 2026-04-01 | Sprint 3 US-04-02: Zustand cart (`packages/ui/src/store/cart.ts`), storefront cart components + `StorefrontCartSync`, `CampaignHeader` `actions`, `apps/web` → `@joe-perks/ui`. `getStorefrontData` returns `splitPreviewDefaults`; `calculateSplits` from `@joe-perks/stripe/splits` in client cart drawer. `packages/stripe/package.json` export `./splits`. Smoke: `smoke-us-04-01` + `smoke-sprint-3` HTTP probes skip on 5xx. |
+| `1.20` | 2026-04-01 | Sprint 3 US-04-03 / US-04-04 / US-08-01 / US-04-05: Three-step checkout (`checkout-form`, Stripe Elements, `create-intent` returns `paymentIntentId` + `grossAmount`), order confirmation + `OrderStatusPoller`, buyer `order_confirmation` email in `payment_intent.succeeded` webhook, `hasShippingRates` + `ShippingGuard` + checkout redirect. `order-status` includes `orgName`. `pnpm db:smoke:us-04-01` mirror updated for shipping fields. |
 
 ---
 
@@ -76,7 +77,7 @@
 | Sentry (all apps) | `Done` | All four apps (`web`, `roaster`, `org`, `admin`) have `@sentry/nextjs` + `@repo/observability` instrumentation (`instrumentation.ts`, `instrumentation-client.ts`, `sentry.server.config.ts`, `sentry.edge.config.ts`). `withSentry` in `next.config.ts` activates on Vercel. `/api/test-sentry` smoke route on `apps/web`. |
 | Legal pages | `Done` | `/terms/roasters`, `/terms/orgs`, `/privacy-policy` placeholder pages in `apps/web/app/[locale]/` with PENDING LEGAL REVIEW banners. |
 | PostHog provider | `Done` | `PostHogProvider` (from `posthog-js/react`) wraps children in `@repo/analytics` provider; `posthog.init()` runs via `instrumentation-client.ts`. |
-| Buyer org storefront (`apps/web`) | `Done` | US-04-01 + **US-04-02**: `[locale]/[slug]/` — `getStorefrontData` + `splitPreviewDefaults` in `_lib/queries.ts`, cart (`@joe-perks/ui` Zustand store, `cart-drawer`, `add-to-cart-button`, etc.). `pnpm db:smoke:us-04-01`. Checkout + order confirmation routes remain scaffold until US-04-03 / US-04-04. |
+| Buyer org storefront (`apps/web`) | `Done` | US-04-01–**US-04-05**: `[locale]/[slug]/` — `getStorefrontData` (`hasShippingRates`, `shippingRates`, `splitPreviewDefaults`), `ShippingGuard`, cart + checkout at `[locale]/[slug]/checkout/` (Stripe Elements), order confirmation at `[locale]/[slug]/order/[pi_id]/` with polling, `GET /api/order-status` includes `orgName`. `pnpm db:smoke:us-04-01`. |
 | Vendor / infra accounts | `Manual` | Stripe, Neon, Clerk, Resend, Vercel, DNS, GitHub secrets still require dashboard work. |
 
 ---
@@ -142,7 +143,7 @@ These items in the baseline checklist no longer match the repo exactly and shoul
 | Port and dev troubleshooting | `Done` | `docs/AGENTS.md` documents freeing busy ports instead of rerouting. | Follow that process when `EADDRINUSE` occurs. |
 | Database migration + seed | `Done` | `packages/db/prisma/schema.prisma` + `prisma/migrations/`; `packages/db/seed.ts` upserts `PlatformSettings` and `OrderSequence` singletons; `prisma.config.ts` loads `packages/db/.env` and defines `migrations.seed`. | Run `pnpm migrate` after schema changes; `bunx prisma db seed` after reset. |
 | Stripe CLI forwarding | `Done` | Webhook route handles `account.updated`, `payment_intent.succeeded`, `payment_intent.payment_failed` with signature verification + idempotency. `stripe listen` verified — `stripe trigger payment_intent.succeeded` returns 200 on all forwarded events. | None — working. |
-| Local app verification | `Partial` | Apps boot locally; `apps/web` buyer storefront at `/[locale]/[slug]/` is implemented (US-04-01); `[slug]/checkout` and `[slug]/order/[pi_id]` still scaffolds. | Complete US-04-03 … US-04-04. |
+| Local app verification | `Done` | Apps boot locally; `apps/web` buyer storefront at `/[locale]/[slug]/` (US-04-01), checkout at `[slug]/checkout/` (US-04-03), and order confirmation at `[slug]/order/[pi_id]` (US-04-04) are implemented. | None. |
 
 ### Phase 6 — Vercel setup
 

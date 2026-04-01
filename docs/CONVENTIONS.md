@@ -86,16 +86,22 @@ Key differences from API routes: no `Request`/`Response`, uses `revalidatePath` 
 ### Route structure in apps/web
 ```
 app/
-├── (marketing)/        # Route group — no layout effect
-│   └── page.tsx        # joeperks.com/
-├── [slug]/             # Dynamic — one per org
-│   ├── page.tsx        # Storefront
-│   └── checkout/
-│       └── page.tsx
+├── [locale]/                    # next-forge i18n (all public pages)
+│   ├── (home)/ …                # Marketing / landing
+│   ├── [slug]/                  # Buyer org storefront (one segment = org slug)
+│   │   ├── page.tsx
+│   │   ├── _components/         # cart-drawer, product-grid, shipping-guard, …
+│   │   ├── _lib/queries.ts      # getStorefrontData
+│   │   ├── checkout/
+│   │   │   ├── page.tsx
+│   │   │   └── _components/     # checkout-form, step-*, Stripe Elements
+│   │   └── order/[pi_id]/
+│   │       └── page.tsx         # confirmation + polling
+│   └── …
 └── api/
-    └── webhooks/
-        └── stripe/
-            └── route.ts
+    ├── checkout/create-intent/
+    ├── order-status/
+    └── webhooks/stripe/
 ```
 
 ### Route structure in portal apps (roaster, org)
@@ -199,7 +205,10 @@ const shippingCents = 895 // $8.95
 const display = `$${(cents / 100).toFixed(2)}`
 
 // ✅ Split calculation — always use the package function
+// Server components / API routes:
 import { calculateSplits } from '@joe-perks/stripe'
+// Client components (cart drawer, etc.) — use the client-safe sub-export:
+// import { calculateSplits } from '@joe-perks/stripe/splits'
 const splits = calculateSplits(productSubtotal, shippingAmount, orgPct, settings)
 // splits.org_amount, splits.platform_amount, splits.roaster_amount — all cents
 
@@ -273,13 +282,19 @@ await stripe.transfers.create({
 ```typescript
 // ✅ Always use sendEmail() — never call Resend directly
 import { sendEmail } from '@joe-perks/email'
+import { OrderShippedEmail } from '@joe-perks/email/templates/order-shipped'
+import { createElement } from 'react'
 
 await sendEmail({
   template: 'order_shipped',
+  subject: `Your order ${order.order_number} has shipped`,
   to: order.buyer_email,
   entityId: order.id,
   entityType: 'order',
-  props: { orderNumber: order.order_number, trackingNumber: order.tracking_number },
+  react: createElement(OrderShippedEmail, {
+    orderNumber: order.order_number,
+    trackingNumber: order.tracking_number,
+  }),
 })
 // sendEmail() handles EmailLog dedup — safe to call multiple times
 
@@ -357,7 +372,11 @@ await logOrderEvent(
 
 ## Component patterns (apps/web storefront)
 
-**Data loading:** `getStorefrontData(slug)` in `apps/web/app/[locale]/[slug]/_lib/queries.ts` loads `Org` (ACTIVE), active `Campaign`, and `CampaignItem` rows with product/variant filters. It also returns **`splitPreviewDefaults`** (`PlatformSettings` + default roaster `RoasterShippingRate`) for the cart drawer estimate — reuse the same query for checkout (US-04-03) instead of duplicating.
+**Data loading:** `getStorefrontData(slug)` in `apps/web/app/[locale]/[slug]/_lib/queries.ts` loads `Org` (ACTIVE), active `Campaign`, and `CampaignItem` rows with product/variant filters. It returns **`splitPreviewDefaults`** (`PlatformSettings` + default roaster `RoasterShippingRate`) for the cart drawer estimate, plus **`hasShippingRates`** and **`shippingRates`** (all rates for the campaign roaster) for the shipping guard and checkout — reuse this function on the storefront and checkout pages instead of duplicating queries.
+
+**Checkout:** `checkout/page.tsx` is a server component that calls `getStorefrontData`, redirects if there are no shipping rates (`?error=no-shipping`), and renders **`checkout-form.tsx`** (client) for the three-step flow. Step 3 uses **`@stripe/react-stripe-js`** (`Elements`, `PaymentElement`) and `POST /api/checkout/create-intent` (returns `clientSecret`, `paymentIntentId`, `grossAmount`, …). Never import the server Stripe SDK in client components.
+
+**Order confirmation:** `order/[pi_id]/page.tsx` loads the order server-side when possible; **`order-status-poller.tsx`** polls `GET /api/order-status?pi=` until the order is no longer `PENDING` (or times out). The order-status API includes **`orgName`** for fundraiser copy on the confirmation UI.
 
 **Split math in the browser:** Use `calculateSplits()` from **`@joe-perks/stripe/splits`**. Do **not** import the main `@joe-perks/stripe` package in client components — the barrel re-exports `server-only` modules (`client.ts`, `ratelimit.ts`, etc.) and will break `next build`.
 

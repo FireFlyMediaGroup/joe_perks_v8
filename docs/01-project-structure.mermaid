@@ -24,9 +24,9 @@ graph TD
   WEB --> WEB_MKT["[locale]/(home)/\nlanding"]:::route
   WEB --> WEB_RA["[locale]/roasters/apply/"]:::route
   WEB --> WEB_OA["[locale]/orgs/apply/"]:::route
-  WEB --> WEB_SF["[locale]/[slug]/\npage, cart-drawer, add-to-cart,\nproduct-grid, campaign-header"]:::route
-  WEB --> WEB_CO["[locale]/[slug]/checkout/"]:::route
-  WEB --> WEB_OR["[locale]/[slug]/order/[pi_id]/"]:::route
+  WEB --> WEB_SF["[locale]/[slug]/\npage, shipping-guard, cart-drawer,\nadd-to-cart, product-grid, campaign-header"]:::route
+  WEB --> WEB_CO["[locale]/[slug]/checkout/\ncheckout-form, step-cart-review,\nstep-shipping, step-payment, _lib/schema"]:::route
+  WEB --> WEB_OR["[locale]/[slug]/order/[pi_id]/\norder-summary, order-status-poller,\norder-processing"]:::route
   WEB --> WEB_TM["[locale]/legal/\nterms, privacy"]:::route
   WEB --> WEB_WH["app/api/webhooks/stripe"]:::api
   WEB --> WEB_CI["app/api/checkout/create-intent"]:::api

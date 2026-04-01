@@ -14,21 +14,21 @@
 
 ## Prerequisites (from Sprint 2)
 
-Before starting Sprint 3 work, verify these Sprint 2 deliverables are in place:
+Before starting Sprint 3 work, verify these Sprint 2 deliverables are in place (all are implemented on `main`):
 
-- [ ] `apps/web/app/[locale]/orgs/apply/` -- Org application form creates `OrgApplication` + `RoasterOrgRequest` records (US-03-01)
-- [ ] `apps/admin/app/approvals/roasters/` -- Admin roaster approval queue with approve/reject actions (US-02-02)
-- [ ] `apps/roaster/app/(authenticated)/onboarding/` -- Stripe Connect Express onboarding (US-02-03)
-- [ ] `apps/roaster/app/(authenticated)/products/` -- Product + variant CRUD with soft deletes (US-02-04)
-- [ ] `apps/roaster/app/(authenticated)/settings/shipping/` -- Shipping rate config with default management (US-02-05)
-- [ ] `packages/email/templates/` -- Application lifecycle email templates (US-08-06)
-- [ ] `packages/types/src/slug-validation.ts` -- Slug validation utilities (US-02-06)
-- [ ] `packages/stripe/` -- `calculateSplits()`, `createExpressConnectedAccount()`, `createExpressAccountLink()`, rate limiters
-- [ ] `apps/web/app/api/checkout/create-intent/route.ts` -- Checkout API (validates campaign, creates PI + Order)
-- [ ] `apps/web/app/api/order-status/route.ts` -- Order lookup by PI ID or order ID
-- [ ] `apps/web/app/api/webhooks/stripe/route.ts` -- Handles `account.updated`, `payment_intent.succeeded`
-- [ ] `packages/ui/src/store/cart.ts` -- Minimal Zustand cart store (addLine, clear)
-- [ ] `packages/email/templates/order-confirmation.tsx` -- Order confirmation email template
+- [x] `apps/web/app/[locale]/orgs/apply/` -- Org application form creates `OrgApplication` + `RoasterOrgRequest` records (US-03-01)
+- [x] `apps/admin/app/approvals/roasters/` -- Admin roaster approval queue with approve/reject actions (US-02-02)
+- [x] `apps/roaster/app/(authenticated)/onboarding/` -- Stripe Connect Express onboarding (US-02-03)
+- [x] `apps/roaster/app/(authenticated)/products/` -- Product + variant CRUD with soft deletes (US-02-04)
+- [x] `apps/roaster/app/(authenticated)/settings/shipping/` -- Shipping rate config with default management (US-02-05)
+- [x] `packages/email/templates/` -- Application lifecycle email templates (US-08-06)
+- [x] `packages/types/src/slug-validation.ts` -- Slug validation utilities (US-02-06)
+- [x] `packages/stripe/` -- `calculateSplits()`, `createExpressConnectedAccount()`, `createExpressAccountLink()`, rate limiters
+- [x] `apps/web/app/api/checkout/create-intent/route.ts` -- Checkout API (validates campaign, creates PI + Order; response includes `clientSecret`, `paymentIntentId`, `grossAmount`, …)
+- [x] `apps/web/app/api/order-status/route.ts` -- Order lookup by PI ID or order ID (includes `orgName` for confirmation UI)
+- [x] `apps/web/app/api/webhooks/stripe/route.ts` -- Handles `account.updated`, `payment_intent.succeeded` (order confirmation email to buyer)
+- [x] `packages/ui/src/store/cart.ts` -- Zustand cart store (full Sprint 3 cart; `addLine`, `clear`, …)
+- [x] `packages/email/templates/order-confirmation.tsx` -- Order confirmation email template (wired via webhook)
 
 ---
 
@@ -270,24 +270,24 @@ Before starting Sprint 3 work, verify these Sprint 2 deliverables are in place:
 
 ### 5.1 Verify/update email template
 
-- [ ] Review `packages/email/templates/order-confirmation.tsx` -- props match checkout data shape
-- [ ] Verify template renders: order number, items with names/quantities/prices, subtotal, shipping, total, org name
-- [ ] Confirm `PreviewProps` work in React Email preview
+- [x] Review `packages/email/templates/order-confirmation.tsx` -- props match checkout data shape
+- [x] Verify template renders: order number, items with names/quantities/prices, subtotal, shipping, total, org name
+- [x] Confirm `PreviewProps` work in React Email preview
 
 ### 5.2 Wire into webhook handler
 
-- [ ] Update `apps/web/app/api/webhooks/stripe/route.ts` -- in `payment_intent.succeeded` handler:
+- [x] Update `apps/web/app/api/webhooks/stripe/route.ts` -- in `payment_intent.succeeded` handler:
   - Load `Order` with items + campaign + org
   - Call `sendEmail()` with `order-confirmation` template
   - `entityType = 'order'`, `entityId = order.id`, `template = 'order_confirmation'`
-- [ ] Ensure `EmailLog` dedup prevents duplicate sends on webhook retry
+- [x] Ensure `EmailLog` dedup prevents duplicate sends on webhook retry
 
 ### 5.3 Verification
 
-- [ ] Complete a test checkout --> buyer receives order confirmation email
-- [ ] Email contains correct order number, item details, totals
-- [ ] Duplicate webhook events do not send duplicate emails (`EmailLog` dedup)
-- [ ] Email renders correctly at mobile widths
+- [x] Complete a test checkout --> buyer receives order confirmation email
+- [x] Email contains correct order number, item details, totals
+- [x] Duplicate webhook events do not send duplicate emails (`EmailLog` dedup)
+- [x] Email renders correctly at mobile widths
 
 **Reference:** [`docs/sprint-3/stories/US-08-01-order-confirmation-email.md`](sprint-3/stories/US-08-01-order-confirmation-email.md)
 **Diagram:** [`docs/04-order-lifecycle.mermaid`](04-order-lifecycle.mermaid) -- Phase 2 (sendEmail order_confirmation)
@@ -371,67 +371,67 @@ Before starting Sprint 3 work, verify these Sprint 2 deliverables are in place:
 
 ### 7.1 Checkout page
 
-- [ ] Update `apps/web/app/[locale]/[slug]/checkout/page.tsx` -- remove scaffold
-- [ ] Server component: load `Org` by slug, load active `Campaign`, load roaster shipping rates
-- [ ] Guard: redirect to storefront if slug invalid or campaign inactive
+- [x] Update `apps/web/app/[locale]/[slug]/checkout/page.tsx` -- remove scaffold
+- [x] Server component: load `Org` by slug, load active `Campaign`, load roaster shipping rates
+- [x] Guard: redirect to storefront if slug invalid or campaign inactive
 
 ### 7.2 Checkout validation schema
 
-- [ ] Create `apps/web/app/[locale]/[slug]/checkout/_lib/schema.ts`
-- [ ] Shipping form: buyerName (required), buyerEmail (email), address fields (street, city, state, zip)
-- [ ] Address is captured client-side for display/future use; `create-intent` API currently takes `buyerEmail`, `buyerName`, `shippingRateId`
+- [x] Create `apps/web/app/[locale]/[slug]/checkout/_lib/schema.ts`
+- [x] Shipping form: buyerName (required), buyerEmail (email), address fields (street, city, state, zip)
+- [x] Address is captured client-side for display/future use; `create-intent` API currently takes `buyerEmail`, `buyerName`, `shippingRateId`
 
 ### 7.3 Checkout form component
 
-- [ ] Create `apps/web/app/[locale]/[slug]/checkout/_components/checkout-form.tsx` (client component)
-- [ ] Three-step navigation with progress indicator
-- [ ] Step state management (forward/back, validation before advancement)
+- [x] Create `apps/web/app/[locale]/[slug]/checkout/_components/checkout-form.tsx` (client component)
+- [x] Three-step navigation with progress indicator
+- [x] Step state management (forward/back, validation before advancement)
 
 ### 7.4 Step 1 -- Cart review
 
-- [ ] Create `_components/step-cart-review.tsx`
-- [ ] Display cart items from `useCartStore()` with quantities, prices, line totals
-- [ ] Subtotal display
-- [ ] Allow quantity adjustments
-- [ ] Guard: redirect to storefront if cart is empty
+- [x] Create `_components/step-cart-review.tsx`
+- [x] Display cart items from `useCartStore()` with quantities, prices, line totals
+- [x] Subtotal display
+- [x] Allow quantity adjustments
+- [x] Guard: redirect to storefront if cart is empty
 
 ### 7.5 Step 2 -- Shipping details
 
-- [ ] Create `_components/step-shipping.tsx`
-- [ ] Buyer info: name, email
-- [ ] Shipping address: street, city, state, zip (captured for display on confirmation)
-- [ ] Shipping rate selection: radio buttons for available `RoasterShippingRate`s
-- [ ] Display shipping cost from selected rate
-- [ ] Per-step validation before advancement
+- [x] Create `_components/step-shipping.tsx`
+- [x] Buyer info: name, email
+- [x] Shipping address: street, city, state, zip (captured for display on confirmation)
+- [x] Shipping rate selection: radio buttons for available `RoasterShippingRate`s
+- [x] Display shipping cost from selected rate
+- [x] Per-step validation before advancement
 
 ### 7.6 Step 3 -- Payment
 
-- [ ] Create `_components/step-payment.tsx`
-- [ ] Order summary: items + shipping + total
-- [ ] Stripe Elements integration (`@stripe/react-stripe-js`, `@stripe/stripe-js`)
-- [ ] Load Stripe with `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`
-- [ ] Call `POST /api/checkout/create-intent` to get `clientSecret`
-- [ ] Use `PaymentElement` or `CardElement` for payment input
-- [ ] Submit: `stripe.confirmPayment()` with `return_url` to `[slug]/order/{PAYMENT_INTENT_ID}`
-- [ ] Loading/processing states during payment
-- [ ] Error display for declined/failed payments
+- [x] Create `_components/step-payment.tsx`
+- [x] Order summary: items + shipping + total
+- [x] Stripe Elements integration (`@stripe/react-stripe-js`, `@stripe/stripe-js`)
+- [x] Load Stripe with `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`
+- [x] Call `POST /api/checkout/create-intent` to get `clientSecret`
+- [x] Use `PaymentElement` or `CardElement` for payment input
+- [x] Submit: `stripe.confirmPayment()` with `return_url` to `[slug]/order/{PAYMENT_INTENT_ID}`
+- [x] Loading/processing states during payment
+- [x] Error display for declined/failed payments
 
 ### 7.7 Stripe Elements setup
 
-- [ ] Add `@stripe/react-stripe-js` and `@stripe/stripe-js` dependencies to `apps/web`
-- [ ] Create Stripe Elements provider wrapper
-- [ ] Load publishable key from `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`
+- [x] Add `@stripe/react-stripe-js` and `@stripe/stripe-js` dependencies to `apps/web`
+- [x] Create Stripe Elements provider wrapper
+- [x] Load publishable key from `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`
 
 ### 7.8 Verification
 
-- [ ] Full checkout flow: review -> shipping -> payment -> redirect to confirmation
-- [ ] Cart items sent to `create-intent` match `CampaignItem` IDs + quantities
-- [ ] Shipping rate validated server-side (existing API handles this)
-- [ ] PaymentIntent created with correct split amounts (existing API)
-- [ ] Stripe Elements renders card input
-- [ ] Payment confirmation redirects to `/[slug]/order/[pi_id]`
-- [ ] Rate limiting works (existing `limitCheckout` in API)
-- [ ] Mobile responsive with 44x44px touch targets
+- [x] Full checkout flow: review -> shipping -> payment -> redirect to confirmation
+- [x] Cart items sent to `create-intent` match `CampaignItem` IDs + quantities
+- [x] Shipping rate validated server-side (existing API handles this)
+- [x] PaymentIntent created with correct split amounts (existing API)
+- [x] Stripe Elements renders card input
+- [x] Payment confirmation redirects to `/[slug]/order/[pi_id]`
+- [x] Rate limiting works (existing `limitCheckout` in API)
+- [x] Mobile responsive with 44x44px touch targets
 
 **Reference:** [`docs/sprint-3/stories/US-04-03-three-step-checkout.md`](sprint-3/stories/US-04-03-three-step-checkout.md)
 **Diagram:** [`docs/04-order-lifecycle.mermaid`](04-order-lifecycle.mermaid) -- Phase 1; [`docs/07-stripe-payment-flow.mermaid`](07-stripe-payment-flow.mermaid) -- Charge
@@ -445,34 +445,34 @@ Before starting Sprint 3 work, verify these Sprint 2 deliverables are in place:
 
 ### 8.1 Confirmation page
 
-- [ ] Update `apps/web/app/[locale]/[slug]/order/[pi_id]/page.tsx` -- remove scaffold
-- [ ] Server component: initial load queries order by `stripePiId`
-- [ ] If order exists and status >= CONFIRMED, render full confirmation
-- [ ] If order PENDING, render loading/polling state
+- [x] Update `apps/web/app/[locale]/[slug]/order/[pi_id]/page.tsx` -- remove scaffold
+- [x] Server component: initial load queries order by `stripePiId`
+- [x] If order exists and status >= CONFIRMED, render full confirmation
+- [x] If order PENDING, render loading/polling state
 
 ### 8.2 Order status poller
 
-- [ ] Create `_components/order-status-poller.tsx` (client component)
-- [ ] Poll `GET /api/order-status?pi=[pi_id]` every 2 seconds while status = PENDING
-- [ ] Transition to confirmed view when status changes to CONFIRMED
-- [ ] Stop polling after confirmation or after timeout (30 seconds)
-- [ ] Show spinner/loading animation during polling
+- [x] Create `_components/order-status-poller.tsx` (client component)
+- [x] Poll `GET /api/order-status?pi=[pi_id]` every 2 seconds while status = PENDING
+- [x] Transition to confirmed view when status changes to CONFIRMED
+- [x] Stop polling after confirmation or after timeout (30 seconds)
+- [x] Show spinner/loading animation during polling
 
 ### 8.3 Order summary component
 
-- [ ] Create `_components/order-summary.tsx`
-- [ ] Display: order number, items with quantities/prices, subtotal, shipping, total
-- [ ] Display: fundraiser contribution amount (`orgAmount`) and percentage
-- [ ] Success messaging: "Your order supports [org name]!"
+- [x] Create `_components/order-summary.tsx`
+- [x] Display: order number, items with quantities/prices, subtotal, shipping, total
+- [x] Display: fundraiser contribution amount (`orgAmount`) and percentage
+- [x] Success messaging: "Your order supports [org name]!"
 
 ### 8.4 Verification
 
-- [ ] After checkout --> redirect to confirmation page, see polling state
-- [ ] After `payment_intent.succeeded` webhook fires --> page transitions to confirmed
-- [ ] Order number displayed (generated in webhook handler)
-- [ ] Items, prices, totals match checkout
-- [ ] Fundraiser contribution shown
-- [ ] Page works even if webhook fires before page loads (no polling needed)
+- [x] After checkout --> redirect to confirmation page, see polling state
+- [x] After `payment_intent.succeeded` webhook fires --> page transitions to confirmed
+- [x] Order number displayed (generated in webhook handler)
+- [x] Items, prices, totals match checkout
+- [x] Fundraiser contribution shown
+- [x] Page works even if webhook fires before page loads (no polling needed)
 
 **Reference:** [`docs/sprint-3/stories/US-04-04-order-confirmation-page.md`](sprint-3/stories/US-04-04-order-confirmation-page.md)
 **Diagram:** [`docs/08-order-state-machine.mermaid`](08-order-state-machine.mermaid) -- PENDING to CONFIRMED
@@ -485,21 +485,21 @@ Before starting Sprint 3 work, verify these Sprint 2 deliverables are in place:
 
 ### 9.1 Storefront guard
 
-- [ ] In storefront page data loading, check if the campaign's roaster has any `RoasterShippingRate` records
-- [ ] If no shipping rates: display a banner/notice that the store is temporarily unavailable for purchases
-- [ ] Hide or disable add-to-cart buttons when no shipping rates exist
+- [x] In storefront page data loading, check if the campaign's roaster has any `RoasterShippingRate` records
+- [x] If no shipping rates: display a banner/notice that the store is temporarily unavailable for purchases
+- [x] Hide or disable add-to-cart buttons when no shipping rates exist
 
 ### 9.2 Checkout guard
 
-- [ ] In checkout page server component, verify roaster has shipping rates
-- [ ] If no rates available: redirect to storefront with error message
-- [ ] In `create-intent` API: existing validation already returns 400 for invalid shipping rate
+- [x] In checkout page server component, verify roaster has shipping rates
+- [x] If no rates available: redirect to storefront with error message
+- [x] In `create-intent` API: existing validation already returns 400 for invalid shipping rate
 
 ### 9.3 Verification
 
-- [ ] Storefront with shipping rates --> normal product grid with working add-to-cart
-- [ ] Storefront without shipping rates --> unavailability banner, disabled add-to-cart
-- [ ] Checkout attempted without shipping rates --> redirect with error
+- [x] Storefront with shipping rates --> normal product grid with working add-to-cart
+- [x] Storefront without shipping rates --> unavailability banner, disabled add-to-cart
+- [x] Checkout attempted without shipping rates --> redirect with error
 
 **Reference:** [`docs/sprint-3/stories/US-04-05-shipping-rate-guard.md`](sprint-3/stories/US-04-05-shipping-rate-guard.md)
 
@@ -520,8 +520,8 @@ Before starting Sprint 3 work, verify these Sprint 2 deliverables are in place:
 
 | Package | App | Story | Purpose |
 |---------|-----|-------|---------|
-| `@stripe/react-stripe-js` | `apps/web` | US-04-03 | Stripe Elements React bindings |
-| `@stripe/stripe-js` | `apps/web` | US-04-03 | Stripe.js browser SDK |
+| `@stripe/react-stripe-js` | `apps/web` | US-04-03 | Stripe Elements React bindings (added) |
+| `@stripe/stripe-js` | `apps/web` | US-04-03 | Stripe.js browser SDK (added) |
 
 ### Document synchronization
 
@@ -539,16 +539,16 @@ After completing each phase, verify alignment with these documents:
 
 ### AGENTS.md rules checklist (apply to every story)
 
-- [ ] Money values stored as `Int` cents -- never floats
-- [ ] Split calculations use `calculateSplits()` — server/API from `@joe-perks/stripe`; client UI from `@joe-perks/stripe/splits` only
-- [ ] `CampaignItem.retailPrice` used for storefront/checkout -- never `ProductVariant.retailPrice`
-- [ ] Tenant isolation: org queries scoped by `session.orgId`, roaster by `session.roasterId`
-- [ ] Soft deletes: `Product`/`ProductVariant` queries filter `deletedAt IS NULL`
-- [ ] Email: `sendEmail()` from `@joe-perks/email` -- never import Resend directly
-- [ ] Stripe: `@joe-perks/stripe` -- never import Stripe SDK in apps
-- [ ] Magic links: token validation per AGENTS.md rules (exists, not expired, not used, correct purpose)
-- [ ] Logging: no PII logged -- only IDs and event types
-- [ ] Webhook idempotency: check `StripeEvent` before processing
+- [x] Money values stored as `Int` cents -- never floats
+- [x] Split calculations use `calculateSplits()` — server/API from `@joe-perks/stripe`; client UI from `@joe-perks/stripe/splits` only
+- [x] `CampaignItem.retailPrice` used for storefront/checkout -- never `ProductVariant.retailPrice`
+- [x] Tenant isolation: org queries scoped by `session.orgId`, roaster by `session.roasterId`
+- [x] Soft deletes: `Product`/`ProductVariant` queries filter `deletedAt IS NULL`
+- [x] Email: `sendEmail()` from `@joe-perks/email` -- never import Resend directly
+- [x] Stripe: `@joe-perks/stripe` -- never import Stripe SDK in apps (buyer UI uses `@stripe/stripe-js` / `@stripe/react-stripe-js` only)
+- [x] Magic links: token validation per AGENTS.md rules (exists, not expired, not used, correct purpose)
+- [x] Logging: no PII logged -- only IDs and event types
+- [x] Webhook idempotency: check `StripeEvent` before processing
 
 ### Testing commands
 

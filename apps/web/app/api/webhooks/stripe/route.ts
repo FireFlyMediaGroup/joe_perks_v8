@@ -1,9 +1,12 @@
 import { database } from "@joe-perks/db";
+import { sendEmail } from "@joe-perks/email/send";
+import OrderConfirmationEmail from "@joe-perks/email/templates/order-confirmation";
 import {
   getStripe,
   mapStripeAccountToOnboardingStatus,
 } from "@joe-perks/stripe";
 import { NextResponse } from "next/server";
+import { createElement } from "react";
 import type Stripe from "stripe";
 
 export const runtime = "nodejs";
@@ -59,6 +62,55 @@ async function handleAccountUpdated(account: Stripe.Account): Promise<void> {
   }
 }
 
+async function sendBuyerOrderConfirmationEmail(orderId: string): Promise<void> {
+  const order = await database.order.findUnique({
+    where: { id: orderId },
+    include: {
+      buyer: true,
+      campaign: {
+        include: {
+          org: {
+            include: {
+              application: { select: { orgName: true } },
+            },
+          },
+        },
+      },
+      items: true,
+    },
+  });
+  if (!order || order.status !== "CONFIRMED" || !order.buyer) {
+    return;
+  }
+
+  const orgName =
+    order.campaign.org.application.orgName ?? order.campaign.org.slug;
+
+  try {
+    await sendEmail({
+      entityId: order.id,
+      entityType: "order",
+      react: createElement(OrderConfirmationEmail, {
+        buyerName: order.buyer.name ?? "Customer",
+        items: order.items.map((i) => ({
+          name: i.productName,
+          priceInCents: i.unitPrice,
+          quantity: i.quantity,
+        })),
+        orderNumber: order.orderNumber,
+        orgName,
+        shippingInCents: order.shippingAmount,
+        totalInCents: order.grossAmount,
+      }),
+      subject: `Order ${order.orderNumber} confirmed`,
+      template: "order_confirmation",
+      to: order.buyer.email,
+    });
+  } catch {
+    console.error("order confirmation email failed", { order_id: orderId });
+  }
+}
+
 async function handlePaymentIntentSucceeded(
   pi: Stripe.PaymentIntent
 ): Promise<void> {
@@ -110,6 +162,8 @@ async function handlePaymentIntentSucceeded(
       data: { totalRaised: { increment: order.orgAmount } },
     }),
   ]);
+
+  await sendBuyerOrderConfirmationEmail(orderId);
 }
 
 async function handlePaymentIntentFailed(

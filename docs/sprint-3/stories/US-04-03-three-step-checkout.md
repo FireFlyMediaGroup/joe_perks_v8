@@ -2,7 +2,7 @@
 
 **Story ID:** US-04-03 | **Epic:** EP-04 (Buyer Storefront & Checkout)
 **Points:** 8 | **Priority:** High
-**Status:** `Todo`
+**Status:** `Done`
 **Owner:** Full-stack
 **Dependencies:** US-04-02 (Zustand Cart), US-01-05 (Stripe Checkout API)
 **Depends on this:** US-04-04 (Order Confirmation Page)
@@ -11,7 +11,7 @@
 
 ## Goal
 
-Replace the scaffold at `apps/web/app/[locale]/[slug]/checkout/page.tsx` with a three-step checkout flow: (1) cart review with quantity adjustments, (2) shipping details and rate selection, (3) payment via Stripe Elements. The checkout calls the existing `POST /api/checkout/create-intent` endpoint to create the PaymentIntent and Order, then uses Stripe Elements for payment confirmation. On success, the buyer is redirected to the order confirmation page.
+The checkout at `apps/web/app/[locale]/[slug]/checkout/page.tsx` implements a three-step flow: (1) cart review with quantity adjustments, (2) shipping details and rate selection, (3) payment via Stripe Elements. The flow calls `POST /api/checkout/create-intent` to create the PaymentIntent and Order, then uses Stripe Elements for payment confirmation. On success, the buyer is redirected to the order confirmation page.
 
 ---
 
@@ -26,30 +26,22 @@ Replace the scaffold at `apps/web/app/[locale]/[slug]/checkout/page.tsx` with a 
 
 ## Current repo evidence
 
-- `apps/web/app/[locale]/[slug]/checkout/page.tsx` exists as **scaffold** ("3-step flow scaffold.")
-- `apps/web/app/api/checkout/create-intent/route.ts` is **fully implemented**:
-  - Validates: `campaignId`, `items[]` (campaignItemId + quantity), `buyerEmail`, `buyerName?`, `shippingRateId`
-  - Loads campaign (must be ACTIVE), campaign items, roaster (must be ACTIVE), shipping rate
-  - Validates: items exist, products/variants not deleted, variant available, single roaster
-  - Calls `calculateSplits()` from `@joe-perks/stripe`
-  - Creates Stripe `paymentIntents.create()` with `transfer_group = orderId`
-  - `$transaction`: upsert `Buyer`, create `Order` (PENDING), `OrderItem`s, `OrderEvent` (PAYMENT_INTENT_CREATED)
-  - Returns `{ clientSecret, orderId, orderNumber }`
+- **`apps/web/app/[locale]/[slug]/checkout/page.tsx`** -- Server component: `getStorefrontData(slug)`; if `!hasShippingRates`, `redirect` to `/{locale}/{slug}?error=no-shipping`; else renders **`CheckoutForm`** with campaign id, shipping rates, locale, org name.
+- **`apps/web/app/api/checkout/create-intent/route.ts`** -- Validates body; creates PI + Order; returns JSON:
+  - `clientSecret`, `orderId`, `orderNumber`, **`paymentIntentId`**, **`grossAmount`** (charge amount in cents)
   - Rate limited via `limitCheckout(ip)` (5 req/hr per IP)
-- `apps/web/app/api/order-status/route.ts` is implemented (used by US-04-04)
-- `packages/ui/src/store/cart.ts` will have full cart store from US-04-02
-- `RoasterShippingRate` model: `label`, `carrier`, `flatRate` (cents), `isDefault`, `roasterId`
-- `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` configured in `apps/web/.env.local`
-- `@stripe/react-stripe-js` and `@stripe/stripe-js` are NOT yet in `apps/web` dependencies
+- **`apps/web/package.json`** -- Depends on **`@stripe/react-stripe-js`** and **`@stripe/stripe-js`**
+- **`step-payment.tsx`** -- Wraps **`PaymentElement`** in Stripe **`Elements`** with `options={{ clientSecret }}`; **`confirmPayment`** uses `return_url` = `{origin}/{locale}/{slug}/order/{paymentIntentId}` (set client-side after mount)
+- Optional files from the original file table (**`order-summary-sidebar.tsx`**, standalone **`stripe-provider.tsx`**) were not added — summaries live in **`checkout-form`** (step 3) and **`step-shipping`**
 
 ---
 
 ## AGENTS.md rules that apply
 
 - **Money as cents:** All prices, shipping rates, and totals are in cents. Display: `(cents / 100).toFixed(2)`.
-- **Split calculations:** Handled by `POST /api/checkout/create-intent` using `calculateSplits()` -- no client-side split math.
+- **Split calculations:** Handled by `POST /api/checkout/create-intent` using `calculateSplits()` -- no client-side split math for persisted orders.
 - **CampaignItem prices:** Cart uses `CampaignItem.retailPrice`. The `create-intent` API re-validates all prices server-side.
-- **Stripe:** Never import Stripe directly in an app. For client-side Stripe Elements, use `@stripe/react-stripe-js` (this is the sanctioned browser SDK, not the server SDK). The publishable key (`NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`) is a client-side env var.
+- **Stripe:** Never import the server Stripe SDK in an app. For Elements, use **`@stripe/react-stripe-js`** / **`@stripe/stripe-js`**. The publishable key (`NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`) is a client-side env var (see `apps/web/env.ts`).
 - **Logging/PII:** Never log buyer address, email, or card data. The checkout API already follows this.
 
 **CONVENTIONS.md patterns:**
@@ -80,16 +72,16 @@ Replace the scaffold at `apps/web/app/[locale]/[slug]/checkout/page.tsx` with a 
 
 ### Step 3 -- Payment
 
-- Full order summary: items + shipping + total
-- Stripe Elements (`PaymentElement` or `CardElement`) for card input
-- Call `POST /api/checkout/create-intent` with cart data to get `clientSecret`
-- `stripe.confirmPayment()` with `return_url` pointing to `[slug]/order/{PAYMENT_INTENT_ID}`
+- Order summary context in **`checkout-form`** (step 3) + **`step-payment`**
+- Stripe **`PaymentElement`**
+- **`POST /api/checkout/create-intent`** when entering step 3 (see **`checkout-form`** `useEffect`) to obtain `clientSecret`
+- **`stripe.confirmPayment()`** with `return_url` to `/{locale}/{slug}/order/{paymentIntentId}`
 - Loading/processing states during API call and payment confirmation
 - Error display for declined/failed payments
 
 ### Dependencies
 
-- Add `@stripe/react-stripe-js` and `@stripe/stripe-js` to `apps/web`
+- **`@stripe/react-stripe-js`** and **`@stripe/stripe-js`** on **`apps/web`**
 
 ---
 
@@ -108,15 +100,13 @@ Replace the scaffold at `apps/web/app/[locale]/[slug]/checkout/page.tsx` with a 
 
 | Action | File | Purpose |
 |--------|------|---------|
-| Modify | `apps/web/app/[locale]/[slug]/checkout/page.tsx` | Server component -- load campaign, shipping rates, render checkout |
-| Create | `apps/web/app/[locale]/[slug]/checkout/_components/checkout-form.tsx` | Client component -- 3-step form with state management |
-| Create | `apps/web/app/[locale]/[slug]/checkout/_components/step-cart-review.tsx` | Step 1 -- cart review with quantity controls |
-| Create | `apps/web/app/[locale]/[slug]/checkout/_components/step-shipping.tsx` | Step 2 -- shipping details + rate selection |
-| Create | `apps/web/app/[locale]/[slug]/checkout/_components/step-payment.tsx` | Step 3 -- Stripe Elements + payment |
-| Create | `apps/web/app/[locale]/[slug]/checkout/_components/order-summary-sidebar.tsx` | Running order total sidebar |
-| Create | `apps/web/app/[locale]/[slug]/checkout/_lib/schema.ts` | Zod schema for shipping form |
-| Create | `apps/web/app/[locale]/[slug]/checkout/_lib/stripe-provider.tsx` | Stripe Elements provider wrapper |
-| Modify | `apps/web/package.json` | Add `@stripe/react-stripe-js`, `@stripe/stripe-js` |
+| Done | `apps/web/app/[locale]/[slug]/checkout/page.tsx` | Server component -- `getStorefrontData`, shipping guard redirect |
+| Done | `apps/web/app/[locale]/[slug]/checkout/_components/checkout-form.tsx` | Client -- 3-step form, `create-intent` on step 3 |
+| Done | `apps/web/app/[locale]/[slug]/checkout/_components/step-cart-review.tsx` | Step 1 |
+| Done | `apps/web/app/[locale]/[slug]/checkout/_components/step-shipping.tsx` | Step 2 + react-hook-form |
+| Done | `apps/web/app/[locale]/[slug]/checkout/_components/step-payment.tsx` | Step 3 -- Stripe Elements |
+| Done | `apps/web/app/[locale]/[slug]/checkout/_lib/schema.ts` | Zod shipping schema |
+| Done | `apps/web/app/api/checkout/create-intent/route.ts` | Response extended with `paymentIntentId`, `grossAmount` |
 
 ---
 
@@ -124,92 +114,52 @@ Replace the scaffold at `apps/web/app/[locale]/[slug]/checkout/page.tsx` with a 
 
 ### Step 1 -- Cart review
 
-- [ ] Displays all cart items with product name, variant description, quantity, unit price, line total
-- [ ] Quantity can be adjusted (+/- buttons or input)
-- [ ] Removing all items redirects to storefront
-- [ ] Subtotal displayed (sum of line totals)
-- [ ] "Continue to shipping" advances to step 2
+- [x] Displays all cart items with product name, variant description, quantity, unit price, line total
+- [x] Quantity can be adjusted (+/- buttons or input)
+- [x] Removing all items redirects to storefront
+- [x] Subtotal displayed (sum of line totals)
+- [x] "Continue to shipping" advances to step 2
 
 ### Step 2 -- Shipping details
 
-- [ ] Buyer name field (required)
-- [ ] Buyer email field (required, email format validated)
-- [ ] Shipping address fields: street, city, state, zip
-- [ ] Shipping rate selection from roaster's rates (radio buttons)
-- [ ] Default shipping rate pre-selected if `isDefault = true`
-- [ ] Shipping cost displayed from selected rate
-- [ ] Order summary shows subtotal + shipping = estimated total
-- [ ] Per-step validation before advancement
-- [ ] "Back to cart" returns to step 1
-- [ ] "Continue to payment" advances to step 3
+- [x] Buyer name field (required)
+- [x] Buyer email field (required, email format validated)
+- [x] Shipping address fields: street, city, state, zip
+- [x] Shipping rate selection from roaster's rates (radio buttons)
+- [x] Default shipping rate pre-selected if `isDefault = true`
+- [x] Shipping cost displayed from selected rate
+- [x] Order summary shows subtotal + shipping = estimated total
+- [x] Per-step validation before advancement
+- [x] "Back to cart" returns to step 1
+- [x] "Continue to payment" advances to step 3
 
 ### Step 3 -- Payment
 
-- [ ] Order summary displayed (items + shipping + total)
-- [ ] Stripe Elements card input renders
-- [ ] "Pay $XX.XX" button calls `POST /api/checkout/create-intent` then `stripe.confirmPayment()`
-- [ ] Request body matches API schema: `campaignId`, `items[]`, `buyerEmail`, `buyerName`, `shippingRateId`
-- [ ] Loading state during API call and payment processing
-- [ ] On success: redirect to `[slug]/order/[pi_id]`
-- [ ] On failure: display error message, allow retry
-- [ ] Rate limiting handled gracefully (429 from API shows user-friendly message)
+- [x] Order summary displayed (items + shipping + total / gross from API)
+- [x] Stripe Elements card input renders (`PaymentElement`)
+- [x] `create-intent` then `stripe.confirmPayment()`
+- [x] Request body matches API schema: `campaignId`, `items[]`, `buyerEmail`, `buyerName`, `shippingRateId`
+- [x] Loading state during API call and payment processing
+- [x] On success: redirect to `{locale}/{slug}/order/{pi_id}`
+- [x] On failure: display error message, allow retry
+- [x] Rate limiting handled gracefully (429 from API shows user-friendly message)
 
 ### General
 
-- [ ] Progress indicator shows current step (1/2/3)
-- [ ] Back navigation between steps preserves form data
-- [ ] Mobile responsive with 44x44px touch targets
-- [ ] Scaffold placeholder text removed
-- [ ] `@stripe/react-stripe-js` and `@stripe/stripe-js` added to `apps/web` dependencies
-
----
-
-## Suggested implementation steps
-
-1. Add Stripe client dependencies:
-   ```bash
-   pnpm add @stripe/react-stripe-js @stripe/stripe-js --filter web
-   ```
-2. Create `_lib/stripe-provider.tsx` -- Stripe Elements provider:
-   - `loadStripe(NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)`
-   - `Elements` wrapper component
-3. Create `_lib/schema.ts` -- Zod schemas for shipping form fields.
-4. Update `checkout/page.tsx` (server component):
-   - Load `Org` by slug, active `Campaign`, `RoasterShippingRate`s for the campaign's roaster
-   - Guard: redirect if slug invalid, campaign inactive, or no campaign
-   - Render `CheckoutForm` client component wrapped in Stripe provider
-5. Build `checkout-form.tsx` (client component):
-   - Step state (1, 2, 3) with forward/back navigation
-   - Form state for shipping details (React hook form or useState)
-   - Progress indicator
-6. Build `step-cart-review.tsx`:
-   - Read from `useCartStore()`
-   - Display items with quantity controls
-   - Subtotal calculation
-   - Guard: redirect if empty
-7. Build `step-shipping.tsx`:
-   - Buyer name + email inputs
-   - Address fields
-   - Shipping rate radio buttons (props from server)
-   - Order summary with subtotal + shipping
-8. Build `step-payment.tsx`:
-   - Order summary display
-   - Call `POST /api/checkout/create-intent` with form data + cart items
-   - On success: set `clientSecret` on Elements
-   - Render `PaymentElement` or `CardElement`
-   - "Pay" button calls `stripe.confirmPayment({ confirmParams: { return_url } })`
-   - Handle errors
-9. Build `order-summary-sidebar.tsx` -- optional running total display.
-10. Test: full flow from cart review through payment, error cases, mobile.
+- [x] Progress indicator shows current step (1/2/3)
+- [x] Back navigation between steps preserves form data
+- [x] Mobile responsive with 44x44px touch targets
+- [x] Scaffold placeholder text removed
+- [x] `@stripe/react-stripe-js` and `@stripe/stripe-js` added to `apps/web` dependencies
 
 ---
 
 ## Handoff notes
 
-- The `create-intent` API returns `{ clientSecret, orderId, orderNumber }`. The `clientSecret` is used with `stripe.confirmPayment()`. The redirect URL after payment should be `/[slug]/order/[pi_id]` where `pi_id` is the PaymentIntent ID (Stripe includes it in the redirect).
-- Stripe Elements will handle SCA (3D Secure) automatically when `confirmPayment` is used with a `return_url`.
-- The shipping address is captured client-side for the confirmation page but is NOT stored in the `Order` model (no address columns in MVP schema -- see `docs/joe_perks_db_schema.md` section 1.2). Consider storing in `localStorage` keyed by `orderId` for the confirmation display, or adding schema columns in a follow-up migration.
-- The `create-intent` API already handles: campaign validation, item availability, single-roaster check, split calculation, buyer upsert, order creation, and order event logging. The checkout UI is primarily a client-side form that calls this existing endpoint.
+- The **`create-intent`** API returns **`{ clientSecret, orderId, orderNumber, paymentIntentId, grossAmount }`**. The client builds **`return_url`** using **`paymentIntentId`** and the **`[locale]/[slug]`** segments.
+- Stripe Elements handles SCA (3D Secure) when **`confirmPayment`** is used with a **`return_url`**.
+- Shipping address is captured in the checkout form but is **not** stored on the **`Order`** row in MVP (schema has no address columns). Optional follow-up: persist for confirmation display.
+- **`getStorefrontData`** supplies **`shippingRates`** and **`hasShippingRates`**; checkout assumes rates exist (page redirects otherwise).
 
 ---
 
@@ -218,3 +168,4 @@ Replace the scaffold at `apps/web/app/[locale]/[slug]/checkout/page.tsx` with a 
 | Version | Date | Notes |
 |---------|------|-------|
 | 0.1 | 2026-03-30 | Initial story created for Sprint 3 planning. |
+| 0.2 | 2026-04-01 | Marked Done; aligned evidence and API response with implementation. |

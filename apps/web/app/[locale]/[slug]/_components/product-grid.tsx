@@ -5,9 +5,15 @@ interface ProductGridProps {
   campaignId: string;
   items: StorefrontCampaignItem[];
   orgSlug: string;
+  purchasesEnabled: boolean;
 }
 
-export function ProductGrid({ items, campaignId, orgSlug }: ProductGridProps) {
+export function ProductGrid({
+  items,
+  campaignId,
+  orgSlug,
+  purchasesEnabled,
+}: ProductGridProps) {
   const featured = items.filter((i) => i.isFeatured);
   const rest = items.filter((i) => !i.isFeatured);
 
@@ -38,6 +44,7 @@ export function ProductGrid({ items, campaignId, orgSlug }: ProductGridProps) {
                   campaignId={campaignId}
                   item={item}
                   orgSlug={orgSlug}
+                  purchasesEnabled={purchasesEnabled}
                 />
               </li>
             ))}
@@ -62,6 +69,7 @@ export function ProductGrid({ items, campaignId, orgSlug }: ProductGridProps) {
                   campaignId={campaignId}
                   item={item}
                   orgSlug={orgSlug}
+                  purchasesEnabled={purchasesEnabled}
                 />
               </li>
             ))}

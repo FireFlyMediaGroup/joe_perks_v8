@@ -2,7 +2,7 @@
 
 **Story ID:** US-04-05 | **Epic:** EP-04 (Buyer Storefront & Checkout)
 **Points:** 2 | **Priority:** Low
-**Status:** `Todo`
+**Status:** `Done`
 **Owner:** Frontend
 **Dependencies:** US-02-05 (Shipping Rate Configuration), US-04-01 (Public Org Storefront)
 **Depends on this:** None
@@ -67,23 +67,25 @@ Add a guard to the storefront and checkout that checks whether the campaign's ro
 
 | Action | File | Purpose |
 |--------|------|---------|
-| Modify | `apps/web/app/[locale]/[slug]/_lib/queries.ts` | Include shipping rate count in storefront data query |
-| Create | `apps/web/app/[locale]/[slug]/_components/shipping-guard.tsx` | Banner component for unavailable shipping |
-| Modify | `apps/web/app/[locale]/[slug]/page.tsx` | Pass shipping availability to components |
-| Modify | `apps/web/app/[locale]/[slug]/_components/add-to-cart-button.tsx` | Disable when no shipping rates |
-| Modify | `apps/web/app/[locale]/[slug]/checkout/page.tsx` | Redirect if no shipping rates |
+| Done | `apps/web/app/[locale]/[slug]/_lib/queries.ts` | `hasShippingRates` + `shippingRates` on `StorefrontData` |
+| Done | `apps/web/app/[locale]/[slug]/_components/shipping-guard.tsx` | Banner when purchases are unavailable |
+| Done | `apps/web/app/[locale]/[slug]/page.tsx` | `purchasesEnabled`, `ShippingGuard`, optional `?error=no-shipping` copy |
+| Done | `apps/web/app/[locale]/[slug]/_components/add-to-cart-button.tsx` | `disabled` when `!purchasesEnabled` |
+| Done | `apps/web/app/[locale]/[slug]/_components/product-grid.tsx` / `product-card.tsx` | Pass `purchasesEnabled` |
+| Done | `apps/web/app/[locale]/[slug]/_components/cart-drawer.tsx` | Disable checkout CTA when `!purchasesEnabled` |
+| Done | `apps/web/app/[locale]/[slug]/checkout/page.tsx` | `redirect` when `!hasShippingRates` |
 
 ---
 
 ## Acceptance criteria
 
-- [ ] Storefront with shipping rates: normal product grid with working add-to-cart buttons
-- [ ] Storefront without shipping rates: displays an unavailability banner at the top of the page
-- [ ] Storefront without shipping rates: add-to-cart buttons are disabled or hidden
-- [ ] Checkout page with shipping rates: renders normally
-- [ ] Checkout page without shipping rates: redirects to storefront (with error query param or toast)
-- [ ] The `create-intent` API's existing validation (400 for invalid shipping rate) remains as server-side fallback
-- [ ] The check uses a simple count query: `RoasterShippingRate WHERE roasterId = [roaster.id]`
+- [x] Storefront with shipping rates: normal product grid with working add-to-cart buttons
+- [x] Storefront without shipping rates: displays an unavailability banner at the top of the page
+- [x] Storefront without shipping rates: add-to-cart buttons are disabled or hidden
+- [x] Checkout page with shipping rates: renders normally
+- [x] Checkout page without shipping rates: redirects to storefront (with `?error=no-shipping`)
+- [x] The `create-intent` API's existing validation (400 for invalid shipping rate) remains as server-side fallback
+- [x] The check uses roaster `RoasterShippingRate` rows for the campaign roaster (`findMany` with `hasShippingRates = rates.length > 0`)
 
 ---
 
@@ -121,3 +123,4 @@ Add a guard to the storefront and checkout that checks whether the campaign's ro
 | Version | Date | Notes |
 |---------|------|-------|
 | 0.1 | 2026-03-30 | Initial story created for Sprint 3 planning. |
+| 0.2 | 2026-04-01 | Marked Done; file list and AC aligned with `getStorefrontData` + UI. |

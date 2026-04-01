@@ -17,9 +17,15 @@ interface ProductCardProps {
   campaignId: string;
   item: StorefrontCampaignItem;
   orgSlug: string;
+  purchasesEnabled: boolean;
 }
 
-export function ProductCard({ item, campaignId, orgSlug }: ProductCardProps) {
+export function ProductCard({
+  item,
+  campaignId,
+  orgSlug,
+  purchasesEnabled,
+}: ProductCardProps) {
   const { product, variant, retailPrice, isFeatured } = item;
   const variantLabel = `${variant.sizeOz} oz · ${formatGrindOption(variant.grind)}`;
 
@@ -76,6 +82,7 @@ export function ProductCard({ item, campaignId, orgSlug }: ProductCardProps) {
       <CardFooter className="flex flex-col gap-2 pt-0">
         <AddToCartButton
           ctx={{ campaignId, orgSlug }}
+          disabled={!purchasesEnabled}
           line={{
             campaignItemId: item.id,
             productName: product.name,

@@ -24,6 +24,7 @@ export interface CartDrawerProps {
   campaignName: string;
   locale: string;
   orgName: string;
+  purchasesEnabled: boolean;
   slug: string;
   splitPreviewDefaults: SplitPreviewDefaults;
 }
@@ -36,6 +37,7 @@ export function CartDrawer({
   campaignName,
   locale,
   orgName,
+  purchasesEnabled,
   slug,
   splitPreviewDefaults,
 }: CartDrawerProps) {
@@ -219,9 +221,20 @@ export function CartDrawer({
                 >
                   Clear cart
                 </Button>
-                <Button asChild className="min-h-11 flex-1 touch-manipulation">
-                  <Link href={checkoutHref}>Checkout</Link>
-                </Button>
+                {purchasesEnabled ? (
+                  <Button asChild className="min-h-11 flex-1 touch-manipulation">
+                    <Link href={checkoutHref}>Checkout</Link>
+                  </Button>
+                ) : (
+                  <Button
+                    className="min-h-11 flex-1 touch-manipulation"
+                    disabled
+                    title="Purchases are unavailable until the roaster configures shipping rates."
+                    type="button"
+                  >
+                    Checkout unavailable
+                  </Button>
+                )}
               </div>
             </div>
           </SheetFooter>

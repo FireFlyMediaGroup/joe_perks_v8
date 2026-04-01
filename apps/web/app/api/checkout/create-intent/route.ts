@@ -248,7 +248,9 @@ export async function POST(request: Request) {
 
   return NextResponse.json({
     clientSecret: pi.client_secret,
+    grossAmount: splits.grossAmount,
     orderId,
     orderNumber,
+    paymentIntentId: pi.id,
   });
 }

@@ -35,6 +35,16 @@ export async function GET(request: Request) {
       trackingNumber: true,
       carrier: true,
       createdAt: true,
+      campaign: {
+        select: {
+          org: {
+            select: {
+              application: { select: { orgName: true } },
+              slug: true,
+            },
+          },
+        },
+      },
       items: {
         select: {
           productName: true,
@@ -51,6 +61,9 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Order not found" }, { status: 404 });
   }
 
+  const orgName =
+    order.campaign.org.application.orgName ?? order.campaign.org.slug;
+
   return NextResponse.json({
     id: order.id,
     orderNumber: order.orderNumber,
@@ -60,6 +73,7 @@ export async function GET(request: Request) {
     shippingAmount: order.shippingAmount,
     orgAmount: order.orgAmount,
     orgPctSnapshot: order.orgPctSnapshot,
+    orgName,
     trackingNumber: order.trackingNumber,
     carrier: order.carrier,
     createdAt: order.createdAt,

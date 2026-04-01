@@ -2,7 +2,7 @@
 
 **Story ID:** US-08-01 | **Epic:** EP-08 (Notifications)
 **Points:** 3 | **Priority:** High
-**Status:** `Todo`
+**Status:** `Done`
 **Owner:** Full-stack
 **Dependencies:** US-01-04 (Email Pipeline), US-05-01 (Order Creation)
 **Depends on this:** None
@@ -31,12 +31,10 @@ Wire the existing `order-confirmation` email template into the `payment_intent.s
   - Uses `BaseEmailLayout`
 - `packages/email/send.ts` exports `sendEmail()` -- dedup via `EmailLog` on `(entityType, entityId, template)`
 - `apps/web/app/api/webhooks/stripe/route.ts` handles `payment_intent.succeeded`:
-  - Updates `Order.status` to `CONFIRMED`
-  - Generates order number
-  - Upserts `Buyer` by email
-  - Creates `MagicLink` for roaster fulfillment
-  - Creates `OrderEvent` (ORDER_CREATED)
-  - Does NOT currently call `sendEmail()` for the buyer confirmation email
+  - Updates `Order.status` to `CONFIRMED`, sets payout fields, increments campaign **`totalRaised`**
+  - Creates **`OrderEvent`** with **`PAYMENT_SUCCEEDED`**
+  - Calls **`sendBuyerOrderConfirmationEmail(orderId)`** → **`sendEmail()`** with React **`OrderConfirmationEmail`**, template **`order_confirmation`**, **`entityType`/`entityId`** for **`EmailLog`** dedupe
+  - **Order number** and **Buyer** are created at **`create-intent`** (not in this handler)
 - `Order` model has: `orderNumber`, `grossAmount`, `productSubtotal`, `shippingAmount`, `stripePiId`
 - `OrderItem` model has: `productName`, `variantDesc`, `quantity`, `unitPrice`, `lineTotal`
 - `Campaign` model has: `orgId` -> `Org` with `orgName` (from `OrgApplication`)
@@ -70,7 +68,7 @@ Wire the existing `order-confirmation` email template into the `payment_intent.s
 
 - Shipping confirmation email (future -- when order shipped)
 - Delivery confirmation email (future -- when order delivered)
-- Roaster fulfillment magic link email (already in webhook handler per `04-order-lifecycle.mermaid`)
+- Roaster fulfillment / magic-link emails beyond this buyer confirmation (future or separate handlers)
 - Buyer account creation
 - Unsubscribe mechanism
 
@@ -80,23 +78,23 @@ Wire the existing `order-confirmation` email template into the `payment_intent.s
 
 | Action | File | Purpose |
 |--------|------|---------|
-| Verify | `packages/email/templates/order-confirmation.tsx` | Ensure template props match Order data shape; update if needed |
-| Modify | `apps/web/app/api/webhooks/stripe/route.ts` | Add `sendEmail()` call in `payment_intent.succeeded` handler |
+| Done | `packages/email/templates/order-confirmation.tsx` | Template props match `sendBuyerOrderConfirmationEmail` mapping |
+| Done | `apps/web/app/api/webhooks/stripe/route.ts` | `sendBuyerOrderConfirmationEmail` after successful payment transaction |
 
 ---
 
 ## Acceptance criteria
 
-- [ ] After `payment_intent.succeeded` webhook fires, the buyer receives an order confirmation email
-- [ ] Email contains the correct order number (e.g. "JP-00042")
-- [ ] Email lists all order items with product names, quantities, and prices
-- [ ] Email shows subtotal, shipping amount, and total formatted as dollars
-- [ ] Email mentions the org name ("Your purchase supports [org name]")
-- [ ] `sendEmail()` is called with `entityType = 'order'`, `entityId = order.id`, `template = 'order_confirmation'`
-- [ ] `EmailLog` row is created, preventing duplicate sends on webhook retry
-- [ ] Duplicate webhook events do not trigger duplicate emails
-- [ ] Email renders correctly in React Email preview at `http://localhost:3004`
-- [ ] No buyer PII is logged in the webhook handler
+- [x] After `payment_intent.succeeded` webhook fires, the buyer receives an order confirmation email (when Resend is configured)
+- [x] Email contains the correct order number (e.g. "JP-00042")
+- [x] Email lists all order items with product names, quantities, and prices
+- [x] Email shows subtotal, shipping amount, and total formatted as dollars
+- [x] Email mentions the org name (body copy references **`orgName`**)
+- [x] `sendEmail()` is called with `entityType = 'order'`, `entityId = order.id`, `template = 'order_confirmation'`
+- [x] `EmailLog` row is created, preventing duplicate sends on webhook retry
+- [x] Duplicate webhook events do not trigger duplicate emails (`StripeEvent` + `EmailLog`)
+- [x] Email renders correctly in React Email preview at `http://localhost:3004`
+- [x] No buyer PII is logged in the webhook handler (only `order_id` on email failure path)
 
 ---
 
@@ -117,12 +115,16 @@ Wire the existing `order-confirmation` email template into the `payment_intent.s
    - Load the order with items + campaign + org to get all email props
    - Call `sendEmail()`:
      ```typescript
+     import { OrderConfirmationEmail } from '@joe-perks/email/templates/order-confirmation'
+     import { createElement } from 'react'
+
      await sendEmail({
        template: 'order_confirmation',
+       subject: `Order ${order.orderNumber} confirmed`,
        to: buyer.email,
        entityType: 'order',
        entityId: order.id,
-       props: {
+       react: createElement(OrderConfirmationEmail, {
          buyerName: buyer.name ?? 'Customer',
          orderNumber: order.orderNumber,
          orgName: campaign.org.orgName ?? campaign.org.slug,
@@ -133,7 +135,7 @@ Wire the existing `order-confirmation` email template into the `payment_intent.s
          })),
          shippingInCents: order.shippingAmount,
          totalInCents: order.grossAmount,
-       },
+       }),
      })
      ```
    - Wrap in try/catch -- email failure should not fail the webhook response
@@ -156,3 +158,4 @@ Wire the existing `order-confirmation` email template into the `payment_intent.s
 | Version | Date | Notes |
 |---------|------|-------|
 | 0.1 | 2026-03-30 | Initial story created for Sprint 3 planning. |
+| 0.2 | 2026-04-01 | Marked Done; webhook evidence aligned with `sendBuyerOrderConfirmationEmail`. |

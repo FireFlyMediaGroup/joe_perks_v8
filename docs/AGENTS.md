@@ -164,6 +164,7 @@ Turbo starts multiple Next (and related) dev servers on **fixed ports** (see the
 - **Transactional sends:** use **`sendEmail()`** from **`@joe-perks/email/send`** (also re-exported from **`@joe-perks/email`**). It sends via Resend, inserts **`EmailLog`** first, and dedupes on **`(entityType, entityId, template)`** (unique in the schema). On duplicate, the call returns without sending again (idempotent). If Resend fails after the log row is created, the row is deleted so callers can retry.
 - **`resend`** on **`@joe-perks/email`** remains for edge cases; prefer **`sendEmail()`** for product flows.
 - **Never** import the Resend SDK directly inside apps — keep email logic in **`@joe-perks/email`**.
+- **Buyer order confirmation:** `payment_intent.succeeded` on `apps/web` (`/api/webhooks/stripe`) calls **`sendEmail()`** with template **`order_confirmation`**, `entityType = 'order'`, `entityId = order.id` (after the order is `CONFIRMED`).
 
 ### Stripe
 - **Never import Stripe directly in an app** — always use the client from `@joe-perks/stripe`.
@@ -322,6 +323,8 @@ if (existing) return Response.json({ received: true }) // already processed
 await prisma.stripeEvent.create({ data: { stripe_event_id: event.id, event_type: event.type } })
 // Now safe to process...
 ```
+
+**`apps/web` Stripe webhook (`/api/webhooks/stripe`):** Uses the same **check-first** dedupe, but inserts the **`StripeEvent`** row **after** a successful handler run (so a failed run can be retried by Stripe without losing the event). Handlers should still be safe if invoked twice (e.g. order already **`CONFIRMED`**).
 
 ---
 

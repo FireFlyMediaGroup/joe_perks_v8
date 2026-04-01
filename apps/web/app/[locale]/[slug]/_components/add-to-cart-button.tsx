@@ -11,10 +11,18 @@ import { useCallback, useState } from "react";
 export interface AddToCartButtonProps {
   className?: string;
   ctx: AddLineContext;
+  disabled?: boolean;
   line: Omit<CartLine, "quantity">;
 }
 
-function addToCartLabel(added: boolean, existingQty: number): string {
+function addToCartLabel(
+  added: boolean,
+  existingQty: number,
+  disabled: boolean
+): string {
+  if (disabled) {
+    return "Unavailable";
+  }
   if (added) {
     return "Added";
   }
@@ -28,6 +36,7 @@ export function AddToCartButton({
   ctx,
   line,
   className,
+  disabled = false,
 }: AddToCartButtonProps) {
   const addLine = useCartStore((s) => s.addLine);
   const lines = useCartStore((s) => s.lines);
@@ -37,19 +46,28 @@ export function AddToCartButton({
     lines.find((l) => l.campaignItemId === line.campaignItemId)?.quantity ?? 0;
 
   const handleAdd = useCallback(() => {
+    if (disabled) {
+      return;
+    }
     addLine(ctx, { ...line, quantity: 1 });
     setAdded(true);
     window.setTimeout(() => setAdded(false), 2000);
-  }, [addLine, ctx, line]);
+  }, [addLine, ctx, disabled, line]);
 
   return (
     <Button
       className={`min-h-11 w-full touch-manipulation ${className ?? ""}`}
+      disabled={disabled}
       onClick={handleAdd}
+      title={
+        disabled
+          ? "Purchases temporarily unavailable — shipping is not set up for this store."
+          : undefined
+      }
       type="button"
       variant={added ? "secondary" : "default"}
     >
-      {addToCartLabel(added, existingQty)}
+      {addToCartLabel(added, existingQty, disabled)}
     </Button>
   );
 }

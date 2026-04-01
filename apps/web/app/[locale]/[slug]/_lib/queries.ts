@@ -21,6 +21,15 @@ export interface SplitPreviewDefaults {
   platformFeePct: number;
 }
 
+/** Roaster shipping options for checkout (US-04-03) and availability guard (US-04-05). */
+export interface ShippingRateOption {
+  id: string;
+  label: string;
+  carrier: string;
+  flatRate: number;
+  isDefault: boolean;
+}
+
 export interface StorefrontData {
   campaign: Campaign & { items: StorefrontCampaignItem[] };
   org: {
@@ -29,6 +38,9 @@ export interface StorefrontData {
     orgName: string;
   };
   splitPreviewDefaults: SplitPreviewDefaults;
+  /** True when the campaign roaster has at least one `RoasterShippingRate`. */
+  hasShippingRates: boolean;
+  shippingRates: ShippingRateOption[];
 }
 
 /**
@@ -72,13 +84,26 @@ export async function getStorefrontData(
   });
 
   let estimatedShippingCents: number | null = null;
+  let shippingRates: ShippingRateOption[] = [];
+  let hasShippingRates = false;
+
   const first = campaign.items[0];
   if (first) {
     const roasterId = first.product.roasterId;
-    const rate = await database.roasterShippingRate.findFirst({
+    const rates = await database.roasterShippingRate.findMany({
       where: { roasterId },
       orderBy: [{ isDefault: "desc" }, { flatRate: "asc" }],
+      select: {
+        id: true,
+        label: true,
+        carrier: true,
+        flatRate: true,
+        isDefault: true,
+      },
     });
+    shippingRates = rates;
+    hasShippingRates = rates.length > 0;
+    const rate = rates[0];
     estimatedShippingCents = rate?.flatRate ?? null;
   }
 
@@ -89,6 +114,8 @@ export async function getStorefrontData(
       orgName: org.application.orgName,
     },
     campaign,
+    hasShippingRates,
+    shippingRates,
     splitPreviewDefaults: {
       estimatedShippingCents,
       orgPct: campaign.orgPct,

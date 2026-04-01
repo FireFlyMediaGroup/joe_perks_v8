@@ -39,7 +39,10 @@ export function CartLineItem({ line }: CartLineItemProps) {
         <p className="font-semibold text-foreground text-sm leading-snug">
           {title}
         </p>
-        <div className="mt-3 flex flex-wrap items-center gap-2">
+        <p className="mt-0.5 text-muted-foreground text-xs tabular-nums">
+          {formatCentsAsDollars(line.retailPrice)} ea
+        </p>
+        <div className="mt-2 flex flex-wrap items-center gap-2">
           <div className="flex items-center rounded-md border border-border bg-background">
             <Button
               aria-label="Decrease quantity"

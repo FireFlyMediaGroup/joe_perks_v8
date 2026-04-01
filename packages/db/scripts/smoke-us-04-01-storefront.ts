@@ -99,14 +99,31 @@ async function getStorefrontDataForSmoke(slug: string) {
   });
 
   let estimatedShippingCents: number | null = null;
+  let hasShippingRates = false;
+  let shippingRates: Array<{
+    carrier: string;
+    flatRate: number;
+    id: string;
+    isDefault: boolean;
+    label: string;
+  }> = [];
+
   const first = campaign.items[0];
   if (first) {
     const roasterId = first.product.roasterId;
-    const rate = await prisma.roasterShippingRate.findFirst({
-      where: { roasterId },
+    shippingRates = await prisma.roasterShippingRate.findMany({
       orderBy: [{ isDefault: "desc" }, { flatRate: "asc" }],
+      select: {
+        carrier: true,
+        flatRate: true,
+        id: true,
+        isDefault: true,
+        label: true,
+      },
+      where: { roasterId },
     });
-    estimatedShippingCents = rate?.flatRate ?? null;
+    hasShippingRates = shippingRates.length > 0;
+    estimatedShippingCents = shippingRates[0]?.flatRate ?? null;
   }
 
   const splitPreviewDefaults = {
@@ -118,7 +135,7 @@ async function getStorefrontDataForSmoke(slug: string) {
     platformFeePct: settings.platformFeePct,
   };
 
-  return { campaign, org, splitPreviewDefaults };
+  return { campaign, hasShippingRates, org, shippingRates, splitPreviewDefaults };
 }
 
 async function smokePrismaBaseline(): Promise<void> {
@@ -183,7 +200,8 @@ async function validateMirrorForSlug(sampleSlug: string): Promise<void> {
     fail("getStorefrontData mirror returned null for known ACTIVE slug");
     return;
   }
-  const { campaign, org, splitPreviewDefaults } = data;
+  const { campaign, hasShippingRates, org, shippingRates, splitPreviewDefaults } =
+    data;
   if (org.application.orgName.length === 0) {
     fail("orgName empty");
     return;
@@ -205,8 +223,12 @@ async function validateMirrorForSlug(sampleSlug: string): Promise<void> {
     fail("splitPreviewDefaults.platformFeePct missing");
     return;
   }
+  if (hasShippingRates !== (shippingRates.length > 0)) {
+    fail("hasShippingRates / shippingRates length mismatch");
+    return;
+  }
   pass(
-    `getStorefrontData mirror: slug=${sampleSlug}, items=${campaign.items.length}, retailPrice=${item.retailPrice}c, orgPct=${splitPreviewDefaults.orgPct}, estShipping=${splitPreviewDefaults.estimatedShippingCents ?? "null"}`
+    `getStorefrontData mirror: slug=${sampleSlug}, items=${campaign.items.length}, retailPrice=${item.retailPrice}c, orgPct=${splitPreviewDefaults.orgPct}, estShipping=${splitPreviewDefaults.estimatedShippingCents ?? "null"}, hasShippingRates=${hasShippingRates}`
   );
 }
 

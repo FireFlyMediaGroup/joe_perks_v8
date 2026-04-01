@@ -8,7 +8,7 @@
 - Progress tracker: [`docs/SPRINT_3_PROGRESS.md`](../SPRINT_3_PROGRESS.md)
 - Stories: [`docs/sprint-3/stories/`](./stories/)
 
-**Current progress:** **US-03-02**, **US-03-03**, **US-03-04** (org Stripe Connect + campaign), **US-04-01** (public org storefront), and **US-04-02** (Zustand cart + cart UI) are **Done**. Remaining Sprint 3 work: **US-04-03**, **US-04-04**, **US-08-01**, **US-04-05**. Sprint 2 is complete (8/8 stories done). Details: [`docs/SPRINT_3_PROGRESS.md`](../SPRINT_3_PROGRESS.md), [`docs/SPRINT_2_PROGRESS.md`](../SPRINT_2_PROGRESS.md).
+**Current progress:** All Sprint 3 stories are **Done** (**US-03-02** through **US-04-05** and **US-08-01**). Sprint 2 is complete (8/8 stories done). Details: [`docs/SPRINT_3_PROGRESS.md`](../SPRINT_3_PROGRESS.md), [`docs/SPRINT_2_PROGRESS.md`](../SPRINT_2_PROGRESS.md).
 
 ---
 
@@ -125,9 +125,9 @@ Parallelization opportunities: US-08-01 and US-04-05 share no dependencies with 
 | US-04-01 | `apps/web/app/[locale]/[slug]/page.tsx`, `_lib/queries.ts`, `_lib/format.ts`, `_components/storefront-layout.tsx`, `product-grid.tsx`, `product-card.tsx`, `campaign-header.tsx`; `packages/db/scripts/smoke-us-04-01-storefront.ts` |
 | US-04-02 | `packages/ui/src/store/cart.ts` (expand), `apps/web` → `@joe-perks/ui`; `apps/web/app/[locale]/[slug]/_components/cart-drawer.tsx`, `cart-line-item.tsx`, `add-to-cart-button.tsx`, `cart-trigger.tsx`, `storefront-cart-sync.tsx`; `cart-drawer` imports `calculateSplits` from `@joe-perks/stripe/splits` (client-safe) |
 | US-04-03 | `apps/web/app/[locale]/[slug]/checkout/page.tsx`, `_components/checkout-form.tsx`, `step-cart-review.tsx`, `step-shipping.tsx`, `step-payment.tsx`, `_lib/schema.ts` |
-| US-04-04 | `apps/web/app/[locale]/[slug]/order/[pi_id]/page.tsx`, `_components/order-status-poller.tsx`, `order-summary.tsx` |
-| US-08-01 | `packages/email/templates/order-confirmation.tsx` (verify/update), `apps/web/app/api/webhooks/stripe/route.ts` (wire `sendEmail`) |
-| US-04-05 | `apps/web/app/[locale]/[slug]/_components/shipping-guard.tsx`, checkout validation in `_lib/` |
+| US-04-04 | `apps/web/app/[locale]/[slug]/order/[pi_id]/page.tsx`, `_components/order-status-poller.tsx`, `order-summary.tsx`, `order-processing.tsx` |
+| US-08-01 | `packages/email/templates/order-confirmation.tsx`, `apps/web/app/api/webhooks/stripe/route.ts` (`sendBuyerOrderConfirmationEmail` → `sendEmail`, template `order_confirmation`) |
+| US-04-05 | `apps/web/app/[locale]/[slug]/_lib/queries.ts` (`hasShippingRates`, `shippingRates`), `_components/shipping-guard.tsx`, `page.tsx` (banner + disabled purchase UI), `checkout/page.tsx` (redirect when no rates) |
 
 ---
 
@@ -172,22 +172,23 @@ These rules from [`docs/AGENTS.md`](../AGENTS.md) apply directly to Sprint 3 wor
 4. **Tenant isolation** -- Roaster portal queries must scope by `session.roasterId`. Org portal queries must scope by `session.orgId`. Admin queries may scope globally.
 5. **Magic links** -- Tokens generated with `crypto.randomBytes(32).toString('hex')`. Single-use: set `used_at = now()` before any action. Verify: token exists, `expires_at > now()`, `used_at IS NULL`, correct `purpose`. Magic link pages are accessible WITHOUT authentication.
 6. **Soft deletes** -- `Product`/`ProductVariant` queries must filter `WHERE deletedAt IS NULL`.
-7. **sendEmail()** -- Always use `sendEmail()` from `@joe-perks/email`. Never import Resend directly. `EmailLog` dedup on `(entityType, entityId, template)`.
-8. **Stripe** -- Never import Stripe directly in apps. Use `@joe-perks/stripe` on the server. For **client** split previews, use `@joe-perks/stripe/splits`. Webhook handlers must verify signatures and check `StripeEvent` for idempotency.
-9. **Webhook idempotency** -- Check `StripeEvent` before processing. Create the row before processing. Return 200 on duplicate.
+7. **sendEmail()** -- Always use `sendEmail()` from `@joe-perks/email`. Never import Resend directly. `EmailLog` dedup on `(entityType, entityId, template)`. Buyer order confirmation uses template **`order_confirmation`** from the **`payment_intent.succeeded`** webhook (`apps/web`).
+8. **Stripe** -- Never import the **server** Stripe SDK in apps; use `@joe-perks/stripe` on the server. For **client** split previews, use `@joe-perks/stripe/splits`. For **Stripe Elements** (checkout), use **`@stripe/react-stripe-js`** / **`@stripe/stripe-js`** only. Webhook handlers must verify signatures and check `StripeEvent` for idempotency.
+9. **Webhook idempotency** -- Check `StripeEvent` before processing; return 200 on duplicate. (`apps/web` records the event **after** successful handling — see [`docs/AGENTS.md`](../AGENTS.md) webhook note.)
 10. **Logging** -- Never log `req.body` or PII. Only log IDs and event types.
 
 ---
 
 ## Key CONVENTIONS.md patterns for Sprint 3
 
-1. **Server components** for storefront pages -- fetch `Campaign`, `CampaignItem`, `Org` data server-side.
-2. **Client components** for cart interaction -- `useCartStore` from `@joe-perks/ui`, add-to-cart buttons, cart drawer.
+1. **Server components** for storefront and checkout shells -- `getStorefrontData` loads `Campaign`, `CampaignItem`, `Org`, `hasShippingRates`, `shippingRates`, `splitPreviewDefaults`.
+2. **Client components** for cart and checkout -- `useCartStore` from `@joe-perks/ui`, add-to-cart, cart drawer, **`checkout-form`** (steps + Stripe Elements), **`order-status-poller`** on the confirmation page.
 3. **Portal route structure** -- `_actions/`, `_components/`, `_lib/` under route segments for org portal campaign CRUD.
 4. **Server actions** for org portal mutations -- `requireOrgId()` pattern (mirrors `requireRoasterId()`).
 5. **CampaignItem prices** -- Always read `CampaignItem.retailPrice` for storefront display and checkout, not `ProductVariant.retailPrice`.
 6. **API routes** -- Validate, then business logic, then `Response.json()`. Rate limit where appropriate.
 7. **Client split preview** -- `calculateSplits` from `@joe-perks/stripe/splits` in cart drawer; `getStorefrontData` supplies `splitPreviewDefaults`.
+8. **Shipping guard (US-04-05)** -- When `hasShippingRates` is false, show **`ShippingGuard`**, disable purchase CTAs, and redirect checkout to the storefront with `?error=no-shipping`.
 
 ---
 
