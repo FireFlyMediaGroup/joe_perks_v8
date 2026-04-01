@@ -8,13 +8,23 @@
 - Progress tracker: [`docs/SPRINT_4_PROGRESS.md`](../SPRINT_4_PROGRESS.md)
 - Stories: [`docs/sprint-4/stories/`](./stories/)
 
-**Current progress:** All Sprint 4 stories are at `Todo`. Sprint 3 is complete (9/9 stories done). Details: [`docs/SPRINT_3_PROGRESS.md`](../SPRINT_3_PROGRESS.md).
+**Current progress:** All **9** Sprint 4 stories are **`Done`** and the 2026-04-01 implementation review follow-up has also been applied on `main`. Track file-level detail in [`docs/SPRINT_4_PROGRESS.md`](../SPRINT_4_PROGRESS.md) and [`docs/SPRINT_4_CHECKLIST.md`](../SPRINT_4_CHECKLIST.md). Sprint 3 remains complete (9/9). Details: [`docs/SPRINT_3_PROGRESS.md`](../SPRINT_3_PROGRESS.md).
 
 ---
 
 ## Sprint 4 objective
 
 Complete the post-checkout order lifecycle: extend the `payment_intent.succeeded` webhook to generate roaster fulfillment magic links, build the magic link fulfillment page (order view + tracking entry), implement delivery confirmation with payout eligibility calculation, verify the Inngest daily payout job end-to-end, create the `logOrderEvent` helper and order event query API, and wire four transactional email templates (fulfillment notification, shipped, delivered, SLA escalations). Sprint 3 delivered the buyer storefront, cart, checkout, and order confirmation; Sprint 4 connects confirmed orders to roaster fulfillment and automated payouts, closing the order lifecycle defined in `docs/04-order-lifecycle.mermaid` Phases 2-5.
+
+## Post-Review Hardening
+
+The Sprint 4 implementation review follow-up is now complete. The repo now includes:
+
+- Concurrency-safe `payment_intent.succeeded` confirmation logic plus database-enforced fulfillment-link dedupe
+- Explicit manual-resolution handling when roaster debt fully consumes a payout
+- Admin delivery events that record a stable admin actor ID
+- Story-alignment fixes for the roaster fulfillment order date and the admin `Refunded` tab
+- Dynamic SLA admin tier copy, shared Basic Auth normalization, and a stronger payout smoke script with optional live runner execution
 
 ---
 
@@ -43,6 +53,8 @@ Complete the post-checkout order lifecycle: extend the `payment_intent.succeeded
 | US-08-03 | Shipped notification email to buyer with tracking | 3 | High | US-01-04, US-05-02 | `packages/email`, `apps/roaster` |
 | US-08-04 | Delivery confirmation + impact email to buyer | 3 | High | US-01-04, US-05-03 | `packages/email`, `apps/web`, `apps/admin` |
 | US-08-05 | SLA warning and breach notification emails | 3 | Medium | US-01-04, US-01-06, US-05-01 | `packages/email`, `apps/web` |
+
+**Story implementation status:** All nine stories are **`Done`** in repo (see [`SPRINT_4_PROGRESS.md`](../SPRINT_4_PROGRESS.md)).
 
 ---
 
@@ -128,7 +140,7 @@ Parallelization opportunities: US-06-03, US-08-02, and US-08-05 share no Sprint 
 | US-05-03 | `apps/admin/app/orders/page.tsx`, `[id]/page.tsx`, `_actions/confirm-delivery.ts`, `_components/order-detail.tsx`, `order-list.tsx`; `apps/web/app/api/orders/[id]/deliver/route.ts` (optional API) |
 | US-06-01 | `apps/web/lib/inngest/run-payout-release.ts` (verify + add OrderEvent logging), `packages/db/scripts/smoke-us-06-01-payout.ts` |
 | US-06-03 | `packages/db/log-event.ts` (create `logOrderEvent`), `packages/db/index.ts` (export), `apps/web/app/api/orders/[id]/events/route.ts`, `apps/admin/app/orders/[id]/_components/event-timeline.tsx` |
-| US-08-02 | `packages/email/templates/magic-link-fulfillment.tsx`, `packages/email/index.ts` (export) |
+| US-08-02 | `packages/email/templates/magic-link-fulfillment.tsx`, `packages/email/package.json` (exports) |
 | US-08-03 | `packages/email/templates/order-shipped.tsx` |
 | US-08-04 | `packages/email/templates/order-delivered.tsx` |
 | US-08-05 | `packages/email/templates/sla.tsx` (verify existing templates), `apps/web/lib/inngest/run-sla-check.tsx` (verify wiring) |
@@ -175,7 +187,7 @@ These rules from [`docs/AGENTS.md`](../AGENTS.md) apply directly to Sprint 4 wor
 3. **Magic links** -- Tokens generated with `crypto.randomBytes(32).toString('hex')`. Single-use: set `used_at = now()` immediately on first use before any action. Verify: token exists, `expires_at > now()`, `used_at IS NULL`, correct `purpose` (`ORDER_FULFILLMENT`). Magic link pages are accessible WITHOUT authentication.
 4. **sendEmail()** -- Always use `sendEmail()` from `@joe-perks/email`. Never import Resend directly. `EmailLog` dedup on `(entityType, entityId, template)`. Fulfillment email uses template `magic_link_fulfillment`; shipped uses `order_shipped`; delivered uses `order_delivered`.
 5. **Stripe** -- Never import Stripe directly in apps; use `@joe-perks/stripe`. `transfer_group` must equal `order.id` on every transfer. Use `transferToConnectedAccount()` from `@joe-perks/stripe`.
-6. **OrderEvent** -- Append-only: never update or delete event rows. Only insert. Use `logOrderEvent()` from `@joe-perks/db` (to be created in US-06-03).
+6. **OrderEvent** -- Append-only: never update or delete event rows. Only insert. Use `logOrderEvent()` from `@joe-perks/db` (US-06-03; transactional inserts may still use `orderEvent.create` inside `$transaction`).
 7. **Webhook idempotency** -- Check `StripeEvent` before processing; `apps/web` records the event after successful handling. `sendEmail()` adds a second dedup layer via `EmailLog`.
 8. **Tenant isolation** -- Fulfillment page uses magic link token (no auth session), but event log API on admin must scope appropriately. Payout job runs as SYSTEM actor.
 9. **Logging/PII** -- Never log buyer address, email, or card data. Only log: `order_id`, `stripe_pi_id`, `event_type`, `tracking_number`.
@@ -187,7 +199,7 @@ These rules from [`docs/AGENTS.md`](../AGENTS.md) apply directly to Sprint 4 wor
 1. **Magic link pages** -- No auth required. Server component validates token, loads order data, renders client form for tracking entry.
 2. **Server actions** for fulfillment mutations -- `submit-tracking.ts` in `_actions/` under the fulfillment route segment.
 3. **API routes** for admin delivery confirmation -- validate, business logic, `Response.json()`. Rate limit where appropriate.
-4. **logOrderEvent()** pattern -- `packages/db/log-event.ts` exports a helper that wraps `database.orderEvent.create` with standard fields. Documented in CONVENTIONS.md but not yet implemented.
+4. **logOrderEvent()** pattern -- `packages/db/log-event.ts` exports a helper that wraps `database.orderEvent.create` with standard fields (see CONVENTIONS.md).
 5. **Email templates** -- kebab-case filenames (`magic-link-fulfillment.tsx`, `order-shipped.tsx`, `order-delivered.tsx`). Templates use `BaseEmailLayout` or Tailwind + `@react-email/components`.
 6. **Inngest job pattern** -- Export `runPayoutRelease()` from `apps/web/lib/inngest/run-payout-release.ts`; registered via `serve()` in `apps/web/app/api/inngest/route.ts`.
 7. **Error handling** -- Background jobs (Inngest) capture to Sentry, don't re-throw for non-fatal. Critical payment paths (transfers) let errors propagate for Inngest retry.

@@ -2,7 +2,7 @@
 
 **Story ID:** US-06-01 | **Epic:** EP-06 (Payouts & Financials)
 **Points:** 8 | **Priority:** High
-**Status:** `Todo`
+**Status:** `Done`
 **Owner:** Full-stack
 **Dependencies:** US-05-03 (Delivery Confirmation), US-01-06 (Inngest Jobs)
 **Depends on this:** None
@@ -27,18 +27,12 @@ Verify and complete the existing Inngest `payout-release` job at `apps/web/lib/i
 ## Current repo evidence
 
 - **`apps/web/lib/inngest/run-payout-release.ts`** -- Fully implemented:
-  - `runPayoutRelease()` skips if Stripe not configured
+  - `runPayoutRelease()` skips if Stripe is not configured
   - Queries orders: `status: "DELIVERED"`, `payoutStatus: "HELD"`, `payoutEligibleAt: { lte: now }`, `stripeChargeId: { not: null }`, `stripeTransferId: null`
-  - `payoutSingleOrder()`: checks roaster Connect ready, calls `transferToConnectedAccount()` for roaster amount (`roasterTotal`), then org amount if `orgAmount > 0` and org has Stripe account
-  - On success: sets `stripeTransferId`, `stripeOrgTransfer`, `payoutStatus: "TRANSFERRED"`
-  - On failure: sets `payoutStatus: "FAILED"`
-  - Does NOT create `OrderEvent(PAYOUT_TRANSFERRED)` -- **gap to fill**
-  - Does NOT deduct `RoasterDebt` -- **gap to fill** (diagram specifies `calculateRoasterPayout()` deducting unsettled debts)
-  - Does NOT update `Campaign.totalRaised` -- **gap to fill** (diagram specifies incrementing by `org_amount`)
-- **`apps/web/lib/inngest/functions.ts`** -- Registers `payout-release` as cron `0 9 * * *` (daily 09:00 UTC)
-- **`packages/stripe/src/index.ts`** -- Exports `transferToConnectedAccount()`
-- **`RoasterDebt` model** -- Has `roasterId`, `orderId`, `amount`, `reason` (DebtReason enum), `settled`, `settledAt`
-- **`Campaign.totalRaised`** -- Denormalized field; currently incremented by webhook on order confirmation (Sprint 3). The diagram shows it should also be updated by the payout job (or the increment should move entirely to payout time).
+  - `payoutSingleOrder()` checks roaster Connect readiness, applies unsettled `RoasterDebt`, creates roaster/org transfers with `transfer_group = order.id`, and records `PAYOUT_TRANSFERRED` / `PAYOUT_FAILED`
+  - If roaster debt fully consumes the payout, the order is marked `FAILED` for manual resolution instead of being marked `TRANSFERRED`
+- **`packages/db/scripts/smoke-us-06-01-payout.ts`** -- Verifies eligible-order shape, payout event consistency, debt-blocked failures, and can optionally execute the live runner with `RUN_PAYOUT_RELEASE=1`
+- **`Campaign.totalRaised`** -- Denormalized field remains incremented at payment confirmation; payout code comments document the MVP accounting decision
 
 ---
 
@@ -75,8 +69,8 @@ Verify and complete the existing Inngest `payout-release` job at `apps/web/lib/i
 - Before transferring to roaster, query unsettled `RoasterDebt` rows for this roaster
 - Deduct total unsettled debt from `roasterTotal` for the net transfer amount
 - Mark deducted `RoasterDebt` rows as `settled = true`, `settledAt = now()`
-- If net amount is <= 0, skip roaster transfer but still process org transfer
-- Log debt settlement details
+- If roaster debt fully consumes the payout, mark the order `FAILED` for manual resolution (current schema does not support partial debt application)
+- Log debt settlement / manual-resolution details
 
 ### Verify Campaign.totalRaised handling
 
@@ -110,21 +104,21 @@ Verify and complete the existing Inngest `payout-release` job at `apps/web/lib/i
 
 ## Acceptance criteria
 
-- [ ] Payout job runs daily at 09:00 UTC via Inngest cron
-- [ ] Job finds orders with `status = DELIVERED`, `payoutStatus = HELD`, `payoutEligibleAt <= now()`, and `stripeTransferId = null`
-- [ ] Roaster transfer uses `roasterTotal` amount (roaster_amount + shipping passthrough)
-- [ ] Org transfer uses `orgAmount` (skipped if org has no Stripe account)
-- [ ] `transfer_group = order.id` on all transfers
-- [ ] On success: `payoutStatus` set to `TRANSFERRED`, `stripeTransferId` and `stripeOrgTransfer` recorded
-- [ ] On success: `OrderEvent(PAYOUT_TRANSFERRED)` created with transfer IDs in payload
-- [ ] On roaster transfer failure: `payoutStatus` set to `FAILED`
-- [ ] On roaster transfer failure: `OrderEvent(PAYOUT_FAILED)` created with error in payload
-- [ ] Unsettled `RoasterDebt` amounts are deducted from roaster transfer
-- [ ] Settled debts are marked `settled = true`, `settledAt = now()`
-- [ ] If net roaster amount <= 0, roaster transfer is skipped (org transfer still proceeds)
-- [ ] Job skips gracefully when Stripe is not configured
-- [ ] Job handles orders individually (one failure does not block others)
-- [ ] No PII logged -- only `order_id`, `transfer_id`, `debt_id`
+- [x] Payout job runs daily at 09:00 UTC via Inngest cron
+- [x] Job finds orders with `status = DELIVERED`, `payoutStatus = HELD`, `payoutEligibleAt <= now()`, and `stripeTransferId = null`
+- [x] Roaster transfer uses `roasterTotal` amount (roaster_amount + shipping passthrough)
+- [x] Org transfer uses `orgAmount` (skipped if org has no Stripe account)
+- [x] `transfer_group = order.id` on all transfers
+- [x] On success: `payoutStatus` set to `TRANSFERRED`, `stripeTransferId` and `stripeOrgTransfer` recorded
+- [x] On success: `OrderEvent(PAYOUT_TRANSFERRED)` created with transfer IDs in payload
+- [x] On roaster transfer failure: `payoutStatus` set to `FAILED`
+- [x] On roaster transfer failure: `OrderEvent(PAYOUT_FAILED)` created with error in payload
+- [x] Unsettled `RoasterDebt` amounts are deducted from roaster transfer
+- [x] Settled debts are marked `settled = true`, `settledAt = now()`
+- [x] If roaster debt fully consumes the payout, the order is marked `FAILED` for manual resolution instead of being marked `TRANSFERRED`
+- [x] Job skips gracefully when Stripe is not configured
+- [x] Job handles orders individually (one failure does not block others)
+- [x] No PII logged -- only `order_id`, `transfer_id`, `debt_id`
 
 ---
 
@@ -171,3 +165,5 @@ Verify and complete the existing Inngest `payout-release` job at `apps/web/lib/i
 | Version | Date | Notes |
 |---------|------|-------|
 | 0.1 | 2026-04-01 | Initial story created for Sprint 4 planning. |
+| 0.2 | 2026-04-01 | Implemented on `main`; status `Done`. |
+| 0.3 | 2026-04-01 | Review follow-up: debt-heavy payouts now fail for manual resolution, and the smoke script can verify event consistency or explicitly run the live payout runner. |

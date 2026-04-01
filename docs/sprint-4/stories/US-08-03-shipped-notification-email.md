@@ -2,7 +2,7 @@
 
 **Story ID:** US-08-03 | **Epic:** EP-08 (Notifications)
 **Points:** 3 | **Priority:** High
-**Status:** `Todo`
+**Status:** `Done`
 **Owner:** Full-stack
 **Dependencies:** US-01-04 (Email Pipeline), US-05-02 (Roaster Fulfillment Page)
 **Depends on this:** None
@@ -72,15 +72,15 @@ Create the `order-shipped` email template at `packages/email/templates/order-shi
 
 ## Acceptance criteria
 
-- [ ] `order-shipped.tsx` exists at `packages/email/templates/`
-- [ ] Template accepts props: `buyerName`, `orderNumber`, `trackingNumber`, `carrier`, `orgName`
-- [ ] Template displays "Your order has shipped!" or similar heading
-- [ ] Template shows order number, tracking number, and carrier name
-- [ ] Template includes fundraiser context: "Thank you for supporting {orgName}"
-- [ ] Template uses Joe Perks branding (consistent with existing buyer emails)
-- [ ] Template includes `PreviewProps` for React Email preview
-- [ ] Template renders correctly in React Email preview at `http://localhost:3004`
-- [ ] Template is mobile-responsive
+- [x] `order-shipped.tsx` exists at `packages/email/templates/`
+- [x] Template accepts props: `buyerName`, `orderNumber`, `trackingNumber`, `carrier`, `orgName`
+- [x] Template displays "Your order has shipped!" or similar heading
+- [x] Template shows order number, tracking number, and carrier name
+- [x] Template includes fundraiser context: "Thank you for supporting {orgName}"
+- [x] Template uses Joe Perks branding (consistent with existing buyer emails)
+- [x] Template includes `PreviewProps` for React Email preview
+- [x] Template renders correctly in React Email preview at `http://localhost:3004`
+- [x] Template is mobile-responsive
 
 ---
 
@@ -122,3 +122,4 @@ Create the `order-shipped` email template at `packages/email/templates/order-shi
 | Version | Date | Notes |
 |---------|------|-------|
 | 0.1 | 2026-04-01 | Initial story created for Sprint 4 planning. |
+| 0.2 | 2026-04-01 | Implemented on `main`; status `Done`.

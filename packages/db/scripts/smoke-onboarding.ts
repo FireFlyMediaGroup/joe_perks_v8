@@ -11,6 +11,7 @@
  */
 import "../load-env-bootstrap";
 
+import { spawn } from "node:child_process";
 import { neonConfig } from "@neondatabase/serverless";
 import { PrismaNeon } from "@prisma/adapter-neon";
 import ws from "ws";
@@ -40,6 +41,33 @@ function fail(label: string, detail?: string) {
   console.error(`  FAIL  ${label}${detail ? ` — ${detail}` : ""}`);
 }
 
+function runStripeTrigger(args: string[]): Promise<{
+  exitCode: number | null;
+  stderr: string;
+  stdout: string;
+}> {
+  return new Promise((resolve, reject) => {
+    const child = spawn("stripe", args, {
+      stdio: ["ignore", "pipe", "pipe"],
+    });
+
+    let stdout = "";
+    let stderr = "";
+
+    child.stdout.on("data", (chunk: Buffer | string) => {
+      stdout += chunk.toString();
+    });
+    child.stderr.on("data", (chunk: Buffer | string) => {
+      stderr += chunk.toString();
+    });
+    child.on("error", reject);
+    child.on("close", (exitCode) => {
+      resolve({ exitCode, stderr, stdout });
+    });
+  });
+}
+
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: smoke script intentionally performs many sequential environment checks
 async function main() {
   console.log("\n--- US-02-03 Smoke Tests ---\n");
 
@@ -139,16 +167,13 @@ async function main() {
   // ── 5. Webhook: account.updated via Stripe CLI ──
   try {
     const stripeKey = process.env.STRIPE_SECRET_KEY;
-    if (!stripeKey) {
-      fail("STRIPE_SECRET_KEY not set — skipping webhook test");
-    } else {
-      const triggerRes = await Bun.spawn(
-        ["stripe", "trigger", "account.updated", "--api-key", stripeKey],
-        { stdout: "pipe", stderr: "pipe" }
-      );
-      const exitCode = await triggerRes.exited;
-      const stdout = await new Response(triggerRes.stdout).text();
-      const stderr = await new Response(triggerRes.stderr).text();
+    if (stripeKey) {
+      const { exitCode, stderr, stdout } = await runStripeTrigger([
+        "trigger",
+        "account.updated",
+        "--api-key",
+        stripeKey,
+      ]);
       if (exitCode === 0) {
         pass("stripe trigger account.updated succeeded");
       } else {
@@ -157,6 +182,8 @@ async function main() {
           (stderr || stdout).slice(0, 200)
         );
       }
+    } else {
+      fail("STRIPE_SECRET_KEY not set — skipping webhook test");
     }
   } catch (e) {
     fail(
@@ -206,7 +233,9 @@ async function main() {
 
   // ── Summary ──
   console.log(`\n--- Results: ${passed} passed, ${failed} failed ---\n`);
-  if (failed > 0) process.exit(1);
+  if (failed > 0) {
+    process.exit(1);
+  }
 }
 
 main()

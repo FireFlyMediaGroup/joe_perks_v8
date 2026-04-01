@@ -1,5 +1,8 @@
-import { database } from "@joe-perks/db";
+import crypto from "node:crypto";
+
+import { database, logOrderEvent, Prisma } from "@joe-perks/db";
 import { sendEmail } from "@joe-perks/email/send";
+import MagicLinkFulfillmentEmail from "@joe-perks/email/templates/magic-link-fulfillment";
 import OrderConfirmationEmail from "@joe-perks/email/templates/order-confirmation";
 import {
   getStripe,
@@ -10,6 +13,82 @@ import { createElement } from "react";
 import type Stripe from "stripe";
 
 export const runtime = "nodejs";
+
+const ROASTER_APP_ORIGIN_DEFAULT = "http://localhost:3001";
+const TRAILING_SLASH = /\/$/;
+
+async function createFulfillmentMagicLink(
+  orderId: string,
+  roasterId: string
+): Promise<{ id: string; token: string }> {
+  const token = crypto.randomBytes(32).toString("hex");
+  const expiresAt = new Date(Date.now() + 72 * 60 * 60 * 1000);
+  const dedupeKey = `order_fulfillment:${orderId}`;
+
+  const created = await database.magicLink.upsert({
+    where: { dedupeKey },
+    update: {},
+    create: {
+      dedupeKey,
+      token,
+      purpose: "ORDER_FULFILLMENT",
+      actorId: roasterId,
+      actorType: "ROASTER",
+      payload: { order_id: orderId },
+      expiresAt,
+    },
+  });
+
+  console.log("fulfillment magic link created", {
+    order_id: orderId,
+    magic_link_id: created.id,
+  });
+
+  return { id: created.id, token: created.token };
+}
+
+async function sendRoasterFulfillmentEmail(
+  orderId: string,
+  magicLinkToken: string
+): Promise<void> {
+  const origin =
+    process.env.ROASTER_APP_ORIGIN?.trim() || ROASTER_APP_ORIGIN_DEFAULT;
+  const fulfillUrl = `${origin.replace(TRAILING_SLASH, "")}/fulfill/${magicLinkToken}`;
+
+  const order = await database.order.findUnique({
+    where: { id: orderId },
+    include: {
+      items: true,
+      roaster: { select: { email: true } },
+    },
+  });
+  if (!order || order.status !== "CONFIRMED") {
+    return;
+  }
+
+  try {
+    await sendEmail({
+      entityId: order.id,
+      entityType: "order",
+      react: createElement(MagicLinkFulfillmentEmail, {
+        fulfillUrl,
+        items: order.items.map((i) => ({
+          name: i.productName,
+          priceInCents: i.unitPrice,
+          quantity: i.quantity,
+        })),
+        orderNumber: order.orderNumber,
+        shippingInCents: order.shippingAmount,
+        totalInCents: order.grossAmount,
+      }),
+      subject: `New order ${order.orderNumber} — fulfill on Joe Perks`,
+      template: "magic_link_fulfillment",
+      to: order.roaster.email,
+    });
+  } catch {
+    console.error("roaster fulfillment email failed", { order_id: orderId });
+  }
+}
 
 async function handleAccountUpdated(account: Stripe.Account): Promise<void> {
   const id = account.id;
@@ -121,9 +200,13 @@ async function handlePaymentIntentSucceeded(
 
   const order = await database.order.findUnique({
     where: { id: orderId },
-    select: { campaignId: true, orgAmount: true, status: true },
+    select: {
+      campaignId: true,
+      orgAmount: true,
+      roasterId: true,
+    },
   });
-  if (!order || order.status !== "PENDING") {
+  if (!order) {
     return;
   }
 
@@ -134,13 +217,14 @@ async function handlePaymentIntentSucceeded(
   const chargeId =
     typeof pi.latest_charge === "string" ? pi.latest_charge : null;
 
-  await database.$transaction([
-    database.order.update({
-      where: { id: orderId },
+  const confirmedOrder = await database.$transaction(async (tx) => {
+    const updated = await tx.order.updateMany({
+      where: { id: orderId, status: "PENDING" },
       data: {
         status: "CONFIRMED",
         stripeChargeId: chargeId,
         payoutStatus: "HELD",
+        // Initial hold-until date; US-05-03 overwrites at delivery confirmation.
         payoutEligibleAt: new Date(
           Date.now() + settings.payoutHoldDays * 24 * 60 * 60 * 1000
         ),
@@ -148,22 +232,44 @@ async function handlePaymentIntentSucceeded(
           Date.now() + settings.slaBreachHours * 60 * 60 * 1000
         ),
       },
-    }),
-    database.orderEvent.create({
+    });
+    if (updated.count === 0) {
+      return false;
+    }
+
+    // OrderEvent must stay in this transaction with the order confirmation (atomicity).
+    await tx.orderEvent.create({
       data: {
         orderId,
         eventType: "PAYMENT_SUCCEEDED",
         actorType: "SYSTEM",
         payload: { stripe_pi_id: pi.id },
       },
-    }),
-    database.campaign.update({
+    });
+
+    // Campaign.totalRaised: fundraiser pledge recorded at payment (see US-06-01; diagram also mentions payout-time — MVP uses confirmation).
+    await tx.campaign.update({
       where: { id: order.campaignId },
       data: { totalRaised: { increment: order.orgAmount } },
-    }),
-  ]);
+    });
+
+    return true;
+  });
+  if (!confirmedOrder) {
+    return;
+  }
 
   await sendBuyerOrderConfirmationEmail(orderId);
+
+  try {
+    const link = await createFulfillmentMagicLink(orderId, order.roasterId);
+    await sendRoasterFulfillmentEmail(orderId, link.token);
+  } catch (e) {
+    console.error("fulfillment magic link / email failed", {
+      order_id: orderId,
+      error: e instanceof Error ? e.message : "unknown",
+    });
+  }
 }
 
 async function handlePaymentIntentFailed(
@@ -174,17 +280,17 @@ async function handlePaymentIntentFailed(
     return;
   }
 
-  await database.orderEvent.create({
-    data: {
-      orderId,
-      eventType: "PAYMENT_FAILED",
-      actorType: "SYSTEM",
-      payload: {
-        stripe_pi_id: pi.id,
-        failure_code: pi.last_payment_error?.code ?? null,
-      },
+  await logOrderEvent(
+    orderId,
+    "PAYMENT_FAILED",
+    "SYSTEM",
+    null,
+    {
+      stripe_pi_id: pi.id,
+      failure_code: pi.last_payment_error?.code ?? null,
     },
-  });
+    null
+  );
 }
 
 export async function POST(request: Request) {
@@ -238,6 +344,8 @@ export async function POST(request: Request) {
           event.data.object as Stripe.PaymentIntent
         );
         break;
+      default:
+        break;
     }
   } catch (e) {
     console.error("stripe webhook processing failed", {
@@ -248,12 +356,18 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Processing failed" }, { status: 500 });
   }
 
-  await database.stripeEvent.create({
-    data: {
-      stripeEventId: event.id,
-      eventType: event.type,
-    },
-  });
+  try {
+    await database.stripeEvent.create({
+      data: {
+        stripeEventId: event.id,
+        eventType: event.type,
+      },
+    });
+  } catch (error) {
+    if (!(error instanceof Prisma.PrismaClientKnownRequestError) || error.code !== "P2002") {
+      throw error;
+    }
+  }
 
   return NextResponse.json({ received: true });
 }

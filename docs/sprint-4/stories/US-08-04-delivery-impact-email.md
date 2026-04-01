@@ -2,7 +2,7 @@
 
 **Story ID:** US-08-04 | **Epic:** EP-08 (Notifications)
 **Points:** 3 | **Priority:** High
-**Status:** `Todo`
+**Status:** `Done`
 **Owner:** Full-stack
 **Dependencies:** US-01-04 (Email Pipeline), US-05-03 (Delivery Confirmation)
 **Depends on this:** None
@@ -71,17 +71,17 @@ Create the `order-delivered` email template at `packages/email/templates/order-d
 
 ## Acceptance criteria
 
-- [ ] `order-delivered.tsx` exists at `packages/email/templates/`
-- [ ] Template accepts props: `buyerName`, `orderNumber`, `orgName`, `orgAmountInCents`, `orgPctSnapshot`
-- [ ] Template displays "Your order has been delivered!" heading
-- [ ] Template shows order number
-- [ ] Template includes fundraiser impact: "Your purchase contributed ${amount} to {orgName}"
-- [ ] Dollar amount formatted correctly from cents: `(orgAmountInCents / 100).toFixed(2)`
-- [ ] Template includes a warm thank-you message
-- [ ] Template uses Joe Perks branding (consistent with buyer emails)
-- [ ] Template includes `PreviewProps` for React Email preview
-- [ ] Template renders correctly in React Email preview at `http://localhost:3004`
-- [ ] Template is mobile-responsive
+- [x] `order-delivered.tsx` exists at `packages/email/templates/`
+- [x] Template accepts props: `buyerName`, `orderNumber`, `orgName`, `orgAmountInCents`, `orgPctSnapshot`
+- [x] Template displays "Your order has been delivered!" heading
+- [x] Template shows order number
+- [x] Template includes fundraiser impact: "Your purchase contributed ${amount} to {orgName}"
+- [x] Dollar amount formatted correctly from cents: `(orgAmountInCents / 100).toFixed(2)`
+- [x] Template includes a warm thank-you message
+- [x] Template uses Joe Perks branding (consistent with buyer emails)
+- [x] Template includes `PreviewProps` for React Email preview
+- [x] Template renders correctly in React Email preview at `http://localhost:3004`
+- [x] Template is mobile-responsive
 
 ---
 
@@ -122,3 +122,4 @@ Create the `order-delivered` email template at `packages/email/templates/order-d
 | Version | Date | Notes |
 |---------|------|-------|
 | 0.1 | 2026-04-01 | Initial story created for Sprint 4 planning. |
+| 0.2 | 2026-04-01 | Implemented on `main`; status `Done`.

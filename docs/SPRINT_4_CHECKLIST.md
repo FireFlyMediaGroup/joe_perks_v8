@@ -2,7 +2,7 @@
 
 ## Order fulfillment, payouts & notifications -- webhook magic links, roaster fulfillment page, delivery confirmation, payout job, order event log, transactional emails
 
-**Version:** 1.0 | **Sprint:** 4 (Weeks 7-8) | **Points:** 46 | **Stories:** 9
+**Version:** 1.2 | **Sprint:** 4 (Weeks 7-8) | **Points:** 46 | **Stories:** 9 (all complete)
 **Audience:** AI coding agents, developers implementing Sprint 4 stories
 **Companion documents:**
 - Sprint overview: [`docs/sprint-4/README.md`](sprint-4/README.md)
@@ -38,28 +38,28 @@ Before starting Sprint 4 work, verify these Sprint 3 deliverables are in place (
 
 ### 1.1 Create logOrderEvent helper
 
-- [ ] Create `packages/db/log-event.ts` with `logOrderEvent()` function
-- [ ] Signature: `(orderId, eventType, actorType, actorId?, payload?, ipAddress?) -> Promise<void>`
-- [ ] Wraps `database.orderEvent.create` with try/catch -- never throws
-- [ ] Logs error to console with `order_id` and `event_type` on failure
+- [x] Create `packages/db/log-event.ts` with `logOrderEvent()` function
+- [x] Signature: `(orderId, eventType, actorType, actorId?, payload?, ipAddress?) -> Promise<void>`
+- [x] Wraps `database.orderEvent.create` with try/catch -- never throws
+- [x] Logs error to console with `order_id` and `event_type` on failure
 
 ### 1.2 Export from package
 
-- [ ] Add `export { logOrderEvent } from './log-event'` to `packages/db/index.ts`
-- [ ] Verify import works: `import { logOrderEvent } from '@joe-perks/db'`
+- [x] Add `export { logOrderEvent } from './log-event'` to `packages/db/index.ts`
+- [x] Verify import works: `import { logOrderEvent } from '@joe-perks/db'`
 
 ### 1.3 Order events query API
 
-- [ ] Create `apps/web/app/api/orders/[id]/events/route.ts`
-- [ ] `GET` handler: query `orderEvent.findMany` by `orderId`, sort by `createdAt` ascending
-- [ ] Require admin auth (HTTP Basic Auth pattern)
-- [ ] Return 404 if order does not exist
-- [ ] Response shape: `{ events: Array<{ id, eventType, actorType, actorId, payload, ipAddress, createdAt }> }`
+- [x] Create `apps/web/app/api/orders/[id]/events/route.ts`
+- [x] `GET` handler: query `orderEvent.findMany` by `orderId`, sort by `createdAt` ascending
+- [x] Require admin auth (HTTP Basic Auth pattern)
+- [x] Return 404 if order does not exist
+- [x] Response shape: `{ events: Array<{ id, eventType, actorType, actorId, payload, ipAddress, createdAt }> }`
 
 ### 1.4 Refactor existing callers
 
-- [ ] Replace standalone `database.orderEvent.create` calls in `run-sla-check.tsx` with `logOrderEvent()`
-- [ ] Add code comments on transactional `orderEvent.create` calls (webhook, checkout) explaining why they use direct create
+- [x] Replace standalone `database.orderEvent.create` calls in `run-sla-check.tsx` with `logOrderEvent()`
+- [x] Add code comments on transactional `orderEvent.create` calls (webhook, checkout) explaining why they use direct create
 
 **Reference:** [`docs/sprint-4/stories/US-06-03-order-event-log-api.md`](sprint-4/stories/US-06-03-order-event-log-api.md)
 **Diagram:** [`docs/06-database-schema.mermaid`](06-database-schema.mermaid) -- `OrderEvent` model
@@ -73,16 +73,16 @@ Before starting Sprint 4 work, verify these Sprint 3 deliverables are in place (
 
 ### 2.1 MagicLink creation
 
-- [ ] Add `crypto` import to `apps/web/app/api/webhooks/stripe/route.ts`
-- [ ] Create helper `createFulfillmentMagicLink(orderId, roasterId)`:
-  - Check for existing `MagicLink` with `purpose = ORDER_FULFILLMENT` and matching order (idempotency)
+- [x] Add `crypto` import to `apps/web/app/api/webhooks/stripe/route.ts`
+- [x] Create helper `createFulfillmentMagicLink(orderId, roasterId)`:
+  - Enforce one `ORDER_FULFILLMENT` link per order with a deterministic database-backed dedupe key
   - Generate token: `crypto.randomBytes(32).toString('hex')`
   - Create `MagicLink`: `purpose = ORDER_FULFILLMENT`, `actorId = roasterId`, `actorType = ROASTER`, `payload = { order_id }`, `expiresAt = now + 72h`
   - Return the magic link record
 
 ### 2.2 Fulfillment email send
 
-- [ ] Create helper `sendRoasterFulfillmentEmail(orderId)`:
+- [x] Create helper `sendRoasterFulfillmentEmail(orderId)`:
   - Load order with items, roaster, campaign.org relations
   - Build fulfill URL: `process.env.ROASTER_APP_ORIGIN ?? 'http://localhost:3001'` + `/fulfill/${token}`
   - Call `sendEmail()` with template `magic_link_fulfillment`, `entityType = 'order'`, `entityId = order.id`
@@ -90,11 +90,12 @@ Before starting Sprint 4 work, verify these Sprint 3 deliverables are in place (
 
 ### 2.3 Wire into webhook handler
 
-- [ ] In `handlePaymentIntentSucceeded`, after `sendBuyerOrderConfirmationEmail(orderId)`:
+- [x] In `handlePaymentIntentSucceeded`, after `sendBuyerOrderConfirmationEmail(orderId)`:
   - Load `roasterId` from order (add to initial query `select`)
   - Call `createFulfillmentMagicLink(orderId, roasterId)`
   - Call `sendRoasterFulfillmentEmail(orderId)`
-- [ ] MagicLink creation is OUTSIDE the main `$transaction` (order confirmation must succeed even if magic link fails)
+- [x] MagicLink creation is OUTSIDE the main `$transaction` (order confirmation must succeed even if magic link fails)
+- [x] Order confirmation side effects are concurrency-safe (`PENDING -> CONFIRMED` can commit only once)
 
 **Reference:** [`docs/sprint-4/stories/US-05-01-webhook-fulfillment-magic-link.md`](sprint-4/stories/US-05-01-webhook-fulfillment-magic-link.md)
 **Diagram:** [`docs/04-order-lifecycle.mermaid`](04-order-lifecycle.mermaid) -- Phase 2
@@ -108,18 +109,18 @@ Before starting Sprint 4 work, verify these Sprint 3 deliverables are in place (
 
 ### 3.1 Create template
 
-- [ ] Create `packages/email/templates/magic-link-fulfillment.tsx`
-- [ ] Props: `orderNumber`, `fulfillUrl`, `items[]` (name, quantity, priceInCents), `totalInCents`, `shippingInCents`
-- [ ] Content: "New order for fulfillment" heading, items list, amounts, CTA button "View Order & Ship"
-- [ ] Include "This link expires in 72 hours" notice
-- [ ] Use Joe Perks branding (consistent with `order-confirmation.tsx`)
-- [ ] Include `PreviewProps` with sample data
+- [x] Create `packages/email/templates/magic-link-fulfillment.tsx`
+- [x] Props: `orderNumber`, `fulfillUrl`, `items[]` (name, quantity, priceInCents), `totalInCents`, `shippingInCents`
+- [x] Content: "New order for fulfillment" heading, items list, amounts, CTA button "View Order & Ship"
+- [x] Include "This link expires in 72 hours" notice
+- [x] Use Joe Perks branding (consistent with `order-confirmation.tsx`)
+- [x] Include `PreviewProps` with sample data
 
 ### 3.2 Verify in preview
 
-- [ ] Template renders in React Email preview (`pnpm --filter email dev` -> `http://localhost:3004`)
-- [ ] Mobile responsive layout verified
-- [ ] CTA button links to `fulfillUrl`
+- [x] Template renders in React Email preview (`pnpm --filter email dev` -> `http://localhost:3004`)
+- [x] Mobile responsive layout verified
+- [x] CTA button links to `fulfillUrl`
 
 **Reference:** [`docs/sprint-4/stories/US-08-02-fulfillment-notification-email.md`](sprint-4/stories/US-08-02-fulfillment-notification-email.md)
 **Diagram:** [`docs/04-order-lifecycle.mermaid`](04-order-lifecycle.mermaid) -- Phase 2: `sendEmail(magic_link_fulfillment -> roaster)`
@@ -132,34 +133,35 @@ Before starting Sprint 4 work, verify these Sprint 3 deliverables are in place (
 
 ### 4.1 Verify template rendering
 
-- [ ] All four SLA templates render in React Email preview
-- [ ] `SlaRoasterReminderEmail` -- order number, fulfillment deadline
-- [ ] `SlaRoasterUrgentEmail` -- urgent tone, order number, deadline
-- [ ] `SlaBuyerDelayEmail` -- buyer-friendly delay message
-- [ ] `SlaAdminAlertEmail` -- order number, ID, stage (breach/critical)
+- [x] All four SLA templates render in React Email preview
+- [x] `SlaRoasterReminderEmail` -- order number, fulfillment deadline
+- [x] `SlaRoasterUrgentEmail` -- urgent tone, order number, deadline
+- [x] `SlaBuyerDelayEmail` -- buyer-friendly delay message
+- [x] `SlaAdminAlertEmail` -- order number, ID, stage (breach/critical)
 
 ### 4.2 Verify sendEmail wiring
 
-- [ ] `entityType = 'order'`, `entityId = order.id` on all calls
-- [ ] Template strings: `sla_roaster_reminder`, `sla_roaster_urgent`, `sla_buyer_delay`, `sla_admin_breach`, `sla_admin_critical`
-- [ ] Each tier sends at most one email per order (dedup via `OrderEvent` check + `EmailLog`)
+- [x] `entityType = 'order'`, `entityId = order.id` on all calls
+- [x] Template strings: `sla_roaster_reminder`, `sla_roaster_urgent`, `sla_buyer_delay`, `sla_admin_breach`, `sla_admin_critical`
+- [x] Each tier sends at most one email per order (dedup via `OrderEvent` check + `EmailLog`)
 
 ### 4.3 Verify threshold logic
 
-- [ ] Thresholds read from `PlatformSettings` (not hardcoded)
-- [ ] Escalation order: warn (24h) -> breach (48h) -> critical (72h) -> auto-refund (96h)
-- [ ] Time calculations correct relative to `fulfillBy`
+- [x] Thresholds read from `PlatformSettings` (not hardcoded)
+- [x] Escalation order: warn (24h) -> breach (48h) -> critical (72h) -> auto-refund (96h)
+- [x] Time calculations correct relative to `fulfillBy`
 
 ### 4.4 Verify auto-refund flow
 
-- [ ] `refundCharge()` called with `order.stripeChargeId`
-- [ ] Order transitions: `status = REFUNDED`, `payoutStatus = FAILED`
-- [ ] `REFUND_COMPLETED` event created
+- [x] `refundCharge()` called with `order.stripeChargeId`
+- [x] Order transitions: `status = REFUNDED`, `payoutStatus = FAILED`
+- [x] `REFUND_COMPLETED` event created
 
 ### 4.5 Template improvements (if needed)
 
-- [ ] Improve copy for clarity and actionability
-- [ ] Refactor standalone `orderEvent.create` calls to `logOrderEvent()` (after Phase 1)
+- [x] Improve copy for clarity and actionability
+- [x] Refactor standalone `orderEvent.create` calls to `logOrderEvent()` (after Phase 1)
+- [x] Admin alert copy reflects the active configured threshold hours
 
 **Reference:** [`docs/sprint-4/stories/US-08-05-sla-notification-emails.md`](sprint-4/stories/US-08-05-sla-notification-emails.md)
 **Diagram:** [`docs/08-order-state-machine.mermaid`](08-order-state-machine.mermaid) -- CONFIRMED -> REFUNDED (SLA auto-refund)
@@ -173,43 +175,43 @@ Before starting Sprint 4 work, verify these Sprint 3 deliverables are in place (
 
 ### 5.1 Token validation
 
-- [ ] Create `apps/roaster/app/fulfill/[token]/_lib/validate-token.ts`
-- [ ] Validate: token exists, `purpose = ORDER_FULFILLMENT`, `expiresAt > now()`, `usedAt IS NULL`
-- [ ] Return discriminated union: `{ valid, magicLink, orderId }` or `{ valid: false, reason }`
+- [x] Create `apps/roaster/app/fulfill/[token]/_lib/validate-token.ts`
+- [x] Validate: token exists, `purpose = ORDER_FULFILLMENT`, `expiresAt > now()`, `usedAt IS NULL`
+- [x] Return discriminated union: `{ valid, magicLink, orderId }` or `{ valid: false, reason }`
 
 ### 5.2 Page server component
 
-- [ ] Replace stub in `apps/roaster/app/fulfill/[token]/page.tsx`
-- [ ] Call `validateToken(token)` -- render error views for expired/used/not-found
-- [ ] Load order with items, roaster, campaign.org, buyer (name only)
-- [ ] Create `OrderEvent(FULFILLMENT_VIEWED)` (guard: only once per token)
-- [ ] Render `FulfillmentDetails` and `TrackingForm`
+- [x] Replace stub in `apps/roaster/app/fulfill/[token]/page.tsx`
+- [x] Call `validateToken(token)` -- render error views for expired/used/not-found
+- [x] Load order with items, roaster, campaign.org, buyer (name only)
+- [x] Create `OrderEvent(FULFILLMENT_VIEWED)` (guard: only once per token)
+- [x] Render `FulfillmentDetails` and `TrackingForm`
 
 ### 5.3 Order details display
 
-- [ ] Create `_components/fulfillment-details.tsx`
-- [ ] Show: order number, date, status badge, items table (name, variant, qty, price, line total)
-- [ ] Show: subtotal, shipping, total (gross)
-- [ ] Show: payout breakdown -- roaster amount, shipping passthrough, roaster total
-- [ ] Show: org contribution (orgAmount, orgName) -- informational
-- [ ] Show: buyer name (for label addressing) -- do NOT show buyer email or address
+- [x] Create `_components/fulfillment-details.tsx`
+- [x] Show: order number, date, status badge, items table (name, variant, qty, price, line total)
+- [x] Show: subtotal, shipping, total (gross)
+- [x] Show: payout breakdown -- roaster amount, shipping passthrough, roaster total
+- [x] Show: org contribution (orgAmount, orgName) -- informational
+- [x] Show: buyer name (for label addressing) -- do NOT show buyer email or address
 
 ### 5.4 Tracking form
 
-- [ ] Create `_components/tracking-form.tsx` (`'use client'`)
-- [ ] Tracking number input (required)
-- [ ] Carrier dropdown: USPS, UPS, FedEx, DHL, Other (with free-text)
-- [ ] "Mark as Shipped" button with loading state
-- [ ] Success confirmation view after submission
+- [x] Create `_components/tracking-form.tsx` (`'use client'`)
+- [x] Tracking number input (required)
+- [x] Carrier dropdown: USPS, UPS, FedEx, DHL, Other (with free-text)
+- [x] "Mark as Shipped" button with loading state
+- [x] Success confirmation view after submission
 
 ### 5.5 Submit tracking action
 
-- [ ] Create `_actions/submit-tracking.ts` (`'use server'`)
-- [ ] Re-validate token (race condition guard)
-- [ ] `$transaction`: set `MagicLink.usedAt`, update `Order` (SHIPPED, trackingNumber, carrier, shippedAt)
-- [ ] Create `OrderEvent(SHIPPED)` with tracking in payload
-- [ ] Send shipped email to buyer (US-08-03 template)
-- [ ] Return success/error
+- [x] Create `_actions/submit-tracking.ts` (`'use server'`)
+- [x] Re-validate token (race condition guard)
+- [x] `$transaction`: set `MagicLink.usedAt`, update `Order` (SHIPPED, trackingNumber, carrier, shippedAt)
+- [x] Create `OrderEvent(SHIPPED)` with tracking in payload
+- [x] Send shipped email to buyer (US-08-03 template)
+- [x] Return success/error
 
 **Reference:** [`docs/sprint-4/stories/US-05-02-roaster-fulfillment-page.md`](sprint-4/stories/US-05-02-roaster-fulfillment-page.md)
 **Diagram:** [`docs/04-order-lifecycle.mermaid`](04-order-lifecycle.mermaid) -- Phase 3
@@ -223,16 +225,16 @@ Before starting Sprint 4 work, verify these Sprint 3 deliverables are in place (
 
 ### 6.1 Create template
 
-- [ ] Create `packages/email/templates/order-shipped.tsx`
-- [ ] Props: `buyerName`, `orderNumber`, `trackingNumber`, `carrier`, `orgName`
-- [ ] Content: "Your order has shipped!" heading, tracking info, fundraiser message
-- [ ] Optional: tracking URL for common carriers (USPS, UPS, FedEx)
-- [ ] Include `PreviewProps` with sample data
+- [x] Create `packages/email/templates/order-shipped.tsx`
+- [x] Props: `buyerName`, `orderNumber`, `trackingNumber`, `carrier`, `orgName`
+- [x] Content: "Your order has shipped!" heading, tracking info, fundraiser message
+- [x] Optional: tracking URL for common carriers (USPS, UPS, FedEx)
+- [x] Include `PreviewProps` with sample data
 
 ### 6.2 Verify in preview
 
-- [ ] Template renders in React Email preview
-- [ ] Mobile responsive layout
+- [x] Template renders in React Email preview
+- [x] Mobile responsive layout
 
 **Reference:** [`docs/sprint-4/stories/US-08-03-shipped-notification-email.md`](sprint-4/stories/US-08-03-shipped-notification-email.md)
 **Diagram:** [`docs/04-order-lifecycle.mermaid`](04-order-lifecycle.mermaid) -- Phase 3: `sendEmail(order_shipped + tracking -> buyer)`
@@ -245,31 +247,32 @@ Before starting Sprint 4 work, verify these Sprint 3 deliverables are in place (
 
 ### 7.1 Admin order list page
 
-- [ ] Create `apps/admin/app/orders/page.tsx`
-- [ ] List orders with status filter: default SHIPPED, tabs for CONFIRMED/DELIVERED/REFUNDED
-- [ ] Columns: order number, roaster, buyer name, dates, tracking, status badge
-- [ ] Pagination: `?page=` query param
+- [x] Create `apps/admin/app/orders/page.tsx`
+- [x] List orders with status filter: default SHIPPED (`/orders`), tabs for CONFIRMED, DELIVERED, REFUNDED, and ALL (`?status=ALL` — includes other statuses)
+- [x] Columns: order number, roaster, buyer name, dates, tracking, status badge
+- [x] List capped at 200 rows per load (no `?page=` pagination in MVP)
 
 ### 7.2 Admin order detail page
 
-- [ ] Create `apps/admin/app/orders/[id]/page.tsx`
-- [ ] Full order details: items, amounts, split breakdown, tracking info
-- [ ] Order event timeline (chronological `OrderEvent` list)
-- [ ] "Confirm Delivery" button (visible when `status = SHIPPED`)
+- [x] Create `apps/admin/app/orders/[id]/page.tsx`
+- [x] Full order details: items, amounts, split breakdown, tracking info
+- [x] Order event timeline (chronological `OrderEvent` list)
+- [x] "Confirm Delivery" button (visible when `status = SHIPPED`)
 
 ### 7.3 Confirm delivery action
 
-- [ ] Create `apps/admin/app/orders/_actions/confirm-delivery.ts`
-- [ ] Load `PlatformSettings.payoutHoldDays`
-- [ ] `$transaction`: update order (DELIVERED, deliveredAt, payoutEligibleAt), create `OrderEvent(ORDER_DELIVERED)`
-- [ ] WHERE clause includes `status: 'SHIPPED'` (optimistic lock)
-- [ ] Send delivered email to buyer (US-08-04 template)
+- [x] Create `apps/admin/app/orders/_actions/confirm-delivery.ts`
+- [x] Load `PlatformSettings.payoutHoldDays`
+- [x] `$transaction`: update order (DELIVERED, deliveredAt, payoutEligibleAt), create `OrderEvent` with `eventType = DELIVERED`
+- [x] WHERE clause includes `status: 'SHIPPED'` (optimistic lock)
+- [x] `DELIVERED` event records a stable admin actor ID for MVP Basic Auth
+- [x] Send delivered email to buyer (US-08-04 template)
 
 ### 7.4 Components
 
-- [ ] Create `_components/order-list.tsx` -- table with filters and pagination
-- [ ] Create `_components/order-detail.tsx` -- order info display
-- [ ] Create `[id]/_components/event-timeline.tsx` -- chronological event list
+- [x] Create `_components/order-list.tsx` -- table with status filter tabs
+- [x] Create `_components/order-detail.tsx` -- order info display
+- [x] Create `[id]/_components/event-timeline.tsx` -- chronological event list
 
 **Reference:** [`docs/sprint-4/stories/US-05-03-delivery-confirmation-payout-eligibility.md`](sprint-4/stories/US-05-03-delivery-confirmation-payout-eligibility.md)
 **Diagram:** [`docs/04-order-lifecycle.mermaid`](04-order-lifecycle.mermaid) -- Phase 4
@@ -283,17 +286,17 @@ Before starting Sprint 4 work, verify these Sprint 3 deliverables are in place (
 
 ### 8.1 Create template
 
-- [ ] Create `packages/email/templates/order-delivered.tsx`
-- [ ] Props: `buyerName`, `orderNumber`, `orgName`, `orgAmountInCents`, `orgPctSnapshot`
-- [ ] Content: "Your order has been delivered!" heading, fundraiser impact section, thank-you message
-- [ ] Dollar amount formatted from cents: `(orgAmountInCents / 100).toFixed(2)`
-- [ ] Include `PreviewProps` with sample data
+- [x] Create `packages/email/templates/order-delivered.tsx`
+- [x] Props: `buyerName`, `orderNumber`, `orgName`, `orgAmountInCents`, `orgPctSnapshot`
+- [x] Content: "Your order has been delivered!" heading, fundraiser impact section, thank-you message
+- [x] Dollar amount formatted from cents: `(orgAmountInCents / 100).toFixed(2)`
+- [x] Include `PreviewProps` with sample data
 
 ### 8.2 Verify in preview
 
-- [ ] Template renders in React Email preview
-- [ ] Impact section displays correctly
-- [ ] Mobile responsive layout
+- [x] Template renders in React Email preview
+- [x] Impact section displays correctly
+- [x] Mobile responsive layout
 
 **Reference:** [`docs/sprint-4/stories/US-08-04-delivery-impact-email.md`](sprint-4/stories/US-08-04-delivery-impact-email.md)
 **Diagram:** [`docs/04-order-lifecycle.mermaid`](04-order-lifecycle.mermaid) -- Phase 4: `sendEmail(order_delivered + impact message -> buyer)`
@@ -306,37 +309,51 @@ Before starting Sprint 4 work, verify these Sprint 3 deliverables are in place (
 
 ### 9.1 Verify existing transfer logic
 
-- [ ] Confirm `transferToConnectedAccount()` uses `transfer_group = order.id`
-- [ ] Confirm roaster transfer amount is `roasterTotal` (roasterAmount + shipping)
-- [ ] Confirm org transfer amount is `orgAmount`
-- [ ] Confirm `payoutStatus` transitions: `HELD -> TRANSFERRED` / `HELD -> FAILED`
+- [x] Confirm `transferToConnectedAccount()` uses `transfer_group = order.id`
+- [x] Confirm roaster transfer amount is `roasterTotal` (roasterAmount + shipping)
+- [x] Confirm org transfer amount is `orgAmount`
+- [x] Confirm `payoutStatus` transitions: `HELD -> TRANSFERRED` / `HELD -> FAILED`
 
 ### 9.2 Add OrderEvent logging
 
-- [ ] Create `OrderEvent(PAYOUT_TRANSFERRED)` after successful transfers with payload: `{ roaster_transfer_id, org_transfer_id }`
-- [ ] Create `OrderEvent(PAYOUT_FAILED)` on failure with error in payload
-- [ ] Use `logOrderEvent()` from US-06-03
+- [x] Create `OrderEvent(PAYOUT_TRANSFERRED)` after successful transfers with payload: `{ roaster_transfer_id, org_transfer_id }`
+- [x] Create `OrderEvent(PAYOUT_FAILED)` on failure with error in payload
+- [x] Use `logOrderEvent()` from US-06-03
 
 ### 9.3 Add RoasterDebt deduction
 
-- [ ] Query unsettled `RoasterDebt` rows for the roaster before transfer
-- [ ] Deduct total debt from `roasterTotal` for net transfer amount
-- [ ] If net amount <= 0, skip roaster transfer (org transfer still proceeds)
-- [ ] Mark settled debts: `settled = true`, `settledAt = now()`
+- [x] Query unsettled `RoasterDebt` rows for the roaster before transfer
+- [x] Deduct total debt from `roasterTotal` for net transfer amount
+- [x] If roaster debt fully consumes the payout, fail the payout for manual resolution instead of marking it transferred
+- [x] Mark settled debts: `settled = true`, `settledAt = now()`
 
 ### 9.4 Verify Campaign.totalRaised handling
 
-- [ ] Confirm `totalRaised` increment timing (currently at confirmation; document decision)
-- [ ] Add code comment if keeping at confirmation time vs moving to payout time
+- [x] Confirm `totalRaised` increment timing (currently at confirmation; document decision)
+- [x] Add code comment if keeping at confirmation time vs moving to payout time
 
 ### 9.5 Smoke test
 
-- [ ] Create `packages/db/scripts/smoke-us-06-01-payout.ts`
-- [ ] Verify with test data: DELIVERED order, eligible date past, Stripe configured
+- [x] Create `packages/db/scripts/smoke-us-06-01-payout.ts`
+- [x] Verify payout event consistency; optionally execute the live payout runner with `RUN_PAYOUT_RELEASE=1`
 
 **Reference:** [`docs/sprint-4/stories/US-06-01-inngest-payout-job.md`](sprint-4/stories/US-06-01-inngest-payout-job.md)
 **Diagram:** [`docs/07-stripe-payment-flow.mermaid`](07-stripe-payment-flow.mermaid) -- Transfer section
 **Rules:** `AGENTS.md` Stripe transfer_group, money as cents
+
+---
+
+## Implementation Review Follow-up (2026-04-01)
+
+- [x] Review finding 1: webhook confirmation is concurrency-safe and duplicate `StripeEvent` insert races are ignored safely
+- [x] Review finding 2: debt-heavy payouts no longer finish as `TRANSFERRED`; they fail with explicit manual-resolution logging
+- [x] Review finding 3: delivery confirmation stores an admin actor ID on the `DELIVERED` event
+- [x] Review finding 4: roaster fulfillment details show the order date
+- [x] Review finding 5: fulfillment magic links use a database-enforced dedupe key
+- [x] Review finding 6: admin orders navigation exposes `Refunded`
+- [x] Review finding 7: SLA admin alert copy uses configured threshold hours
+- [x] Review finding 8: payout smoke script checks event consistency and can run the payout runner explicitly
+- [x] Review finding 9: admin UI and admin API share normalized Basic Auth parsing/credential handling
 
 ---
 
@@ -358,28 +375,29 @@ Before starting Sprint 4 work, verify these Sprint 3 deliverables are in place (
 | `packages/db` | No new deps -- uses existing Prisma client | US-06-03 |
 | `apps/web` | No new deps -- uses existing `@joe-perks/email`, `@joe-perks/stripe` | US-05-01, US-06-01 |
 | `apps/roaster` | No new deps -- uses existing `@joe-perks/db`, `@joe-perks/email` | US-05-02 |
-| `apps/admin` | May need `@joe-perks/db` if not already in deps | US-05-03 |
+| `apps/admin` | `@joe-perks/db` and `@joe-perks/types` for delivery flow + shared Basic Auth normalization | US-05-03 |
 
 ### Document sync checklist
 
 After Sprint 4 implementation, update these documents:
 
-- [ ] `docs/AGENTS.md` -- Add `logOrderEvent()` to key data patterns, update Inngest jobs table if any changes
-- [ ] `docs/CONVENTIONS.md` -- Update logOrderEvent pattern to reflect actual implementation, add fulfillment page pattern
-- [ ] `docs/01-project-structure.mermaid` -- Add fulfillment route, admin orders route, events API route
-- [ ] `docs/sprint-4/README.md` -- Update story statuses and "Current progress" line
-- [ ] `docs/SPRINT_4_PROGRESS.md` -- Update per-phase matrices after each story completion
-- [ ] Story documents -- Mark status as `Done`, update "Current repo evidence", check all ACs
+- [x] `docs/AGENTS.md` -- Add `logOrderEvent()` to key data patterns, update Inngest jobs table if any changes
+- [x] `docs/CONVENTIONS.md` -- Update logOrderEvent pattern to reflect actual implementation, add fulfillment page pattern
+- [x] `docs/01-project-structure.mermaid` -- Add fulfillment route, admin orders route, events API route
+- [x] `docs/06-database-schema.mermaid` -- Reflect `MagicLink.dedupeKey` and confirmation-time fundraiser accrual note
+- [x] `docs/sprint-4/README.md` -- Update story statuses and "Current progress" line
+- [x] `docs/SPRINT_4_PROGRESS.md` -- Update per-phase matrices after each story completion
+- [x] Story documents -- Mark status as `Done`, update "Current repo evidence", check all ACs
 
 ### AGENTS.md rules checklist
 
-- [ ] Money as cents: all amounts displayed via `(cents / 100).toFixed(2)`
-- [ ] Magic links: `crypto.randomBytes(32)`, single-use via `usedAt`, 72h TTL, no auth required
-- [ ] sendEmail(): via `@joe-perks/email`, `EmailLog` dedup, never import Resend directly
-- [ ] Stripe: via `@joe-perks/stripe`, `transfer_group = order.id`
-- [ ] OrderEvent: append-only, use `logOrderEvent()` for non-transactional inserts
-- [ ] Tenant isolation: admin global, fulfillment via token
-- [ ] PII: never log buyer email/address, only `order_id`, `tracking_number`, `transfer_id`
+- [x] Money as cents: all amounts displayed via `(cents / 100).toFixed(2)`
+- [x] Magic links: `crypto.randomBytes(32)`, single-use via `usedAt`, 72h TTL, no auth required
+- [x] sendEmail(): via `@joe-perks/email`, `EmailLog` dedup, never import Resend directly
+- [x] Stripe: via `@joe-perks/stripe`, `transfer_group = order.id`
+- [x] OrderEvent: append-only, use `logOrderEvent()` for non-transactional inserts
+- [x] Tenant isolation: admin global, fulfillment via token
+- [x] PII: never log buyer email/address, only `order_id`, `tracking_number`, `transfer_id`
 
 ### Testing commands
 

@@ -134,7 +134,7 @@ erDiagram
     CampaignStatus status        "DRAFT | ACTIVE | PAUSED | ENDED"
     Float          org_pct       "SNAPSHOT — frozen at campaign creation"
     Int            goal_cents    "nullable"
-    Int            total_raised  "denormalized — updated on payout"
+    Int            total_raised  "denormalized — updated at payment confirmation (MVP)"
   }
 
   CampaignItem {
@@ -223,6 +223,7 @@ erDiagram
   MagicLink {
     String           id         PK
     String           token      UK "crypto 32 bytes"
+    String           dedupe_key UK "nullable — one fulfillment link per order"
     MagicLinkPurpose purpose       "ORDER_FULFILLMENT | ORG_APPROVAL | ROASTER_REVIEW"
     String           actor_id      "roaster.id or org.id"
     ActorType        actor_type

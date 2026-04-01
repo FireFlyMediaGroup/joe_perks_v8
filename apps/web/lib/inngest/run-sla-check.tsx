@@ -2,6 +2,7 @@ import {
   type Buyer,
   type Campaign,
   database,
+  logOrderEvent,
   type Order,
   type Org,
   type PlatformSettings,
@@ -92,6 +93,7 @@ async function trySlaAutoRefund(
       where: { id: order.id },
       data: { status: "REFUNDED", payoutStatus: "FAILED" },
     }),
+    // OrderEvent must stay in this transaction with the order status update (atomic refund close-out).
     database.orderEvent.create({
       data: {
         orderId: order.id,
@@ -140,18 +142,14 @@ async function trySlaCritical(
           orderId={order.id}
           orderNumber={order.orderNumber}
           stage="critical"
+          thresholdHours={settings.slaCriticalHours}
         />
       ),
     });
   }
 
-  await database.orderEvent.create({
-    data: {
-      orderId: order.id,
-      eventType: "NOTE_ADDED",
-      actorType: "SYSTEM",
-      payload: { code: "SLA_CRITICAL" },
-    },
+  await logOrderEvent(order.id, "NOTE_ADDED", "SYSTEM", null, {
+    code: "SLA_CRITICAL",
   });
 
   console.log("sla-check: critical tier recorded", { order_id: order.id });
@@ -182,14 +180,7 @@ async function trySlaBreach(
 
   const fulfillByIso = order.fulfillBy.toISOString();
 
-  await database.orderEvent.create({
-    data: {
-      orderId: order.id,
-      eventType: "SLA_BREACH",
-      actorType: "SYSTEM",
-      payload: {},
-    },
-  });
+  await logOrderEvent(order.id, "SLA_BREACH", "SYSTEM", null, {});
 
   if (canEmail) {
     await sendEmail({
@@ -229,6 +220,7 @@ async function trySlaBreach(
             orderId={order.id}
             orderNumber={order.orderNumber}
             stage="breach"
+            thresholdHours={settings.slaBreachHours}
           />
         ),
       });
@@ -262,14 +254,7 @@ async function trySlaWarn(
 
   const fulfillByIso = order.fulfillBy.toISOString();
 
-  await database.orderEvent.create({
-    data: {
-      orderId: order.id,
-      eventType: "SLA_WARNING",
-      actorType: "SYSTEM",
-      payload: {},
-    },
-  });
+  await logOrderEvent(order.id, "SLA_WARNING", "SYSTEM", null, {});
 
   if (canEmail) {
     await sendEmail({

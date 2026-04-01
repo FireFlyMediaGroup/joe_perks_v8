@@ -2,7 +2,7 @@
 
 **Story ID:** US-06-03 | **Epic:** EP-06 (Payouts & Financials)
 **Points:** 5 | **Priority:** High
-**Status:** `Todo`
+**Status:** `Done`
 **Owner:** Full-stack
 **Dependencies:** US-01-02 (DB Foundation)
 **Depends on this:** None (utility -- consumed by all Sprint 4 stories)
@@ -24,18 +24,10 @@ Create the `logOrderEvent()` helper in `packages/db` (documented in `CONVENTIONS
 
 ## Current repo evidence
 
-- **`docs/CONVENTIONS.md`** -- Documents `logOrderEvent` import from `@joe-perks/db` with this signature:
-  ```typescript
-  await logOrderEvent(order.id, 'ORDER_SHIPPED', 'ROASTER', roaster.id, { tracking_number, carrier }, requestIp)
-  ```
-  States: "OrderEvent is APPEND-ONLY -- never update or delete rows. logOrderEvent() handles errors gracefully -- won't throw on failure."
-- **`packages/db/index.ts`** -- Exports `database`, `generateOrderNumber`, Clerk sync helpers. Does NOT export `logOrderEvent`. No `log-event.ts` file exists.
-- **Existing direct creates:**
-  - `apps/web/app/api/webhooks/stripe/route.ts`: `database.orderEvent.create` for `PAYMENT_SUCCEEDED`, `PAYMENT_FAILED` (inside `$transaction` and standalone)
-  - `apps/web/lib/inngest/run-sla-check.tsx`: `database.orderEvent.create` for `SLA_WARNING`, `SLA_BREACH`, `NOTE_ADDED`, `REFUND_COMPLETED`
-  - `apps/web/app/api/checkout/create-intent/route.ts`: `database.orderEvent.create` for `PAYMENT_INTENT_CREATED`
-- **`OrderEventType` enum** (from Prisma schema): `PAYMENT_INTENT_CREATED`, `PAYMENT_SUCCEEDED`, `PAYMENT_FAILED`, `FULFILLMENT_VIEWED`, `SHIPPED`, `DELIVERED`, `PAYOUT_TRANSFERRED`, `PAYOUT_FAILED`, `SLA_WARNING`, `SLA_BREACH`, `REFUND_COMPLETED`, `NOTE_ADDED`, `DISPUTE_OPENED`, `DISPUTE_RESOLVED`
-- **No query API** exists for order events. `apps/web/app/api/order-status/route.ts` returns order status for buyer polling but does not include events.
+- **`packages/db/log-event.ts`** -- `logOrderEvent()` is implemented and exported from `@joe-perks/db`.
+- **`apps/web/app/api/orders/[id]/events/route.ts`** -- `GET` endpoint returns chronological order events and requires admin Basic Auth.
+- **Shared Basic Auth normalization** -- The events API now uses the same normalized credential parsing/verification behavior as `apps/admin` via `@joe-perks/types`.
+- **Transactional callers** -- Checkout, webhook confirmation, and SLA auto-refund still use direct transactional `orderEvent.create` calls with inline comments explaining why.
 
 ---
 
@@ -110,17 +102,17 @@ Create the `logOrderEvent()` helper in `packages/db` (documented in `CONVENTIONS
 
 ## Acceptance criteria
 
-- [ ] `logOrderEvent()` is exported from `@joe-perks/db`
-- [ ] `logOrderEvent()` creates an `OrderEvent` with the provided fields
-- [ ] `logOrderEvent()` never throws -- catches errors internally and logs them
-- [ ] `logOrderEvent()` accepts optional `actorId`, `payload`, and `ipAddress`
-- [ ] `GET /api/orders/[id]/events` returns all events for an order sorted by `createdAt` ascending
-- [ ] The events API requires admin authentication (HTTP Basic Auth)
-- [ ] The events API returns 404 if the order does not exist
-- [ ] Response includes `id`, `eventType`, `actorType`, `actorId`, `payload`, `ipAddress`, `createdAt` for each event
-- [ ] Standalone `orderEvent.create` calls in `run-sla-check.tsx` are refactored to use `logOrderEvent()`
-- [ ] Transactional `orderEvent.create` calls (webhook, checkout) retain `$transaction` pattern with a code comment
-- [ ] No PII in event payloads -- only IDs, codes, and tracking numbers
+- [x] `logOrderEvent()` is exported from `@joe-perks/db`
+- [x] `logOrderEvent()` creates an `OrderEvent` with the provided fields
+- [x] `logOrderEvent()` never throws -- catches errors internally and logs them
+- [x] `logOrderEvent()` accepts optional `actorId`, `payload`, and `ipAddress`
+- [x] `GET /api/orders/[id]/events` returns all events for an order sorted by `createdAt` ascending
+- [x] The events API requires admin authentication (HTTP Basic Auth)
+- [x] The events API returns 404 if the order does not exist
+- [x] Response includes `id`, `eventType`, `actorType`, `actorId`, `payload`, `ipAddress`, `createdAt` for each event
+- [x] Standalone `orderEvent.create` calls in `run-sla-check.tsx` are refactored to use `logOrderEvent()`
+- [x] Transactional `orderEvent.create` calls (webhook, checkout) retain `$transaction` pattern with a code comment
+- [x] No PII in event payloads -- only IDs, codes, and tracking numbers
 
 ---
 
@@ -183,3 +175,5 @@ Create the `logOrderEvent()` helper in `packages/db` (documented in `CONVENTIONS
 | Version | Date | Notes |
 |---------|------|-------|
 | 0.1 | 2026-04-01 | Initial story created for Sprint 4 planning. |
+| 0.2 | 2026-04-01 | Implemented on `main`; status `Done`. |
+| 0.3 | 2026-04-01 | Review follow-up: events API and admin UI now share normalized Basic Auth handling. |

@@ -2,7 +2,7 @@
 
 **Story ID:** US-05-03 | **Epic:** EP-05 (Order Fulfillment)
 **Points:** 5 | **Priority:** High
-**Status:** `Todo`
+**Status:** `Done`
 **Owner:** Full-stack
 **Dependencies:** US-05-02 (Roaster Fulfillment Page)
 **Depends on this:** US-06-01 (Payout Job), US-08-04 (Delivered Email)
@@ -26,12 +26,10 @@ Build an admin-facing delivery confirmation flow that transitions shipped orders
 
 ## Current repo evidence
 
-- **`Order` model** -- Has `deliveredAt DateTime?`, `payoutEligibleAt DateTime?`, `payoutStatus PayoutStatus` (PENDING, HELD, TRANSFERRED, FAILED). Status enum includes `DELIVERED`.
-- **`OrderEventType` enum** -- Includes `DELIVERED`.
-- **`PlatformSettings`** -- Has `payoutHoldDays Int` (default 7). The webhook already uses this to set the initial `payoutEligibleAt` at confirmation time.
-- **Payout job** -- `apps/web/lib/inngest/run-payout-release.ts` queries `status: "DELIVERED"`, `payoutStatus: "HELD"`, `payoutEligibleAt: { lte: now }`. This story produces the DELIVERED orders the job consumes.
-- **Admin app** -- `apps/admin/app/` has approval pages but no order management pages yet. The admin dashboard page (`page.tsx`) exists but does not list orders.
-- **No delivery confirmation flow** exists anywhere in the codebase.
+- **`apps/admin/app/orders/page.tsx`** -- Lists orders with `Shipped`, `Confirmed`, `Delivered`, `Refunded`, and `All` filters.
+- **`apps/admin/app/orders/[id]/page.tsx`** -- Shows full order detail, tracking, splits, and the chronological event timeline.
+- **`apps/admin/app/orders/_actions/confirm-delivery.ts`** -- Updates `SHIPPED -> DELIVERED`, recalculates `payoutEligibleAt`, records a `DELIVERED` event, and stores a stable admin actor ID derived from the configured Basic Auth email.
+- **`apps/admin/middleware.ts`** -- Uses shared Basic Auth parsing/credential normalization so the admin UI and the admin events API behave consistently.
 
 ---
 
@@ -105,20 +103,20 @@ Build an admin-facing delivery confirmation flow that transitions shipped orders
 
 ## Acceptance criteria
 
-- [ ] Admin can view a list of orders filtered by status (default: SHIPPED)
-- [ ] Order list shows: order number, roaster, buyer name, dates, tracking, status
-- [ ] Admin can click into an order detail page showing full order information
-- [ ] Order detail page shows items, amounts, split breakdown, tracking info
-- [ ] Order detail page shows order event timeline (chronological)
-- [ ] "Confirm Delivery" button is visible only when `status = SHIPPED`
-- [ ] Clicking "Confirm Delivery" shows a confirmation dialog
-- [ ] On confirmation: `Order.status` set to `DELIVERED`, `deliveredAt` set to `now()`
-- [ ] On confirmation: `payoutEligibleAt` calculated as `deliveredAt + PlatformSettings.payoutHoldDays` days
-- [ ] On confirmation: `OrderEvent(ORDER_DELIVERED)` created with `actorType = ADMIN`
-- [ ] On confirmation: delivered email sent to buyer (when Resend configured)
-- [ ] After confirmation, the button is replaced with delivery info (date, payout eligible date)
-- [ ] Admin cannot confirm delivery for non-SHIPPED orders
-- [ ] Admin order pages are protected by HTTP Basic Auth
+- [x] Admin can view a list of orders filtered by status (default: SHIPPED)
+- [x] Order list shows: order number, roaster, buyer name, dates, tracking, status
+- [x] Admin can click into an order detail page showing full order information
+- [x] Order detail page shows items, amounts, split breakdown, tracking info
+- [x] Order detail page shows order event timeline (chronological)
+- [x] "Confirm Delivery" button is visible only when `status = SHIPPED`
+- [x] Clicking "Confirm Delivery" shows a confirmation dialog
+- [x] On confirmation: `Order.status` set to `DELIVERED`, `deliveredAt` set to `now()`
+- [x] On confirmation: `payoutEligibleAt` calculated as `deliveredAt + PlatformSettings.payoutHoldDays` days
+- [x] On confirmation: `OrderEvent` with `eventType = DELIVERED`, `actorType = ADMIN`, and a stable admin `actorId`
+- [x] On confirmation: delivered email sent to buyer (when Resend configured)
+- [x] After confirmation, the button is replaced with delivery info (date, payout eligible date)
+- [x] Admin cannot confirm delivery for non-SHIPPED orders
+- [x] Admin order pages are protected by HTTP Basic Auth
 
 ---
 
@@ -172,3 +170,5 @@ Build an admin-facing delivery confirmation flow that transitions shipped orders
 | Version | Date | Notes |
 |---------|------|-------|
 | 0.1 | 2026-04-01 | Initial story created for Sprint 4 planning. |
+| 0.2 | 2026-04-01 | Implemented on `main`; status `Done`. |
+| 0.3 | 2026-04-01 | Review follow-up: `DELIVERED` events now store an admin actor ID and the admin list exposes a dedicated `Refunded` tab. |

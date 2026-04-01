@@ -27,6 +27,7 @@ export type AggregateMagicLink = {
 export type MagicLinkMinAggregateOutputType = {
   id: string | null
   token: string | null
+  dedupeKey: string | null
   purpose: $Enums.MagicLinkPurpose | null
   actorId: string | null
   actorType: $Enums.ActorType | null
@@ -38,6 +39,7 @@ export type MagicLinkMinAggregateOutputType = {
 export type MagicLinkMaxAggregateOutputType = {
   id: string | null
   token: string | null
+  dedupeKey: string | null
   purpose: $Enums.MagicLinkPurpose | null
   actorId: string | null
   actorType: $Enums.ActorType | null
@@ -49,6 +51,7 @@ export type MagicLinkMaxAggregateOutputType = {
 export type MagicLinkCountAggregateOutputType = {
   id: number
   token: number
+  dedupeKey: number
   purpose: number
   actorId: number
   actorType: number
@@ -63,6 +66,7 @@ export type MagicLinkCountAggregateOutputType = {
 export type MagicLinkMinAggregateInputType = {
   id?: true
   token?: true
+  dedupeKey?: true
   purpose?: true
   actorId?: true
   actorType?: true
@@ -74,6 +78,7 @@ export type MagicLinkMinAggregateInputType = {
 export type MagicLinkMaxAggregateInputType = {
   id?: true
   token?: true
+  dedupeKey?: true
   purpose?: true
   actorId?: true
   actorType?: true
@@ -85,6 +90,7 @@ export type MagicLinkMaxAggregateInputType = {
 export type MagicLinkCountAggregateInputType = {
   id?: true
   token?: true
+  dedupeKey?: true
   purpose?: true
   actorId?: true
   actorType?: true
@@ -170,6 +176,7 @@ export type MagicLinkGroupByArgs<ExtArgs extends runtime.Types.Extensions.Intern
 export type MagicLinkGroupByOutputType = {
   id: string
   token: string
+  dedupeKey: string | null
   purpose: $Enums.MagicLinkPurpose
   actorId: string
   actorType: $Enums.ActorType
@@ -203,6 +210,7 @@ export type MagicLinkWhereInput = {
   NOT?: Prisma.MagicLinkWhereInput | Prisma.MagicLinkWhereInput[]
   id?: Prisma.StringFilter<"MagicLink"> | string
   token?: Prisma.StringFilter<"MagicLink"> | string
+  dedupeKey?: Prisma.StringNullableFilter<"MagicLink"> | string | null
   purpose?: Prisma.EnumMagicLinkPurposeFilter<"MagicLink"> | $Enums.MagicLinkPurpose
   actorId?: Prisma.StringFilter<"MagicLink"> | string
   actorType?: Prisma.EnumActorTypeFilter<"MagicLink"> | $Enums.ActorType
@@ -215,6 +223,7 @@ export type MagicLinkWhereInput = {
 export type MagicLinkOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   token?: Prisma.SortOrder
+  dedupeKey?: Prisma.SortOrderInput | Prisma.SortOrder
   purpose?: Prisma.SortOrder
   actorId?: Prisma.SortOrder
   actorType?: Prisma.SortOrder
@@ -227,6 +236,7 @@ export type MagicLinkOrderByWithRelationInput = {
 export type MagicLinkWhereUniqueInput = Prisma.AtLeast<{
   id?: string
   token?: string
+  dedupeKey?: string
   AND?: Prisma.MagicLinkWhereInput | Prisma.MagicLinkWhereInput[]
   OR?: Prisma.MagicLinkWhereInput[]
   NOT?: Prisma.MagicLinkWhereInput | Prisma.MagicLinkWhereInput[]
@@ -237,11 +247,12 @@ export type MagicLinkWhereUniqueInput = Prisma.AtLeast<{
   expiresAt?: Prisma.DateTimeFilter<"MagicLink"> | Date | string
   usedAt?: Prisma.DateTimeNullableFilter<"MagicLink"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"MagicLink"> | Date | string
-}, "id" | "token">
+}, "id" | "token" | "dedupeKey">
 
 export type MagicLinkOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   token?: Prisma.SortOrder
+  dedupeKey?: Prisma.SortOrderInput | Prisma.SortOrder
   purpose?: Prisma.SortOrder
   actorId?: Prisma.SortOrder
   actorType?: Prisma.SortOrder
@@ -260,6 +271,7 @@ export type MagicLinkScalarWhereWithAggregatesInput = {
   NOT?: Prisma.MagicLinkScalarWhereWithAggregatesInput | Prisma.MagicLinkScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"MagicLink"> | string
   token?: Prisma.StringWithAggregatesFilter<"MagicLink"> | string
+  dedupeKey?: Prisma.StringNullableWithAggregatesFilter<"MagicLink"> | string | null
   purpose?: Prisma.EnumMagicLinkPurposeWithAggregatesFilter<"MagicLink"> | $Enums.MagicLinkPurpose
   actorId?: Prisma.StringWithAggregatesFilter<"MagicLink"> | string
   actorType?: Prisma.EnumActorTypeWithAggregatesFilter<"MagicLink"> | $Enums.ActorType
@@ -272,6 +284,7 @@ export type MagicLinkScalarWhereWithAggregatesInput = {
 export type MagicLinkCreateInput = {
   id?: string
   token: string
+  dedupeKey?: string | null
   purpose: $Enums.MagicLinkPurpose
   actorId: string
   actorType: $Enums.ActorType
@@ -284,6 +297,7 @@ export type MagicLinkCreateInput = {
 export type MagicLinkUncheckedCreateInput = {
   id?: string
   token: string
+  dedupeKey?: string | null
   purpose: $Enums.MagicLinkPurpose
   actorId: string
   actorType: $Enums.ActorType
@@ -296,6 +310,7 @@ export type MagicLinkUncheckedCreateInput = {
 export type MagicLinkUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   token?: Prisma.StringFieldUpdateOperationsInput | string
+  dedupeKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   purpose?: Prisma.EnumMagicLinkPurposeFieldUpdateOperationsInput | $Enums.MagicLinkPurpose
   actorId?: Prisma.StringFieldUpdateOperationsInput | string
   actorType?: Prisma.EnumActorTypeFieldUpdateOperationsInput | $Enums.ActorType
@@ -308,6 +323,7 @@ export type MagicLinkUpdateInput = {
 export type MagicLinkUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   token?: Prisma.StringFieldUpdateOperationsInput | string
+  dedupeKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   purpose?: Prisma.EnumMagicLinkPurposeFieldUpdateOperationsInput | $Enums.MagicLinkPurpose
   actorId?: Prisma.StringFieldUpdateOperationsInput | string
   actorType?: Prisma.EnumActorTypeFieldUpdateOperationsInput | $Enums.ActorType
@@ -320,6 +336,7 @@ export type MagicLinkUncheckedUpdateInput = {
 export type MagicLinkCreateManyInput = {
   id?: string
   token: string
+  dedupeKey?: string | null
   purpose: $Enums.MagicLinkPurpose
   actorId: string
   actorType: $Enums.ActorType
@@ -332,6 +349,7 @@ export type MagicLinkCreateManyInput = {
 export type MagicLinkUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   token?: Prisma.StringFieldUpdateOperationsInput | string
+  dedupeKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   purpose?: Prisma.EnumMagicLinkPurposeFieldUpdateOperationsInput | $Enums.MagicLinkPurpose
   actorId?: Prisma.StringFieldUpdateOperationsInput | string
   actorType?: Prisma.EnumActorTypeFieldUpdateOperationsInput | $Enums.ActorType
@@ -344,6 +362,7 @@ export type MagicLinkUpdateManyMutationInput = {
 export type MagicLinkUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   token?: Prisma.StringFieldUpdateOperationsInput | string
+  dedupeKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   purpose?: Prisma.EnumMagicLinkPurposeFieldUpdateOperationsInput | $Enums.MagicLinkPurpose
   actorId?: Prisma.StringFieldUpdateOperationsInput | string
   actorType?: Prisma.EnumActorTypeFieldUpdateOperationsInput | $Enums.ActorType
@@ -356,6 +375,7 @@ export type MagicLinkUncheckedUpdateManyInput = {
 export type MagicLinkCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   token?: Prisma.SortOrder
+  dedupeKey?: Prisma.SortOrder
   purpose?: Prisma.SortOrder
   actorId?: Prisma.SortOrder
   actorType?: Prisma.SortOrder
@@ -368,6 +388,7 @@ export type MagicLinkCountOrderByAggregateInput = {
 export type MagicLinkMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   token?: Prisma.SortOrder
+  dedupeKey?: Prisma.SortOrder
   purpose?: Prisma.SortOrder
   actorId?: Prisma.SortOrder
   actorType?: Prisma.SortOrder
@@ -379,6 +400,7 @@ export type MagicLinkMaxOrderByAggregateInput = {
 export type MagicLinkMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   token?: Prisma.SortOrder
+  dedupeKey?: Prisma.SortOrder
   purpose?: Prisma.SortOrder
   actorId?: Prisma.SortOrder
   actorType?: Prisma.SortOrder
@@ -396,6 +418,7 @@ export type EnumMagicLinkPurposeFieldUpdateOperationsInput = {
 export type MagicLinkSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   token?: boolean
+  dedupeKey?: boolean
   purpose?: boolean
   actorId?: boolean
   actorType?: boolean
@@ -408,6 +431,7 @@ export type MagicLinkSelect<ExtArgs extends runtime.Types.Extensions.InternalArg
 export type MagicLinkSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   token?: boolean
+  dedupeKey?: boolean
   purpose?: boolean
   actorId?: boolean
   actorType?: boolean
@@ -420,6 +444,7 @@ export type MagicLinkSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ext
 export type MagicLinkSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   token?: boolean
+  dedupeKey?: boolean
   purpose?: boolean
   actorId?: boolean
   actorType?: boolean
@@ -432,6 +457,7 @@ export type MagicLinkSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ext
 export type MagicLinkSelectScalar = {
   id?: boolean
   token?: boolean
+  dedupeKey?: boolean
   purpose?: boolean
   actorId?: boolean
   actorType?: boolean
@@ -441,7 +467,7 @@ export type MagicLinkSelectScalar = {
   createdAt?: boolean
 }
 
-export type MagicLinkOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "token" | "purpose" | "actorId" | "actorType" | "payload" | "expiresAt" | "usedAt" | "createdAt", ExtArgs["result"]["magicLink"]>
+export type MagicLinkOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "token" | "dedupeKey" | "purpose" | "actorId" | "actorType" | "payload" | "expiresAt" | "usedAt" | "createdAt", ExtArgs["result"]["magicLink"]>
 
 export type $MagicLinkPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "MagicLink"
@@ -449,6 +475,7 @@ export type $MagicLinkPayload<ExtArgs extends runtime.Types.Extensions.InternalA
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     token: string
+    dedupeKey: string | null
     purpose: $Enums.MagicLinkPurpose
     actorId: string
     actorType: $Enums.ActorType
@@ -881,6 +908,7 @@ export interface Prisma__MagicLinkClient<T, Null = never, ExtArgs extends runtim
 export interface MagicLinkFieldRefs {
   readonly id: Prisma.FieldRef<"MagicLink", 'String'>
   readonly token: Prisma.FieldRef<"MagicLink", 'String'>
+  readonly dedupeKey: Prisma.FieldRef<"MagicLink", 'String'>
   readonly purpose: Prisma.FieldRef<"MagicLink", 'MagicLinkPurpose'>
   readonly actorId: Prisma.FieldRef<"MagicLink", 'String'>
   readonly actorType: Prisma.FieldRef<"MagicLink", 'ActorType'>

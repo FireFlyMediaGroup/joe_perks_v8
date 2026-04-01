@@ -223,6 +223,7 @@ export async function POST(request: Request) {
         data: orderItemsData.map((item) => ({ orderId, ...item })),
       });
 
+      // OrderEvent must stay inside this transaction with order + line items (atomic create).
       await tx.orderEvent.create({
         data: {
           orderId,

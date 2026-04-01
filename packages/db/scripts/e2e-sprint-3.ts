@@ -62,8 +62,11 @@ function skip(name: string, reason: string) {
 }
 
 function assert(cond: boolean, name: string, failMsg: string) {
-  if (cond) pass(name);
-  else fail(name, failMsg);
+  if (cond) {
+    pass(name);
+  } else {
+    fail(name, failMsg);
+  }
 }
 
 // ── Flow 2: Org Application ────────────────────────────────────────────
@@ -111,8 +114,6 @@ async function flow2_orgApplication() {
     return null;
   }
 
-  const settings = await prisma.platformSettings.findUniqueOrThrow({ where: { id: "singleton" } });
-
   const app = await prisma.orgApplication.create({
     data: {
       status: "PENDING_PLATFORM_REVIEW",
@@ -150,11 +151,6 @@ async function flow3_adminApproval(applicationId: string, roasterId: string) {
   console.log("\n--- Flow 3: Admin Org Approval (US-03-02) ---\n");
 
   // Test 3a: Approve the main application
-  const roaster = await prisma.roaster.findUnique({
-    where: { id: roasterId },
-    include: { application: { select: { businessName: true } } },
-  });
-
   const token = randomBytes(32).toString("hex");
   const expiresAt = new Date(Date.now() + 72 * 60 * 60 * 1000);
 
@@ -185,7 +181,13 @@ async function flow3_adminApproval(applicationId: string, roasterId: string) {
     where: { token, purpose: "ROASTER_REVIEW" },
   });
   assert(!!link, "MagicLink created with purpose ROASTER_REVIEW", "not found");
-  assert(link!.expiresAt > new Date(), "MagicLink expires in future (72h)", "already expired");
+  if (link) {
+    assert(
+      link.expiresAt > new Date(),
+      "MagicLink expires in future (72h)",
+      "already expired"
+    );
+  }
 
   // Test 3b: Reject a separate application
   const rejectApp = await prisma.orgApplication.create({
@@ -231,7 +233,9 @@ async function flow4_magicLinkApprove(
     where: { token, purpose: "ROASTER_REVIEW", usedAt: null, expiresAt: { gt: new Date() } },
   });
   assert(!!link, "MagicLink valid and unused", "not found or expired");
-  if (!link) return null;
+  if (!link) {
+    return null;
+  }
 
   // Mark magic link as used
   await prisma.magicLink.update({ where: { id: link.id }, data: { usedAt: new Date() } });
@@ -326,7 +330,7 @@ async function flow5_orgConnectAndCampaign(orgId: string, roasterId: string) {
       name: "E2E Sprint 3 Fundraiser",
       status: "DRAFT",
       orgPct: 0.15,
-      goalCents: 50000,
+      goalCents: 50_000,
     },
   });
   assert(campaign.status === "DRAFT", "Campaign created as DRAFT", `got ${campaign.status}`);
@@ -469,6 +473,14 @@ async function flow7_shippingGuard(slug: string, roasterId: string) {
 
 // ── Flow 8: Three-Step Checkout (HTTP API) ──────────────────────────────
 
+interface CheckoutResponse {
+  clientSecret: string;
+  grossAmount: number;
+  orderId: string;
+  orderNumber: string;
+  paymentIntentId: string;
+}
+
 async function flow8_checkout(campaignId: string, roasterId: string) {
   console.log("\n--- Flow 8: Three-Step Checkout (US-04-03) ---\n");
 
@@ -496,7 +508,7 @@ async function flow8_checkout(campaignId: string, roasterId: string) {
     shippingRateId: shippingRate.id,
   };
 
-  let checkoutResponse: any;
+  let checkoutResponse: CheckoutResponse;
   try {
     const res = await fetch(`${WEB_URL}/api/checkout/create-intent`, {
       method: "POST",
@@ -504,7 +516,7 @@ async function flow8_checkout(campaignId: string, roasterId: string) {
       body: JSON.stringify(checkoutPayload),
     });
     assert(res.ok, `POST /api/checkout/create-intent → ${res.status}`, `status ${res.status}`);
-    checkoutResponse = await res.json();
+    checkoutResponse = (await res.json()) as CheckoutResponse;
   } catch (e) {
     fail("Checkout API request", e instanceof Error ? e.message : "unknown error");
     return null;
@@ -524,7 +536,7 @@ async function flow8_checkout(campaignId: string, roasterId: string) {
   });
   assert(!!order, "Order created in DB", "not found");
   assert(order?.status === "PENDING", "Order status = PENDING", `got ${order?.status}`);
-  assert(order?.orderNumber?.startsWith("JP-"), `Order number format JP-XXXXX: ${order?.orderNumber}`, "wrong format");
+  assert(order?.orderNumber?.startsWith("JP-") ?? false, `Order number format JP-XXXXX: ${order?.orderNumber}`, "wrong format");
   assert(order?.items.length === items.length, `OrderItems count = ${order?.items.length}`, `expected ${items.length}`);
   assert(order?.buyer?.email === "buyer-e2e@joeperks.test", "Buyer upserted", "wrong email");
   assert(order?.stripePiId === checkoutResponse.paymentIntentId, "Order linked to PaymentIntent", "PI mismatch");
@@ -547,7 +559,11 @@ async function flow8_checkout(campaignId: string, roasterId: string) {
   // Check unit prices and line totals
   for (const oi of order?.items ?? []) {
     assert(oi.unitPrice > 0, `OrderItem "${oi.productName}" unitPrice = ${oi.unitPrice}`, "0 or missing");
-    assert(oi.lineTotal === oi.unitPrice * oi.quantity, `OrderItem lineTotal = unitPrice × qty`, `${oi.lineTotal} ≠ ${oi.unitPrice} × ${oi.quantity}`);
+    assert(
+      oi.lineTotal === oi.unitPrice * oi.quantity,
+      "OrderItem lineTotal = unitPrice × qty",
+      `${oi.lineTotal} ≠ ${oi.unitPrice} × ${oi.quantity}`
+    );
   }
 
   // Test error case: invalid payload
@@ -571,6 +587,7 @@ async function flow8_checkout(campaignId: string, roasterId: string) {
 
 // ── Flow 9: Order Confirmation + Email ──────────────────────────────────
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: end-to-end verification script intentionally checks many sequential assertions
 async function flow9_orderConfirmation(orderId: string, paymentIntentId: string, slug: string) {
   console.log("\n--- Flow 9: Order Confirmation (US-04-04) + Email (US-08-01) ---\n");
 

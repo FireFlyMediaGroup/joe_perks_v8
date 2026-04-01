@@ -2412,6 +2412,7 @@ export type DisputeRecordScalarFieldEnum = (typeof DisputeRecordScalarFieldEnum)
 export const MagicLinkScalarFieldEnum = {
   id: 'id',
   token: 'token',
+  dedupeKey: 'dedupeKey',
   purpose: 'purpose',
   actorId: 'actorId',
   actorType: 'actorType',

@@ -25,8 +25,8 @@ export function SlaRoasterReminderEmail(props: {
                 Fulfillment reminder
               </Text>
               <Text className="text-zinc-600">
-                Order {props.orderNumber} is approaching its SLA. Please ship by{" "}
-                {props.fulfillByIso}.
+                Please ship order {props.orderNumber} by {props.fulfillByIso} to
+                stay within Joe Perks fulfillment standards.
               </Text>
             </Section>
           </Container>
@@ -54,6 +54,7 @@ export function SlaRoasterUrgentEmail(props: {
               <Text className="text-zinc-600">
                 Order {props.orderNumber} has passed the fulfillment deadline (
                 {props.fulfillByIso}). Ship immediately or contact support.
+                Continued delays may affect your standing on the marketplace.
               </Text>
             </Section>
           </Container>
@@ -76,9 +77,9 @@ export function SlaBuyerDelayEmail(props: { orderNumber: string }) {
                 Shipping delay
               </Text>
               <Text className="text-zinc-600">
-                We are sorry — order {props.orderNumber} is taking longer than
-                expected to ship. We are working with the roaster to get it out
-                soon.
+                We apologize for the delay — order {props.orderNumber} is taking
+                longer than expected to ship. We are working with the roaster to
+                get it out soon.
               </Text>
             </Section>
           </Container>
@@ -92,11 +93,12 @@ export function SlaAdminAlertEmail(props: {
   orderNumber: string;
   orderId: string;
   stage: "breach" | "critical";
+  thresholdHours: number;
 }) {
   const title =
     props.stage === "breach"
-      ? "SLA breach (48h tier)"
-      : "SLA critical (72h tier)";
+      ? `SLA breach (${props.thresholdHours}h tier)`
+      : `SLA critical (${props.thresholdHours}h tier)`;
   return (
     <Tailwind>
       <Html>
@@ -113,6 +115,9 @@ export function SlaAdminAlertEmail(props: {
               <Text className="text-zinc-600">
                 Order {props.orderNumber} ({props.orderId}) requires platform
                 attention.
+                {props.stage === "breach"
+                  ? " Escalate with the roaster and confirm a ship date."
+                  : " Coordinate manual follow-up — auto-refund may apply if the order remains unshipped."}
               </Text>
             </Section>
           </Container>

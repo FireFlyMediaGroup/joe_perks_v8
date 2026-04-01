@@ -2,7 +2,7 @@
 
 **Story ID:** US-05-02 | **Epic:** EP-05 (Order Fulfillment)
 **Points:** 8 | **Priority:** High
-**Status:** `Todo`
+**Status:** `Done`
 **Owner:** Full-stack
 **Dependencies:** US-05-01 (Webhook Fulfillment Magic Link)
 **Depends on this:** US-05-03 (Delivery Confirmation), US-08-03 (Shipped Email)
@@ -25,12 +25,10 @@ Replace the stub at `apps/roaster/app/fulfill/[token]/page.tsx` with a fully fun
 
 ## Current repo evidence
 
-- **`apps/roaster/app/fulfill/[token]/page.tsx`** -- Stub page rendering "Fulfillment" heading and token display with "validate + tracking form (TODO)" message. No DB queries, no form, no validation.
-- **`MagicLink` model** -- `purpose` enum includes `ORDER_FULFILLMENT`. Schema has `token` (unique), `actorId`, `payload` (JSON), `expiresAt`, `usedAt`.
-- **`Order` model** -- Has `trackingNumber`, `carrier`, `shippedAt`, `deliveredAt` fields (all nullable). `OrderStatus` enum includes `SHIPPED`.
-- **`OrderEventType` enum** -- Includes `FULFILLMENT_VIEWED` and `SHIPPED`.
-- **Existing magic link page pattern** -- `apps/roaster/app/org-requests/[token]/page.tsx` validates `MagicLink` with `ROASTER_REVIEW` purpose, loads associated data, renders approve/decline actions. Same pattern applies here.
-- **No authentication required** -- Magic link pages are accessible without Clerk session per AGENTS.md.
+- **`apps/roaster/app/fulfill/[token]/page.tsx`** -- Validates the token, loads the order, records `FULFILLMENT_VIEWED`, renders `FulfillmentDetails`, and shows the tracking form for `CONFIRMED` orders.
+- **`apps/roaster/app/fulfill/[token]/_components/fulfillment-details.tsx`** -- Shows order number, order date, status, item snapshots, totals, payout breakdown, fundraiser context, and buyer name only.
+- **`apps/roaster/app/fulfill/[token]/_actions/submit-tracking.ts`** -- Re-validates and consumes the magic link inside a transaction, updates the order to `SHIPPED`, records the `SHIPPED` event, and sends the shipped email.
+- **No authentication required** -- Magic link pages remain accessible without Clerk session per AGENTS.md.
 
 ---
 
@@ -111,23 +109,23 @@ Replace the stub at `apps/roaster/app/fulfill/[token]/page.tsx` with a fully fun
 
 ## Acceptance criteria
 
-- [ ] Visiting `/fulfill/[token]` with a valid, unused, non-expired `ORDER_FULFILLMENT` token shows order details
-- [ ] Visiting with an expired token shows "This link has expired" message
-- [ ] Visiting with a used token shows "This link has already been used" message
-- [ ] Visiting with a non-existent token shows "Invalid link" message
-- [ ] Order details display: order number, items with names/quantities/prices, subtotal, shipping, total
-- [ ] Payout breakdown shows roaster amount, shipping passthrough, and roaster total
-- [ ] `OrderEvent(FULFILLMENT_VIEWED)` is created when the page loads with a valid token
-- [ ] Tracking form has required tracking number and carrier fields
-- [ ] Carrier field offers common options (USPS, UPS, FedEx, DHL, Other)
-- [ ] On submission: `MagicLink.usedAt` is set BEFORE order update (single-use enforcement)
-- [ ] On submission: `Order.status` transitions to `SHIPPED`, `trackingNumber`, `carrier`, `shippedAt` are set
-- [ ] On submission: `OrderEvent(SHIPPED)` is created with tracking details in payload
-- [ ] On submission: shipped notification email is sent to buyer (when Resend configured)
-- [ ] Success view shows confirmation with order number and tracking info
-- [ ] Page is accessible without authentication (no Clerk session required)
-- [ ] Mobile responsive with 44x44px touch targets
-- [ ] No buyer email, address, or PII displayed on the page
+- [x] Visiting `/fulfill/[token]` with a valid, unused, non-expired `ORDER_FULFILLMENT` token shows order details
+- [x] Visiting with an expired token shows "This link has expired" message
+- [x] Visiting with a used token shows "This link has already been used" message
+- [x] Visiting with a non-existent token shows "Invalid link" message
+- [x] Order details display: order number, items with names/quantities/prices, subtotal, shipping, total
+- [x] Payout breakdown shows roaster amount, shipping passthrough, and roaster total
+- [x] `OrderEvent(FULFILLMENT_VIEWED)` is created when the page loads with a valid token
+- [x] Tracking form has required tracking number and carrier fields
+- [x] Carrier field offers common options (USPS, UPS, FedEx, DHL, Other)
+- [x] On submission: `MagicLink.usedAt` is set BEFORE order update (single-use enforcement)
+- [x] On submission: `Order.status` transitions to `SHIPPED`, `trackingNumber`, `carrier`, `shippedAt` are set
+- [x] On submission: `OrderEvent(SHIPPED)` is created with tracking details in payload
+- [x] On submission: shipped notification email is sent to buyer (when Resend configured)
+- [x] Success view shows confirmation with order number and tracking info
+- [x] Page is accessible without authentication (no Clerk session required)
+- [x] Mobile responsive with 44x44px touch targets
+- [x] No buyer email, address, or PII displayed on the page
 
 ---
 
@@ -178,3 +176,5 @@ Replace the stub at `apps/roaster/app/fulfill/[token]/page.tsx` with a fully fun
 | Version | Date | Notes |
 |---------|------|-------|
 | 0.1 | 2026-04-01 | Initial story created for Sprint 4 planning. |
+| 0.2 | 2026-04-01 | Implemented on `main`; status `Done`. |
+| 0.3 | 2026-04-01 | Review follow-up: fulfillment details now explicitly render the order date to match the story acceptance criteria. |

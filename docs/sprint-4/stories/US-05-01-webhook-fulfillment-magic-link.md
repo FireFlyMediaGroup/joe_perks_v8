@@ -2,7 +2,7 @@
 
 **Story ID:** US-05-01 | **Epic:** EP-05 (Order Fulfillment)
 **Points:** 8 | **Priority:** High
-**Status:** `Todo`
+**Status:** `Done`
 **Owner:** Full-stack
 **Dependencies:** US-01-05 (Stripe Checkout API), US-04-03 (Three-Step Checkout), US-01-04 (Email Pipeline)
 **Depends on this:** US-05-02 (Roaster Fulfillment Page), US-08-02 (Fulfillment Email), US-08-05 (SLA Emails)
@@ -25,16 +25,10 @@ Extend the existing `payment_intent.succeeded` webhook handler at `apps/web/app/
 
 ## Current repo evidence
 
-- **`apps/web/app/api/webhooks/stripe/route.ts`** -- `handlePaymentIntentSucceeded` currently:
-  - Loads order, checks `status === "PENDING"` (idempotent guard)
-  - In `$transaction`: updates order to `CONFIRMED`, sets `stripeChargeId`, `payoutStatus: "HELD"`, `payoutEligibleAt`, `fulfillBy`; creates `OrderEvent(PAYMENT_SUCCEEDED)`; increments `campaign.totalRaised`
-  - Calls `sendBuyerOrderConfirmationEmail(orderId)` after the transaction
-  - Does NOT create a `MagicLink` or send a fulfillment email to the roaster
-- **`MagicLink` model** -- Prisma schema has `purpose` enum `MagicLinkPurpose` with `ORDER_FULFILLMENT`. The model has `token`, `actorId`, `actorType`, `payload` (JSON for `{order_id}`), `expiresAt`, `usedAt`
-- **`MagicLink` creation pattern** -- `apps/admin/app/approvals/orgs/_actions/approve-application.ts` creates `MagicLink` for `ROASTER_REVIEW` with `crypto.randomBytes(32).toString('hex')`, 72h TTL. Same pattern applies here
-- **`apps/roaster/app/fulfill/[token]/page.tsx`** -- Stub page exists at the fulfillment URL path
-- **`packages/email/templates/`** -- No `magic-link-fulfillment.tsx` template exists yet (US-08-02 creates it)
-- **`Order` model** -- Has `roasterId` field (explicit FK to roaster); `Roaster` has `email` for the notification
+- **`apps/web/app/api/webhooks/stripe/route.ts`** -- `handlePaymentIntentSucceeded()` now uses a status-guarded transaction so only one concurrent request can commit the `PENDING -> CONFIRMED` transition, `PAYMENT_SUCCEEDED` event, and `campaign.totalRaised` increment.
+- **Fulfillment link creation** -- `createFulfillmentMagicLink()` now uses a deterministic `MagicLink.dedupeKey` and Prisma `upsert()` so only one `ORDER_FULFILLMENT` link can exist per order at the database level.
+- **Webhook post-processing** -- Buyer confirmation email, fulfillment magic-link creation, and roaster fulfillment email run after the confirmation transaction; duplicate `StripeEvent` insert races are ignored safely.
+- **`MagicLink` model** -- Prisma schema includes `token`, `dedupeKey`, `actorId`, `actorType`, `payload`, `expiresAt`, and `usedAt`.
 
 ---
 
@@ -42,7 +36,7 @@ Extend the existing `payment_intent.succeeded` webhook handler at `apps/web/app/
 
 - **Magic links:** Tokens generated with `crypto.randomBytes(32).toString('hex')` (256 bits). Single-use via `usedAt`. Verify: token exists, `expiresAt > now()`, `usedAt IS NULL`, correct `purpose`. TTL is 72h per the lifecycle diagram.
 - **sendEmail():** Use `sendEmail()` from `@joe-perks/email`. Never import Resend directly. `EmailLog` dedup on `(entityType, entityId, template)`.
-- **Webhook idempotency:** `StripeEvent` check already in place. The `sendEmail()` call adds a second dedup layer. MagicLink creation should be idempotent (check if one already exists for this order before creating).
+- **Webhook idempotency:** `StripeEvent` check is in place, but the business transition must also be safe under concurrent delivery. The `sendEmail()` call adds a second dedup layer, and fulfillment links are deduped with a deterministic DB-backed key.
 - **Logging/PII:** Never log buyer or roaster email. Only log `order_id`, `magic_link_id`.
 
 **CONVENTIONS.md patterns:**
@@ -93,18 +87,18 @@ Extend the existing `payment_intent.succeeded` webhook handler at `apps/web/app/
 
 ## Acceptance criteria
 
-- [ ] After `payment_intent.succeeded` fires and order is CONFIRMED, a `MagicLink` record is created with `purpose = ORDER_FULFILLMENT` and 72h TTL
-- [ ] The `MagicLink.token` is 64 hex characters (32 bytes)
-- [ ] The `MagicLink.actorId` is set to the order's `roasterId`
-- [ ] The `MagicLink.payload` contains `{ order_id: orderId }`
-- [ ] `sendEmail()` is called with `template = 'magic_link_fulfillment'`, `entityType = 'order'`, `entityId = order.id`
-- [ ] The fulfillment email is sent to the roaster's email address
-- [ ] The email contains a URL pointing to `{ROASTER_APP_ORIGIN}/fulfill/{token}`
-- [ ] Duplicate webhook events do not create duplicate magic links (idempotency check)
-- [ ] `EmailLog` prevents duplicate fulfillment emails on webhook retry
-- [ ] Email failure does not fail the webhook response (try/catch around `sendEmail`)
-- [ ] No PII is logged -- only `order_id` and `magic_link_id` on success/failure paths
-- [ ] The `MagicLink` creation is outside the main `$transaction` (non-critical path -- order confirmation must succeed even if magic link creation fails)
+- [x] After `payment_intent.succeeded` fires and order is CONFIRMED, a `MagicLink` record is created with `purpose = ORDER_FULFILLMENT` and 72h TTL
+- [x] The `MagicLink.token` is 64 hex characters (32 bytes)
+- [x] The `MagicLink.actorId` is set to the order's `roasterId`
+- [x] The `MagicLink.payload` contains `{ order_id: orderId }`
+- [x] `sendEmail()` is called with `template = 'magic_link_fulfillment'`, `entityType = 'order'`, `entityId = order.id`
+- [x] The fulfillment email is sent to the roaster's email address
+- [x] The email contains a URL pointing to `{ROASTER_APP_ORIGIN}/fulfill/{token}`
+- [x] Duplicate webhook events do not create duplicate magic links (idempotency check)
+- [x] `EmailLog` prevents duplicate fulfillment emails on webhook retry
+- [x] Email failure does not fail the webhook response (try/catch around `sendEmail`)
+- [x] No PII is logged -- only `order_id` and `magic_link_id` on success/failure paths
+- [x] The `MagicLink` creation is outside the main `$transaction` (non-critical path -- order confirmation must succeed even if magic link creation fails)
 
 ---
 
@@ -142,3 +136,5 @@ Extend the existing `payment_intent.succeeded` webhook handler at `apps/web/app/
 | Version | Date | Notes |
 |---------|------|-------|
 | 0.1 | 2026-04-01 | Initial story created for Sprint 4 planning. |
+| 0.2 | 2026-04-01 | Implemented on `main`; status `Done`. |
+| 0.3 | 2026-04-01 | Review follow-up: confirmation flow is concurrency-safe and fulfillment links use `MagicLink.dedupeKey` for DB-enforced dedupe. |

@@ -2,7 +2,7 @@
 
 **Story ID:** US-08-05 | **Epic:** EP-08 (Notifications)
 **Points:** 3 | **Priority:** Medium
-**Status:** `Todo`
+**Status:** `Done`
 **Owner:** Full-stack
 **Dependencies:** US-01-04 (Email Pipeline), US-01-06 (Inngest Jobs), US-05-01 (Webhook Fulfillment Magic Link)
 **Depends on this:** None
@@ -29,7 +29,7 @@ Verify and complete the SLA notification email wiring in the existing `sla-check
   - `SlaRoasterReminderEmail({ orderNumber, fulfillByIso })` -- 24h warning
   - `SlaRoasterUrgentEmail({ orderNumber, fulfillByIso })` -- 48h breach
   - `SlaBuyerDelayEmail({ orderNumber })` -- buyer delay notice
-  - `SlaAdminAlertEmail({ orderNumber, orderId, stage })` -- admin breach/critical alert
+  - `SlaAdminAlertEmail({ orderNumber, orderId, stage, thresholdHours })` -- admin breach/critical alert with dynamic tier copy
 - **`apps/web/lib/inngest/run-sla-check.tsx`** -- Fully implemented SLA check job:
   - Queries CONFIRMED orders with `shippedAt: null`
   - Cascading checks: auto-refund (T+96h) -> critical (T+72h) -> breach (T+48h) -> warn (T+24h)
@@ -108,20 +108,20 @@ Verify and complete the SLA notification email wiring in the existing `sla-check
 
 ## Acceptance criteria
 
-- [ ] All four SLA templates render correctly in React Email preview (`pnpm --filter email dev`)
-- [ ] `SlaRoasterReminderEmail` shows order number and fulfillment deadline
-- [ ] `SlaRoasterUrgentEmail` shows urgent tone with order number and deadline
-- [ ] `SlaBuyerDelayEmail` shows buyer-friendly delay message with order number
-- [ ] `SlaAdminAlertEmail` shows order number, order ID, and stage (breach/critical)
-- [ ] All `sendEmail()` calls use `entityType = 'order'`, `entityId = order.id`
-- [ ] Template strings match: `sla_roaster_reminder`, `sla_roaster_urgent`, `sla_buyer_delay`, `sla_admin_breach`, `sla_admin_critical`
-- [ ] Each SLA tier sends at most one email per order (dedup via `OrderEvent` check + `EmailLog`)
-- [ ] SLA thresholds are read from `PlatformSettings` (not hardcoded)
-- [ ] Auto-refund at T+96h calls `refundCharge()`, sets `status = REFUNDED`, creates `REFUND_COMPLETED` event
-- [ ] SLA job runs hourly via Inngest cron (`0 * * * *`)
-- [ ] Admin email sent to `PLATFORM_ALERT_EMAIL` env var (breach and critical tiers)
-- [ ] Job handles missing email configuration gracefully (skips sends)
-- [ ] No PII logged -- only `order_id`
+- [x] All four SLA templates render correctly in React Email preview (`pnpm --filter email dev`)
+- [x] `SlaRoasterReminderEmail` shows order number and fulfillment deadline
+- [x] `SlaRoasterUrgentEmail` shows urgent tone with order number and deadline
+- [x] `SlaBuyerDelayEmail` shows buyer-friendly delay message with order number
+- [x] `SlaAdminAlertEmail` shows order number, order ID, and stage (breach/critical)
+- [x] All `sendEmail()` calls use `entityType = 'order'`, `entityId = order.id`
+- [x] Template strings match: `sla_roaster_reminder`, `sla_roaster_urgent`, `sla_buyer_delay`, `sla_admin_breach`, `sla_admin_critical`
+- [x] Each SLA tier sends at most one email per order (dedup via `OrderEvent` check + `EmailLog`)
+- [x] SLA thresholds are read from `PlatformSettings` (not hardcoded)
+- [x] Auto-refund at T+96h calls `refundCharge()`, sets `status = REFUNDED`, creates `REFUND_COMPLETED` event
+- [x] SLA job runs hourly via Inngest cron (`0 * * * *`)
+- [x] Admin email sent to `PLATFORM_ALERT_EMAIL` env var (breach and critical tiers)
+- [x] Job handles missing email configuration gracefully (skips sends)
+- [x] No PII logged -- only `order_id`
 
 ---
 
@@ -161,3 +161,5 @@ Verify and complete the SLA notification email wiring in the existing `sla-check
 | Version | Date | Notes |
 |---------|------|-------|
 | 0.1 | 2026-04-01 | Initial story created for Sprint 4 planning. |
+| 0.2 | 2026-04-01 | Implemented on `main`; status `Done`. |
+| 0.3 | 2026-04-01 | Review follow-up: admin SLA alert copy now uses the configured threshold hours instead of fixed 48h/72h labels. |

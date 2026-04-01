@@ -119,6 +119,8 @@ enum OrderEventType {
   FULFILLMENT_VIEWED
   SHIPPED
   DELIVERED
+  PAYOUT_TRANSFERRED
+  PAYOUT_FAILED
   REFUND_INITIATED
   REFUND_COMPLETED
   CANCELLED
@@ -540,6 +542,7 @@ model DisputeRecord {
 model MagicLink {
   id        String           @id @default(cuid())
   token     String           @unique
+  dedupeKey String?          @unique
   purpose   MagicLinkPurpose
   actorId   String
   actorType ActorType

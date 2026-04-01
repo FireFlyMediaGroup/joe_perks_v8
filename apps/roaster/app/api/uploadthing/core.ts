@@ -5,7 +5,7 @@ import { UploadThingError } from "uploadthing/server";
 
 const f = createUploadthing();
 
-export const roasterFileRouter = {
+const roasterFileRouterDefinition = {
   productImage: f({
     image: { maxFileSize: "4MB", maxFileCount: 1 },
   })
@@ -33,4 +33,6 @@ export const roasterFileRouter = {
     }),
 } satisfies FileRouter;
 
-export type RoasterFileRouter = typeof roasterFileRouter;
+export const roasterFileRouter: FileRouter = roasterFileRouterDefinition;
+
+export type RoasterFileRouter = FileRouter;

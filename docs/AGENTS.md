@@ -87,14 +87,14 @@ Optional env vars that are **empty strings** in `.env` are treated as **unset** 
 
 **Local dev ports (avoid collisions):**
 
-| App / tool | Port |
-|------------|------|
-| `web` | 3000 |
-| `roaster` | 3001 |
-| `org` | 3002 |
-| `admin` | 3003 |
+| App / tool                    | Port |
+| ----------------------------- | ---- |
+| `web`                         | 3000 |
+| `roaster`                     | 3001 |
+| `org`                         | 3002 |
+| `admin`                       | 3003 |
 | `email` (React Email preview) | 3004 |
-| `studio` (Prisma Studio) | 3005 |
+| `studio` (Prisma Studio)      | 3005 |
 
 **CI** (`.github/workflows/ci.yml`) uses **`pnpm install --frozen-lockfile`**, then `pnpm check` and `pnpm turbo build`.
 
@@ -183,6 +183,7 @@ Turbo starts multiple Next (and related) dev servers on **fixed ports** (see the
 - **Soft deletes on Product and ProductVariant** — use `deleted_at DateTime?`. Never hard delete.
 - Queries on these tables must always filter `WHERE deleted_at IS NULL`.
 - `OrderEvent` is append-only — never update or delete event rows. Only insert.
+- `logOrderEvent()` from `@joe-perks/db` is the preferred helper for non-transactional inserts (swallows errors). For events that must be atomic with other writes, use `database.orderEvent.create` inside `$transaction` (e.g. checkout, webhook confirmation, SLA auto-refund).
 - `Order.org_pct_snapshot`, `Order.org_amount`, `Order.platform_amount`, `Order.roaster_amount` are immutable after creation.
 - `CampaignItem.retail_price` and `CampaignItem.wholesale_price` are snapshots — read these for pricing, not `ProductVariant`.
 
@@ -190,6 +191,7 @@ Turbo starts multiple Next (and related) dev servers on **fixed ports** (see the
 - Tokens are generated with `crypto.randomBytes(32).toString('hex')` — 256 bits of entropy.
 - Tokens are single-use: set `used_at = now()` immediately on first use before performing any action.
 - Always verify: token exists, `expires_at > now()`, `used_at IS NULL`, correct `purpose`.
+- For `ORDER_FULFILLMENT`, enforce a deterministic database-level dedupe key so only one live link can exist per order.
 - Magic link pages (fulfill/[token], org-requests/[token]) are accessible WITHOUT authentication.
 
 ---
@@ -258,13 +260,13 @@ ROASTER_APP_ORIGIN=  # optional — public **roaster portal** base URL for appro
 
 ## Auth model
 
-| Surface | Auth method | Role |
-|---|---|---|
-| `apps/roaster` | Clerk | `ROASTER_ADMIN` |
-| `apps/org` | Clerk | `ORG_ADMIN` |
-| `apps/admin` | HTTP Basic Auth (MVP) | `PLATFORM_ADMIN` |
-| `apps/web` buyer storefront | No auth | Public |
-| Magic link pages | Token validation | No session required |
+| Surface                     | Auth method           | Role                |
+| --------------------------- | --------------------- | ------------------- |
+| `apps/roaster`              | Clerk                 | `ROASTER_ADMIN`     |
+| `apps/org`                  | Clerk                 | `ORG_ADMIN`         |
+| `apps/admin`                | HTTP Basic Auth (MVP) | `PLATFORM_ADMIN`    |
+| `apps/web` buyer storefront | No auth               | Public              |
+| Magic link pages            | Token validation      | No session required |
 
 **Clerk user sync:** On `user.created` webhook from Clerk, create a `User` record in DB with `external_auth_id = event.data.id`. Link `roaster_id` or `org_id` from Clerk public metadata.
 
@@ -324,17 +326,17 @@ await prisma.stripeEvent.create({ data: { stripe_event_id: event.id, event_type:
 // Now safe to process...
 ```
 
-**`apps/web` Stripe webhook (`/api/webhooks/stripe`):** Uses the same **check-first** dedupe, but inserts the **`StripeEvent`** row **after** a successful handler run (so a failed run can be retried by Stripe without losing the event). Handlers should still be safe if invoked twice (e.g. order already **`CONFIRMED`**).
+**`apps/web` Stripe webhook (`/api/webhooks/stripe`):** Uses the same **check-first** dedupe, but inserts the **`StripeEvent`** row **after** a successful handler run (so a failed run can be retried by Stripe without losing the event). Handlers must also be safe under concurrent delivery by guarding the business transition itself (for example, only one `PENDING -> CONFIRMED` update may commit).
 
 ---
 
 ## Inngest background jobs
 
-| Job | Schedule | Purpose |
-|---|---|---|
-| `sla-check` | `0 * * * *` (hourly) | Flag orders past SLA thresholds, send escalation emails |
-| `payout-release` | `0 9 * * *` (daily 09:00 UTC) | Find payout-eligible orders, create Stripe transfers |
-| `cart-cleanup` | `0 2 * * *` (daily 02:00 UTC) | Log expired cart count (Phase 2: delete expired carts) |
+| Job              | Schedule                      | Purpose                                                 |
+| ---------------- | ----------------------------- | ------------------------------------------------------- |
+| `sla-check`      | `0 * * * *` (hourly)          | Flag orders past SLA thresholds, send escalation emails |
+| `payout-release` | `0 9 * * *` (daily 09:00 UTC) | Find payout-eligible orders, create Stripe transfers    |
+| `cart-cleanup`   | `0 2 * * *` (daily 02:00 UTC) | Log expired cart count (Phase 2: delete expired carts)  |
 
 Jobs are registered at **`apps/web/app/api/inngest/route.ts`** via Inngest **`serve()`** (`sla-check`, `payout-release`, `cart-cleanup`). After deploy, sync the app URL in the Inngest dashboard (`/api/inngest` on the web app).
 
@@ -342,12 +344,12 @@ Jobs are registered at **`apps/web/app/api/inngest/route.ts`** via Inngest **`se
 
 ## SLA thresholds (from PlatformSettings)
 
-| Hours after order | Action |
-|---|---|
-| T+24h (`sla_warn_hours`) | Reminder email to roaster |
-| T+48h (`sla_breach_hours`) | Admin flagged, urgent roaster email, buyer delay notice |
-| T+72h (`sla_critical_hours`) | Admin must intervene manually |
-| T+96h (`sla_auto_refund_hours`) | Automatic full refund via Stripe |
+| Hours after order               | Action                                                  |
+| ------------------------------- | ------------------------------------------------------- |
+| T+24h (`sla_warn_hours`)        | Reminder email to roaster                               |
+| T+48h (`sla_breach_hours`)      | Admin flagged, urgent roaster email, buyer delay notice |
+| T+72h (`sla_critical_hours`)    | Admin must intervene manually                           |
+| T+96h (`sla_auto_refund_hours`) | Automatic full refund via Stripe                        |
 
 All thresholds are configurable in `PlatformSettings` singleton — never hardcode them.
 
@@ -366,29 +368,29 @@ All thresholds are configurable in `PlatformSettings` singleton — never hardco
 
 ## Diagrams index
 
-| File | Contents |
-|---|---|
-| `docs/01-project-structure.mermaid` | Full monorepo folder tree with all routes and files |
-| `docs/02-deployment-topology.mermaid` | DNS → Vercel → third-party service connections |
+| File                                   | Contents                                                   |
+| -------------------------------------- | ---------------------------------------------------------- |
+| `docs/01-project-structure.mermaid`    | Full monorepo folder tree with all routes and files        |
+| `docs/02-deployment-topology.mermaid`  | DNS → Vercel → third-party service connections             |
 | `docs/03-package-dependencies.mermaid` | Which apps import which packages, external API connections |
-| `docs/04-order-lifecycle.mermaid` | Sequence diagram: checkout → webhook → fulfill → payout |
-| `docs/05-approval-chain.mermaid` | Roaster and org onboarding + approval workflows |
-| `docs/06-database-schema.mermaid` | ERD with all 26 models, key fields, and relationships |
-| `docs/07-stripe-payment-flow.mermaid` | Charge → transfer → refund → chargeback flows |
-| `docs/08-order-state-machine.mermaid` | Order and payout status state machines |
+| `docs/04-order-lifecycle.mermaid`      | Sequence diagram: checkout → webhook → fulfill → payout    |
+| `docs/05-approval-chain.mermaid`       | Roaster and org onboarding + approval workflows            |
+| `docs/06-database-schema.mermaid`      | ERD with all 26 models, key fields, and relationships      |
+| `docs/07-stripe-payment-flow.mermaid`  | Charge → transfer → refund → chargeback flows              |
+| `docs/08-order-state-machine.mermaid`  | Order and payout status state machines                     |
 
 ---
 
 ## Document index (full reference)
 
-| Document | Location | Contents |
-|---|---|---|
-| `CONVENTIONS.md` | `docs/CONVENTIONS.md` | Coding patterns, file layout, anti-patterns |
-| `SCAFFOLD_CHECKLIST.md` | `docs/SCAFFOLD_CHECKLIST.md` (or repo root copy) | Scaffold status: done vs remaining |
-| `SCAFFOLD.md` | repo root | Full environment / phase setup guide |
-| PRD v1.0 | `docs/joe_perks_prd.docx` | Product requirements, user personas, functional specs |
-| DB Schema Reference | `docs/joe_perks_db_schema.docx` | Full Prisma schema, Drizzle alternative, split calc implementation |
-| Epics & Stories v2.0 | `docs/joe_perks_epics_stories_v2.docx` | 39 user stories with acceptance criteria, 5 sprints |
+| Document                | Location                                         | Contents                                                           |
+| ----------------------- | ------------------------------------------------ | ------------------------------------------------------------------ |
+| `CONVENTIONS.md`        | `docs/CONVENTIONS.md`                            | Coding patterns, file layout, anti-patterns                        |
+| `SCAFFOLD_CHECKLIST.md` | `docs/SCAFFOLD_CHECKLIST.md` (or repo root copy) | Scaffold status: done vs remaining                                 |
+| `SCAFFOLD.md`           | repo root                                        | Full environment / phase setup guide                               |
+| PRD v1.0                | `docs/joe_perks_prd.docx`                        | Product requirements, user personas, functional specs              |
+| DB Schema Reference     | `docs/joe_perks_db_schema.docx`                  | Full Prisma schema, Drizzle alternative, split calc implementation |
+| Epics & Stories v2.0    | `docs/joe_perks_epics_stories_v2.docx`           | 39 user stories with acceptance criteria, 5 sprints                |
 
 Repo root **`AGENTS.md`** and **`CONVENTIONS.md`** are short pointers to the canonical **`docs/`** files above.
 
@@ -396,18 +398,18 @@ Repo root **`AGENTS.md`** and **`CONVENTIONS.md`** are short pointers to the can
 
 ## Phase map (what exists now vs later)
 
-| Feature | Phase |
-|---|---|
-| Magic link fulfillment (no portal login) | MVP |
-| Roaster portal dashboard | Phase 2 |
-| Platform-generated shipping labels (EasyPost) | Phase 2 |
+| Feature                                                               | Phase                             |
+| --------------------------------------------------------------------- | --------------------------------- |
+| Magic link fulfillment (no portal login)                              | MVP                               |
+| Roaster portal dashboard                                              | Phase 2                           |
+| Platform-generated shipping labels (EasyPost)                         | Phase 2                           |
 | Inngest baseline jobs (`sla-check`, `payout-release`, `cart-cleanup`) | MVP (see `apps/web/lib/inngest/`) |
-| Additional SLA / job automation beyond baseline | Phase 2 |
-| DB-backed cart (abandoned cart recovery) | Phase 2 |
-| Collab mode (platform holds stock, fulfills) | Phase 3 |
-| Custom domains per org | Phase 3 |
-| Subscription/recurring orders | Phase 3 |
-| Multi-roaster campaigns | Phase 3 |
+| Additional SLA / job automation beyond baseline                       | Phase 2                           |
+| DB-backed cart (abandoned cart recovery)                              | Phase 2                           |
+| Collab mode (platform holds stock, fulfills)                          | Phase 3                           |
+| Custom domains per org                                                | Phase 3                           |
+| Subscription/recurring orders                                         | Phase 3                           |
+| Multi-roaster campaigns                                               | Phase 3                           |
 
 When writing Phase 2/3 features, check whether the schema field already exists
 (it likely does — the schema was designed to be forward-compatible).

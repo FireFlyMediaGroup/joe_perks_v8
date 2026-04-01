@@ -2,7 +2,7 @@
 
 **Story ID:** US-08-02 | **Epic:** EP-08 (Notifications)
 **Points:** 3 | **Priority:** High
-**Status:** `Todo`
+**Status:** `Done`
 **Owner:** Full-stack
 **Dependencies:** US-01-04 (Email Pipeline), US-05-01 (Webhook Fulfillment Magic Link)
 **Depends on this:** None
@@ -78,17 +78,17 @@ Create the `magic-link-fulfillment` email template at `packages/email/templates/
 
 ## Acceptance criteria
 
-- [ ] `magic-link-fulfillment.tsx` exists at `packages/email/templates/`
-- [ ] Template accepts props: `orderNumber`, `fulfillUrl`, `items[]`, `totalInCents`, `shippingInCents`
-- [ ] Template displays order number prominently
-- [ ] Template lists items with product name, quantity, and price (formatted from cents)
-- [ ] Template shows shipping amount and total formatted as dollars
-- [ ] Template includes a prominent CTA button with text "View Order & Ship" linking to `fulfillUrl`
-- [ ] Template includes "This link expires in 72 hours" notice
-- [ ] Template uses Joe Perks branding (consistent with `order-confirmation.tsx`)
-- [ ] Template includes `PreviewProps` for React Email preview
-- [ ] Template renders correctly in React Email preview at `http://localhost:3004`
-- [ ] Template is mobile-responsive
+- [x] `magic-link-fulfillment.tsx` exists at `packages/email/templates/`
+- [x] Template accepts props: `orderNumber`, `fulfillUrl`, `items[]`, `totalInCents`, `shippingInCents`
+- [x] Template displays order number prominently
+- [x] Template lists items with product name, quantity, and price (formatted from cents)
+- [x] Template shows shipping amount and total formatted as dollars
+- [x] Template includes a prominent CTA button with text "View Order & Ship" linking to `fulfillUrl`
+- [x] Template includes "This link expires in 72 hours" notice
+- [x] Template uses Joe Perks branding (consistent with `order-confirmation.tsx`)
+- [x] Template includes `PreviewProps` for React Email preview
+- [x] Template renders correctly in React Email preview at `http://localhost:3004`
+- [x] Template is mobile-responsive
 
 ---
 
@@ -138,3 +138,4 @@ Create the `magic-link-fulfillment` email template at `packages/email/templates/
 | Version | Date | Notes |
 |---------|------|-------|
 | 0.1 | 2026-04-01 | Initial story created for Sprint 4 planning. |
+| 0.2 | 2026-04-01 | Implemented on `main`; status `Done`.

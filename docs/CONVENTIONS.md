@@ -357,7 +357,7 @@ import { logOrderEvent } from '@joe-perks/db'
 
 await logOrderEvent(
   order.id,
-  'ORDER_SHIPPED',
+  'SHIPPED',
   'ROASTER',
   roaster.id,
   { tracking_number: trackingNumber, carrier },
@@ -367,6 +367,14 @@ await logOrderEvent(
 // OrderEvent is APPEND-ONLY — never update or delete rows
 // logOrderEvent() handles errors gracefully — won't throw on failure
 ```
+
+**Transactional inserts:** Inside `$transaction`, use `database.orderEvent.create` when the event must commit with sibling writes (checkout, webhook confirmation, SLA auto-refund, fulfillment ship).
+
+**Roaster fulfillment (magic link):** `apps/roaster/app/fulfill/[token]/` — `_lib/validate-token.ts`, `_components/fulfillment-details.tsx`, `_components/tracking-form.tsx`, `_actions/submit-tracking.ts` (consumes link, `SHIPPED`, buyer email).
+
+**Admin delivery:** `apps/admin/app/orders/` — list + detail + `confirm-delivery` server action (`DELIVERED`, `payoutEligibleAt` from `PlatformSettings.payoutHoldDays`, stable admin `actorId` from the configured Basic Auth email).
+
+**Shared admin Basic Auth:** normalize parsing and trimmed credentials through `@joe-perks/types` so `apps/admin` middleware and `apps/web` admin-only APIs accept the same credentials.
 
 ---
 

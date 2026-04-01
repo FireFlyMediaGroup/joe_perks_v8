@@ -31,12 +31,13 @@ graph TD
   WEB --> WEB_WH["app/api/webhooks/stripe"]:::api
   WEB --> WEB_CI["app/api/checkout/create-intent"]:::api
   WEB --> WEB_OS["app/api/order-status"]:::api
+  WEB --> WEB_OE["app/api/orders/[id]/events\nGET — admin Basic auth"]:::api
   WEB --> WEB_INN["app/api/inngest"]:::api
   WEB --> WEB_SV["app/api/slugs/validate/\nslug uniqueness check"]:::api
 
   %% apps/roaster routes
   ROASTER --> R_DASH["(authenticated)/dashboard/"]:::route
-  ROASTER --> R_FULFILL["fulfill/[token]/"]:::route
+  ROASTER --> R_FULFILL["fulfill/[token]/\npage, _actions, _components, _lib"]:::route
   ROASTER --> R_ORG_REQ["org-requests/[token]/"]:::route
   ROASTER --> R_PROD["(authenticated)/products/\npage, new/, [id]/, [id]/edit/\n_actions, _components, _lib"]:::route
   ROASTER --> R_UT["app/api/uploadthing/\nUploadThing + Clerk"]:::api
@@ -56,7 +57,7 @@ graph TD
   ADMIN --> A_HOME["app/page.tsx\nhome / metrics"]:::route
   ADMIN --> A_AR["approvals/roasters/\npage + [id]/"]:::route
   ADMIN --> A_AO["approvals/orgs/\npage + [id]/"]:::route
-  ADMIN --> A_ORD["orders/"]:::route
+  ADMIN --> A_ORD["orders/\npage, [id]/, _actions, _components,\nevent-timeline, layout nav"]:::route
   ADMIN --> A_DISP["disputes/"]:::route
   ADMIN --> A_SET["settings/"]:::route
 
@@ -71,7 +72,7 @@ graph TD
   DB --> DB1["prisma/schema.prisma\n26 models when migrated"]:::file
   DB --> DB2["seed.ts"]:::file
   DB --> DB3["order-number.ts"]:::file
-  DB --> DB4["index.ts\nPrisma client"]:::file
+  DB --> DB4["index.ts, log-event.ts\nPrisma client + logOrderEvent"]:::file
 
   UI --> UI1["src/store/cart.ts\nZustand + persist"]:::file
   UI --> UI2["Use @repo/design-system\nfor shadcn primitives"]:::file
@@ -80,10 +81,10 @@ graph TD
   STRIPE --> ST2["client.ts"]:::file
   STRIPE --> ST3["ratelimit.ts"]:::file
 
-  EMAIL --> EM1["templates/\nReact Email"]:::file
+  EMAIL --> EM1["templates/\nmagic-link-fulfillment, order-shipped,\norder-delivered, sla, …"]:::file
   EMAIL --> EM2["send.ts\nsendEmail()"]:::file
 
-  TYPES --> TY1["index.ts"]:::file
+  TYPES --> TY1["index.ts, admin-basic-auth.ts"]:::file
   TYPES --> TY2["slugs.ts\nRESERVED_SLUGS"]:::file
 
   classDef root    fill:#2E5A3E,stroke:#1D4A2E,color:#ffffff,font-weight:bold
