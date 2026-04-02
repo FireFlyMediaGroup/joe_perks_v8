@@ -48,6 +48,18 @@ export default function RootLayout({
             </Link>
             <Link
               className="text-zinc-600 underline dark:text-zinc-400"
+              href="/approvals/roasters"
+            >
+              Roaster Approvals
+            </Link>
+            <Link
+              className="text-zinc-600 underline dark:text-zinc-400"
+              href="/approvals/orgs"
+            >
+              Org Approvals
+            </Link>
+            <Link
+              className="text-zinc-600 underline dark:text-zinc-400"
               href="/roasters"
             >
               Roasters

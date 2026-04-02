@@ -1,10 +1,13 @@
 import { auth, currentUser } from "@repo/auth/server";
+import { SidebarProvider } from "@repo/design-system/components/ui/sidebar";
 import type { ReactNode } from "react";
 import {
   database,
   getSuspensionReasonCategoryFromAction,
   getSuspensionReasonLabel,
 } from "@joe-perks/db";
+
+import { GlobalSidebar } from "./components/sidebar";
 
 interface AppLayoutProperties {
   readonly children: ReactNode;
@@ -48,16 +51,18 @@ const AppLayout = async ({ children }: AppLayoutProperties) => {
       : null;
 
   return (
-    <div className="min-h-dvh">
-      {org?.status === "SUSPENDED" ? (
-        <div className="m-4 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-amber-950 text-sm">
-          Account suspended: {suspensionReason ?? "Account review"}. Public
-          storefront availability and new campaign activity are blocked until the
-          review is complete.
-        </div>
-      ) : null}
-      {children}
-    </div>
+    <SidebarProvider>
+      <GlobalSidebar>
+        {org?.status === "SUSPENDED" ? (
+          <div className="m-4 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-amber-950 text-sm">
+            Account suspended: {suspensionReason ?? "Account review"}. Public
+            storefront availability and new campaign activity are blocked until
+            the review is complete.
+          </div>
+        ) : null}
+        {children}
+      </GlobalSidebar>
+    </SidebarProvider>
   );
 };
 

@@ -5,9 +5,9 @@ import { notFound, redirect } from "next/navigation";
 import { CheckoutForm } from "./_components/checkout-form";
 import { getStorefrontData } from "../_lib/queries";
 
-type Props = {
+interface Props {
   params: Promise<{ locale: string; slug: string }>;
-};
+}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
@@ -51,7 +51,7 @@ export default async function CheckoutPage({ params }: Props) {
     null;
 
   return (
-    <main className="min-h-screen bg-background px-4 py-8 md:py-12">
+    <main className="min-h-screen bg-jp-bg-page px-4 py-8 md:py-12">
       <CheckoutForm
         campaignId={data.campaign.id}
         defaultShippingRateId={defaultRateId}

@@ -20,7 +20,7 @@ export function ProductGrid({
   if (items.length === 0) {
     return (
       <div className="container mx-auto max-w-6xl px-4 py-16 text-center">
-        <p className="text-lg text-muted-foreground">
+        <p className="font-body text-lg text-jp-muted">
           No products are available in this campaign yet.
         </p>
       </div>
@@ -28,11 +28,11 @@ export function ProductGrid({
   }
 
   return (
-    <div className="container mx-auto max-w-6xl px-4 py-10 md:py-14">
+    <div className="container mx-auto max-w-6xl px-4 py-12 md:px-6 md:py-16">
       {featured.length > 0 ? (
         <section aria-labelledby="featured-heading" className="mb-14">
           <h2
-            className="mb-6 font-bold text-2xl text-foreground tracking-tight"
+            className="mb-6 font-display text-2xl font-bold tracking-tight text-jp-text"
             id="featured-heading"
           >
             Featured
@@ -56,7 +56,7 @@ export function ProductGrid({
         <section aria-labelledby="catalog-heading">
           {featured.length > 0 ? (
             <h2
-              className="mb-6 font-bold text-2xl text-foreground tracking-tight"
+              className="mb-6 font-display text-2xl font-bold tracking-tight text-jp-text"
               id="catalog-heading"
             >
               All coffee

@@ -55,8 +55,8 @@ export default async function StorefrontPage({ params, searchParams }: Props) {
     queryError === "no-shipping" && !purchasesEnabled;
 
   return (
-    <StorefrontLayout>
-      {!purchasesEnabled ? <ShippingGuard /> : null}
+    <StorefrontLayout locale={locale} orgName={org.orgName} slug={slug}>
+      {purchasesEnabled ? null : <ShippingGuard />}
       {showCheckoutBlocked ? (
         <p className="bg-muted/60 py-2 text-center text-muted-foreground text-sm">
           Checkout isn&apos;t available until shipping is configured for this

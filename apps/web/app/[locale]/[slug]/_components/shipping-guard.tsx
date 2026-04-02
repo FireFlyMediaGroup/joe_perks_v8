@@ -2,25 +2,22 @@ import { AlertTriangle } from "lucide-react";
 
 export function ShippingGuard() {
   return (
-    <div
-      className="border-[#D4603A]/40 bg-[#FDF9F4] px-4 py-3 text-[#5c2e20] dark:border-orange-900/50 dark:bg-orange-950/40 dark:text-orange-100"
-      role="status"
-    >
+    <output className="block border-jp-terra/20 border-b bg-jp-terra/5 px-4 py-3">
       <div className="container mx-auto flex max-w-6xl items-start gap-3">
         <AlertTriangle
           aria-hidden
-          className="mt-0.5 size-5 shrink-0 text-[#D4603A] dark:text-orange-300"
+          className="mt-0.5 size-5 shrink-0 text-jp-terra"
         />
         <div>
-          <p className="font-semibold text-sm leading-snug">
+          <p className="font-body font-semibold text-jp-text text-sm leading-snug">
             This store is temporarily unavailable for purchases
           </p>
-          <p className="mt-1 text-sm leading-relaxed opacity-90">
+          <p className="mt-1 font-body text-jp-muted text-sm leading-relaxed">
             The roaster has not configured shipping rates yet. Please check back
             soon — purchases will open once shipping is set up.
           </p>
         </div>
       </div>
-    </div>
+    </output>
   );
 }

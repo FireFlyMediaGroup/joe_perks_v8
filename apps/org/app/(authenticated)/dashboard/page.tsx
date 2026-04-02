@@ -5,7 +5,8 @@ import {
 } from "@joe-perks/db";
 import { auth } from "@repo/auth/server";
 
-import { ReactivationRequestForm } from "./_components/reactivation-request-form";
+import { ActiveDashboard } from "./_components/active-dashboard";
+import { SuspendedDashboard } from "./_components/suspended-dashboard";
 
 export default async function OrgDashboardPage() {
   const { userId } = await auth();
@@ -17,7 +18,7 @@ export default async function OrgDashboardPage() {
           org: {
             include: {
               application: {
-                select: { orgName: true },
+                select: { orgName: true, desiredOrgPct: true },
               },
             },
           },
@@ -29,28 +30,26 @@ export default async function OrgDashboardPage() {
 
   const org = dbUser?.org ?? null;
 
-  const [latestSuspension, latestRequest] = org
-    ? await Promise.all([
-        database.adminActionLog.findFirst({
-          orderBy: { createdAt: "desc" },
-          where: {
-            actionType: "ORG_SUSPENDED",
-            targetId: org.id,
-            targetType: "ORG",
-          },
-        }),
-        database.adminActionLog.findFirst({
-          orderBy: { createdAt: "desc" },
-          where: {
-            actionType: "ORG_REACTIVATION_REQUESTED",
-            targetId: org.id,
-            targetType: "ORG",
-          },
-        }),
-      ])
-    : [null, null];
-
   if (org?.status === "SUSPENDED") {
+    const [latestSuspension, latestRequest] = await Promise.all([
+      database.adminActionLog.findFirst({
+        orderBy: { createdAt: "desc" },
+        where: {
+          actionType: "ORG_SUSPENDED",
+          targetId: org.id,
+          targetType: "ORG",
+        },
+      }),
+      database.adminActionLog.findFirst({
+        orderBy: { createdAt: "desc" },
+        where: {
+          actionType: "ORG_REACTIVATION_REQUESTED",
+          targetId: org.id,
+          targetType: "ORG",
+        },
+      }),
+    ]);
+
     const reasonLabel = latestSuspension
       ? getSuspensionReasonLabel(
           getSuspensionReasonCategoryFromAction(latestSuspension)
@@ -58,94 +57,92 @@ export default async function OrgDashboardPage() {
       : "Account review";
 
     return (
-      <main className="mx-auto max-w-3xl p-8">
-        <h1 className="font-semibold text-2xl">Account status</h1>
-        <div className="mt-6 rounded-xl border border-amber-300 bg-amber-50 p-5">
-          <p className="font-semibold text-amber-950 text-lg">
-            Your organization account is suspended
-          </p>
-          <p className="mt-2 text-amber-950 text-sm">
-            Reason category: <strong>{reasonLabel}</strong>
-          </p>
-          <p className="mt-3 text-amber-950 text-sm">
-            Your public storefront is unavailable and new campaign activity is
-            blocked while the account is under review. Existing confirmed orders
-            still continue through fulfillment.
-          </p>
-          <p className="mt-2 text-amber-950 text-sm">
-            Resolve the issue, then submit a reactivation request with the
-            remediation details.
-          </p>
-        </div>
-
-        <section className="mt-6 rounded-xl border p-5">
-          <h2 className="font-semibold text-lg">Account snapshot</h2>
-          <dl className="mt-4 grid gap-4 text-sm md:grid-cols-2">
-            <div>
-              <dt className="text-muted-foreground">Organization</dt>
-              <dd className="font-medium">{org.application.orgName || org.slug}</dd>
-            </div>
-            <div>
-              <dt className="text-muted-foreground">Status</dt>
-              <dd className="font-medium">{org.status}</dd>
-            </div>
-            <div>
-              <dt className="text-muted-foreground">Stripe onboarding</dt>
-              <dd className="font-medium">{org.stripeOnboarding}</dd>
-            </div>
-            <div>
-              <dt className="text-muted-foreground">Charges / payouts</dt>
-              <dd className="font-medium">
-                {org.chargesEnabled ? "charges on" : "charges off"} ·{" "}
-                {org.payoutsEnabled ? "payouts on" : "payouts off"}
-              </dd>
-            </div>
-          </dl>
-        </section>
-
-        <section className="mt-6 rounded-xl border p-5">
-          <h2 className="font-semibold text-lg">Request reactivation</h2>
-          <p className="mt-2 text-muted-foreground text-sm">
-            Include what changed so the platform team can review faster.
-          </p>
-          <div className="mt-4">
-            <ReactivationRequestForm />
-          </div>
-          {latestRequest ? (
-            <p className="mt-4 text-muted-foreground text-sm">
-              Latest request: {latestRequest.createdAt.toLocaleString()}
-            </p>
-          ) : null}
-        </section>
-      </main>
+      <SuspendedDashboard
+        chargesEnabled={org.chargesEnabled}
+        latestRequestDate={latestRequest?.createdAt ?? null}
+        orgName={org.application.orgName || org.slug}
+        payoutsEnabled={org.payoutsEnabled}
+        reasonLabel={reasonLabel}
+        status={org.status}
+        stripeOnboarding={org.stripeOnboarding}
+      />
     );
   }
 
+  const orgId = dbUser?.orgId;
+
+  const [campaigns, orderCount, orgEarnings, recentOrders] = orgId
+    ? await Promise.all([
+        database.campaign.findMany({
+          where: { orgId },
+          include: {
+            items: true,
+            _count: { select: { orders: true } },
+          },
+          orderBy: { updatedAt: "desc" },
+        }),
+        database.order.count({
+          where: { campaign: { orgId } },
+        }),
+        database.order.aggregate({
+          _sum: { orgAmount: true },
+          where: {
+            campaign: { orgId },
+            payoutStatus: "TRANSFERRED",
+          },
+        }),
+        database.order.findMany({
+          where: { campaign: { orgId } },
+          orderBy: { createdAt: "desc" },
+          take: 15,
+          select: {
+            id: true,
+            orderNumber: true,
+            status: true,
+            grossAmount: true,
+            orgAmount: true,
+            createdAt: true,
+            campaign: { select: { name: true } },
+          },
+        }),
+      ])
+    : [[], 0, { _sum: { orgAmount: null } }, []];
+
+  const activeCampaign = campaigns.find((c) => c.status === "ACTIVE") ?? null;
+
   return (
-    <main className="mx-auto max-w-prose p-8">
-      <h1 className="font-semibold text-2xl">Org dashboard</h1>
-      <p className="mt-2 text-muted-foreground">
-        Campaign overview — queries use tenant scope from the verified session
-        (`org_id` from the linked `User` row).
-      </p>
-      <dl className="mt-6 space-y-2 text-sm">
-        <div>
-          <dt className="text-muted-foreground">Linked org_id</dt>
-          <dd className="font-mono">{dbUser?.orgId ?? "—"}</dd>
-        </div>
-        <div>
-          <dt className="text-muted-foreground">Role</dt>
-          <dd className="font-mono">{dbUser?.role ?? "—"}</dd>
-        </div>
-        <div>
-          <dt className="text-muted-foreground">User email (DB)</dt>
-          <dd className="font-mono">{dbUser?.email ?? "—"}</dd>
-        </div>
-        <div>
-          <dt className="text-muted-foreground">Account status</dt>
-          <dd className="font-mono">{org?.status ?? "—"}</dd>
-        </div>
-      </dl>
-    </main>
+    <ActiveDashboard
+      activeCampaign={
+        activeCampaign
+          ? {
+              goalCents: activeCampaign.goalCents ?? 0,
+              itemCount: activeCampaign.items.length,
+              name: activeCampaign.name,
+              orderCount: activeCampaign._count.orders,
+              status: activeCampaign.status,
+              totalRaised: activeCampaign.totalRaised,
+            }
+          : null
+      }
+      chargesEnabled={org?.chargesEnabled ?? false}
+      hasCampaign={campaigns.length > 0}
+      orderCount={orderCount}
+      orgEarningsCents={orgEarnings._sum.orgAmount ?? 0}
+      orgName={org?.application.orgName ?? org?.slug ?? "Your organization"}
+      orgPct={(org?.application.desiredOrgPct ?? 0) * 100}
+      orgSlug={org?.slug ?? null}
+      orgStatus={org?.status ?? "UNKNOWN"}
+      payoutsEnabled={org?.payoutsEnabled ?? false}
+      recentOrders={recentOrders.map((o) => ({
+        id: o.id,
+        orderNumber: o.orderNumber,
+        status: o.status,
+        grossAmountCents: o.grossAmount,
+        orgAmountCents: o.orgAmount,
+        createdAt: o.createdAt.toISOString(),
+        campaignName: o.campaign.name,
+      }))}
+      stripeOnboarding={org?.stripeOnboarding ?? "NOT_STARTED"}
+    />
   );
 }

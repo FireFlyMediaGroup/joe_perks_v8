@@ -7,6 +7,7 @@ import { cn } from "@repo/design-system/lib/utils";
 import { Toolbar } from "@repo/feature-flags/components/toolbar";
 import { getDictionary } from "@repo/internationalization";
 import type { ReactNode } from "react";
+import { marketingFonts } from "@/lib/fonts";
 import { Footer } from "./components/footer";
 import { Header } from "./components/header";
 
@@ -23,11 +24,11 @@ const RootLayout = async ({ children, params }: RootLayoutProperties) => {
 
   return (
     <html
-      className={cn(fonts, "scroll-smooth")}
+      className={cn(fonts, marketingFonts, "scroll-smooth")}
       lang="en"
       suppressHydrationWarning
     >
-      <body>
+      <body className="bg-jp-bg-page text-jp-text">
         <AnalyticsProvider>
           <DesignSystemProvider>
             <Header dictionary={dictionary} />
