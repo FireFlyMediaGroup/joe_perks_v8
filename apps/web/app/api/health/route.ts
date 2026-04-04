@@ -2,6 +2,29 @@ import { database } from "@joe-perks/db";
 
 export const dynamic = "force-dynamic";
 
+function serializeError(error: unknown): string {
+  if (error instanceof Error) {
+    const base = error.message || error.constructor.name;
+    const extra = Object.getOwnPropertyNames(error)
+      .filter((k) => k !== "message" && k !== "stack")
+      .reduce(
+        (acc, k) => {
+          acc[k] = (error as Record<string, unknown>)[k];
+          return acc;
+        },
+        {} as Record<string, unknown>
+      );
+    return Object.keys(extra).length > 0
+      ? `${base} ${JSON.stringify(extra)}`
+      : base;
+  }
+  try {
+    return JSON.stringify(error);
+  } catch {
+    return String(error);
+  }
+}
+
 export async function GET() {
   const checks: Record<string, unknown> = {
     DATABASE_URL: process.env.DATABASE_URL ? "set" : "MISSING",
@@ -16,7 +39,7 @@ export async function GET() {
     });
     checks.platformSettings = settings ? "ok" : "MISSING";
   } catch (error) {
-    checks.platformSettings = `ERROR: ${error instanceof Error ? error.message : String(error)}`;
+    checks.platformSettings = `ERROR: ${serializeError(error)}`;
   }
 
   try {
@@ -26,7 +49,7 @@ export async function GET() {
     });
     checks.orderSequence = seq ? "ok" : "MISSING";
   } catch (error) {
-    checks.orderSequence = `ERROR: ${error instanceof Error ? error.message : String(error)}`;
+    checks.orderSequence = `ERROR: ${serializeError(error)}`;
   }
 
   const ok =
