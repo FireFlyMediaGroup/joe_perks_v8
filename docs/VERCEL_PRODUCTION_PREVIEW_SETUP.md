@@ -108,6 +108,60 @@ Critical rule:
 - `Preview` must use test or development-grade services
 - `DATABASE_URL`, Stripe keys, and webhook secrets must differ between `Production` and `Preview`
 
+### Bulk upload with the Vercel sync script
+To avoid entering variables one at a time, use the repo script:
+
+```bash
+pnpm vercel:env:sync --env preview
+pnpm vercel:env:sync --env production
+```
+
+The script is dry-run by default. Add `--apply` to actually upload:
+
+```bash
+pnpm vercel:env:sync --env preview --apply
+pnpm vercel:env:sync --env production --apply
+```
+
+Store local upload files under `.vercel/env/` so they stay out of git:
+
+```bash
+.vercel/env/web.preview.env
+.vercel/env/roaster.preview.env
+.vercel/env/org.preview.env
+.vercel/env/admin.preview.env
+
+.vercel/env/web.production.env
+.vercel/env/roaster.production.env
+.vercel/env/org.production.env
+.vercel/env/admin.production.env
+```
+
+Example:
+
+```bash
+# .vercel/env/web.preview.env
+DATABASE_URL=postgresql://...
+STRIPE_SECRET_KEY=sk_test_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_...
+RESEND_TOKEN=re_...
+INNGEST_SIGNING_KEY=signkey-...
+INNGEST_EVENT_KEY=...
+UPSTASH_REDIS_REST_URL=https://...
+UPSTASH_REDIS_REST_TOKEN=...
+NEXT_PUBLIC_POSTHOG_KEY=phc_...
+NEXT_PUBLIC_POSTHOG_HOST=https://app.posthog.com
+ROASTER_APP_ORIGIN=https://staging-roasters.joeperks.com
+```
+
+Notes:
+
+- The script uploads to the correct Vercel project based on the file name.
+- It validates keys against an allowlist per app before uploading.
+- It uses the current Vercel CLI login automatically, or `VERCEL_TOKEN` if set.
+- It uses `upsert=true`, so rerunning the command updates existing variables instead of duplicating them.
+
 ### Shared Guidance
 Use these values by environment:
 
