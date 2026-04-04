@@ -140,6 +140,7 @@ export default async function OrgCampaignPage() {
               name: activeCampaign.name,
             }}
             orgPctPercent={orgPctPercent}
+            orgSlug={org.slug}
             products={products}
             readOnlyLive
           />
@@ -167,6 +168,7 @@ export default async function OrgCampaignPage() {
           initialItems={initialItems}
           initialName={draftCampaign?.name ?? ""}
           orgPctPercent={orgPctPercent}
+          orgSlug={org.slug}
           products={products}
           readOnlyLive={false}
         />

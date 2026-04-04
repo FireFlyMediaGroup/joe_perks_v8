@@ -16,6 +16,7 @@ import { ProductSelector, type SelectedItem } from "./product-selector";
 interface CampaignFormProps {
   readonly products: SerializedProduct[];
   readonly orgPctPercent: number;
+  readonly orgSlug?: string;
   readonly initialName: string;
   readonly initialGoalCents: number | null;
   readonly initialItems: SelectedItem[];
@@ -39,6 +40,7 @@ function buildMap(items: SelectedItem[]): Map<string, SelectedItem> {
 export function CampaignForm({
   products,
   orgPctPercent,
+  orgSlug,
   initialName,
   initialGoalCents,
   initialItems,
@@ -76,7 +78,10 @@ export function CampaignForm({
       <div className="max-w-2xl space-y-4">
         <p className="text-green-700 text-sm dark:text-green-400">
           Your fundraiser is live. Buyers can shop your storefront at{" "}
-          <span className="font-medium">joeperks.com/[your-org-slug]</span>.
+          <span className="font-medium">
+            joeperks.com/{orgSlug ?? "[your-org-slug]"}
+          </span>
+          .
         </p>
         <dl className="space-y-2 text-sm">
           <div>
