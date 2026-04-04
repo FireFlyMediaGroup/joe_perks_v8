@@ -53,17 +53,20 @@ const composedMiddleware = createNEMO(
   }
 );
 
-// Clerk middleware wraps other middleware in its callback
-export default authMiddleware(async (_auth, request, event) => {
-  // Run security headers first
+// Inner handler shared by both Clerk and non-Clerk paths
+async function innerMiddleware(request: NextRequest, event: unknown) {
   const headersResponse = securityHeaders();
-
-  // Then run composed middleware (i18n + arcjet)
-  const middlewareResponse = await composedMiddleware(
-    request as unknown as NextRequest,
-    event
-  );
-
-  // Return middleware response if it exists, otherwise headers response
+  const middlewareResponse = await composedMiddleware(request, event);
   return middlewareResponse || headersResponse;
-}) as unknown as NextProxy;
+}
+
+// Clerk middleware wraps other middleware in its callback.
+// The web storefront is public, so Clerk is only used when configured.
+const hasClerk = !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+
+export default (hasClerk
+  ? authMiddleware(async (_auth, request, event) =>
+      innerMiddleware(request as unknown as NextRequest, event)
+    )
+  : (async (request: NextRequest, event: unknown) =>
+      innerMiddleware(request, event))) as unknown as NextProxy;
