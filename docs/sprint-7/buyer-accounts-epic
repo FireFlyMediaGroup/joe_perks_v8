@@ -1,0 +1,837 @@
+EP-09 v2
+Buyer Accounts, Order Tracking & Preferences
+Complete redesign with UX best practices, e-commerce standards, newsletter management, and seamless checkout integration
+Field
+Value
+Version
+EP-09 v2.0 — complete redesign from EP-09 v1
+Total stories
+11 stories (US-09-00 through US-09-10)
+Total points
+47 story points
+Sprint plan
+Sprint 3: schema + auth + tracking (28 pts) · Sprint 4: Stripe + preferences + profile (19 pts)
+Changes from v1
+Added: visual order tracking stepper, checkout integration touchpoints, newsletter/email preferences, reorder, cancellation, account deletion. Upgraded: every story now includes UX/Design Notes section.
+Depends on
+US-01-02 (schema), US-01-04 (email), US-01-09 (rate limiting), US-04-03 (checkout), US-05-01 (orders)
+
+Section 1 — Gap Analysis: v1 vs v2
+
+What EP-09 v1 had vs what it was missing
+HAD: Magic link sign-in, order list dashboard, order detail with timeline, guest order lookup, Stripe Customer + saved payment methods, Stripe Customer Portal for card management, profile page.
+MISSING: Visual tracking stepper (status stepper with timestamps and carrier integration), checkout integration touchpoints (account creation woven into the purchase flow), newsletter opt-in/out with CAN-SPAM compliance, reorder functionality, order cancellation request, account deletion / right to erasure, UX specifications on any story, email preferences centre, mobile UX details.
+v2 addresses all of these. Every story now has a dedicated UX / Design Notes section with specific guidance for AI coding agents and designers.
+
+E-commerce best practices checklist — all addressed in v2
+
+Feature
+v1
+v2
+Story
+Magic link / passwordless auth
+Yes
+Yes (improved)
+US-09-01
+Account creation woven into checkout
+No
+Yes
+US-09-02
+Post-purchase account creation nudge
+Mentioned only
+Full spec + UX notes
+US-09-02
+Order list with status pills
+Yes
+Yes (improved copy + delay detection)
+US-09-03
+Visual status stepper (Confirmed→Shipped→Delivered)
+No
+Yes — with timestamps and human labels
+US-09-04
+Carrier tracking embed or direct link
+No
+Yes — direct link MVP, API Phase 2
+US-09-04
+Estimated delivery date
+No
+Yes — calculated from shipped_at + carrier days
+US-09-04
+Delay warning on overdue orders
+No
+Yes — amber alert when past fulfill_by
+US-09-03 + 09-04
+DELIVERED celebration state
+No
+Yes — CSS confetti, warm copy
+US-09-04
+Reorder from delivered orders
+No
+Yes
+US-09-05
+Order cancellation (within window)
+No
+Yes — 1-hour window, Stripe refund
+US-09-05
+Guest order lookup
+Yes
+Yes (improved — uses tracking component)
+US-09-06
+Newsletter opt-in at checkout
+No
+Yes — unchecked by default
+US-09-07
+One-click email unsubscribe (CAN-SPAM)
+No
+Yes — signed token, immediate
+US-09-07
+Email preference centre
+No
+Yes — /account/preferences
+US-09-07
+Saved payment methods at checkout
+Yes
+Yes (improved UX notes)
+US-09-08
+Stripe Customer Portal
+Yes
+Yes (improved UX notes)
+US-09-09
+Impact summary and profile
+Yes
+Yes (improved + causes list)
+US-09-10
+Account deletion (GDPR right to erasure)
+No
+Yes — anonymisation pattern
+US-09-10
+UX notes on every story
+No
+Yes — dedicated UX/Design Notes section
+All
+
+Section 2 — Architecture & Integration Decisions
+
+1. Auth: magic link only, no password, no Clerk
+Buyers are occasional purchasers — a few times a year. Password auth introduces a forgot-password flow, password hashing complexity, and a breach surface for a user segment that barely needs persistent auth. Magic link matches how buyers already use the platform — every order email already contains action links. The MagicLink model, sendEmail infrastructure, and session cookie pattern are all already in the codebase.
+
+Why not Clerk for buyers?
+Clerk is used for roaster and org portals — adding a third Clerk app for buyers adds cost, a third key set, and a third webhook to maintain.
+Buyers use apps/web, not a portal. A lightweight custom session (HS256 JWT cookie via jose or iron-session) is the right tool.
+The magic link pattern already exists in the codebase (MagicLink model + sendEmail). Buyer auth reuses it identically.
+SESSION_SECRET is a single new env var. No Clerk dashboard, no Clerk webhook, no Clerk middleware.
+
+2. Checkout integration philosophy
+Account creation must never block a purchase. The checkout flow is identical for guest and signed-in buyers — accounts are a benefit layer on top of checkout, not a gate into it. Every account touchpoint in checkout is optional, low visual weight, and provides immediate value when used (pre-filled address, saved card). The post-purchase prompt is the highest-converting moment for account creation because the buyer has just completed a positive action.
+
+3. Visual order tracking — MVP vs Phase 2
+Layer
+MVP (Sprint 3)
+Phase 2
+Status stepper
+4-step visual stepper with timestamps — built from Order.status + OrderEvent timestamps
+Same stepper — no change needed
+Carrier tracking
+Direct link to carrier website using tracking number + carrier name map
+Aftership or EasyPost API for live event feed and estimated delivery from carrier
+Estimated delivery
+Calculated range from shipped_at + carrier-typical days (hardcoded map)
+Real estimated delivery date from carrier API
+Tracking embed
+None — direct link only
+Aftership/EasyPost iframe or tracking widget
+
+4. Newsletter and email compliance
+CAN-SPAM (US) requires: clear identification, physical address, and one-click unsubscribe in every commercial email. GDPR/PECR (EU) requires explicit opt-in for marketing emails. For a US-only MVP, opt-in defaults to TRUE (CAN-SPAM compliant) but this must be reviewed before any EU expansion. The design implements one-click unsubscribe via signed JWT token — no account required to unsubscribe, immediate effect, with resubscribe option.
+
+Transactional vs marketing email distinction — CRITICAL
+TRANSACTIONAL (always send regardless of preferences): order_confirmation, order_shipped, order_delivered, sla_delay_alert, magic_link. These are required for the purchase contract.
+MARKETING (check newsletter_opt_in first): campaign_updates, coffee_tips, impact_reports. Skip silently if opt_in=false.
+sendEmail() in packages/email must enforce this distinction. Pass an email category param. Fail loudly (throw) if a TRANSACTIONAL email is accidentally suppressed.
+List-Unsubscribe header: add to all marketing emails via Resend headers param. Gmail and Apple Mail show a one-click unsubscribe option natively.
+
+5. Stripe Customer Portal scope
+The Stripe Customer Portal is used exclusively for payment method management. It cannot show Joe Perks order history, tracking, or fundraiser impact — those live in the Joe Perks database. Buyers access the portal via a "Manage payment methods" button — they are never sent to Stripe directly without an explicit click. The portal is configured in Stripe Dashboard with subscriptions disabled (Joe Perks has none) and payment method management enabled.
+
+6. Account deletion and GDPR right to erasure
+Account deletion anonymises the Buyer.email field to preserve Order foreign keys for financial audit. The buyer_id is retained internally. All Buyer PII (name, email) is cleared. This satisfies the GDPR right to erasure without corrupting the order history that's needed for Stripe reconciliation and dispute evidence. Order records are never deleted.
+
+Section 3 — Sprint Plan
+
+Sprint
+Stories
+Pts
+Focus
+Sprint 3
+US-09-00, US-09-01, US-09-02, US-09-03, US-09-04, US-09-06
+28 pts
+Schema, auth, checkout integration, order dashboard, visual tracking stepper, guest lookup
+Sprint 4
+US-09-05, US-09-07, US-09-08, US-09-09, US-09-10
+19 pts
+Order actions (reorder/cancel), email preferences + unsubscribe, Stripe saved cards, portal, profile
+
+Sprint 3 build order — dependencies are strict
+1. US-09-00 (schema migration) — must be first PR merged
+2. US-09-01 (magic link auth) — foundation for all authenticated routes
+3. US-09-06 (guest order lookup) — can be built in parallel with US-09-01
+4. US-09-04 (order tracking component) — builds the shared component used by both lookup and dashboard
+5. US-09-02 (checkout integration) + US-09-03 (dashboard) — can be parallel after US-09-01 and US-09-04
+
+Section 4 — User Story Cards
+11 stories covering the complete buyer account experience. Each story includes Acceptance Criteria, Technical Notes, UX/Design Notes, and Definition of Done.
+
+UX / Design Notes — how to use this section
+Every story in EP-09 v2 includes a "UX / Design Notes" section written specifically for the developer and AI coding agent building it.
+These notes describe intended behaviour, visual design intent, copy guidance, accessibility requirements, and mobile UX specifics.
+They are not optional — they are part of the acceptance criteria for the UX quality of the feature.
+If a UX note conflicts with an AC, escalate to the product owner rather than making a unilateral decision.
+
+US-09-00  Schema migration — all buyer account fields
+
+Points
+Priority
+Status
+Epic
+Sprint
+3 pts
+High
+Todo
+EP-09 Buyer Accounts
+Sprint 3 — first PR
+
+As a developer, I want to all schema changes for buyer accounts applied in a single migration before any feature code is written
+so that no story in EP-09 is blocked waiting for a missing field
+
+Dependencies: US-01-02
+Acceptance Criteria
+#
+Acceptance Criteria
+AC1
+Buyer model: add stripe_customer_id String? (nullable), stripe_customer_created_at DateTime?
+AC2
+Buyer model: add newsletter_opt_in Boolean @default(true), newsletter_opted_in_at DateTime?, newsletter_opted_out_at DateTime?
+AC3
+Buyer model: add marketing_consent_version String? (records which consent copy they agreed to at opt-in)
+AC4
+Buyer model: add last_sign_in_at DateTime? (updated on each magic link redemption)
+AC5
+MagicLinkPurpose enum: add BUYER_AUTH value
+AC6
+Order model: add @@index([buyer_email]) for guest order-lookup query performance
+AC7
+BuyerEmailPreference model created: id, buyer_id FK, category (TRANSACTIONAL|NEWSLETTER|IMPACT_UPDATE), is_active Boolean, updated_at DateTime — allows granular email preference management
+AC8
+SESSION_SECRET added to .env.example with note: min 32 chars, used to sign buyer session cookies (HS256 JWT)
+AC9
+Migration: npx prisma migrate dev --name buyer-accounts — completes without errors
+AC10
+Prisma Client regenerated — all new fields fully typed
+
+Technical Notes
+	•	newsletter_opt_in defaults to TRUE — UK/EU sites must default to FALSE (PECR/GDPR). For US-only MVP, true is acceptable. Review with counsel before expanding.
+	•	marketing_consent_version stores a string like "2026-03-01-v1" matching the consent copy version shown at opt-in
+	•	BuyerEmailPreference is a Phase 2 enhancement — create the model now but do not build the UI until EP-09 UX is validated
+	•	TRANSACTIONAL emails (order confirm, shipped, delivered) are never suppressed regardless of preferences — they are required for the purchase contract
+
+Definition of Done
+	•	prisma migrate dev completes clean
+	•	prisma studio shows all new fields
+	•	BUYER_AUTH in Prisma TypeScript types
+
+US-09-01  Buyer magic link sign-in — frictionless email-based auth
+
+Points
+Priority
+Status
+Epic
+Sprint
+5 pts
+High
+Todo
+EP-09 Buyer Accounts
+Sprint 3
+
+As a buyer, I want to to type my email and receive a one-click sign-in link, with no password required
+so that I can access my account in under 30 seconds without friction
+
+Dependencies: US-09-00  ·  US-01-04
+Acceptance Criteria
+#
+Acceptance Criteria
+AC1
+GET /account/sign-in: single email input, "Send me a sign-in link" CTA, no password field
+AC2
+On submit: MagicLink created (purpose=BUYER_AUTH, expires_at=now+15min), sendEmail(buyer_auth_magic_link) sent via packages/email
+AC3
+If email has NO Buyer record: show "We don't have an account for that email. Have you placed an order?" with link to /order-lookup
+AC4
+Confirmation screen after submit: "Check your email — we sent a link to [email]. It expires in 15 minutes." — do not confirm whether the email exists (prevents enumeration)
+AC5
+GET /account/auth/[token]: validates token (exists, not expired, not used_at, purpose=BUYER_AUTH)
+AC6
+On valid token: used_at set atomically before any further action; Buyer.last_sign_in_at updated; session cookie set (HttpOnly, Secure, SameSite=Lax, 30-day expiry)
+AC7
+Session cookie payload: { buyer_id, iat } — signed HS256 JWT using SESSION_SECRET
+AC8
+redirect param preserved: /account/auth/[token]?redirect=/account/orders/[id] redirects there on success
+AC9
+Expired/used token: "This link has expired — links are valid for 15 minutes. Request a new one." with link to /account/sign-in
+AC10
+Sign out: DELETE /api/account/session — clears cookie, redirects to /, shows "You've been signed out" toast
+AC11
+Rate limiting: 5 magic link requests/hour/IP via Upstash (reuses US-01-09)
+AC12
+Magic link email subject: "Sign in to Joe Perks" — plain, recognisable, not spammy
+
+Technical Notes
+	•	Use iron-session or jose library for JWT cookie signing — not a raw cookie with buyer_id
+	•	Token validation uses atomic DB update: UPDATE MagicLink SET used_at=now() WHERE id=X AND used_at IS NULL RETURNING id — if 0 rows returned, token already used
+	•	Email enumeration: always show the "Check your email" screen regardless of whether the email exists — prevents account discovery
+	•	Magic link email must render correctly in Gmail, Apple Mail, and Outlook — test with React Email dev server
+
+UX / Design Notes
+	•	Sign-in page is deliberately minimal — one field, one button. No surrounding nav or footer that distracts.
+	•	After submit, show a mail icon animation or illustration — something warm and reassuring while they open email
+	•	"Resend link" option appears after 30 seconds on the confirmation screen — prevents frustrated repeat submits
+	•	The email itself: large, thumb-friendly button in brand green. Single purpose — sign in. No other links or marketing content in this email.
+	•	Mobile: auto-focus the email input on page load. Use inputType="email" for correct keyboard on mobile.
+
+Definition of Done
+	•	Sign-in email received within 10s
+	•	Link redirects to /account with session cookie set
+	•	Same link clicked twice shows expired message
+	•	Sign-out clears cookie
+
+US-09-02  Account creation touchpoints — checkout and post-purchase integration
+
+Points
+Priority
+Status
+Epic
+Sprint
+5 pts
+High
+Todo
+EP-09 Buyer Accounts
+Sprint 3
+
+As a guest buyer completing checkout, I want to to be offered account creation at natural moments in my purchase flow without it blocking my purchase
+so that I can create an account effortlessly if I want to, or skip it without friction
+
+Dependencies: US-09-01  ·  US-04-03
+Acceptance Criteria
+#
+Acceptance Criteria
+AC1
+Checkout Step 2 (Shipping — email collection): below the email field, show an opt-in checkbox: "Keep me updated on my order and save my details for next time." — checked by default, low visual weight
+AC2
+If the checkbox is checked and a Buyer already exists for that email AND a session cookie is present: pre-fill name, email, and shipping address from the Buyer record — buyer sees their details already filled
+AC3
+If signed in at checkout: Step 2 shows a banner "Signed in as [email] · Not you? Sign out" with pre-filled shipping from last order (if available)
+AC4
+Checkout Step 3 (Payment) for signed-in buyers: Payment Element shows saved cards. "Save this card" checkbox (opt-in, unchecked by default) visible below card input.
+AC5
+Post-purchase confirmation page (US-04-04): if buyer is NOT signed in, show a persistent non-intrusive banner: "Create an account to track orders and save your card — it takes 10 seconds." with a single "Create account" button that sends a magic link to the email used at checkout
+AC6
+"Create account" button on confirmation page: sends BUYER_AUTH magic link to checkout email, shows "Check your email!" inline — no page navigation
+AC7
+If buyer IS already signed in: confirmation page shows "Saved to your account · View order history" link instead of the create account prompt
+AC8
+Account creation prompt is NOT a modal or overlay — it is an inline section below the order summary
+AC9
+Newsletter opt-in checkbox on checkout Step 2: "Get coffee tips and fundraiser updates from Joe Perks" — unchecked by default, separate from the order-tracking opt-in checkbox
+AC10
+Both checkboxes save their state to the Order and Buyer records on payment confirmation (via webhook)
+
+Technical Notes
+	•	Pre-filling checkout from account: if buyer session cookie is present on checkout step load, GET /api/account/prefill returns { name, email, last_ship_to_name, last_ship_to_address1, last_ship_to_city, last_ship_to_state, last_ship_to_zip } from most recent DELIVERED order
+	•	The newsletter opt-in checkbox value is passed to the checkout create-intent payload and stored on Buyer.newsletter_opt_in on the webhook
+	•	Do not pre-check "Save this card" — this is an opt-in action and must be explicit per best practices and payment regulations
+	•	The "10 seconds" claim on the post-purchase prompt must be true — clicking sends a magic link, no form filling required
+
+UX / Design Notes
+	•	UX PRINCIPLE: account creation must never block the purchase. The checkout flow is identical for guest and signed-in buyers — accounts are a benefit layer on top, not a gate.
+	•	Pre-filled address: when a returning buyer's address is pre-filled, show a subtle "Filled from your last order" label so they know where it came from and feel the value of having an account
+	•	The post-purchase account prompt should use social proof copy if data allows: "Join X buyers tracking their orders" or simply "Your order is saved — sign in anytime to check status"
+	•	On mobile: the newsletter checkbox must have a min 44px touch target. Use a card-style toggle rather than a small checkbox for better mobile ergonomics.
+	•	The "Save this card" prompt should include a short trust signal: a lock icon and "Secured by Stripe"
+
+Definition of Done
+	•	Signed-in buyer sees pre-filled checkout with correct last address
+	•	Post-purchase "create account" sends magic link without page navigation
+	•	Newsletter opt-in value correctly stored on Buyer after order webhook
+
+US-09-03  Buyer account dashboard — order list with live status and impact summary
+
+Points
+Priority
+Status
+Epic
+Sprint
+5 pts
+High
+Todo
+EP-09 Buyer Accounts
+Sprint 3
+
+As a signed-in buyer, I want to to see all my orders with their current status and my total fundraising impact on a single clean dashboard page
+so that I have a complete picture of my purchase history and contribution without searching my email
+
+Dependencies: US-09-01
+Acceptance Criteria
+#
+Acceptance Criteria
+AC1
+GET /account — requires buyer session. Unauthenticated: redirect to /account/sign-in?redirect=/account
+AC2
+Page header: buyer name (editable inline), email (read-only), "Sign out" link
+AC3
+Impact hero section: "You've raised $X.XX for [N] causes" — total org_amount WHERE status IN [SHIPPED, DELIVERED] across all orders
+AC4
+Orders list sorted by created_at desc. Each order card shows: order number, campaign org name with their logo (thumbnail), order date, status pill, and item count + total price
+AC5
+Status pill design: PENDING=gray "Processing", CONFIRMED=blue "Confirmed", SHIPPED=amber "On its way", DELIVERED=green "Delivered", REFUNDED=red "Refunded", CANCELLED=red "Cancelled"
+AC6
+SHIPPED orders: show carrier and tracking number directly on card with a "Track package" link
+AC7
+"Track package" link opens a modal (not a new tab navigation) showing the visual tracking stepper (see US-09-04)
+AC8
+CONFIRMED orders awaiting shipment: show "Expected to ship within 48h" based on fulfill_by
+AC9
+If fulfill_by has passed and order is still CONFIRMED: show "Shipping delay — we'll notify you" in amber
+AC10
+Each card links to /account/orders/[order_id] for full detail
+AC11
+Empty state: warm, branded illustration and copy — "No orders yet. Browse campaigns to support a cause you love." with CTA to joeperks.com
+AC12
+Page is fully server-rendered with no client-side loading spinners for the initial order list
+AC13
+Mobile: order cards are full-width, stacked vertically with generous padding. Status pill and tracking link are thumb-accessible.
+
+Technical Notes
+	•	Impact hero: SUM(org_amount) WHERE buyer_id=session.buyer_id AND status IN (SHIPPED, DELIVERED). Count DELIVERED separately for accurate "raised" vs "in progress".
+	•	Orders query must use buyer_id from session — never from URL params or request body
+	•	Delay detection: WHERE status=CONFIRMED AND fulfill_by < now() — same index used by SLA job
+
+UX / Design Notes
+	•	UX PRINCIPLE: The impact hero should be the emotional centrepiece of the page. Use a large, legible dollar amount with warm visual treatment — this is the reason the buyer should care about having an account.
+	•	Order cards: use generous spacing and clear visual hierarchy. Order number and org name are most important — price and date are secondary.
+	•	The status pill must be immediately scannable — colour alone is not enough for accessibility, always pair with a text label.
+	•	Consider a "Your coffee journey" timeline variant for buyers with 3+ orders — shows the progression of causes they've supported.
+	•	Skeleton loaders for any client-side data (tracking modal) — never show empty containers or spinners for server-rendered content.
+
+Definition of Done
+	•	Only the signed-in buyer's orders visible
+	•	Impact total matches sum of org_amount from test orders
+	•	Delay warning visible on CONFIRMED order past fulfill_by
+
+US-09-04  Visual order tracking — status stepper, carrier embed, and delivery timeline
+
+Points
+Priority
+Status
+Epic
+Sprint
+8 pts
+High
+Todo
+EP-09 Buyer Accounts
+Sprint 3
+
+As a buyer, I want to to see a visual status stepper showing exactly where my order is in the fulfilment process, with a carrier tracking embed if shipped
+so that I can see real-time progress without leaving Joe Perks or manually opening a carrier website
+
+Dependencies: US-09-03
+Acceptance Criteria
+#
+Acceptance Criteria
+AC1
+Order tracking view available at: (a) /account/orders/[order_id] for signed-in buyers, and (b) /order-lookup result for guests — same component, different auth context
+AC2
+Visual status stepper at the top of every order detail view: 4 steps — Order Confirmed → Roaster Preparing → Shipped → Delivered — with current step highlighted
+AC3
+Stepper step states: completed (filled green circle + checkmark), active (filled brand circle + label in bold), upcoming (empty circle, gray label)
+AC4
+Each completed step shows a timestamp: "Confirmed on Mar 20 at 2:14pm"
+AC5
+If SHIPPED: show carrier tracking embed using Aftership or Parcellab iframe/widget OR a branded tracking summary panel with: carrier name, tracking number, estimated delivery (from carrier API if available), last tracking event description
+AC6
+Tracking carrier URL map for direct link fallback: UPS, FedEx, USPS, DHL, Other — opens in same tab on mobile (carrier apps handle redirect), new tab on desktop
+AC7
+Estimated delivery: if carrier API is not integrated (MVP), calculate a range from shipped_at + carrier-typical days (UPS/FedEx 3–5 business days, USPS 5–7, DHL 3–5) — show as "Estimated delivery: Apr 2–4"
+AC8
+CONFIRMED orders (not yet shipped): show "Roaster is preparing your order · Expected to ship by [fulfill_by date]"
+AC9
+If order is past fulfill_by and still CONFIRMED: show amber alert "This order is taking longer than expected. We're following up with the roaster. If you have questions, contact support@joeperks.com"
+AC10
+DELIVERED orders: show a celebration moment — "Your coffee arrived! You raised $X.XX for [Org Name]" with a subtle confetti animation (CSS only, respects prefers-reduced-motion)
+AC11
+REFUNDED orders: show "This order was refunded on [date]. The amount should appear in your account within 5–10 business days." No celebration.
+AC12
+Order items section below the stepper: product image (if available), name, variant, quantity, unit price, line total — using OrderItem snapshots
+AC13
+Order totals: subtotal, shipping, total — clearly labeled. Show fundraiser impact: "Raised for [Org]: $X.XX" as a highlighted line.
+AC14
+"Need help with this order?" CTA at the bottom: opens mailto:support@joeperks.com?subject=Order%20[order_number]
+
+Technical Notes
+	•	MVP tracking: direct carrier link only — no API integration. Phase 2: integrate Aftership or EasyPost tracking API for live event feed.
+	•	Estimated delivery calculation: shipped_at + carrier days map. Store carrier in Order.carrier. Map: { UPS: [3,5], FedEx: [3,5], USPS: [5,7], DHL: [3,5], Other: [5,10] }
+	•	The confetti animation: CSS keyframes only. Trigger class added client-side when status=DELIVERED. Wrapped in @media (prefers-reduced-motion: no-preference)
+	•	This component (OrderTracking) should be a standalone client component that receives order data as props — reusable in both /account/orders/[id] and the guest /order-lookup result
+
+UX / Design Notes
+	•	UX PRINCIPLE: The status stepper is the single most important UI element in the entire account section. Buyers want to know: where is my package? Make the answer immediate and visual.
+	•	Step labels should use human language — not tech terms. "Roaster Preparing" not "CONFIRMED". "On Its Way" not "SHIPPED".
+	•	On mobile, the stepper should be vertical (top to bottom) — horizontal steppers are cramped and hard to read on small screens.
+	•	The "Roaster is preparing your order" state should include the roaster's name and optionally their city — this humanises the wait and connects the buyer to the roaster.
+	•	Use a loading skeleton for the tracking embed while it initialises — never show an empty iframe or blank box.
+	•	The celebration state for DELIVERED should feel warm and personal, not corporate. Think: a small cup of coffee emoji or illustration, warm typography, the exact dollar amount they raised in a larger font.
+	•	REFUNDED state: do not use red anywhere except the status pill. Refunds are not buyer errors — use neutral tones and clear, reassuring copy.
+
+Definition of Done
+	•	Status stepper shows correct active step for CONFIRMED, SHIPPED, DELIVERED test orders
+	•	Carrier link for UPS resolves to correct tracking page
+	•	Celebration state appears for DELIVERED order
+	•	Reduced motion preference disables animation
+
+US-09-05  Order detail — full breakdown, reorder, and cancellation request
+
+Points
+Priority
+Status
+Epic
+Sprint
+3 pts
+High
+Todo
+EP-09 Buyer Accounts
+Sprint 4
+
+As a signed-in buyer, I want to to view complete order details, reorder the same items, or request a cancellation on eligible orders
+so that I have full self-service capability over my orders without contacting support for routine actions
+
+Dependencies: US-09-04
+Acceptance Criteria
+#
+Acceptance Criteria
+AC1
+Full order detail view at /account/orders/[order_id] — buyer_id from session must match order.buyer_id (403 if not)
+AC2
+Sections: (1) Status stepper (US-09-04 component), (2) Items, (3) Shipping address, (4) Payment summary, (5) Fundraiser impact, (6) Actions
+AC3
+Items section: product image, name, variant description, quantity, unit price, line total — from OrderItem snapshots (not live ProductVariant)
+AC4
+Payment summary: subtotal, shipping, total paid. Does NOT show internal split details (org %, platform fee).
+AC5
+"Reorder" button visible on DELIVERED orders: adds all items to cart (checking current CampaignItem availability), shows cart drawer. If any item is no longer available, shows inline warning "Some items are no longer available — we've added what we can."
+AC6
+"Cancel order" button visible ONLY on CONFIRMED orders where shipped_at IS NULL AND created_at > now() - 1 hour (within 1-hour cancellation window)
+AC7
+Cancel order flow: confirmation modal "Are you sure? This will cancel your order and issue a full refund." → POST /api/account/orders/[id]/cancel → triggers Stripe refund → Order.status=CANCELLED → sends cancellation confirmation email
+AC8
+Cancel button disappears after 1-hour window — replaced with "Need to cancel? Contact support@joeperks.com"
+AC9
+"Rate this coffee" prompt visible on DELIVERED orders (placeholder link for Phase 2 review feature) — shows as a greyed-out "Coming soon" state at MVP
+AC10
+Shipping address displayed exactly as entered. Cannot be edited after order is placed.
+AC11
+Back navigation: breadcrumb "← Back to my orders" at top of page
+
+Technical Notes
+	•	Reorder: check each variant against current CampaignItem availability before adding. Use the CURRENT campaign the buyer ordered from (campaign_id on Order). If campaign is ENDED, show "This campaign has ended — browse active campaigns."
+	•	Cancellation eligibility: CONFIRMED + shipped_at IS NULL + created_at > now() - 1h. The 1-hour window is a platform policy choice — configurable as a future PlatformSettings field.
+	•	Cancel API: POST /api/account/orders/[id]/cancel → verify session + ownership → stripe.refunds.create(stripe_charge_id) → Order.status=CANCELLED → logOrderEvent(ORDER_CANCELLED, BUYER) → sendEmail(order_cancelled, buyer)
+	•	Do not allow cancellation if order is SHIPPED — buyer must contact support for shipped-order returns.
+
+UX / Design Notes
+	•	The "Reorder" button is one of the highest-value repeat-purchase features in the entire epic — make it prominent on delivered orders. Consider copy like "Buy this again for [Org Name]" to reinforce the cause.
+	•	The cancellation modal must be cautious and clear — but not so alarming that buyers feel punished. Use neutral tone, clearly state the refund timeline.
+	•	Breadcrumb navigation is essential on mobile — buyers will navigate back and forth between order list and detail views.
+	•	The "Rate this coffee" coming-soon state should feel like a teaser, not a broken feature. Use a coffee cup icon and copy like "Review coming in the next update".
+
+Definition of Done
+	•	403 returned for order belonging to different buyer
+	•	Reorder adds available items to cart
+	•	Cancel within 1h: order cancelled, refund created in Stripe test mode
+	•	Cancel after 1h: button replaced with support link
+
+US-09-06  Guest order lookup — email + order number with visual tracking
+
+Points
+Priority
+Status
+Epic
+Sprint
+3 pts
+High
+Todo
+EP-09 Buyer Accounts
+Sprint 3
+
+As a guest buyer who did not create an account, I want to to check my order status by entering my email and order number
+so that I can see where my order is without signing in
+
+Dependencies: US-09-04
+Acceptance Criteria
+#
+Acceptance Criteria
+AC1
+GET /order-lookup on apps/web: two fields — email address and order number (format hint: "JP-00001")
+AC2
+On submit: POST /api/order-lookup — finds Order WHERE buyer_email = input (case-insensitive) AND order_number = input
+AC3
+If found: renders the full OrderTracking component (US-09-04) inline on the page — same visual stepper, carrier link, item list, and fundraiser impact
+AC4
+If not found: "We couldn't find an order matching that email and order number. Check your confirmation email and try again." — do not indicate which field was wrong
+AC5
+Rate limiting: 10 requests/hour/IP via Upstash
+AC6
+Below the result: warm prompt — "Want to track all your orders in one place? Create an account — it takes 10 seconds." with magic link trigger (same as post-purchase prompt in US-09-02)
+AC7
+Form is accessible: associated labels, error messages linked via aria-describedby, keyboard navigable
+AC8
+On successful lookup: URL updates to /order-lookup?order=[order_number]&email=[hashed] — NOT the raw email in URL — to allow sharing a result link (shareable within same browser session, not cross-device)
+AC9
+Clear link: "Look up a different order" clears the result and resets the form
+
+Technical Notes
+	•	Do not expose order_id in the URL — use order_number (JP-XXXXX) which is not guessable
+	•	Case-insensitive email: WHERE LOWER(buyer_email) = LOWER(:input)
+	•	The URL update on success is client-side only (history.pushState) — the page is not server-rendered with the email in the URL
+	•	Rate limit: 10/hr is more generous than checkout (5/hr) because this is not a payment vector
+
+UX / Design Notes
+	•	Place the order lookup link prominently in the order confirmation email — "Can't sign in? Track your order here" — so buyers find it when they need it most.
+	•	The form should be simple and approachable — this is used when buyers are anxious about their order. No complexity.
+	•	Show the lookup form above the fold on desktop and in the first scrollable view on mobile.
+
+Definition of Done
+	•	Correct email + order number returns tracking view
+	•	Wrong combination returns generic not-found message
+	•	Rate limit triggers after 10 requests from same IP
+
+US-09-07  Newsletter opt-in/out and email preference centre
+
+Points
+Priority
+Status
+Epic
+Sprint
+5 pts
+High
+Todo
+EP-09 Buyer Accounts
+Sprint 4
+
+As a buyer, I want to to control what emails I receive from Joe Perks, including opting out of marketing emails, with a simple one-click unsubscribe that is legal and immediate
+so that I only receive emails I want and trust that Joe Perks respects my preferences
+
+Dependencies: US-09-00  ·  US-09-01
+Acceptance Criteria
+#
+Acceptance Criteria
+AC1
+Newsletter opt-in: checkbox on checkout Step 2 "Get coffee tips and cause updates from Joe Perks" — UNCHECKED by default. When checked, sets Buyer.newsletter_opt_in=true and records newsletter_opted_in_at and marketing_consent_version.
+AC2
+Newsletter opt-in also available on account creation confirmation screen: "While you're here — would you like updates from Joe Perks?" with a toggle, unchecked by default.
+AC3
+One-click unsubscribe: every non-transactional email includes an "Unsubscribe" link in the footer — GET /unsubscribe?token=[signed_token] — clicking immediately sets newsletter_opt_in=false and shows confirmation page "You've been unsubscribed. We'll only send you order updates."
+AC4
+Unsubscribe token is a signed JWT containing { buyer_id, purpose: "newsletter_unsubscribe" } — does NOT require the buyer to be signed in
+AC5
+Resubscribe option: the unsubscribe confirmation page includes a "Changed your mind? Resubscribe" link that sets newsletter_opt_in=true
+AC6
+Email preference centre at /account/preferences for signed-in buyers: shows two toggles — "Order updates (required — cannot be turned off)" and "Coffee tips and cause updates (newsletter)"
+AC7
+"Order updates" toggle is always ON and visually disabled with a tooltip "These emails are required for your order"
+AC8
+CAN-SPAM compliance: every marketing email must include Joe Perks physical address in the footer
+AC9
+GDPR note: unsubscribe requests processed immediately — no "processing period". Confirmation shown within 1 second of clicking.
+AC10
+sendEmail() helper updated: checks Buyer.newsletter_opt_in before sending NEWSLETTER category emails — silently skips if false. TRANSACTIONAL emails always send regardless.
+
+Technical Notes
+	•	Unsubscribe token: sign with SESSION_SECRET using jose. Payload: { buyer_id, purpose: "newsletter_unsubscribe", iat }. Verify on GET /unsubscribe.
+	•	CAN-SPAM physical address: add a COMPANY_PHYSICAL_ADDRESS env variable. Render in all marketing email footers via the base React Email layout.
+	•	Email categories: TRANSACTIONAL (order_confirmation, order_shipped, order_delivered, sla_alert) — always send. NEWSLETTER (campaign_updates, tips) — check opt_in first.
+	•	List-Unsubscribe header: add to all marketing emails via Resend — one-click unsubscribe in Gmail/Apple Mail without opening the email.
+	•	Resend supports List-Unsubscribe header via the headers param on email send.
+
+UX / Design Notes
+	•	UX PRINCIPLE: making it easy to unsubscribe builds MORE trust than hiding it. Buyers who can easily unsubscribe are more likely to stay subscribed long-term.
+	•	The unsubscribe page should be warm and non-punishing. Avoid dark patterns like "Are you sure? You'll miss out on..." guilt copy.
+	•	Newsletter opt-in checkbox on checkout should be LOW visual weight — a small secondary checkbox below the main opt-in, clearly labelled as optional.
+	•	Email preference centre in account should be a simple toggle list — not a complex multi-step form. Preferences save immediately on toggle without a save button.
+	•	Confirmation screen after unsubscribing should be simple and respectful: "Done. You'll only hear from us about your orders." No FOMO.
+
+Definition of Done
+	•	Newsletter opt-in checkbox unchecked by default on checkout
+	•	Clicking unsubscribe link sets newsletter_opt_in=false immediately
+	•	Order confirmation email sends regardless of newsletter preference
+	•	List-Unsubscribe header present in marketing email headers
+
+US-09-08  Stripe Customer + saved payment methods — frictionless repeat checkout
+
+Points
+Priority
+Status
+Epic
+Sprint
+5 pts
+Medium
+Todo
+EP-09 Buyer Accounts
+Sprint 4
+
+As a returning signed-in buyer, I want to to have my saved card pre-filled at checkout and the option to save a new card with a single checkbox
+so that repeat purchases for the causes I support take seconds, not minutes
+
+Dependencies: US-09-02  ·  US-09-00
+Acceptance Criteria
+#
+Acceptance Criteria
+AC1
+On Buyer creation (US-05-01 webhook upsert): stripe.customers.create({ email, name, metadata: { buyer_id } }) — store stripe_customer_id on Buyer. Wrapped in try/catch — failure creates Buyer without stripe_customer_id.
+AC2
+Buyer.stripe_customer_id is nullable — guest orders and any orders where Stripe Customer creation failed proceed normally without saved payment methods.
+AC3
+PaymentIntent for signed-in buyers: created with customer=buyer.stripe_customer_id and setup_future_usage="off_session" — enables Stripe to save the card if buyer opts in.
+AC4
+Checkout Step 3 for signed-in buyers with stripe_customer_id: Payment Element (replaces CardElement) renders with saved cards enabled. Saved cards shown with last 4 digits, expiry, and card brand icon.
+AC5
+"Save this card for future orders" checkbox on Step 3 — UNCHECKED by default. When unchecked, payment_method_save="disabled" on PaymentIntent.
+AC6
+Guest checkout Step 3: Payment Element without customer param — no card saving. Existing behaviour unchanged.
+AC7
+customer.updated Stripe webhook: received and acknowledged — no DB action required. Stripe handles payment method management.
+AC8
+Saved card removal available via Stripe Customer Portal (US-09-09).
+AC9
+If stripe_customer_id is set but Stripe Customer no longer exists (deleted): catch the error, clear Buyer.stripe_customer_id, proceed as guest checkout.
+
+Technical Notes
+	•	Payment Element replaces CardElement across all checkouts — it is backwards compatible and handles saved cards gracefully when no customer is passed.
+	•	setup_future_usage: "off_session" on PaymentIntent tells Stripe to save the card even if buyer navigates away after payment succeeds.
+	•	"Save this card" UX: pass payment_method_save param to Stripe Payment Element options — Stripe handles the actual saving UI/confirmation natively.
+	•	Stripe Customer creation failure: log to Sentry but do NOT block order creation. Order proceeds without saved payment method capability.
+
+UX / Design Notes
+	•	"Save this card" must be opt-in — never default-checked. This is both a UX best practice and a legal requirement in many jurisdictions.
+	•	Show a "Secured by Stripe" trust badge and padlock icon adjacent to the "Save this card" checkbox.
+	•	Saved cards should show the card brand logo (Visa/MC/Amex) alongside last 4 and expiry — buyers identify their card by visual brand, not by number.
+	•	If a buyer has multiple saved cards, show the most recently used first with a "Default" label.
+
+Definition of Done
+	•	Signed-in buyer with saved card sees it pre-filled at checkout
+	•	"Save this card" unchecked: no card saved after payment
+	•	Stripe Customer visible in Stripe test dashboard after first order
+	•	Guest checkout unchanged — no Payment Element with saved cards
+
+US-09-09  Stripe Customer Portal — self-service payment method management
+
+Points
+Priority
+Status
+Epic
+Sprint
+2 pts
+Medium
+Todo
+EP-09 Buyer Accounts
+Sprint 4
+
+As a signed-in buyer with a saved payment method, I want to to add, update, or remove my saved payment methods from my account page via a secure Stripe-hosted interface
+so that I can keep my payment info current without contacting support
+
+Dependencies: US-09-08
+Acceptance Criteria
+#
+Acceptance Criteria
+AC1
+"Manage payment methods" button visible at /account — only shown if buyer.stripe_customer_id is set
+AC2
+Click: POST /api/account/billing-portal (authenticated) → stripe.billingPortal.sessions.create({ customer: buyer.stripe_customer_id, return_url: "https://joeperks.com/account" }) → 302 redirect to session URL
+AC3
+Portal configured in Stripe Dashboard: enable payment method add/update/remove, DISABLE subscriptions (Joe Perks has none)
+AC4
+After portal: buyer returned to /account via return_url. No webhook action needed for payment method changes.
+AC5
+If stripe_customer_id is null: button is hidden — no portal session attempted
+AC6
+Unauthenticated POST to /api/account/billing-portal: returns 401
+AC7
+Portal session URL is never cached — generated fresh on each click
+AC8
+STRIPE_PORTAL_CONFIGURATION_ID added to .env.example — allows separate portal configs for test vs live Stripe environments
+
+Technical Notes
+	•	Configure portal once in Stripe Dashboard per environment (test + live) — note the configuration IDs and store in env vars
+	•	The portal URL is short-lived (minutes) — never store or display it beyond the immediate redirect
+
+UX / Design Notes
+	•	"Manage payment methods" should be visually secondary on the account page — it is a utility action, not the primary purpose of the account.
+	•	On click, show a brief loading state ("Opening payment settings...") before the redirect to manage the latency of portal session creation.
+	•	Add a short explanatory note below the button: "Secured by Stripe · Your card details are never stored on Joe Perks servers"
+
+Definition of Done
+	•	Clicking button redirects to Stripe portal in test mode
+	•	Removing a card: card no longer shown at checkout on next visit
+	•	Unauthenticated request returns 401
+
+US-09-10  Buyer profile — name, impact summary, and account settings
+
+Points
+Priority
+Status
+Epic
+Sprint
+3 pts
+Medium
+Todo
+EP-09 Buyer Accounts
+Sprint 4
+
+As a signed-in buyer, I want to to view a summary of my impact, edit my display name, and manage my account settings from a single profile page
+so that my account feels personal and I have control over my information
+
+Dependencies: US-09-03  ·  US-09-07
+Acceptance Criteria
+#
+Acceptance Criteria
+AC1
+GET /account/profile — authenticated. Shows: name (editable), email (read-only with note "To change your email contact support@joeperks.com"), member since date (Buyer.created_at)
+AC2
+Inline name edit: click the name, it becomes an input. Click save or press Enter → PATCH /api/account/profile { name } → updates Buyer.name. Cancel with Escape key.
+AC3
+Impact summary section: total orders, total spent ($), total raised for causes ($, from DELIVERED orders only), number of unique campaigns supported
+AC4
+"Causes you've supported" section: list of org names from all orders with their campaign slug — each org name is a link to their live storefront (if campaign still ACTIVE)
+AC5
+Settings section: "Email & notifications" link to /account/preferences (US-09-07)
+AC6
+"Delete my account" link (low visual weight, bottom of page) — shows confirmation modal: "This will delete your account and order history from Joe Perks. Your past orders and payment history with Stripe will not be affected." → POST /api/account/delete → soft-deletes Buyer record (sets deleted_at), clears session cookie, redirects to /
+AC7
+Account deletion does NOT delete Order records — they are retained for financial audit. Buyer.email is anonymised (set to deleted-[buyer_id]@joeperks-deleted.com) to honour right to erasure while preserving order integrity.
+AC8
+PATCH /api/account/profile validates: name required, max 100 chars, strip HTML tags
+
+Technical Notes
+	•	Name update also syncs to Stripe Customer if stripe_customer_id is set: stripe.customers.update(id, { name })
+	•	"Causes you've supported": SELECT DISTINCT org.name, org.slug FROM orders JOIN campaigns ON campaign_id JOIN orgs ON org_id WHERE orders.buyer_id = ?
+	•	Account deletion is a GDPR right to erasure request — process immediately, do not delay. Anonymise email rather than deleting the Buyer row to preserve order foreign keys.
+
+UX / Design Notes
+	•	The impact summary should be a moment of pride. Use large, warm typography for the total raised figure. This is the emotional payoff of the whole account feature.
+	•	"Causes you've supported" as a list of org names humanises the data — buyers see who they've helped, not just numbers.
+	•	Inline name editing feels more natural than a separate edit page — use a pencil icon to hint editability.
+	•	"Delete my account" should be visually de-emphasised (small, gray text at bottom) — it should be findable but not alarming. Do not use the colour red for this link.
+
+Definition of Done
+	•	Name edit saves and syncs to Stripe Customer
+	•	Impact totals correct from test orders
+	•	Account deletion anonymises email and clears session
+	•	"Causes supported" list shows correct org names
+
