@@ -9,7 +9,7 @@ function serializeError(error: unknown): string {
       .filter((k) => k !== "message" && k !== "stack")
       .reduce(
         (acc, k) => {
-          acc[k] = (error as Record<string, unknown>)[k];
+          acc[k] = (error as unknown as Record<string, unknown>)[k];
           return acc;
         },
         {} as Record<string, unknown>
