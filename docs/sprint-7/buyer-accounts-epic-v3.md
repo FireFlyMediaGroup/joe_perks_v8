@@ -39,7 +39,7 @@ The current repository implements guest-first buyer commerce:
 - The Stripe webhook confirms the order and sends the buyer order-confirmation email.
 - The current buyer-facing post-purchase page is `/{locale}/{slug}/order/{pi_id}`.
 
-Buyer accounts do not currently exist as a product surface in the codebase. There are no buyer session helpers, no `/account/*` routes, no `/api/account/*` routes, no guest `/order-lookup` route, no buyer-auth magic links, no buyer preference models, and no saved-payment support persisted on `Buyer`.
+Buyer account foundations now exist as a product surface in the codebase. The repo now ships buyer session helpers, locale-aware sign-in and token-redemption routes, a protected `/{locale}/account` dashboard, buyer-owned `/{locale}/account/orders/[id]` detail pages, a public `/{locale}/order-lookup` flow backed by `/api/order-lookup`, `/api/account/*` auth/session endpoints, and buyer-auth magic-link email delivery. Preferences and saved-payment support still remain later work.
 
 Accordingly, EP-09 v3 should not be treated as a near-ready implementation backlog. It should be treated as a preparation and alignment document that closes foundational gaps first.
 
@@ -79,9 +79,10 @@ Current live schema in `packages/db/prisma/schema.prisma`:
 
 ```typescript
 model Buyer {
-  id    String  @id @default(cuid())
-  email String  @unique
-  name  String?
+  id           String    @id @default(cuid())
+  email        String    @unique
+  name         String?
+  lastSignInAt DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -94,6 +95,7 @@ Current `Buyer` supports only:
 
 - unique email
 - optional display name
+- optional last sign-in timestamp
 - relation to `Order`
 
 Missing for buyer accounts:
@@ -120,10 +122,10 @@ const buyer = await tx.buyer.upsert({
 Key realities:
 
 - buyer creation is email-based upsert only
-- checkout request body includes `buyerEmail` and `buyerName`
+- checkout request body includes `buyerEmail`, `buyerName`, and shipping snapshot inputs
 - the current API does not accept buyer-session context
 - the current API does not accept newsletter or buyer-account flags
-- the current API does not persist shipping-address columns on `Order`
+- the current API now persists buyer/shipping snapshot columns on `Order` during `create-intent`
 
 ### 3. Shipping Address Collection Versus Persistence
 
@@ -132,14 +134,16 @@ The shipping form in `apps/web/app/[locale]/[slug]/checkout/_components/step-shi
 - name
 - email
 - street
+- street2
 - city
 - state
 - zip
+- country (default `US`)
 - shipping rate
 
-The shipping form schema in `apps/web/app/[locale]/[slug]/checkout/_lib/schema.ts` validates those fields, but the current `Order` schema does not include shipping-address columns, and `docs/joe_perks_db_schema.md` explicitly says the MVP schema does not yet embed shipping-address fields on `Order`.
+The shipping form schema in `apps/web/app/[locale]/[slug]/checkout/_lib/schema.ts` validates those fields, and `Order` now persists immutable buyer/shipping snapshot columns for Sprint 7 buyer-account history, detail, and guest-lookup work.
 
-This was verified directly in the live `packages/db/prisma/schema.prisma` file. For Sprint 7 planning purposes, shipping-address persistence should be treated as missing infrastructure, not assumed infrastructure.
+This is now implemented in the live `packages/db/prisma/schema.prisma` file and is no longer a blocker for later Sprint 7 stories.
 
 This is a major prerequisite gap for buyer accounts because several ideas in EP-09 v2 depend on:
 
@@ -147,7 +151,7 @@ This is a major prerequisite gap for buyer accounts because several ideas in EP-
 - showing historical shipping details in buyer account pages
 - reusing last delivered address
 
-Those behaviors cannot be implemented cleanly until the persistence model for shipping/contact data is defined.
+Those behaviors can now build on persisted order snapshots rather than guess at mutable buyer-profile data.
 
 ### 4. Payments Surface
 
@@ -185,10 +189,10 @@ What it currently does:
 - renders a pending-state poller when the order is still `PENDING`
 - renders a simple order-summary card once confirmed
 - shows fundraiser impact on the confirmation page
+- can send a buyer-auth magic link inline from the confirmation page without leaving it
 
 What it does not do:
 
-- buyer authentication
 - multi-order history
 - order detail dashboard
 - tracking stepper
@@ -221,15 +225,21 @@ Current docs still describe buyer storefront access as public:
 - `docs/01-project-structure.mermaid` lists storefront, checkout, and order confirmation routes, but no buyer-account routes
 - `docs/CONVENTIONS.md` route structure for `apps/web` includes checkout and order confirmation only
 
-There are currently no buyer-account routes in `apps/web`:
+The buyer account route surface in `apps/web` is now partially implemented:
 
-- no `/account`
-- no `/account/sign-in`
-- no `/account/orders/[id]`
-- no `/account/preferences`
-- no `/api/account/session`
-- no `/api/account/billing-portal`
-- no `/order-lookup`
+- `/{locale}/account`
+- `/{locale}/account/orders/[id]`
+- `/{locale}/account/sign-in`
+- `/{locale}/account/auth/[token]`
+- `/api/account/sign-in`
+- `/api/account/sign-in/from-order`
+- `/api/account/auth/redeem`
+- `/api/account/session`
+
+Still missing for later work:
+
+- `/account/preferences`
+- `/api/account/billing-portal`
 
 ### 8. Magic-Link Infrastructure
 
@@ -238,14 +248,16 @@ There are currently no buyer-account routes in `apps/web`:
 - `ORDER_FULFILLMENT`
 - `ORG_APPROVAL`
 - `ROASTER_REVIEW`
-
-Missing:
-
 - `BUYER_AUTH`
-- any buyer-account redemption flow
-- any buyer session-cookie logic
 
-This means the statement in EP-09 v2 that buyer auth can simply reuse an already-present buyer session pattern is inaccurate. The platform has magic-link infrastructure, but not buyer-auth infrastructure.
+Implemented in `US-09-01`:
+
+- buyer-auth request flow
+- buyer-auth email template + send path
+- buyer-account redemption flow
+- buyer session-cookie logic
+
+This means EP-09 v2 is still directionally useful, but the live repo now has dedicated buyer-auth infrastructure rather than only the older non-buyer magic-link flows.
 
 ## Documentation And Diagram Drift
 
@@ -256,25 +268,25 @@ The v3 document must also correct repository documentation drift that affects bu
 1. `docs/04-order-lifecycle.mermaid` is ahead of or different from current implementation in several places.
    - It shows buyer upsert during webhook processing, but the live code upserts `Buyer` during `create-intent`.
    - It shows order-number assignment during webhook processing, but the live code generates `orderNumber` during `create-intent`.
-   - It references shipping-address behavior not represented in the current live schema.
+   - Sprint 7 updated it to reflect order snapshot persistence during `create-intent`.
 
-2. `docs/06-database-schema.mermaid` and `docs/joe_perks_db_schema.md` align with the minimal `Buyer` model, which conflicts with assumptions in EP-09 v2 that buyer-account fields already nearly exist.
+2. `docs/06-database-schema.mermaid` and `docs/joe_perks_db_schema.md` were updated in Sprint 7 foundation to reflect `Buyer.lastSignInAt`, `Order` buyer/shipping snapshots, and `BUYER_AUTH`.
 
-3. `docs/01-project-structure.mermaid` and `docs/CONVENTIONS.md` accurately describe the current buyer surface as storefront, checkout, and order confirmation only. That directly contradicts any assumption that buyer account routes are already scaffolded.
+3. `docs/01-project-structure.mermaid` and `docs/CONVENTIONS.md` now include the buyer auth route surface (`account`, `account/sign-in`, `account/auth/[token]`, `/api/account/*`) plus the checkout prefill helpers and confirmation create-account prompt added in `US-09-02`. They should continue to be updated as order detail and lookup routes land.
 
-4. `docs/AGENTS.md` still correctly reflects current implementation for buyers, but it will become outdated once buyer sessions are introduced.
+4. `docs/AGENTS.md` now includes the buyer-account auth model and the 15-minute `BUYER_AUTH` magic-link rule. Keep it in sync as protected buyer routes are added.
 
 ## Gap Matrix
 
 | Area | PRD support | Current repo state | Gap status | Required pre-implementation action |
 | --- | --- | --- | --- | --- |
-| Buyer identity | Buyer exists conceptually as a purchaser | `Buyer` is minimal email/name model | Partial | Extend schema only after route and session model are defined |
-| Buyer auth | Not defined as MVP in PRD | No buyer auth/session exists | Missing | Decide buyer auth pattern and cookie/session contract |
-| Buyer magic link | PRD supports magic links in platform, but not buyer login | No `BUYER_AUTH` purpose | Missing | Add enum value, token flow, email template, and redemption route |
-| Buyer dashboard | Not defined in PRD MVP | No `/account` routes | Missing | Define route tree, auth guard, data queries, and empty states |
-| Guest order lookup | Supports buyer visibility goal, but not explicitly specified in PRD MVP | No route or API | Missing | Decide lookup model and rate limiting path |
-| Order tracking UI | PRD supports order-status communication | Current UI is confirmation summary only | Partial | Decide MVP tracking surface: direct link vs richer status stepper |
-| Shipping-address reuse | Fits buyer convenience goals | Current address fields collected but not persisted on `Order` schema | Missing | Define canonical storage model before any prefill or profile work |
+| Buyer identity | Buyer exists conceptually as a purchaser | `Buyer` now includes email, name, `lastSignInAt`, a working buyer-session path built on magic links, and checkout can reuse the latest order snapshot for editable prefill | Partial | Reuse the session foundation in dashboard and order-detail stories |
+| Buyer auth | Not defined as MVP in PRD | Locale-aware sign-in, token redemption, and signed buyer sessions now exist on `apps/web` | Partial | Add protected buyer pages that consume the session |
+| Buyer magic link | PRD supports magic links in platform, but not buyer login | `BUYER_AUTH` now supports token request, email send, redemption, and sign-out/session clear behavior | Done | Reuse for post-purchase create-account and account guards |
+| Buyer dashboard | Not defined in PRD MVP | `/{locale}/account` now requires a live buyer session and shows buyer-scoped order history plus impact summary, while `/{locale}/account/orders/[id]` now renders buyer-owned order detail and tracking | Partial | Reuse the dashboard/detail guard and query model for guest lookup and later account surfaces |
+| Guest order lookup | Supports buyer visibility goal, but not explicitly specified in PRD MVP | `/{locale}/order-lookup` now posts to `/api/order-lookup`, matches snapshot email + order number, and keeps failures generic while rate limiting requests | Done | Reuse the same low-friction pattern for future public support flows if needed |
+| Order tracking UI | PRD supports order-status communication | Buyer account detail and guest lookup now both show direct-link tracking plus delayed/refunded/delivered buyer messaging | Partial | Keep tracking copy aligned across guest and signed-in views |
+| Shipping-address reuse | Fits buyer convenience goals | `Order` now stores immutable buyer/shipping snapshots | Partial | Reuse snapshots for prefill/history/detail in later stories |
 | Newsletter/preferences | Not required by PRD | No category-aware send logic or preference model | Missing | Confirm whether this is Phase 1, later phase, or separate epic |
 | Saved payment methods | Not required by PRD | `PaymentElement` exists, but no buyer Stripe customer persistence | Missing | Add schema + Stripe customer strategy only if in scope |
 | Billing portal | Not required by PRD | No buyer billing portal route | Missing | Treat as later buyer-payments extension, not foundation |
@@ -295,18 +307,13 @@ EP-09 v2 treats buyer magic-link auth as if the missing work is mostly a thin UI
 - buyer session middleware/helpers
 - buyer sign-out path
 
-### 2. `buyer_email` lookup is not modeled today
+### 2. `buyer_email` lookup is now modeled
 
-EP-09 v2 proposes guest lookup via `Order.buyer_email` and an index on that column. The current schema does not have `buyer_email` on `Order`; it links `Order` to `Buyer` through `buyerId`.
+EP-09 v2 proposes guest lookup via `Order.buyer_email` and an index on that column. Sprint 7 foundation implemented the camelCase repo equivalent: `Order.buyerEmail` plus a lookup index with `orderNumber`.
 
-This must be a deliberate design decision:
+That decision is now resolved in favor of denormalized `Order.buyerEmail` for the primary guest-lookup path.
 
-- option A: add denormalized `buyerEmail` to `Order`
-- option B: keep lookup join-based through `Buyer`
-
-The repo should not assume one approach without explicitly choosing it.
-
-### 3. Shipping-address-dependent stories are blocked by missing persistence
+### 3. Shipping-address-dependent stories were blocked by missing persistence
 
 Any story involving:
 

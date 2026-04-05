@@ -2,7 +2,7 @@
 
 **Story ID:** US-09-02 | **Epic:** EP-09 (Buyer Accounts)
 **Points:** 4 | **Priority:** High
-**Status:** `Todo`
+**Status:** `Done`
 **Owner:** Full-stack
 **Dependencies:** US-09-00, US-09-01, US-04-03
 **Depends on this:** None
@@ -37,7 +37,8 @@ Normalized decisions this story implements:
 - `apps/web/app/[locale]/[slug]/checkout/_components/step-shipping.tsx` collects buyer/shipping info already.
 - `apps/web/app/[locale]/[slug]/checkout/_components/step-payment-wrapper.tsx` already preserves shipping state while stepping through checkout.
 - `apps/web/app/[locale]/[slug]/order/[pi_id]/page.tsx` is the current post-purchase buyer surface.
-- There is currently no signed-in buyer context in checkout or confirmation.
+- Checkout now reads the signed buyer session at the server boundary and can prefill from the latest order snapshot.
+- Confirmation can now trigger an inline buyer-auth email send without leaving the page.
 
 ---
 
@@ -81,26 +82,26 @@ Normalized decisions this story implements:
 
 ## Acceptance criteria
 
-- [ ] Signed-in buyer sees clear signed-in context in checkout
-- [ ] Signed-in buyer can sign out from checkout flow
-- [ ] Checkout prefill uses the latest eligible order snapshot rather than mutable profile-only data
-- [ ] Prefill remains optional and editable
-- [ ] Unsigned buyer sees a non-blocking create-account prompt on the confirmation surface
-- [ ] Create-account prompt sends a buyer-auth link inline without requiring a form re-entry
-- [ ] Signed-in buyer sees account-aware confirmation messaging instead of the create-account prompt
-- [ ] Checkout continues to work fully for guest buyers
+- [x] Signed-in buyer sees clear signed-in context in checkout
+- [x] Signed-in buyer can sign out from checkout flow
+- [x] Checkout prefill uses the latest eligible order snapshot rather than mutable profile-only data
+- [x] Prefill remains optional and editable
+- [x] Unsigned buyer sees a non-blocking create-account prompt on the confirmation surface
+- [x] Create-account prompt sends a buyer-auth link inline without requiring a form re-entry
+- [x] Signed-in buyer sees account-aware confirmation messaging instead of the create-account prompt
+- [x] Checkout continues to work fully for guest buyers
 
 ---
 
 ## UX / accessibility / mobile requirements
 
-- [ ] Account context is informative but low visual weight
-- [ ] Purchase flow remains identical whether the buyer ignores account features or not
-- [ ] New buttons/links meet mobile touch-target requirements
-- [ ] Prompt/error/success states are screen-reader friendly
-- [ ] Focus moves appropriately after inline create-account actions
-- [ ] Back navigation does not unexpectedly wipe entered checkout state
-- [ ] Reduced motion is respected for any visual feedback added here
+- [x] Account context is informative but low visual weight
+- [x] Purchase flow remains identical whether the buyer ignores account features or not
+- [x] New buttons/links meet mobile touch-target requirements
+- [x] Prompt/error/success states are screen-reader friendly
+- [x] Focus moves appropriately after inline create-account actions
+- [x] Back navigation does not unexpectedly wipe entered checkout state
+- [x] Reduced motion is respected for any visual feedback added here
 
 ---
 
@@ -117,12 +118,17 @@ Normalized decisions this story implements:
 
 ## QA and verification
 
-- [ ] Guest checkout remains unchanged
-- [ ] Signed-in buyer sees expected checkout context
-- [ ] Prefill loads correct snapshot data
-- [ ] Inline create-account prompt works without leaving the confirmation page
-- [ ] Signed-in state and unsigned state both render correctly on confirmation
-- [ ] Mobile checkout remains usable at narrow widths
+- [x] Guest checkout remains unchanged
+- [x] Signed-in buyer sees expected checkout context
+- [x] Prefill loads correct snapshot data
+- [x] Inline create-account prompt works without leaving the confirmation page
+- [x] Signed-in state and unsigned state both render correctly on confirmation
+- [x] Mobile checkout remains usable at narrow widths
+
+Verification completed with:
+
+- `pnpm exec vitest run "apps/web/app/api/checkout/create-intent/_lib/checkout-payload.test.ts" "apps/web/app/[locale]/[slug]/checkout/_lib/buyer-context.test.ts" "apps/web/lib/buyer-auth/redirect.test.ts" "apps/web/lib/buyer-auth/session-token.test.ts"`
+- `pnpm --filter web typecheck`
 
 ---
 
@@ -140,3 +146,4 @@ Normalized decisions this story implements:
 | Version | Date | Notes |
 |---------|------|-------|
 | 0.1 | 2026-04-05 | Initial account-aware checkout story created from the normalized Sprint 7 plan. |
+| 1.0 | 2026-04-05 | Implemented signed-in checkout context, latest-order snapshot prefill, checkout sign-out CTA, and inline post-purchase buyer-auth prompt/state on confirmation. |

@@ -18,24 +18,33 @@ sequenceDiagram
     WEB->>DB: Validate CampaignItem prices server-side
     WEB->>WEB: calculateSplits(subtotal, shipping, org_pct, settings)
     WEB->>STR: stripe.paymentIntents.create({amount, application_fee_amount, metadata})
-    WEB->>DB: Create Order (status=PENDING, all splits frozen)
+    WEB->>DB: Upsert Buyer by email
+    WEB->>DB: Create Order (status=PENDING, order_number assigned, buyer/shipping snapshots frozen)
+    WEB->>DB: Create OrderEvent (PAYMENT_INTENT_CREATED, actor=BUYER)
     WEB-->>B: {client_secret}
     B->>STR: stripe.confirmPayment(client_secret)
     STR-->>B: payment success → redirect to /[slug]/order/[pi_id]
   end
 
   rect rgb(238,237,254)
-    Note over WEB,DB: PHASE 2 — Order Creation (webhook)
+    Note over WEB,DB: PHASE 2 — Confirmation (webhook)
     STR->>WEB: POST /api/webhooks/stripe<br/>payment_intent.succeeded
     WEB->>WEB: constructEvent() — verify signature
     WEB->>DB: Check StripeEvent for idempotency
-    WEB->>DB: Update Order (status=CONFIRMED, order_number=JP-XXXXX)
-    WEB->>DB: Upsert Buyer by email
+    WEB->>DB: Update Order (status=CONFIRMED)
     WEB->>DB: Create MagicLink (purpose=ORDER_FULFILLMENT, 72h TTL)
-    WEB->>DB: Create OrderEvent (ORDER_CREATED, actor=SYSTEM)
+    WEB->>DB: Create OrderEvent (PAYMENT_SUCCEEDED / ORDER_CONFIRMED, actor=SYSTEM)
     WEB->>EM: sendEmail(order_confirmation → buyer)
     WEB->>EM: sendEmail(magic_link_fulfillment → roaster)
     WEB-->>STR: HTTP 200
+    B->>WEB: View /[slug]/order/[pi_id] confirmation
+    opt Unsigned buyer wants future buyer access
+      B->>WEB: POST /api/account/sign-in/from-order
+      WEB->>DB: Lookup Order by stripe_pi_id → buyerEmail
+      WEB->>DB: Create MagicLink (purpose=BUYER_AUTH, 15m TTL)
+      WEB->>EM: sendEmail(buyer_auth_magic_link → buyer)
+      WEB-->>B: Inline success state (stay on confirmation page)
+    end
   end
 
   rect rgb(250,238,218)

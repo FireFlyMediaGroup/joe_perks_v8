@@ -191,7 +191,8 @@ export type ActorType = (typeof ActorType)[keyof typeof ActorType]
 export const MagicLinkPurpose = {
   ORDER_FULFILLMENT: 'ORDER_FULFILLMENT',
   ORG_APPROVAL: 'ORG_APPROVAL',
-  ROASTER_REVIEW: 'ROASTER_REVIEW'
+  ROASTER_REVIEW: 'ROASTER_REVIEW',
+  BUYER_AUTH: 'BUYER_AUTH'
 } as const
 
 export type MagicLinkPurpose = (typeof MagicLinkPurpose)[keyof typeof MagicLinkPurpose]

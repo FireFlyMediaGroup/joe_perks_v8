@@ -2395,6 +2395,7 @@ export const BuyerScalarFieldEnum = {
   id: 'id',
   email: 'email',
   name: 'name',
+  lastSignInAt: 'lastSignInAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -2431,6 +2432,14 @@ export const OrderScalarFieldEnum = {
   carrier: 'carrier',
   shippedAt: 'shippedAt',
   deliveredAt: 'deliveredAt',
+  buyerEmail: 'buyerEmail',
+  shipToName: 'shipToName',
+  shipToAddress1: 'shipToAddress1',
+  shipToAddress2: 'shipToAddress2',
+  shipToCity: 'shipToCity',
+  shipToState: 'shipToState',
+  shipToPostalCode: 'shipToPostalCode',
+  shipToCountry: 'shipToCountry',
   buyerIp: 'buyerIp',
   isCollab: 'isCollab',
   createdAt: 'createdAt',

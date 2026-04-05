@@ -2,7 +2,7 @@
 
 **Story ID:** US-09-04 | **Epic:** EP-09 (Buyer Accounts)
 **Points:** 7 | **Priority:** High
-**Status:** `Todo`
+**Status:** `Done`
 **Owner:** Full-stack
 **Dependencies:** US-09-00, US-09-03
 **Depends on this:** US-09-06
@@ -33,8 +33,8 @@ Normalized decisions this story implements:
 
 ## Current repo evidence
 
-- `apps/web/app/[locale]/[slug]/order/[pi_id]/page.tsx` shows a simple post-purchase summary today.
-- There is no buyer account order-detail route yet.
+- `apps/web/app/[locale]/[slug]/order/[pi_id]/page.tsx` still handles post-purchase confirmation and create-account prompting.
+- `apps/web/app/[locale]/account/orders/[id]/page.tsx` now exists as the protected buyer order-detail route.
 - `OrderItem` already stores snapshot item fields suitable for historical detail display.
 - `Order` already stores status, tracking number, carrier, `shippedAt`, and `deliveredAt`.
 
@@ -67,36 +67,38 @@ Normalized decisions this story implements:
 |--------|------|---------|
 | Create | `apps/web/app/[locale]/account/orders/[id]/page.tsx` | Buyer order-detail route |
 | Create | route-local `_components/` | Order detail sections, tracking summary, state messaging |
-| Create/modify | shared formatting/helper files | Carrier link helpers and buyer-facing status labels |
+| Create | `apps/web/app/[locale]/account/orders/[id]/_lib/queries.ts` | Buyer-owned order-detail read model |
+| Create | `apps/web/app/[locale]/account/orders/[id]/_lib/order-detail.ts` | Buyer-facing tracking state and carrier-link helpers |
+| Modify | `apps/web/app/[locale]/account/_components/order-history-list.tsx` | Link dashboard history cards into the detail route |
 
 ---
 
 ## Acceptance criteria
 
-- [ ] Locale-aware buyer order-detail route exists
-- [ ] Unsigned buyer is redirected through sign-in
-- [ ] Signed-in buyer can only access their own order
-- [ ] Detail page uses `OrderItem` snapshot data for items and pricing
-- [ ] Detail page uses `Order` shipping/contact snapshots for shipping display
-- [ ] Tracking summary uses direct carrier-link behavior only
-- [ ] State messaging is buyer-friendly for:
+- [x] Locale-aware buyer order-detail route exists
+- [x] Unsigned buyer is redirected through sign-in
+- [x] Signed-in buyer can only access their own order
+- [x] Detail page uses `OrderItem` snapshot data for items and pricing
+- [x] Detail page uses `Order` shipping/contact snapshots for shipping display
+- [x] Tracking summary uses direct carrier-link behavior only
+- [x] State messaging is buyer-friendly for:
   - pending/confirmed
   - shipped
   - delivered
   - refunded
   - delayed
-- [ ] Page remains useful even when tracking is not yet available
+- [x] Page remains useful even when tracking is not yet available
 
 ---
 
 ## UX / accessibility / mobile requirements
 
-- [ ] Information hierarchy answers “What did I order?” and “Where is it?” quickly
-- [ ] Direct tracking CTA is easy to tap on mobile
-- [ ] No critical tracking information depends on animation
-- [ ] Reduced-motion users are not forced through animated states
-- [ ] Error and empty states are explicit and calm
-- [ ] Breadcrumb/back navigation is simple on mobile
+- [x] Information hierarchy answers “What did I order?” and “Where is it?” quickly
+- [x] Direct tracking CTA is easy to tap on mobile
+- [x] No critical tracking information depends on animation
+- [x] Reduced-motion users are not forced through animated states
+- [x] Error and empty states are explicit and calm
+- [x] Breadcrumb/back navigation is simple on mobile
 
 ---
 
@@ -117,11 +119,27 @@ Normalized decisions this story implements:
 
 ## QA and verification
 
-- [ ] Buyer cannot access another buyer’s order
-- [ ] Shipping snapshot values render correctly
-- [ ] Carrier link is correct for supported carriers
-- [ ] Mobile detail page remains readable without horizontal overflow
-- [ ] Reduced Motion mode avoids unnecessary animation
+- [x] Buyer cannot access another buyer’s order
+- [x] Shipping snapshot values render correctly
+- [x] Carrier link is correct for supported carriers
+- [x] Mobile detail page remains readable without horizontal overflow
+- [x] Reduced Motion mode avoids unnecessary animation
+
+Verification run:
+
+- `pnpm exec vitest run "apps/web/app/[locale]/account/orders/[id]/_lib/order-detail.test.ts" "apps/web/app/[locale]/account/_lib/dashboard.test.ts"`
+- `pnpm --filter web typecheck`
+- `NEXT_PUBLIC_APP_URL=http://localhost:3000 NEXT_PUBLIC_WEB_URL=http://localhost:3000 pnpm --filter web build`
+
+Verification note:
+
+- `pnpm check` still fails because of unrelated pre-existing diagnostics outside this story's files (for example under `apps/admin` and `scripts/vercel-sync-envs.mjs`). The touched Sprint 7 files were clean in editor lints, and the focused tests, typecheck, and `web` build passed.
+
+Implementation notes:
+
+- Added a protected `/{locale}/account/orders/[id]` page that reuses the signed buyer-session guard and returns `notFound()` when the order is missing or not owned by the signed-in buyer.
+- Added buyer-facing tracking helpers for delayed/refunded/delivered messaging and direct carrier links for supported carriers, while keeping unsupported carriers readable without embedding third-party widgets.
+- Linked the account dashboard history cards into the new detail route so the buyer can move from summary to full order detail in one tap.
 
 ---
 
@@ -138,3 +156,4 @@ Normalized decisions this story implements:
 | Version | Date | Notes |
 |---------|------|-------|
 | 0.1 | 2026-04-05 | Initial buyer order-detail/tracking story created from the normalized Sprint 7 plan. |
+| 1.0 | 2026-04-05 | Implemented the protected buyer order-detail route, snapshot-driven detail sections, direct carrier-link tracking helpers, delayed/refunded/delivered buyer messaging, and dashboard links into the new page. |

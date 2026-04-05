@@ -2,7 +2,7 @@
 
 **Story ID:** US-09-01 | **Epic:** EP-09 (Buyer Accounts)
 **Points:** 5 | **Priority:** High
-**Status:** `Todo`
+**Status:** `Done`
 **Owner:** Full-stack
 **Dependencies:** US-09-00, US-01-04, US-01-09
 **Depends on this:** US-09-02, US-09-03
@@ -34,10 +34,10 @@ Normalized decisions this story implements:
 
 ## Current repo evidence
 
-- `MagicLink` already exists, but is currently used for non-buyer flows.
+- `MagicLink` already exists, and `BUYER_AUTH` is now wired into a buyer-facing sign-in flow.
 - `packages/email/send-email.ts` provides transactional send + `EmailLog` dedupe.
-- There are currently no buyer account routes or session helpers.
-- Existing `apps/web` routes are locale-scoped under `app/[locale]/...`.
+- Buyer auth now ships locale-aware sign-in and token-redemption routes plus session helpers.
+- Existing `apps/web` routes remain locale-scoped under `app/[locale]/...`.
 
 ---
 
@@ -90,38 +90,38 @@ Normalized decisions this story implements:
 
 ## Acceptance criteria
 
-- [ ] Buyer sign-in page exists at a locale-aware route
-- [ ] Sign-in request form has a single email field and clear value proposition
-- [ ] Sign-in requests are rate limited
-- [ ] Success UI does not reveal whether the email exists
-- [ ] Buyer-auth token has a 15-minute TTL
-- [ ] Buyer-auth token is validated for:
+- [x] Buyer sign-in page exists at a locale-aware route
+- [x] Sign-in request form has a single email field and clear value proposition
+- [x] Sign-in requests are rate limited
+- [x] Success UI does not reveal whether the email exists
+- [x] Buyer-auth token has a 15-minute TTL
+- [x] Buyer-auth token is validated for:
   - existence
   - correct purpose
   - not expired
   - not used
-- [ ] Token is consumed atomically before session creation
-- [ ] Successful redemption creates a secure session cookie
-- [ ] Redirect parameter is preserved safely
-- [ ] Sign-out clears the buyer session cookie
-- [ ] Invalid/expired/used token states show clear recovery paths
+- [x] Token is consumed atomically before session creation
+- [x] Successful redemption creates a secure session cookie
+- [x] Redirect parameter is preserved safely
+- [x] Sign-out clears the buyer session cookie
+- [x] Invalid/expired/used token states show clear recovery paths
 
 ---
 
 ## UX / accessibility / Apple HIG-aligned requirements
 
-- [ ] Explain why signing in is useful: order history, tracking, faster future access
-- [ ] Keep one primary action on the sign-in screen
-- [ ] Email field uses:
+- [x] Explain why signing in is useful: order history, tracking, faster future access
+- [x] Keep one primary action on the sign-in screen
+- [x] Email field uses:
   - `type="email"`
   - `inputMode="email"`
   - `autoCapitalize="none"`
   - `autoCorrect="off"`
-- [ ] Focus moves to confirmation heading after request submit
-- [ ] Focus moves to error heading/container on invalid token states
-- [ ] Loading states include explanatory copy, not spinner-only treatment
-- [ ] Any motion or animation respects `prefers-reduced-motion`
-- [ ] Touch targets meet minimum mobile size guidance
+- [x] Focus moves to confirmation heading after request submit
+- [x] Focus moves to error heading/container on invalid token states
+- [x] Loading states include explanatory copy, not spinner-only treatment
+- [x] Any motion or animation respects `prefers-reduced-motion`
+- [x] Touch targets meet minimum mobile size guidance
 
 ---
 
@@ -158,6 +158,22 @@ Normalized decisions this story implements:
 
 ---
 
+## Implementation summary
+
+- Added `/{locale}/account/sign-in` with a single-field buyer sign-in form, enumeration-safe success state, and mobile/accessibility affordances.
+- Added `/{locale}/account/auth/[token]` plus `/api/account/auth/redeem` to validate `BUYER_AUTH` links, consume them atomically, update `Buyer.lastSignInAt`, and write a signed buyer session cookie.
+- Added `/api/account/sign-in`, `/api/account/session`, shared buyer-auth helpers under `apps/web/lib/buyer-auth/`, a buyer-auth email template, and a dedicated `limitBuyerAuth()` limiter in `@joe-perks/stripe`.
+- For this story only, direct sign-in without an explicit redirect falls back to the locale home route rather than `/account`, because the dashboard route is still owned by `US-09-03`.
+
+## Verification run
+
+- `pnpm exec vitest run apps/web/lib/buyer-auth/redirect.test.ts apps/web/lib/buyer-auth/session-token.test.ts`
+- `pnpm --filter web typecheck`
+- `pnpm --filter @joe-perks/stripe typecheck`
+- `pnpm --filter @joe-perks/email typecheck`
+
+---
+
 ## QA and verification
 
 - [ ] Sign-in request works for known buyer emails
@@ -184,3 +200,4 @@ Normalized decisions this story implements:
 | Version | Date | Notes |
 |---------|------|-------|
 | 0.1 | 2026-04-05 | Initial buyer magic-link auth story created from the normalized Sprint 7 plan. |
+| 1.0 | 2026-04-05 | Implemented buyer sign-in request/redeem flow, signed session cookie helpers, buyer-auth email template, and required doc sync. |

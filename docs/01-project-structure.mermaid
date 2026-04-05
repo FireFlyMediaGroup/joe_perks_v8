@@ -25,11 +25,15 @@ graph TD
   WEB --> WEB_RA["[locale]/roasters/apply/"]:::route
   WEB --> WEB_OA["[locale]/orgs/apply/"]:::route
   WEB --> WEB_SF["[locale]/[slug]/\npage, shipping-guard, cart-drawer,\nadd-to-cart, product-grid, campaign-header"]:::route
-  WEB --> WEB_CO["[locale]/[slug]/checkout/\ncheckout-form, step-cart-review,\nstep-shipping, step-payment, _lib/schema"]:::route
-  WEB --> WEB_OR["[locale]/[slug]/order/[pi_id]/\norder-summary, order-status-poller,\norder-processing"]:::route
+  WEB --> WEB_CO["[locale]/[slug]/checkout/\ncheckout-form, step-cart-review,\nstep-shipping, step-payment,\n_lib/schema, buyer-context, buyer-prefill"]:::route
+  WEB --> WEB_OR["[locale]/[slug]/order/[pi_id]/\norder-summary, order-status-poller,\naccount-creation-card, order-processing"]:::route
+  WEB --> WEB_AC["[locale]/account/\npage, orders/[id], sign-in,\nauth/[token], _components, _lib"]:::route
+  WEB --> WEB_OL["[locale]/order-lookup/\npage, _components"]:::route
   WEB --> WEB_TM["[locale]/legal/\nterms, privacy"]:::route
   WEB --> WEB_WH["app/api/webhooks/stripe"]:::api
   WEB --> WEB_CI["app/api/checkout/create-intent"]:::api
+  WEB --> WEB_AS["app/api/account/\nsign-in, sign-in/from-order,\nauth/redeem, session"]:::api
+  WEB --> WEB_OLA["app/api/order-lookup"]:::api
   WEB --> WEB_OS["app/api/order-status"]:::api
   WEB --> WEB_OE["app/api/orders/[id]/events\nGET — admin Basic auth"]:::api
   WEB --> WEB_INN["app/api/inngest"]:::api
@@ -83,7 +87,7 @@ graph TD
   STRIPE --> ST2["client.ts, dispute-reversal.ts"]:::file
   STRIPE --> ST3["ratelimit.ts"]:::file
 
-  EMAIL --> EM1["templates/\nmagic-link-fulfillment, order-shipped,\norder-delivered, dispute-admin-alert,\naccount-suspended, account-reactivated, sla, …"]:::file
+  EMAIL --> EM1["templates/\nbuyer-auth-magic-link, magic-link-fulfillment,\norder-shipped, order-delivered,\ndispute-admin-alert, account-suspended,\naccount-reactivated, sla, …"]:::file
   EMAIL --> EM2["send.ts\nsendEmail()"]:::file
 
   TYPES --> TY1["index.ts, admin-basic-auth.ts"]:::file

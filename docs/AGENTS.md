@@ -25,7 +25,7 @@ through an org-branded storefront; a percentage of every sale flows automaticall
 ```
 joe-perks/
 ├── apps/
-│   ├── web/          → joeperks.com (marketing + buyer storefronts + onboarding)
+│   ├── web/          → joeperks.com (marketing + buyer storefronts + buyer account)
 │   ├── roaster/      → roasters.joeperks.com (roaster portal)
 │   ├── org/          → orgs.joeperks.com (org portal)
 │   ├── admin/        → admin.joeperks.com (platform admin)
@@ -191,8 +191,9 @@ Turbo starts multiple Next (and related) dev servers on **fixed ports** (see the
 - Tokens are generated with `crypto.randomBytes(32).toString('hex')` — 256 bits of entropy.
 - Tokens are single-use: set `used_at = now()` immediately on first use before performing any action.
 - Always verify: token exists, `expires_at > now()`, `used_at IS NULL`, correct `purpose`.
+- `BUYER_AUTH` magic links expire after **15 minutes** and create the buyer session only after the token is validated and consumed.
 - For `ORDER_FULFILLMENT`, enforce a deterministic database-level dedupe key so only one live link can exist per order.
-- Magic link pages (fulfill/[token], org-requests/[token]) are accessible WITHOUT authentication.
+- Magic link pages (fulfill/[token], org-requests/[token], account/auth/[token]) are accessible WITHOUT authentication.
 
 ---
 
@@ -201,6 +202,7 @@ Turbo starts multiple Next (and related) dev servers on **fixed ports** (see the
 ### Root `.env` (shared secrets)
 ```
 DATABASE_URL=                    # Neon Postgres connection string
+SESSION_SECRET=                  # buyer account session signing secret — long random value, unique per environment
 STRIPE_SECRET_KEY=               # sk_test_... (dev) or sk_live_... (prod)
 STRIPE_WEBHOOK_SECRET=           # whsec_... from Stripe dashboard
 RESEND_TOKEN=                    # re_... (Resend API key — validated in @joe-perks/email/keys.ts)
@@ -266,7 +268,10 @@ ROASTER_APP_ORIGIN=  # optional — public **roaster portal** base URL for appro
 | `apps/org`                  | Clerk                 | `ORG_ADMIN`         |
 | `apps/admin`                | HTTP Basic Auth (MVP) | `PLATFORM_ADMIN`    |
 | `apps/web` buyer storefront | No auth               | Public              |
+| `apps/web` buyer account    | Signed magic-link session | `BUYER`         |
 | Magic link pages            | Token validation      | No session required |
+
+**Protected buyer routes:** `/{locale}/account` and `/{locale}/account/orders/[id]` must validate the signed buyer session against a live `Buyer` row, clear stale cookies when needed, and redirect to the locale-aware sign-in route with the intended destination preserved.
 
 **Clerk user sync:** On `user.created` webhook from Clerk, create a `User` record in DB with `external_auth_id = event.data.id`. Link `roaster_id` or `org_id` from Clerk public metadata.
 

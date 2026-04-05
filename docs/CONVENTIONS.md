@@ -94,12 +94,36 @@ app/
 │   │   ├── _lib/queries.ts      # getStorefrontData
 │   │   ├── checkout/
 │   │   │   ├── page.tsx
-│   │   │   └── _components/     # checkout-form, step-*, Stripe Elements
+│   │   │   ├── _components/     # checkout-form, step-*, Stripe Elements
+│   │   │   └── _lib/            # schema, buyer-context, buyer-prefill
 │   │   └── order/[pi_id]/
-│   │       └── page.tsx         # confirmation + polling
+│   │       ├── page.tsx         # confirmation + polling
+│   │       └── _components/     # order-summary, order-status-poller, account-creation-card
+│   ├── account/
+│   │   ├── page.tsx             # protected buyer dashboard / order history
+│   │   ├── _components/         # dashboard heading, impact summary, empty state, order history
+│   │   ├── _lib/                # buyer dashboard view model + queries
+│   │   ├── orders/[id]/
+│   │   │   ├── page.tsx         # protected buyer order detail / tracking
+│   │   │   ├── _components/
+│   │   │   └── _lib/
+│   │   ├── sign-in/
+│   │   │   ├── page.tsx         # buyer magic-link request UI
+│   │   │   └── _components/
+│   │   └── auth/[token]/
+│   │       ├── page.tsx         # buyer magic-link redemption UI
+│   │       └── _components/
+│   ├── order-lookup/
+│   │   ├── page.tsx             # guest order lookup entry
+│   │   └── _components/
 │   └── …
 └── api/
     ├── checkout/create-intent/
+    ├── account/sign-in/
+    ├── account/sign-in/from-order/
+    ├── account/auth/redeem/
+    ├── account/session/
+    ├── order-lookup/
     ├── order-status/
     └── webhooks/stripe/
 ```
@@ -382,7 +406,10 @@ await logOrderEvent(
 
 **Data loading:** `getStorefrontData(slug)` in `apps/web/app/[locale]/[slug]/_lib/queries.ts` loads `Org` (ACTIVE), active `Campaign`, and `CampaignItem` rows with product/variant filters. It returns **`splitPreviewDefaults`** (`PlatformSettings` + default roaster `RoasterShippingRate`) for the cart drawer estimate, plus **`hasShippingRates`** and **`shippingRates`** (all rates for the campaign roaster) for the shipping guard and checkout — reuse this function on the storefront and checkout pages instead of duplicating queries.
 
-**Checkout:** `checkout/page.tsx` is a server component that calls `getStorefrontData`, redirects if there are no shipping rates (`?error=no-shipping`), and renders **`checkout-form.tsx`** (client) for the three-step flow. Step 3 uses **`@stripe/react-stripe-js`** (`Elements`, `PaymentElement`) and `POST /api/checkout/create-intent` (returns `clientSecret`, `paymentIntentId`, `grossAmount`, …). Never import the server Stripe SDK in client components.
+**Checkout:** `checkout/page.tsx` is a server component that calls `getStorefrontData`, redirects if there are no shipping rates (`?error=no-shipping`), reads the buyer session when present, and can prefill checkout from the buyer's latest `Order` snapshot. It renders **`checkout-form.tsx`** (client) for the three-step flow. Step 3 uses **`@stripe/react-stripe-js`** (`Elements`, `PaymentElement`) and `POST /api/checkout/create-intent` (returns `clientSecret`, `paymentIntentId`, `grossAmount`, …). Never import the server Stripe SDK in client components.
+**Confirmation create-account CTA:** `order/[pi_id]/page.tsx` remains the buyer confirmation route, but now it can show an inline buyer-auth prompt for unsigned buyers. Reuse `POST /api/account/sign-in/from-order` when the confirmation page needs to send a magic link without re-entering the buyer's email in the client.
+**Buyer account dashboard:** `account/page.tsx` is a protected server component that loads only the signed-in buyer's orders and summarizes impact from frozen order fields. `account/orders/[id]/page.tsx` extends that pattern for buyer-owned order detail, shipping snapshots, and direct-link tracking. Reuse the shared buyer-session resolver/redirect helper for future buyer account routes so stale cookies are cleared and locale-aware redirect intent is preserved.
+**Guest order lookup:** `order-lookup/page.tsx` is the public fallback for buyers who do not want an account. Keep it locale-aware, submit via `POST /api/order-lookup` so the email and order number never land in the URL, rate limit by request IP, and keep failure copy generic so the response does not reveal which field was wrong.
 
 **Order confirmation:** `order/[pi_id]/page.tsx` loads the order server-side when possible; **`order-status-poller.tsx`** polls `GET /api/order-status?pi=` until the order is no longer `PENDING` (or times out). The order-status API includes **`orgName`** for fundraiser copy on the confirmation UI.
 

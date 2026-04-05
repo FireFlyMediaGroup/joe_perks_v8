@@ -2,7 +2,7 @@
 
 **Story ID:** US-09-03 | **Epic:** EP-09 (Buyer Accounts)
 **Points:** 5 | **Priority:** High
-**Status:** `Todo`
+**Status:** `Done`
 **Owner:** Full-stack
 **Dependencies:** US-09-00, US-09-01
 **Depends on this:** US-09-04
@@ -33,8 +33,8 @@ Normalized decisions this story implements:
 
 ## Current repo evidence
 
-- There is currently no `/account` route in `apps/web`.
-- Current buyer-facing order visibility is limited to the confirmation page for a single order.
+- `apps/web/app/[locale]/account/page.tsx` now exists as the locale-aware buyer dashboard route.
+- Buyer account access is protected by a shared helper that validates the signed buyer session against a live `Buyer` row and preserves locale-aware redirects to sign-in.
 - Order data already contains the frozen financial values needed for impact/history display.
 
 ---
@@ -72,25 +72,25 @@ Normalized decisions this story implements:
 
 ## Acceptance criteria
 
-- [ ] Locale-aware dashboard route exists
-- [ ] Unauthenticated access redirects to sign-in with preserved redirect
-- [ ] Dashboard queries only the signed-in buyer’s orders
-- [ ] Orders are sorted newest first
-- [ ] Order cards show enough summary information to orient the buyer quickly
-- [ ] Impact summary uses persisted order data and buyer-friendly copy
-- [ ] Empty state includes a clear next action back into the storefront
-- [ ] Status labels are readable, buyer-friendly, and not color-only
+- [x] Locale-aware dashboard route exists
+- [x] Unauthenticated access redirects to sign-in with preserved redirect
+- [x] Dashboard queries only the signed-in buyer’s orders
+- [x] Orders are sorted newest first
+- [x] Order cards show enough summary information to orient the buyer quickly
+- [x] Impact summary uses persisted order data and buyer-friendly copy
+- [x] Empty state includes a clear next action back into the storefront
+- [x] Status labels are readable, buyer-friendly, and not color-only
 
 ---
 
 ## UX / accessibility / mobile requirements
 
-- [ ] Initial dashboard load is server-rendered where practical
-- [ ] Heading structure is clean and screen-reader friendly
-- [ ] Order cards stack cleanly on mobile
-- [ ] Key information remains visible without depending on hover
-- [ ] Focus management works after redirect from auth
-- [ ] Touch targets remain large enough for mobile use
+- [x] Initial dashboard load is server-rendered where practical
+- [x] Heading structure is clean and screen-reader friendly
+- [x] Order cards stack cleanly on mobile
+- [x] Key information remains visible without depending on hover
+- [x] Focus management works after redirect from auth
+- [x] Touch targets remain large enough for mobile use
 
 ---
 
@@ -107,11 +107,11 @@ Normalized decisions this story implements:
 
 ## QA and verification
 
-- [ ] Signed-in buyer only sees their own orders
-- [ ] Redirect to sign-in works for unsigned users
-- [ ] Empty state renders correctly for buyer with no orders
-- [ ] Dashboard is usable at mobile widths
-- [ ] Keyboard navigation order is sensible
+- [x] Signed-in buyer only sees their own orders
+- [x] Redirect to sign-in works for unsigned users
+- [x] Empty state renders correctly for buyer with no orders
+- [x] Dashboard is usable at mobile widths
+- [x] Keyboard navigation order is sensible
 
 ---
 
@@ -128,3 +128,4 @@ Normalized decisions this story implements:
 | Version | Date | Notes |
 |---------|------|-------|
 | 0.1 | 2026-04-05 | Initial buyer dashboard/history story created from the normalized Sprint 7 plan. |
+| 1.0 | 2026-04-05 | Implemented the protected locale-aware `/account` route, buyer-scoped order history query, impact summary, empty state, and auth-redirect focus management. |

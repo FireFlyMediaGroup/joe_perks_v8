@@ -28,6 +28,7 @@ export type BuyerMinAggregateOutputType = {
   id: string | null
   email: string | null
   name: string | null
+  lastSignInAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -36,6 +37,7 @@ export type BuyerMaxAggregateOutputType = {
   id: string | null
   email: string | null
   name: string | null
+  lastSignInAt: Date | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -44,6 +46,7 @@ export type BuyerCountAggregateOutputType = {
   id: number
   email: number
   name: number
+  lastSignInAt: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -54,6 +57,7 @@ export type BuyerMinAggregateInputType = {
   id?: true
   email?: true
   name?: true
+  lastSignInAt?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -62,6 +66,7 @@ export type BuyerMaxAggregateInputType = {
   id?: true
   email?: true
   name?: true
+  lastSignInAt?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -70,6 +75,7 @@ export type BuyerCountAggregateInputType = {
   id?: true
   email?: true
   name?: true
+  lastSignInAt?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -151,6 +157,7 @@ export type BuyerGroupByOutputType = {
   id: string
   email: string
   name: string | null
+  lastSignInAt: Date | null
   createdAt: Date
   updatedAt: Date
   _count: BuyerCountAggregateOutputType | null
@@ -180,6 +187,7 @@ export type BuyerWhereInput = {
   id?: Prisma.StringFilter<"Buyer"> | string
   email?: Prisma.StringFilter<"Buyer"> | string
   name?: Prisma.StringNullableFilter<"Buyer"> | string | null
+  lastSignInAt?: Prisma.DateTimeNullableFilter<"Buyer"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Buyer"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Buyer"> | Date | string
   orders?: Prisma.OrderListRelationFilter
@@ -189,6 +197,7 @@ export type BuyerOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   email?: Prisma.SortOrder
   name?: Prisma.SortOrderInput | Prisma.SortOrder
+  lastSignInAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   orders?: Prisma.OrderOrderByRelationAggregateInput
@@ -201,6 +210,7 @@ export type BuyerWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.BuyerWhereInput[]
   NOT?: Prisma.BuyerWhereInput | Prisma.BuyerWhereInput[]
   name?: Prisma.StringNullableFilter<"Buyer"> | string | null
+  lastSignInAt?: Prisma.DateTimeNullableFilter<"Buyer"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Buyer"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Buyer"> | Date | string
   orders?: Prisma.OrderListRelationFilter
@@ -210,6 +220,7 @@ export type BuyerOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   email?: Prisma.SortOrder
   name?: Prisma.SortOrderInput | Prisma.SortOrder
+  lastSignInAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.BuyerCountOrderByAggregateInput
@@ -224,6 +235,7 @@ export type BuyerScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"Buyer"> | string
   email?: Prisma.StringWithAggregatesFilter<"Buyer"> | string
   name?: Prisma.StringNullableWithAggregatesFilter<"Buyer"> | string | null
+  lastSignInAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Buyer"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Buyer"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Buyer"> | Date | string
 }
@@ -232,6 +244,7 @@ export type BuyerCreateInput = {
   id?: string
   email: string
   name?: string | null
+  lastSignInAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   orders?: Prisma.OrderCreateNestedManyWithoutBuyerInput
@@ -241,6 +254,7 @@ export type BuyerUncheckedCreateInput = {
   id?: string
   email: string
   name?: string | null
+  lastSignInAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutBuyerInput
@@ -250,6 +264,7 @@ export type BuyerUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastSignInAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   orders?: Prisma.OrderUpdateManyWithoutBuyerNestedInput
@@ -259,6 +274,7 @@ export type BuyerUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastSignInAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   orders?: Prisma.OrderUncheckedUpdateManyWithoutBuyerNestedInput
@@ -268,6 +284,7 @@ export type BuyerCreateManyInput = {
   id?: string
   email: string
   name?: string | null
+  lastSignInAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -276,6 +293,7 @@ export type BuyerUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastSignInAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -284,6 +302,7 @@ export type BuyerUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastSignInAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -292,6 +311,7 @@ export type BuyerCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   email?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  lastSignInAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -300,6 +320,7 @@ export type BuyerMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   email?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  lastSignInAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -308,6 +329,7 @@ export type BuyerMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   email?: Prisma.SortOrder
   name?: Prisma.SortOrder
+  lastSignInAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -337,6 +359,7 @@ export type BuyerCreateWithoutOrdersInput = {
   id?: string
   email: string
   name?: string | null
+  lastSignInAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -345,6 +368,7 @@ export type BuyerUncheckedCreateWithoutOrdersInput = {
   id?: string
   email: string
   name?: string | null
+  lastSignInAt?: Date | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -369,6 +393,7 @@ export type BuyerUpdateWithoutOrdersInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastSignInAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -377,6 +402,7 @@ export type BuyerUncheckedUpdateWithoutOrdersInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastSignInAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -416,6 +442,7 @@ export type BuyerSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   id?: boolean
   email?: boolean
   name?: boolean
+  lastSignInAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   orders?: boolean | Prisma.Buyer$ordersArgs<ExtArgs>
@@ -426,6 +453,7 @@ export type BuyerSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   id?: boolean
   email?: boolean
   name?: boolean
+  lastSignInAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["buyer"]>
@@ -434,6 +462,7 @@ export type BuyerSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   id?: boolean
   email?: boolean
   name?: boolean
+  lastSignInAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["buyer"]>
@@ -442,11 +471,12 @@ export type BuyerSelectScalar = {
   id?: boolean
   email?: boolean
   name?: boolean
+  lastSignInAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type BuyerOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "name" | "createdAt" | "updatedAt", ExtArgs["result"]["buyer"]>
+export type BuyerOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "name" | "lastSignInAt" | "createdAt" | "updatedAt", ExtArgs["result"]["buyer"]>
 export type BuyerInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   orders?: boolean | Prisma.Buyer$ordersArgs<ExtArgs>
   _count?: boolean | Prisma.BuyerCountOutputTypeDefaultArgs<ExtArgs>
@@ -463,6 +493,7 @@ export type $BuyerPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     id: string
     email: string
     name: string | null
+    lastSignInAt: Date | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["buyer"]>
@@ -892,6 +923,7 @@ export interface BuyerFieldRefs {
   readonly id: Prisma.FieldRef<"Buyer", 'String'>
   readonly email: Prisma.FieldRef<"Buyer", 'String'>
   readonly name: Prisma.FieldRef<"Buyer", 'String'>
+  readonly lastSignInAt: Prisma.FieldRef<"Buyer", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"Buyer", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Buyer", 'DateTime'>
 }

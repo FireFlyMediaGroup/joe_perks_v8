@@ -11,7 +11,7 @@
 - Cursor execution prompt: [`docs/sprint-7/cursor-agent-prompt.md`](./cursor-agent-prompt.md)
 - Cursor kickoff prompt: [`docs/sprint-7/cursor-agent-kickoff-prompt.md`](./cursor-agent-kickoff-prompt.md)
 
-**Current progress:** Planning ready. Implementation not started. Treat [`docs/sprint-7/buyer-accounts-epic-v3.md`](./buyer-accounts-epic-v3.md) as the reconciliation/prep document and this file as the normalized Sprint 7 implementation guide.
+**Current progress:** `US-09-00` through `US-09-06` are implemented. Sprint 7 now includes locale-aware buyer auth, a protected account dashboard, buyer-owned order detail pages, and a public `/{locale}/order-lookup` flow with rate-limited email + order-number matching plus direct-link tracking visibility.
 
 ---
 
@@ -80,9 +80,9 @@ These realities are already true in the repo and must shape Sprint 7 implementat
 - `Buyer` is currently a minimal model with `email`, `name`, and `orders`.
 - Checkout already uses Stripe `PaymentElement`; Sprint 7 should not restate base payment UI as new work.
 - Buyer upsert happens in `apps/web/app/api/checkout/create-intent/route.ts`, not in the webhook.
-- The current post-purchase buyer surface is order confirmation only; there are no buyer account routes yet.
-- `MagicLink` exists, but `MagicLinkPurpose` does not yet include `BUYER_AUTH`.
-- Shipping/contact data is collected in checkout UI, but not yet persisted on the live `Order` schema as historical snapshots.
+- The current post-purchase buyer surface is still order confirmation, but Sprint 7 now also ships locale-aware buyer sign-in and token-redemption routes.
+- `MagicLinkPurpose` now includes `BUYER_AUTH`, and buyer-auth links can create signed buyer sessions on `apps/web`.
+- Shipping/contact data is now persisted on the live `Order` schema as historical snapshots for later Sprint 7 stories.
 
 ---
 
@@ -221,7 +221,7 @@ These features remain valid future buyer-account extensions but are intentionall
 | US-09-04 | Buyer order detail and tracking MVP | 7 | High | US-09-03, US-09-00 | `apps/web` |
 | US-09-06 | Guest order lookup with direct-link tracking | 3 | High | US-09-00, US-09-04 | `apps/web` |
 
-**Story implementation status:** All Sprint 7 stories start at **`Todo`**. Use [`docs/SPRINT_7_PROGRESS.md`](../SPRINT_7_PROGRESS.md) as the live tracker.
+**Story implementation status:** Use [`docs/SPRINT_7_PROGRESS.md`](../SPRINT_7_PROGRESS.md) as the live tracker. `US-09-00` through `US-09-06` are now implemented in the repo.
 
 ---
 
@@ -366,3 +366,4 @@ Sprint 7 is successful when:
 | Version | Date | Notes |
 |---------|------|-------|
 | 0.1 | 2026-04-05 | Initial normalized Sprint 7 implementation guide created from the buyer-accounts reconciliation document and repo conventions. |
+| 0.2 | 2026-04-05 | Updated after `US-09-06` completion to reflect the guest order-lookup route/API, shared direct-link tracking reuse, and full Sprint 7 story implementation coverage. |

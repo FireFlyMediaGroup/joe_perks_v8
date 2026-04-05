@@ -79,6 +79,14 @@ export type OrderMinAggregateOutputType = {
   carrier: string | null
   shippedAt: Date | null
   deliveredAt: Date | null
+  buyerEmail: string | null
+  shipToName: string | null
+  shipToAddress1: string | null
+  shipToAddress2: string | null
+  shipToCity: string | null
+  shipToState: string | null
+  shipToPostalCode: string | null
+  shipToCountry: string | null
   buyerIp: string | null
   isCollab: boolean | null
   createdAt: Date | null
@@ -114,6 +122,14 @@ export type OrderMaxAggregateOutputType = {
   carrier: string | null
   shippedAt: Date | null
   deliveredAt: Date | null
+  buyerEmail: string | null
+  shipToName: string | null
+  shipToAddress1: string | null
+  shipToAddress2: string | null
+  shipToCity: string | null
+  shipToState: string | null
+  shipToPostalCode: string | null
+  shipToCountry: string | null
   buyerIp: string | null
   isCollab: boolean | null
   createdAt: Date | null
@@ -149,6 +165,14 @@ export type OrderCountAggregateOutputType = {
   carrier: number
   shippedAt: number
   deliveredAt: number
+  buyerEmail: number
+  shipToName: number
+  shipToAddress1: number
+  shipToAddress2: number
+  shipToCity: number
+  shipToState: number
+  shipToPostalCode: number
+  shipToCountry: number
   buyerIp: number
   isCollab: number
   createdAt: number
@@ -210,6 +234,14 @@ export type OrderMinAggregateInputType = {
   carrier?: true
   shippedAt?: true
   deliveredAt?: true
+  buyerEmail?: true
+  shipToName?: true
+  shipToAddress1?: true
+  shipToAddress2?: true
+  shipToCity?: true
+  shipToState?: true
+  shipToPostalCode?: true
+  shipToCountry?: true
   buyerIp?: true
   isCollab?: true
   createdAt?: true
@@ -245,6 +277,14 @@ export type OrderMaxAggregateInputType = {
   carrier?: true
   shippedAt?: true
   deliveredAt?: true
+  buyerEmail?: true
+  shipToName?: true
+  shipToAddress1?: true
+  shipToAddress2?: true
+  shipToCity?: true
+  shipToState?: true
+  shipToPostalCode?: true
+  shipToCountry?: true
   buyerIp?: true
   isCollab?: true
   createdAt?: true
@@ -280,6 +320,14 @@ export type OrderCountAggregateInputType = {
   carrier?: true
   shippedAt?: true
   deliveredAt?: true
+  buyerEmail?: true
+  shipToName?: true
+  shipToAddress1?: true
+  shipToAddress2?: true
+  shipToCity?: true
+  shipToState?: true
+  shipToPostalCode?: true
+  shipToCountry?: true
   buyerIp?: true
   isCollab?: true
   createdAt?: true
@@ -402,6 +450,14 @@ export type OrderGroupByOutputType = {
   carrier: string | null
   shippedAt: Date | null
   deliveredAt: Date | null
+  buyerEmail: string
+  shipToName: string
+  shipToAddress1: string
+  shipToAddress2: string | null
+  shipToCity: string
+  shipToState: string
+  shipToPostalCode: string
+  shipToCountry: string
   buyerIp: string
   isCollab: boolean
   createdAt: Date
@@ -460,6 +516,14 @@ export type OrderWhereInput = {
   carrier?: Prisma.StringNullableFilter<"Order"> | string | null
   shippedAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
   deliveredAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
+  buyerEmail?: Prisma.StringFilter<"Order"> | string
+  shipToName?: Prisma.StringFilter<"Order"> | string
+  shipToAddress1?: Prisma.StringFilter<"Order"> | string
+  shipToAddress2?: Prisma.StringNullableFilter<"Order"> | string | null
+  shipToCity?: Prisma.StringFilter<"Order"> | string
+  shipToState?: Prisma.StringFilter<"Order"> | string
+  shipToPostalCode?: Prisma.StringFilter<"Order"> | string
+  shipToCountry?: Prisma.StringFilter<"Order"> | string
   buyerIp?: Prisma.StringFilter<"Order"> | string
   isCollab?: Prisma.BoolFilter<"Order"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Order"> | Date | string
@@ -502,6 +566,14 @@ export type OrderOrderByWithRelationInput = {
   carrier?: Prisma.SortOrderInput | Prisma.SortOrder
   shippedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   deliveredAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  buyerEmail?: Prisma.SortOrder
+  shipToName?: Prisma.SortOrder
+  shipToAddress1?: Prisma.SortOrder
+  shipToAddress2?: Prisma.SortOrderInput | Prisma.SortOrder
+  shipToCity?: Prisma.SortOrder
+  shipToState?: Prisma.SortOrder
+  shipToPostalCode?: Prisma.SortOrder
+  shipToCountry?: Prisma.SortOrder
   buyerIp?: Prisma.SortOrder
   isCollab?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -547,6 +619,14 @@ export type OrderWhereUniqueInput = Prisma.AtLeast<{
   carrier?: Prisma.StringNullableFilter<"Order"> | string | null
   shippedAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
   deliveredAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
+  buyerEmail?: Prisma.StringFilter<"Order"> | string
+  shipToName?: Prisma.StringFilter<"Order"> | string
+  shipToAddress1?: Prisma.StringFilter<"Order"> | string
+  shipToAddress2?: Prisma.StringNullableFilter<"Order"> | string | null
+  shipToCity?: Prisma.StringFilter<"Order"> | string
+  shipToState?: Prisma.StringFilter<"Order"> | string
+  shipToPostalCode?: Prisma.StringFilter<"Order"> | string
+  shipToCountry?: Prisma.StringFilter<"Order"> | string
   buyerIp?: Prisma.StringFilter<"Order"> | string
   isCollab?: Prisma.BoolFilter<"Order"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Order"> | Date | string
@@ -589,6 +669,14 @@ export type OrderOrderByWithAggregationInput = {
   carrier?: Prisma.SortOrderInput | Prisma.SortOrder
   shippedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   deliveredAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  buyerEmail?: Prisma.SortOrder
+  shipToName?: Prisma.SortOrder
+  shipToAddress1?: Prisma.SortOrder
+  shipToAddress2?: Prisma.SortOrderInput | Prisma.SortOrder
+  shipToCity?: Prisma.SortOrder
+  shipToState?: Prisma.SortOrder
+  shipToPostalCode?: Prisma.SortOrder
+  shipToCountry?: Prisma.SortOrder
   buyerIp?: Prisma.SortOrder
   isCollab?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -632,6 +720,14 @@ export type OrderScalarWhereWithAggregatesInput = {
   carrier?: Prisma.StringNullableWithAggregatesFilter<"Order"> | string | null
   shippedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Order"> | Date | string | null
   deliveredAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Order"> | Date | string | null
+  buyerEmail?: Prisma.StringWithAggregatesFilter<"Order"> | string
+  shipToName?: Prisma.StringWithAggregatesFilter<"Order"> | string
+  shipToAddress1?: Prisma.StringWithAggregatesFilter<"Order"> | string
+  shipToAddress2?: Prisma.StringNullableWithAggregatesFilter<"Order"> | string | null
+  shipToCity?: Prisma.StringWithAggregatesFilter<"Order"> | string
+  shipToState?: Prisma.StringWithAggregatesFilter<"Order"> | string
+  shipToPostalCode?: Prisma.StringWithAggregatesFilter<"Order"> | string
+  shipToCountry?: Prisma.StringWithAggregatesFilter<"Order"> | string
   buyerIp?: Prisma.StringWithAggregatesFilter<"Order"> | string
   isCollab?: Prisma.BoolWithAggregatesFilter<"Order"> | boolean
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Order"> | Date | string
@@ -664,6 +760,14 @@ export type OrderCreateInput = {
   carrier?: string | null
   shippedAt?: Date | string | null
   deliveredAt?: Date | string | null
+  buyerEmail: string
+  shipToName: string
+  shipToAddress1: string
+  shipToAddress2?: string | null
+  shipToCity: string
+  shipToState: string
+  shipToPostalCode: string
+  shipToCountry: string
   buyerIp: string
   isCollab?: boolean
   createdAt?: Date | string
@@ -706,6 +810,14 @@ export type OrderUncheckedCreateInput = {
   carrier?: string | null
   shippedAt?: Date | string | null
   deliveredAt?: Date | string | null
+  buyerEmail: string
+  shipToName: string
+  shipToAddress1: string
+  shipToAddress2?: string | null
+  shipToCity: string
+  shipToState: string
+  shipToPostalCode: string
+  shipToCountry: string
   buyerIp: string
   isCollab?: boolean
   createdAt?: Date | string
@@ -742,6 +854,14 @@ export type OrderUpdateInput = {
   carrier?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   shippedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deliveredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  buyerEmail?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToName?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToAddress1?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToAddress2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  shipToCity?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToState?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToPostalCode?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToCountry?: Prisma.StringFieldUpdateOperationsInput | string
   buyerIp?: Prisma.StringFieldUpdateOperationsInput | string
   isCollab?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -784,6 +904,14 @@ export type OrderUncheckedUpdateInput = {
   carrier?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   shippedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deliveredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  buyerEmail?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToName?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToAddress1?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToAddress2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  shipToCity?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToState?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToPostalCode?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToCountry?: Prisma.StringFieldUpdateOperationsInput | string
   buyerIp?: Prisma.StringFieldUpdateOperationsInput | string
   isCollab?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -823,6 +951,14 @@ export type OrderCreateManyInput = {
   carrier?: string | null
   shippedAt?: Date | string | null
   deliveredAt?: Date | string | null
+  buyerEmail: string
+  shipToName: string
+  shipToAddress1: string
+  shipToAddress2?: string | null
+  shipToCity: string
+  shipToState: string
+  shipToPostalCode: string
+  shipToCountry: string
   buyerIp: string
   isCollab?: boolean
   createdAt?: Date | string
@@ -855,6 +991,14 @@ export type OrderUpdateManyMutationInput = {
   carrier?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   shippedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deliveredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  buyerEmail?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToName?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToAddress1?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToAddress2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  shipToCity?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToState?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToPostalCode?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToCountry?: Prisma.StringFieldUpdateOperationsInput | string
   buyerIp?: Prisma.StringFieldUpdateOperationsInput | string
   isCollab?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -890,6 +1034,14 @@ export type OrderUncheckedUpdateManyInput = {
   carrier?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   shippedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deliveredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  buyerEmail?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToName?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToAddress1?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToAddress2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  shipToCity?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToState?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToPostalCode?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToCountry?: Prisma.StringFieldUpdateOperationsInput | string
   buyerIp?: Prisma.StringFieldUpdateOperationsInput | string
   isCollab?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -940,6 +1092,14 @@ export type OrderCountOrderByAggregateInput = {
   carrier?: Prisma.SortOrder
   shippedAt?: Prisma.SortOrder
   deliveredAt?: Prisma.SortOrder
+  buyerEmail?: Prisma.SortOrder
+  shipToName?: Prisma.SortOrder
+  shipToAddress1?: Prisma.SortOrder
+  shipToAddress2?: Prisma.SortOrder
+  shipToCity?: Prisma.SortOrder
+  shipToState?: Prisma.SortOrder
+  shipToPostalCode?: Prisma.SortOrder
+  shipToCountry?: Prisma.SortOrder
   buyerIp?: Prisma.SortOrder
   isCollab?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -987,6 +1147,14 @@ export type OrderMaxOrderByAggregateInput = {
   carrier?: Prisma.SortOrder
   shippedAt?: Prisma.SortOrder
   deliveredAt?: Prisma.SortOrder
+  buyerEmail?: Prisma.SortOrder
+  shipToName?: Prisma.SortOrder
+  shipToAddress1?: Prisma.SortOrder
+  shipToAddress2?: Prisma.SortOrder
+  shipToCity?: Prisma.SortOrder
+  shipToState?: Prisma.SortOrder
+  shipToPostalCode?: Prisma.SortOrder
+  shipToCountry?: Prisma.SortOrder
   buyerIp?: Prisma.SortOrder
   isCollab?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -1022,6 +1190,14 @@ export type OrderMinOrderByAggregateInput = {
   carrier?: Prisma.SortOrder
   shippedAt?: Prisma.SortOrder
   deliveredAt?: Prisma.SortOrder
+  buyerEmail?: Prisma.SortOrder
+  shipToName?: Prisma.SortOrder
+  shipToAddress1?: Prisma.SortOrder
+  shipToAddress2?: Prisma.SortOrder
+  shipToCity?: Prisma.SortOrder
+  shipToState?: Prisma.SortOrder
+  shipToPostalCode?: Prisma.SortOrder
+  shipToCountry?: Prisma.SortOrder
   buyerIp?: Prisma.SortOrder
   isCollab?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -1263,6 +1439,14 @@ export type OrderCreateWithoutRoasterInput = {
   carrier?: string | null
   shippedAt?: Date | string | null
   deliveredAt?: Date | string | null
+  buyerEmail: string
+  shipToName: string
+  shipToAddress1: string
+  shipToAddress2?: string | null
+  shipToCity: string
+  shipToState: string
+  shipToPostalCode: string
+  shipToCountry: string
   buyerIp: string
   isCollab?: boolean
   createdAt?: Date | string
@@ -1303,6 +1487,14 @@ export type OrderUncheckedCreateWithoutRoasterInput = {
   carrier?: string | null
   shippedAt?: Date | string | null
   deliveredAt?: Date | string | null
+  buyerEmail: string
+  shipToName: string
+  shipToAddress1: string
+  shipToAddress2?: string | null
+  shipToCity: string
+  shipToState: string
+  shipToPostalCode: string
+  shipToCountry: string
   buyerIp: string
   isCollab?: boolean
   createdAt?: Date | string
@@ -1371,6 +1563,14 @@ export type OrderScalarWhereInput = {
   carrier?: Prisma.StringNullableFilter<"Order"> | string | null
   shippedAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
   deliveredAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
+  buyerEmail?: Prisma.StringFilter<"Order"> | string
+  shipToName?: Prisma.StringFilter<"Order"> | string
+  shipToAddress1?: Prisma.StringFilter<"Order"> | string
+  shipToAddress2?: Prisma.StringNullableFilter<"Order"> | string | null
+  shipToCity?: Prisma.StringFilter<"Order"> | string
+  shipToState?: Prisma.StringFilter<"Order"> | string
+  shipToPostalCode?: Prisma.StringFilter<"Order"> | string
+  shipToCountry?: Prisma.StringFilter<"Order"> | string
   buyerIp?: Prisma.StringFilter<"Order"> | string
   isCollab?: Prisma.BoolFilter<"Order"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Order"> | Date | string
@@ -1403,6 +1603,14 @@ export type OrderCreateWithoutRoasterDebtsInput = {
   carrier?: string | null
   shippedAt?: Date | string | null
   deliveredAt?: Date | string | null
+  buyerEmail: string
+  shipToName: string
+  shipToAddress1: string
+  shipToAddress2?: string | null
+  shipToCity: string
+  shipToState: string
+  shipToPostalCode: string
+  shipToCountry: string
   buyerIp: string
   isCollab?: boolean
   createdAt?: Date | string
@@ -1444,6 +1652,14 @@ export type OrderUncheckedCreateWithoutRoasterDebtsInput = {
   carrier?: string | null
   shippedAt?: Date | string | null
   deliveredAt?: Date | string | null
+  buyerEmail: string
+  shipToName: string
+  shipToAddress1: string
+  shipToAddress2?: string | null
+  shipToCity: string
+  shipToState: string
+  shipToPostalCode: string
+  shipToCountry: string
   buyerIp: string
   isCollab?: boolean
   createdAt?: Date | string
@@ -1495,6 +1711,14 @@ export type OrderUpdateWithoutRoasterDebtsInput = {
   carrier?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   shippedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deliveredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  buyerEmail?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToName?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToAddress1?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToAddress2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  shipToCity?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToState?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToPostalCode?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToCountry?: Prisma.StringFieldUpdateOperationsInput | string
   buyerIp?: Prisma.StringFieldUpdateOperationsInput | string
   isCollab?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1536,6 +1760,14 @@ export type OrderUncheckedUpdateWithoutRoasterDebtsInput = {
   carrier?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   shippedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deliveredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  buyerEmail?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToName?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToAddress1?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToAddress2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  shipToCity?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToState?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToPostalCode?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToCountry?: Prisma.StringFieldUpdateOperationsInput | string
   buyerIp?: Prisma.StringFieldUpdateOperationsInput | string
   isCollab?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1571,6 +1803,14 @@ export type OrderCreateWithoutCampaignInput = {
   carrier?: string | null
   shippedAt?: Date | string | null
   deliveredAt?: Date | string | null
+  buyerEmail: string
+  shipToName: string
+  shipToAddress1: string
+  shipToAddress2?: string | null
+  shipToCity: string
+  shipToState: string
+  shipToPostalCode: string
+  shipToCountry: string
   buyerIp: string
   isCollab?: boolean
   createdAt?: Date | string
@@ -1611,6 +1851,14 @@ export type OrderUncheckedCreateWithoutCampaignInput = {
   carrier?: string | null
   shippedAt?: Date | string | null
   deliveredAt?: Date | string | null
+  buyerEmail: string
+  shipToName: string
+  shipToAddress1: string
+  shipToAddress2?: string | null
+  shipToCity: string
+  shipToState: string
+  shipToPostalCode: string
+  shipToCountry: string
   buyerIp: string
   isCollab?: boolean
   createdAt?: Date | string
@@ -1673,6 +1921,14 @@ export type OrderCreateWithoutBuyerInput = {
   carrier?: string | null
   shippedAt?: Date | string | null
   deliveredAt?: Date | string | null
+  buyerEmail: string
+  shipToName: string
+  shipToAddress1: string
+  shipToAddress2?: string | null
+  shipToCity: string
+  shipToState: string
+  shipToPostalCode: string
+  shipToCountry: string
   buyerIp: string
   isCollab?: boolean
   createdAt?: Date | string
@@ -1713,6 +1969,14 @@ export type OrderUncheckedCreateWithoutBuyerInput = {
   carrier?: string | null
   shippedAt?: Date | string | null
   deliveredAt?: Date | string | null
+  buyerEmail: string
+  shipToName: string
+  shipToAddress1: string
+  shipToAddress2?: string | null
+  shipToCity: string
+  shipToState: string
+  shipToPostalCode: string
+  shipToCountry: string
   buyerIp: string
   isCollab?: boolean
   createdAt?: Date | string
@@ -1775,6 +2039,14 @@ export type OrderCreateWithoutItemsInput = {
   carrier?: string | null
   shippedAt?: Date | string | null
   deliveredAt?: Date | string | null
+  buyerEmail: string
+  shipToName: string
+  shipToAddress1: string
+  shipToAddress2?: string | null
+  shipToCity: string
+  shipToState: string
+  shipToPostalCode: string
+  shipToCountry: string
   buyerIp: string
   isCollab?: boolean
   createdAt?: Date | string
@@ -1816,6 +2088,14 @@ export type OrderUncheckedCreateWithoutItemsInput = {
   carrier?: string | null
   shippedAt?: Date | string | null
   deliveredAt?: Date | string | null
+  buyerEmail: string
+  shipToName: string
+  shipToAddress1: string
+  shipToAddress2?: string | null
+  shipToCity: string
+  shipToState: string
+  shipToPostalCode: string
+  shipToCountry: string
   buyerIp: string
   isCollab?: boolean
   createdAt?: Date | string
@@ -1867,6 +2147,14 @@ export type OrderUpdateWithoutItemsInput = {
   carrier?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   shippedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deliveredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  buyerEmail?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToName?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToAddress1?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToAddress2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  shipToCity?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToState?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToPostalCode?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToCountry?: Prisma.StringFieldUpdateOperationsInput | string
   buyerIp?: Prisma.StringFieldUpdateOperationsInput | string
   isCollab?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1908,6 +2196,14 @@ export type OrderUncheckedUpdateWithoutItemsInput = {
   carrier?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   shippedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deliveredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  buyerEmail?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToName?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToAddress1?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToAddress2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  shipToCity?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToState?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToPostalCode?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToCountry?: Prisma.StringFieldUpdateOperationsInput | string
   buyerIp?: Prisma.StringFieldUpdateOperationsInput | string
   isCollab?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1943,6 +2239,14 @@ export type OrderCreateWithoutEventsInput = {
   carrier?: string | null
   shippedAt?: Date | string | null
   deliveredAt?: Date | string | null
+  buyerEmail: string
+  shipToName: string
+  shipToAddress1: string
+  shipToAddress2?: string | null
+  shipToCity: string
+  shipToState: string
+  shipToPostalCode: string
+  shipToCountry: string
   buyerIp: string
   isCollab?: boolean
   createdAt?: Date | string
@@ -1984,6 +2288,14 @@ export type OrderUncheckedCreateWithoutEventsInput = {
   carrier?: string | null
   shippedAt?: Date | string | null
   deliveredAt?: Date | string | null
+  buyerEmail: string
+  shipToName: string
+  shipToAddress1: string
+  shipToAddress2?: string | null
+  shipToCity: string
+  shipToState: string
+  shipToPostalCode: string
+  shipToCountry: string
   buyerIp: string
   isCollab?: boolean
   createdAt?: Date | string
@@ -2035,6 +2347,14 @@ export type OrderUpdateWithoutEventsInput = {
   carrier?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   shippedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deliveredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  buyerEmail?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToName?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToAddress1?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToAddress2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  shipToCity?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToState?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToPostalCode?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToCountry?: Prisma.StringFieldUpdateOperationsInput | string
   buyerIp?: Prisma.StringFieldUpdateOperationsInput | string
   isCollab?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2076,6 +2396,14 @@ export type OrderUncheckedUpdateWithoutEventsInput = {
   carrier?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   shippedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deliveredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  buyerEmail?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToName?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToAddress1?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToAddress2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  shipToCity?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToState?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToPostalCode?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToCountry?: Prisma.StringFieldUpdateOperationsInput | string
   buyerIp?: Prisma.StringFieldUpdateOperationsInput | string
   isCollab?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2111,6 +2439,14 @@ export type OrderCreateWithoutDisputeInput = {
   carrier?: string | null
   shippedAt?: Date | string | null
   deliveredAt?: Date | string | null
+  buyerEmail: string
+  shipToName: string
+  shipToAddress1: string
+  shipToAddress2?: string | null
+  shipToCity: string
+  shipToState: string
+  shipToPostalCode: string
+  shipToCountry: string
   buyerIp: string
   isCollab?: boolean
   createdAt?: Date | string
@@ -2152,6 +2488,14 @@ export type OrderUncheckedCreateWithoutDisputeInput = {
   carrier?: string | null
   shippedAt?: Date | string | null
   deliveredAt?: Date | string | null
+  buyerEmail: string
+  shipToName: string
+  shipToAddress1: string
+  shipToAddress2?: string | null
+  shipToCity: string
+  shipToState: string
+  shipToPostalCode: string
+  shipToCountry: string
   buyerIp: string
   isCollab?: boolean
   createdAt?: Date | string
@@ -2203,6 +2547,14 @@ export type OrderUpdateWithoutDisputeInput = {
   carrier?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   shippedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deliveredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  buyerEmail?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToName?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToAddress1?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToAddress2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  shipToCity?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToState?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToPostalCode?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToCountry?: Prisma.StringFieldUpdateOperationsInput | string
   buyerIp?: Prisma.StringFieldUpdateOperationsInput | string
   isCollab?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2244,6 +2596,14 @@ export type OrderUncheckedUpdateWithoutDisputeInput = {
   carrier?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   shippedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deliveredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  buyerEmail?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToName?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToAddress1?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToAddress2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  shipToCity?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToState?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToPostalCode?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToCountry?: Prisma.StringFieldUpdateOperationsInput | string
   buyerIp?: Prisma.StringFieldUpdateOperationsInput | string
   isCollab?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2281,6 +2641,14 @@ export type OrderCreateManyRoasterInput = {
   carrier?: string | null
   shippedAt?: Date | string | null
   deliveredAt?: Date | string | null
+  buyerEmail: string
+  shipToName: string
+  shipToAddress1: string
+  shipToAddress2?: string | null
+  shipToCity: string
+  shipToState: string
+  shipToPostalCode: string
+  shipToCountry: string
   buyerIp: string
   isCollab?: boolean
   createdAt?: Date | string
@@ -2313,6 +2681,14 @@ export type OrderUpdateWithoutRoasterInput = {
   carrier?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   shippedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deliveredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  buyerEmail?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToName?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToAddress1?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToAddress2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  shipToCity?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToState?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToPostalCode?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToCountry?: Prisma.StringFieldUpdateOperationsInput | string
   buyerIp?: Prisma.StringFieldUpdateOperationsInput | string
   isCollab?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2353,6 +2729,14 @@ export type OrderUncheckedUpdateWithoutRoasterInput = {
   carrier?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   shippedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deliveredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  buyerEmail?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToName?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToAddress1?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToAddress2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  shipToCity?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToState?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToPostalCode?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToCountry?: Prisma.StringFieldUpdateOperationsInput | string
   buyerIp?: Prisma.StringFieldUpdateOperationsInput | string
   isCollab?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2391,6 +2775,14 @@ export type OrderUncheckedUpdateManyWithoutRoasterInput = {
   carrier?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   shippedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deliveredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  buyerEmail?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToName?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToAddress1?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToAddress2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  shipToCity?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToState?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToPostalCode?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToCountry?: Prisma.StringFieldUpdateOperationsInput | string
   buyerIp?: Prisma.StringFieldUpdateOperationsInput | string
   isCollab?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2425,6 +2817,14 @@ export type OrderCreateManyCampaignInput = {
   carrier?: string | null
   shippedAt?: Date | string | null
   deliveredAt?: Date | string | null
+  buyerEmail: string
+  shipToName: string
+  shipToAddress1: string
+  shipToAddress2?: string | null
+  shipToCity: string
+  shipToState: string
+  shipToPostalCode: string
+  shipToCountry: string
   buyerIp: string
   isCollab?: boolean
   createdAt?: Date | string
@@ -2457,6 +2857,14 @@ export type OrderUpdateWithoutCampaignInput = {
   carrier?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   shippedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deliveredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  buyerEmail?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToName?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToAddress1?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToAddress2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  shipToCity?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToState?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToPostalCode?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToCountry?: Prisma.StringFieldUpdateOperationsInput | string
   buyerIp?: Prisma.StringFieldUpdateOperationsInput | string
   isCollab?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2497,6 +2905,14 @@ export type OrderUncheckedUpdateWithoutCampaignInput = {
   carrier?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   shippedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deliveredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  buyerEmail?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToName?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToAddress1?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToAddress2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  shipToCity?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToState?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToPostalCode?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToCountry?: Prisma.StringFieldUpdateOperationsInput | string
   buyerIp?: Prisma.StringFieldUpdateOperationsInput | string
   isCollab?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2535,6 +2951,14 @@ export type OrderUncheckedUpdateManyWithoutCampaignInput = {
   carrier?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   shippedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deliveredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  buyerEmail?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToName?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToAddress1?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToAddress2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  shipToCity?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToState?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToPostalCode?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToCountry?: Prisma.StringFieldUpdateOperationsInput | string
   buyerIp?: Prisma.StringFieldUpdateOperationsInput | string
   isCollab?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2569,6 +2993,14 @@ export type OrderCreateManyBuyerInput = {
   carrier?: string | null
   shippedAt?: Date | string | null
   deliveredAt?: Date | string | null
+  buyerEmail: string
+  shipToName: string
+  shipToAddress1: string
+  shipToAddress2?: string | null
+  shipToCity: string
+  shipToState: string
+  shipToPostalCode: string
+  shipToCountry: string
   buyerIp: string
   isCollab?: boolean
   createdAt?: Date | string
@@ -2601,6 +3033,14 @@ export type OrderUpdateWithoutBuyerInput = {
   carrier?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   shippedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deliveredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  buyerEmail?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToName?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToAddress1?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToAddress2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  shipToCity?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToState?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToPostalCode?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToCountry?: Prisma.StringFieldUpdateOperationsInput | string
   buyerIp?: Prisma.StringFieldUpdateOperationsInput | string
   isCollab?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2641,6 +3081,14 @@ export type OrderUncheckedUpdateWithoutBuyerInput = {
   carrier?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   shippedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deliveredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  buyerEmail?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToName?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToAddress1?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToAddress2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  shipToCity?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToState?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToPostalCode?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToCountry?: Prisma.StringFieldUpdateOperationsInput | string
   buyerIp?: Prisma.StringFieldUpdateOperationsInput | string
   isCollab?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2679,6 +3127,14 @@ export type OrderUncheckedUpdateManyWithoutBuyerInput = {
   carrier?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   shippedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deliveredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  buyerEmail?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToName?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToAddress1?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToAddress2?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  shipToCity?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToState?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToPostalCode?: Prisma.StringFieldUpdateOperationsInput | string
+  shipToCountry?: Prisma.StringFieldUpdateOperationsInput | string
   buyerIp?: Prisma.StringFieldUpdateOperationsInput | string
   isCollab?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -2763,6 +3219,14 @@ export type OrderSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   carrier?: boolean
   shippedAt?: boolean
   deliveredAt?: boolean
+  buyerEmail?: boolean
+  shipToName?: boolean
+  shipToAddress1?: boolean
+  shipToAddress2?: boolean
+  shipToCity?: boolean
+  shipToState?: boolean
+  shipToPostalCode?: boolean
+  shipToCountry?: boolean
   buyerIp?: boolean
   isCollab?: boolean
   createdAt?: boolean
@@ -2806,6 +3270,14 @@ export type OrderSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   carrier?: boolean
   shippedAt?: boolean
   deliveredAt?: boolean
+  buyerEmail?: boolean
+  shipToName?: boolean
+  shipToAddress1?: boolean
+  shipToAddress2?: boolean
+  shipToCity?: boolean
+  shipToState?: boolean
+  shipToPostalCode?: boolean
+  shipToCountry?: boolean
   buyerIp?: boolean
   isCollab?: boolean
   createdAt?: boolean
@@ -2844,6 +3316,14 @@ export type OrderSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   carrier?: boolean
   shippedAt?: boolean
   deliveredAt?: boolean
+  buyerEmail?: boolean
+  shipToName?: boolean
+  shipToAddress1?: boolean
+  shipToAddress2?: boolean
+  shipToCity?: boolean
+  shipToState?: boolean
+  shipToPostalCode?: boolean
+  shipToCountry?: boolean
   buyerIp?: boolean
   isCollab?: boolean
   createdAt?: boolean
@@ -2882,13 +3362,21 @@ export type OrderSelectScalar = {
   carrier?: boolean
   shippedAt?: boolean
   deliveredAt?: boolean
+  buyerEmail?: boolean
+  shipToName?: boolean
+  shipToAddress1?: boolean
+  shipToAddress2?: boolean
+  shipToCity?: boolean
+  shipToState?: boolean
+  shipToPostalCode?: boolean
+  shipToCountry?: boolean
   buyerIp?: boolean
   isCollab?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type OrderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "orderNumber" | "campaignId" | "roasterId" | "buyerId" | "fulfillerType" | "productSubtotal" | "shippingAmount" | "grossAmount" | "stripeFee" | "orgPctSnapshot" | "orgAmount" | "platformAmount" | "roasterAmount" | "roasterTotal" | "status" | "fulfillBy" | "payoutStatus" | "payoutEligibleAt" | "stripePiId" | "stripeChargeId" | "stripeTransferId" | "stripeOrgTransfer" | "transferGroup" | "trackingNumber" | "carrier" | "shippedAt" | "deliveredAt" | "buyerIp" | "isCollab" | "createdAt" | "updatedAt", ExtArgs["result"]["order"]>
+export type OrderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "orderNumber" | "campaignId" | "roasterId" | "buyerId" | "fulfillerType" | "productSubtotal" | "shippingAmount" | "grossAmount" | "stripeFee" | "orgPctSnapshot" | "orgAmount" | "platformAmount" | "roasterAmount" | "roasterTotal" | "status" | "fulfillBy" | "payoutStatus" | "payoutEligibleAt" | "stripePiId" | "stripeChargeId" | "stripeTransferId" | "stripeOrgTransfer" | "transferGroup" | "trackingNumber" | "carrier" | "shippedAt" | "deliveredAt" | "buyerEmail" | "shipToName" | "shipToAddress1" | "shipToAddress2" | "shipToCity" | "shipToState" | "shipToPostalCode" | "shipToCountry" | "buyerIp" | "isCollab" | "createdAt" | "updatedAt", ExtArgs["result"]["order"]>
 export type OrderInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   campaign?: boolean | Prisma.CampaignDefaultArgs<ExtArgs>
   roaster?: boolean | Prisma.RoasterDefaultArgs<ExtArgs>
@@ -2950,6 +3438,14 @@ export type $OrderPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     carrier: string | null
     shippedAt: Date | null
     deliveredAt: Date | null
+    buyerEmail: string
+    shipToName: string
+    shipToAddress1: string
+    shipToAddress2: string | null
+    shipToCity: string
+    shipToState: string
+    shipToPostalCode: string
+    shipToCountry: string
     buyerIp: string
     isCollab: boolean
     createdAt: Date
@@ -3412,6 +3908,14 @@ export interface OrderFieldRefs {
   readonly carrier: Prisma.FieldRef<"Order", 'String'>
   readonly shippedAt: Prisma.FieldRef<"Order", 'DateTime'>
   readonly deliveredAt: Prisma.FieldRef<"Order", 'DateTime'>
+  readonly buyerEmail: Prisma.FieldRef<"Order", 'String'>
+  readonly shipToName: Prisma.FieldRef<"Order", 'String'>
+  readonly shipToAddress1: Prisma.FieldRef<"Order", 'String'>
+  readonly shipToAddress2: Prisma.FieldRef<"Order", 'String'>
+  readonly shipToCity: Prisma.FieldRef<"Order", 'String'>
+  readonly shipToState: Prisma.FieldRef<"Order", 'String'>
+  readonly shipToPostalCode: Prisma.FieldRef<"Order", 'String'>
+  readonly shipToCountry: Prisma.FieldRef<"Order", 'String'>
   readonly buyerIp: Prisma.FieldRef<"Order", 'String'>
   readonly isCollab: Prisma.FieldRef<"Order", 'Boolean'>
   readonly createdAt: Prisma.FieldRef<"Order", 'DateTime'>

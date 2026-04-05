@@ -152,6 +152,7 @@ erDiagram
     String id    PK
     String email UK
     String name     "nullable"
+    DateTime last_sign_in_at "nullable"
   }
 
   Order {
@@ -183,6 +184,14 @@ erDiagram
     String        carrier               "nullable"
     DateTime      shipped_at            "nullable"
     DateTime      delivered_at          "nullable"
+    String        buyer_email           "snapshot for auth + guest lookup"
+    String        ship_to_name          "immutable shipping snapshot"
+    String        ship_to_address1      "immutable shipping snapshot"
+    String        ship_to_address2      "nullable immutable shipping snapshot"
+    String        ship_to_city          "immutable shipping snapshot"
+    String        ship_to_state         "immutable shipping snapshot"
+    String        ship_to_postal_code   "immutable shipping snapshot"
+    String        ship_to_country       "immutable shipping snapshot"
     String        buyer_ip              "for chargeback evidence"
     Boolean       is_collab
   }
@@ -235,11 +244,11 @@ erDiagram
     String           id         PK
     String           token      UK "crypto 32 bytes"
     String           dedupe_key UK "nullable — one fulfillment link per order"
-    MagicLinkPurpose purpose       "ORDER_FULFILLMENT | ORG_APPROVAL | ROASTER_REVIEW"
+    MagicLinkPurpose purpose       "ORDER_FULFILLMENT | ORG_APPROVAL | ROASTER_REVIEW | BUYER_AUTH"
     String           actor_id      "roaster.id or org.id"
     ActorType        actor_type
     Json             payload       "{order_id} or {org_application_id}"
-    DateTime         expires_at    "72h TTL"
+    DateTime         expires_at    "purpose-specific TTL"
     DateTime         used_at       "nullable — single use enforced"
   }
 

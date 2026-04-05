@@ -1,25 +1,13 @@
 import { database, generateOrderNumber } from "@joe-perks/db";
 import { calculateSplits, getStripe, limitCheckout } from "@joe-perks/stripe";
 import { NextResponse } from "next/server";
-import { z } from "zod";
+import {
+  buildOrderSnapshotData,
+  checkoutSchema,
+  type CheckoutRequestBody,
+} from "./_lib/checkout-payload";
 
 export const runtime = "nodejs";
-
-const checkoutSchema = z.object({
-  campaignId: z.string().min(1),
-  items: z
-    .array(
-      z.object({
-        campaignItemId: z.string().min(1),
-        quantity: z.number().int().min(1).max(99),
-      })
-    )
-    .min(1)
-    .max(50),
-  buyerEmail: z.string().email(),
-  buyerName: z.string().max(200).optional(),
-  shippingRateId: z.string().min(1),
-});
 
 const GRIND_LABELS: Record<string, string> = {
   WHOLE_BEAN: "Whole Bean",
@@ -123,7 +111,7 @@ function buildOrderItemsData(
 }
 
 async function loadCheckoutContext(
-  body: z.infer<typeof checkoutSchema>
+  body: CheckoutRequestBody
 ): Promise<
   | {
       campaign: NonNullable<Awaited<ReturnType<typeof loadActiveCampaign>>>;
@@ -198,7 +186,7 @@ async function loadCheckoutContext(
 }
 
 export async function POST(request: Request) {
-  let body: z.infer<typeof checkoutSchema>;
+  let body: CheckoutRequestBody;
   try {
     body = checkoutSchema.parse(await request.json());
   } catch {
@@ -306,6 +294,7 @@ export async function POST(request: Request) {
           stripePiId: pi.id,
           transferGroup: orderId,
           buyerIp,
+          ...buildOrderSnapshotData(body),
         },
       });
 

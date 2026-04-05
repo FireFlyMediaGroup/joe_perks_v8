@@ -2,7 +2,7 @@
 
 **Story ID:** US-09-06 | **Epic:** EP-09 (Buyer Accounts)
 **Points:** 3 | **Priority:** High
-**Status:** `Todo`
+**Status:** `Done`
 **Owner:** Full-stack
 **Dependencies:** US-09-00, US-09-04
 **Depends on this:** None
@@ -34,9 +34,9 @@ Normalized decisions this story implements:
 
 ## Current repo evidence
 
-- There is currently no `/order-lookup` route in `apps/web`.
-- There is currently no guest order lookup API.
-- Sprint 7 foundation work is expected to add the order-level buyer email snapshot needed for lookup.
+- `apps/web/app/[locale]/order-lookup/page.tsx` now renders the locale-aware guest lookup entry point.
+- `apps/web/app/api/order-lookup/route.ts` now validates input, rate limits by request IP, and looks up orders by `Order.buyerEmail` + `Order.orderNumber`.
+- The lookup result reuses the existing direct-link tracking/detail model built for `US-09-04`, while keeping buyer sign-in optional.
 
 ---
 
@@ -71,24 +71,24 @@ Normalized decisions this story implements:
 
 ## Acceptance criteria
 
-- [ ] Locale-aware guest lookup page exists
-- [ ] Form accepts buyer email and order number
-- [ ] Lookup API uses order-level buyer email snapshot + order number
-- [ ] Lookup requests are rate limited
-- [ ] Failure message does not reveal which input was incorrect
-- [ ] Success result shows useful order/tracking information
-- [ ] Tracking behavior remains direct-link only
-- [ ] Optional create-account CTA remains clearly secondary
+- [x] Locale-aware guest lookup page exists
+- [x] Form accepts buyer email and order number
+- [x] Lookup API uses order-level buyer email snapshot + order number
+- [x] Lookup requests are rate limited
+- [x] Failure message does not reveal which input was incorrect
+- [x] Success result shows useful order/tracking information
+- [x] Tracking behavior remains direct-link only
+- [x] Optional create-account CTA remains clearly secondary
 
 ---
 
 ## UX / accessibility / mobile requirements
 
-- [ ] Lookup form is simple and calm for anxious buyers
-- [ ] Labels and error states are screen-reader friendly
-- [ ] Focus moves to result or error after submit
-- [ ] Mobile form remains usable at narrow widths
-- [ ] No raw sensitive data is placed unnecessarily in shareable URLs
+- [x] Lookup form is simple and calm for anxious buyers
+- [x] Labels and error states are screen-reader friendly
+- [x] Focus moves to result or error after submit
+- [x] Mobile form remains usable at narrow widths
+- [x] No raw sensitive data is placed unnecessarily in shareable URLs
 
 ---
 
@@ -104,11 +104,17 @@ Normalized decisions this story implements:
 
 ## QA and verification
 
-- [ ] Correct email + order number returns the expected order
-- [ ] Wrong combination returns a generic failure state
-- [ ] Rate limiting works
-- [ ] Mobile lookup form is usable
-- [ ] Result state is readable and does not depend on account context
+- [x] Correct email + order number returns the expected order
+- [x] Wrong combination returns a generic failure state
+- [x] Rate limiting works
+- [x] Mobile lookup form is usable
+- [x] Result state is readable and does not depend on account context
+
+Verification completed with:
+
+- `pnpm exec vitest run "apps/web/lib/orders/guest-order-lookup.test.ts" "apps/web/app/[locale]/account/orders/[id]/_lib/order-detail.test.ts" "apps/web/app/api/order-lookup/route.test.ts"`
+- `pnpm --filter web typecheck`
+- Cursor lints on the touched `apps/web` and `packages/stripe` files
 
 ---
 
@@ -125,3 +131,4 @@ Normalized decisions this story implements:
 | Version | Date | Notes |
 |---------|------|-------|
 | 0.1 | 2026-04-05 | Initial guest order lookup story created from the normalized Sprint 7 plan. |
+| 1.0 | 2026-04-05 | Completed with a locale-aware guest lookup page, rate-limited lookup API, shared direct-link tracking/detail reuse, and a secondary buyer sign-in CTA. |

@@ -9,8 +9,8 @@ Database Schema Reference
 | **ORM** | **Prisma 7** (`prisma-client` generator) — canonical schema: **`packages/db/prisma/schema.prisma`** |
 | **Database** | Neon Postgres (serverless) — Postgres 15+ compatible |
 | **Location** | `packages/db/` in the Turborepo monorepo |
-| **Version** | **1.1** — MVP schema as implemented in code (Story 01, March 2026) |
-| **Last updated** | March 2026 |
+| **Version** | **1.2** — Sprint 7 buyer-account foundation schema |
+| **Last updated** | April 2026 |
 
 > **Source of truth:** Do not treat this Markdown file as the live DDL. The deployed shape is whatever **`prisma migrate`** applied from `packages/db/prisma/migrations/`. This document summarizes that schema and points to the Prisma file for full detail.
 
@@ -47,8 +47,8 @@ Principles (unchanged from product design):
 | `ProductVariant` | Catalog | `sizeOz`, `grind`, prices in cents; `deletedAt` |
 | `Campaign` | Commerce | `orgPct` snapshot; `goalCents`, `totalRaised` |
 | `CampaignItem` | Commerce | Price snapshots; `@@unique([campaignId, variantId])` |
-| `Buyer` | Commerce | Upsert by `email` |
-| `Order` | Commerce | Frozen splits; `buyerIp` required string; **no** embedded shipping address columns in MVP schema |
+| `Buyer` | Commerce | Upsert by `email`; `lastSignInAt` reserved for buyer-account auth tracking |
+| `Order` | Commerce | Frozen splits; `buyerIp` required string; immutable `buyerEmail` + shipping snapshot columns now persist historical contact data |
 | `OrderItem` | Commerce | `productName`, `variantDesc`, line pricing snapshots |
 | `OrderEvent` | Audit | Append-only |
 | `AdminActionLog` | Audit | High-risk admin actions: actor label, action type, target, note, payload, timestamp |
@@ -63,7 +63,6 @@ These appear in older design docs or Phase 2 plans but are **not** in `schema.pr
 | `RoasterOrgRelationship` | Not modeled — partnership implied via campaigns/orders or future migration |
 | `Cart`, `CartItem` | Phase 2 DB-backed cart — not in schema |
 | `ApplicationEvent` | Not in schema — approval history can be added later |
-| `Order` shipping address fields (`buyer_email`, `ship_to_*`, etc.) | Not in MVP schema — capture in app/storage as needed before orders gain columns |
 | `Order.wholesale_cost`, `shipping_label_url`, `label_generated_by` | Not in MVP schema |
 | Extra `PlatformSettings` fields (`min_retail_spread_pct`, `magic_link_ttl_hours`, …) | Not in current `PlatformSettings` model |
 
@@ -112,7 +111,7 @@ The live schema defines the indexes below. Additional composite indexes (e.g. `O
 | `ProductVariant` | `productId`, `deletedAt` |
 | `Campaign` | `orgId` |
 | `CampaignItem` | `campaignId`; unique `(campaignId, variantId)` |
-| `Order` | `campaignId`, `roasterId`, `buyerId` |
+| `Order` | `campaignId`, `roasterId`, `buyerId`, `buyerEmail + orderNumber` |
 | `OrderItem` | `orderId` |
 | `OrderEvent` | `orderId` |
 | `MagicLink` | `token` (unique + index) |
@@ -167,3 +166,4 @@ Canonical implementation target: **`packages/stripe/splits.ts`** (`calculateSpli
 | :--- | :--- |
 | 1.0 | Original long-form reference (Prisma 5–style embedded schema, extra models). |
 | 1.1 | Aligned with **`packages/db/prisma/schema.prisma`** as of Story 01; removed obsolete embedded DDL; documented gaps vs legacy doc. |
+| 1.2 | Sprint 7 foundation: added `Order` buyer/shipping snapshots, `Buyer.lastSignInAt`, and `BUYER_AUTH` support in the live Prisma schema. |
