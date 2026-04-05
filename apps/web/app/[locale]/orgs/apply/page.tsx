@@ -27,7 +27,7 @@ export default async function OrgsApplyPage() {
   }));
 
   return (
-    <main className="mx-auto max-w-2xl px-4 py-10 sm:py-16">
+    <main className="mx-auto max-w-2xl px-4 pt-24 pb-10 sm:pt-32 sm:pb-16">
       <header className="mb-10 text-center">
         <h1 className="font-semibold text-3xl tracking-tight">
           Apply to fundraise with Joe Perks

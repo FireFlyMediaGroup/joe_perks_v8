@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function RoastersApplyPage() {
   return (
-    <main className="mx-auto max-w-2xl px-4 py-12 sm:px-6 lg:px-8">
+    <main className="mx-auto max-w-2xl px-4 pt-28 pb-12 sm:px-6 lg:px-8">
       <div className="mb-10 text-center">
         <h1 className="text-3xl font-bold tracking-tight">
           Roaster application
