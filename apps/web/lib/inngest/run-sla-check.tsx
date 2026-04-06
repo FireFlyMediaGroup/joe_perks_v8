@@ -2,6 +2,7 @@ import {
   type Buyer,
   type Campaign,
   database,
+  ensureActiveFulfillmentLink,
   logOrderEvent,
   type Order,
   type Org,
@@ -19,9 +20,35 @@ import {
 import { isStripeConfigured, refundCharge } from "@joe-perks/stripe";
 
 const HOUR_MS = 60 * 60 * 1000;
+const ROASTER_APP_ORIGIN_DEFAULT = "http://localhost:3001";
+const TRAILING_SLASH = /\/$/;
 
 function hoursMs(hours: number): number {
   return hours * HOUR_MS;
+}
+
+function normalizeOrigin(origin: string | undefined): string {
+  return (origin?.trim() || ROASTER_APP_ORIGIN_DEFAULT).replace(TRAILING_SLASH, "");
+}
+
+async function resolveFulfillmentUrlForReminder(
+  orderId: string,
+  regenerationReason: "sla_warning" | "sla_breach"
+): Promise<string | null> {
+  const activeLink = await ensureActiveFulfillmentLink({
+    orderId,
+    regenerationReason,
+  });
+
+  if (!activeLink.ok) {
+    console.error("sla-check: fulfillment link unavailable", {
+      order_id: orderId,
+      reason: activeLink.reason,
+    });
+    return null;
+  }
+
+  return `${normalizeOrigin(process.env.ROASTER_APP_ORIGIN)}/fulfill/${activeLink.token}`;
 }
 
 function isSlaCriticalNote(payload: unknown): boolean {
@@ -47,6 +74,10 @@ type OrderWithRelations = Order & {
   buyer: Buyer | null;
   campaign: Campaign & { org: Org };
 };
+
+function hasUnresolvedFulfillmentFlag(order: Order): boolean {
+  return Boolean(order.flaggedAt && !order.flagResolvedAt);
+}
 
 async function trySlaAutoRefund(
   order: OrderWithRelations,
@@ -179,10 +210,15 @@ async function trySlaBreach(
   }
 
   const fulfillByIso = order.fulfillBy.toISOString();
-
-  await logOrderEvent(order.id, "SLA_BREACH", "SYSTEM", null, {});
+  const fulfillUrl = canEmail
+    ? await resolveFulfillmentUrlForReminder(order.id, "sla_breach")
+    : null;
 
   if (canEmail) {
+    if (!fulfillUrl) {
+      return false;
+    }
+
     await sendEmail({
       to: order.roaster.email,
       subject: `[Joe Perks] Urgent: SLA breach — ${order.orderNumber}`,
@@ -192,6 +228,7 @@ async function trySlaBreach(
       react: (
         <SlaRoasterUrgentEmail
           fulfillByIso={fulfillByIso}
+          fulfillUrl={fulfillUrl}
           orderNumber={order.orderNumber}
         />
       ),
@@ -227,6 +264,8 @@ async function trySlaBreach(
     }
   }
 
+  await logOrderEvent(order.id, "SLA_BREACH", "SYSTEM", null, {});
+
   console.log("sla-check: breach tier processed", { order_id: order.id });
   return true;
 }
@@ -253,10 +292,15 @@ async function trySlaWarn(
   }
 
   const fulfillByIso = order.fulfillBy.toISOString();
-
-  await logOrderEvent(order.id, "SLA_WARNING", "SYSTEM", null, {});
+  const fulfillUrl = canEmail
+    ? await resolveFulfillmentUrlForReminder(order.id, "sla_warning")
+    : null;
 
   if (canEmail) {
+    if (!fulfillUrl) {
+      return;
+    }
+
     await sendEmail({
       to: order.roaster.email,
       subject: `[Joe Perks] Reminder: ship order ${order.orderNumber}`,
@@ -266,11 +310,14 @@ async function trySlaWarn(
       react: (
         <SlaRoasterReminderEmail
           fulfillByIso={fulfillByIso}
+          fulfillUrl={fulfillUrl}
           orderNumber={order.orderNumber}
         />
       ),
     });
   }
+
+  await logOrderEvent(order.id, "SLA_WARNING", "SYSTEM", null, {});
 
   console.log("sla-check: warning tier processed", { order_id: order.id });
 }
@@ -302,6 +349,12 @@ export async function runSlaCheck(): Promise<void> {
 
   for (const order of orders) {
     const o = order as OrderWithRelations;
+    if (hasUnresolvedFulfillmentFlag(o)) {
+      console.log("sla-check: skipped unresolved flagged order", {
+        order_id: o.id,
+      });
+      continue;
+    }
     if (await trySlaAutoRefund(o, settings, now)) {
       continue;
     }

@@ -8,11 +8,11 @@ stateDiagram-v2
 
   PENDING     --> CANCELLED    : payment_intent.payment_failed webhook
 
-  CONFIRMED   --> SHIPPED      : Roaster enters tracking\nvia magic link or portal\nOrderEvent ORDER_SHIPPED
+  CONFIRMED   --> SHIPPED      : Roaster enters tracking\nvia magic link or portal\nOrderEvent SHIPPED
 
   CONFIRMED   --> REFUNDED     : Admin manual refund\nor SLA auto-refund at T+96h
 
-  SHIPPED     --> DELIVERED    : Admin confirms OR\ncarrier webhook (Phase 2)\nOrderEvent ORDER_DELIVERED
+  SHIPPED     --> DELIVERED    : Admin confirms OR\ncarrier webhook (Phase 2)\nOrderEvent DELIVERED
 
   SHIPPED     --> REFUNDED     : Admin decision\ne.g. lost in transit
 
@@ -21,6 +21,14 @@ stateDiagram-v2
   REFUNDED    --> [*]
   CANCELLED   --> [*]
   DELIVERED   --> [*]          : payout_eligible_at reached\npayout job transfers funds
+
+  note right of CONFIRMED
+    Order flagging is an operational overlay, not an OrderStatus.
+    ORDER_FLAGGED pauses fulfillment-side SLA automation while
+    flagResolvedAt is null, even after admin acknowledgement.
+    FLAG_RESOLVED records explicit admin resolution and ends
+    the unresolved-flag pause state.
+  end note
 
   %% ── Payout state machine (parallel) ─────────────────────────────
   state "Payout status" as PAYOUT {

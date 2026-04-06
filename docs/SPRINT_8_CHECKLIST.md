@@ -38,8 +38,8 @@ Verify the current baseline is still true before changing code:
 - [x] `apps/admin/app/orders/_actions/confirm-delivery.ts` already transitions `SHIPPED -> DELIVERED`
 - [x] `apps/web/lib/inngest/run-sla-check.tsx` already sends reminder/urgent/buyer-delay/admin SLA emails
 - [x] `apps/web/lib/inngest/run-payout-release.ts` already releases payouts from `DELIVERED + HELD`
-- [x] `apps/roaster/app/(authenticated)/dashboard/page.tsx` is still placeholder-level
-- [x] `apps/roaster/app/(authenticated)/payouts/page.tsx` is still placeholder-level
+- [x] `apps/roaster/app/(authenticated)/dashboard/page.tsx` now serves the real roaster order queue
+- [x] `apps/roaster/app/(authenticated)/payouts/page.tsx` now serves the real roaster finance view
 
 If any of the above changed, update the Sprint 8 docs before implementing the affected story.
 
@@ -62,11 +62,11 @@ If any of the above changed, update the Sprint 8 docs before implementing the af
 
 ### 0.2 Confirm cross-story UX rules
 
-- [ ] Token and portal fulfillment surfaces feel operationally consistent
-- [ ] All new interactive targets meet 44x44px minimum touch target guidance
-- [ ] New loading and animation states support `prefers-reduced-motion`
-- [ ] Async success/error states manage focus intentionally
-- [ ] Buyer PII never appears in new logs
+- [x] Token and portal fulfillment surfaces feel operationally consistent
+- [x] All new interactive targets meet 44x44px minimum touch target guidance
+- [x] New loading and animation states support `prefers-reduced-motion`
+- [x] Async success/error states manage focus intentionally
+- [x] Buyer PII never appears in new logs
 
 ### 0.3 Confirm document sync plan
 
@@ -88,28 +88,28 @@ If any of the above changed, update the Sprint 8 docs before implementing the af
 
 ### 1.1 Schema updates
 
-- [ ] Add `Order.fulfillmentNote`
-- [ ] Add `Order.flagReason`
-- [ ] Add `Order.flagNote`
-- [ ] Add `Order.resolutionOffered`
-- [ ] Add `Order.flaggedAt`
-- [ ] Add `Order.flagResolvedAt`
-- [ ] Add `Order.adminAcknowledgedFlag`
-- [ ] Regenerate Prisma client after migration
+- [x] Add `Order.fulfillmentNote`
+- [x] Add `Order.flagReason`
+- [x] Add `Order.flagNote`
+- [x] Add `Order.resolutionOffered`
+- [x] Add `Order.flaggedAt`
+- [x] Add `Order.flagResolvedAt`
+- [x] Add `Order.adminAcknowledgedFlag`
+- [x] Regenerate Prisma client after migration
 
 ### 1.2 Event updates
 
-- [ ] Add `ORDER_FLAGGED`
-- [ ] Add `FLAG_RESOLVED`
-- [ ] Add `MAGIC_LINK_RESENT`
-- [ ] Add `TRACKING_UPDATED`
-- [ ] Preserve live event names such as `PAYMENT_SUCCEEDED`, `FULFILLMENT_VIEWED`, `SHIPPED`, `DELIVERED`
+- [x] Add `ORDER_FLAGGED`
+- [x] Add `FLAG_RESOLVED`
+- [x] Add `MAGIC_LINK_RESENT`
+- [x] Add `TRACKING_UPDATED`
+- [x] Preserve live event names such as `PAYMENT_SUCCEEDED`, `FULFILLMENT_VIEWED`, `SHIPPED`, `DELIVERED`
 
 ### 1.3 Acceptance checks
 
-- [ ] Migration applies cleanly
-- [ ] Existing fulfillment code still compiles after schema expansion
-- [ ] Schema docs/diagrams are updated
+- [x] Migration applies cleanly
+- [x] Existing fulfillment code still compiles after schema expansion
+- [x] Schema docs/diagrams are updated
 
 **Reference:** [`docs/sprint-8/stories/US-10-00-fulfillment-schema-event-alignment.md`](sprint-8/stories/US-10-00-fulfillment-schema-event-alignment.md)
 
@@ -121,22 +121,22 @@ If any of the above changed, update the Sprint 8 docs before implementing the af
 
 ### 2.1 Token-page UX upgrade
 
-- [ ] Add full shipping snapshot display
-- [ ] Improve token-page layout and hierarchy
-- [ ] Add optional `fulfillmentNote`
-- [ ] Improve expired/used/already-shipped states
+- [x] Add full shipping snapshot display
+- [x] Improve token-page layout and hierarchy
+- [x] Add optional `fulfillmentNote`
+- [x] Improve expired/used/already-shipped states
 
 ### 2.2 Mutation preservation
 
-- [ ] Tracking submission stays transactional and idempotent
-- [ ] `fulfillmentNote` persists on ship
-- [ ] Buyer shipped email includes the note when present
+- [x] Tracking submission stays transactional and idempotent
+- [x] `fulfillmentNote` persists on ship
+- [x] Buyer shipped email includes the note when present
 
 ### 2.3 Expired-token recovery
 
-- [ ] Recovery is driven by expired-token context
-- [ ] Regeneration only works when order is still `CONFIRMED`
-- [ ] No portal session is minted from this path
+- [x] Recovery is driven by expired-token context
+- [x] Regeneration only works when order is still `CONFIRMED`
+- [x] No portal session is minted from this path
 
 **Reference:** [`docs/sprint-8/stories/US-10-01-magic-link-fulfillment-page-enhancement.md`](sprint-8/stories/US-10-01-magic-link-fulfillment-page-enhancement.md)
 
@@ -148,24 +148,24 @@ If any of the above changed, update the Sprint 8 docs before implementing the af
 
 ### 3.1 Roaster issue reporting
 
-- [ ] Add "Can't fulfill this order" entry point
-- [ ] Require reason
-- [ ] Require resolution offer
-- [ ] Allow optional note
-- [ ] Persist issue fields on `Order`
-- [ ] Write `ORDER_FLAGGED`
+- [x] Add "Can't fulfill this order" entry point
+- [x] Require reason
+- [x] Require resolution offer
+- [x] Allow optional note
+- [x] Persist issue fields on `Order`
+- [x] Write `ORDER_FLAGGED`
 
 ### 3.2 Admin visibility and resolution
 
-- [ ] Flagged orders surface clearly in admin list/detail
-- [ ] Admin can acknowledge a flag
-- [ ] Admin can explicitly resolve a flag
-- [ ] Resolution writes `FLAG_RESOLVED`
+- [x] Flagged orders surface clearly in admin list/detail
+- [x] Admin can acknowledge a flag
+- [x] Admin can explicitly resolve a flag
+- [x] Resolution writes `FLAG_RESOLVED`
 
 ### 3.3 SLA handling
 
-- [ ] Unresolved flagged orders are skipped by reminder/urgent/buyer-delay/auto-refund automation
-- [ ] Admin acknowledgement alone does not resume automation
+- [x] Unresolved flagged orders are skipped by reminder/urgent/buyer-delay/auto-refund automation
+- [x] Admin acknowledgement alone does not resume automation
 
 **Reference:** [`docs/sprint-8/stories/US-10-02-structured-cant-fulfill-flow.md`](sprint-8/stories/US-10-02-structured-cant-fulfill-flow.md)
 
@@ -177,20 +177,20 @@ If any of the above changed, update the Sprint 8 docs before implementing the af
 
 ### 4.1 Reminder / urgent email behavior
 
-- [ ] Reminder and urgent emails include a valid fulfillment CTA
-- [ ] Active token is reused while still valid
-- [ ] Expired active token regenerates in place only when eligible
-- [ ] Regeneration writes `MAGIC_LINK_RESENT`
+- [x] Reminder and urgent emails include a valid fulfillment CTA
+- [x] Active token is reused while still valid
+- [x] Expired active token regenerates in place only when eligible
+- [x] Regeneration writes `MAGIC_LINK_RESENT`
 
 ### 4.2 Dedupe / template strategy
 
-- [ ] Template names remain distinct enough for `EmailLog` dedupe
-- [ ] Global dedupe model is unchanged
-- [ ] No duplicate live `MagicLink` rows are created
+- [x] Template names remain distinct enough for `EmailLog` dedupe
+- [x] Global dedupe model is unchanged
+- [x] No duplicate live `MagicLink` rows are created
 
 ### 4.3 Flag-awareness
 
-- [ ] Reminder/urgent sends do not run for unresolved flagged orders
+- [x] Reminder/urgent sends do not run for unresolved flagged orders
 
 **Reference:** [`docs/sprint-8/stories/US-10-03-fulfillment-reminders-escalation-refresh.md`](sprint-8/stories/US-10-03-fulfillment-reminders-escalation-refresh.md)
 
@@ -202,22 +202,22 @@ If any of the above changed, update the Sprint 8 docs before implementing the af
 
 ### 5.1 Dashboard route
 
-- [ ] Replace placeholder dashboard with real order-management view
-- [ ] Require roaster auth through existing portal flow
-- [ ] Scope reads by `requireRoasterId()`
+- [x] Replace placeholder dashboard with real order-management view
+- [x] Require roaster auth through existing portal flow
+- [x] Scope reads by `requireRoasterId()`
 
 ### 5.2 Queue views
 
-- [ ] `To ship` for `CONFIRMED`
-- [ ] `Shipped` for `SHIPPED`
-- [ ] `Delivered` for `DELIVERED`
-- [ ] `All` for full roaster history
+- [x] `To ship` for `CONFIRMED`
+- [x] `Shipped` for `SHIPPED`
+- [x] `Delivered` for `DELIVERED`
+- [x] `All` for full roaster history
 
 ### 5.3 State visibility
 
-- [ ] `To ship` orders sort by `fulfillBy`
-- [ ] Unresolved flagged orders show clear action-needed state
-- [ ] Rows link into portal order detail
+- [x] `To ship` orders sort by `fulfillBy`
+- [x] Unresolved flagged orders show clear action-needed state
+- [x] Rows link into portal order detail
 
 **Reference:** [`docs/sprint-8/stories/US-10-04-authenticated-roaster-order-queue.md`](sprint-8/stories/US-10-04-authenticated-roaster-order-queue.md)
 
@@ -229,19 +229,19 @@ If any of the above changed, update the Sprint 8 docs before implementing the af
 
 ### 6.1 Portal detail route
 
-- [ ] Create authenticated tenant-safe order-detail route
-- [ ] Show order snapshots, payout snapshot, shipping snapshot, and event history
+- [x] Create authenticated tenant-safe order-detail route
+- [x] Show order snapshots, payout snapshot, shipping snapshot, and event history
 
 ### 6.2 In-portal fulfillment
 
-- [ ] `CONFIRMED` orders can be fulfilled in portal
-- [ ] Behavior matches the token flow at the state/mutation layer
+- [x] `CONFIRMED` orders can be fulfilled in portal
+- [x] Behavior matches the token flow at the state/mutation layer
 
 ### 6.3 Tracking correction
 
-- [ ] Portal-only tracking correction is supported for `SHIPPED` orders
-- [ ] Correction writes `TRACKING_UPDATED`
-- [ ] Buyer tracking-update email is sent
+- [x] Portal-only tracking correction is supported for `SHIPPED` orders
+- [x] Correction writes `TRACKING_UPDATED`
+- [x] Buyer tracking-update email is sent
 
 **Reference:** [`docs/sprint-8/stories/US-10-05-portal-order-detail-fulfillment-tracking-correction.md`](sprint-8/stories/US-10-05-portal-order-detail-fulfillment-tracking-correction.md)
 
@@ -253,21 +253,21 @@ If any of the above changed, update the Sprint 8 docs before implementing the af
 
 ### 7.1 Payouts route
 
-- [ ] Replace placeholder payouts page with real read model
-- [ ] Scope reads by `requireRoasterId()`
+- [x] Replace placeholder payouts page with real read model
+- [x] Scope reads by `requireRoasterId()`
 
 ### 7.2 Payout vocabulary
 
-- [ ] `HELD + future eligible date` renders as in hold period
-- [ ] `HELD + past eligible date` renders as awaiting release
-- [ ] `TRANSFERRED` renders as paid
-- [ ] `FAILED` renders as transfer failed
+- [x] `HELD + future eligible date` renders as in hold period
+- [x] `HELD + past eligible date` renders as awaiting release
+- [x] `TRANSFERRED` renders as paid
+- [x] `FAILED` renders as transfer failed
 
 ### 7.3 Finance visibility
 
-- [ ] Show payout history
-- [ ] Show unresolved `RoasterDebt`
-- [ ] Show disputes tied to the roaster's orders
+- [x] Show payout history
+- [x] Show unresolved `RoasterDebt`
+- [x] Show disputes tied to the roaster's orders
 
 **Reference:** [`docs/sprint-8/stories/US-10-06-roaster-payouts-debts-disputes-view.md`](sprint-8/stories/US-10-06-roaster-payouts-debts-disputes-view.md)
 
@@ -277,13 +277,13 @@ If any of the above changed, update the Sprint 8 docs before implementing the af
 
 Use this before marking any Sprint 8 story `Done`:
 
-- [ ] One story only was implemented in the session
-- [ ] Relevant tests/checks were run
-- [ ] Any introduced issues were fixed
-- [ ] Token behavior still respects the one-live-link rule
-- [ ] No new logs expose buyer PII
-- [ ] Portal mutations use server actions and tenant scoping
-- [ ] Story docs and sprint trackers were updated alongside implementation
+- [x] One story only was implemented in the session
+- [x] Relevant tests/checks were run
+- [x] Any introduced issues were fixed
+- [x] Token behavior still respects the one-live-link rule
+- [x] No new logs expose buyer PII
+- [x] Portal mutations use server actions and tenant scoping
+- [x] Story docs and sprint trackers were updated alongside implementation
 
 ---
 
@@ -302,11 +302,11 @@ These should remain unchecked in Sprint 8 unless scope is explicitly changed:
 
 ## Document sync checklist
 
-- [ ] Sprint 8 README updated
-- [ ] Sprint 8 story docs updated
-- [ ] Sprint 8 checklist updated
-- [ ] Sprint 8 progress tracker updated
-- [ ] Relevant mermaid diagrams updated if implementation changed architecture
+- [x] Sprint 8 README updated
+- [x] Sprint 8 story docs updated
+- [x] Sprint 8 checklist updated
+- [x] Sprint 8 progress tracker updated
+- [x] Relevant mermaid diagrams updated if implementation changed architecture
 - [ ] `AGENTS.md` / `CONVENTIONS.md` updated if implementation changed canonical guidance
 
 ---
@@ -316,3 +316,9 @@ These should remain unchecked in Sprint 8 unless scope is explicitly changed:
 | Version | Date | Notes |
 |---------|------|-------|
 | 0.1 | 2026-04-05 | Initial Sprint 8 checklist created from EP-10 v4, the pre-flight decisions note, and the Sprint 7 sprint-doc structure. |
+| 0.2 | 2026-04-06 | Updated after US-10-02: issue-reporting, admin resolution, and flagged-order SLA pause checks are now marked complete. |
+| 0.3 | 2026-04-06 | Updated after US-10-03: reminder/urgent CTA links, active-token reuse, in-place regeneration, and resend-event tracking are now marked complete. |
+| 0.4 | 2026-04-06 | Updated after US-10-04: the authenticated dashboard now shows roaster-scoped queue filters, action-needed flagged orders, and linked order handoff pages. |
+| 0.5 | 2026-04-06 | Updated after US-10-05: the authenticated order route now supports portal fulfillment, tracking correction, event history, and buyer tracking-update emails. |
+| 0.6 | 2026-04-06 | Updated after US-10-06: the payouts route now shows roaster-scoped payout history, derived payout labels, unresolved debt, dispute visibility, and focused payout-state verification. |
+| 0.7 | 2026-04-06 | Follow-up audit: disputed held-order payout labels now honor `payoutEligibleAt`, async Sprint 8 status messages move focus intentionally, reduced-motion coverage was verified on transitioned controls, and the Sprint 8 PII log audit is now checked off. |

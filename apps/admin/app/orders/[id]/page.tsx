@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { ConfirmDeliveryButton } from "../_components/confirm-delivery-button";
+import { FlagActionButtons } from "../_components/flag-action-buttons";
 import { OrderDetail } from "../_components/order-detail";
 import { EventTimeline } from "./_components/event-timeline";
 
@@ -60,6 +61,12 @@ export default async function AdminOrderDetailPage({ params }: Props) {
           >
             Contact Roaster
           </Link>
+          {order.flaggedAt && !order.flagResolvedAt ? (
+            <FlagActionButtons
+              adminAcknowledgedFlag={order.adminAcknowledgedFlag}
+              orderId={order.id}
+            />
+          ) : null}
           {order.status === "SHIPPED" ? (
             <ConfirmDeliveryButton orderId={order.id} />
           ) : null}

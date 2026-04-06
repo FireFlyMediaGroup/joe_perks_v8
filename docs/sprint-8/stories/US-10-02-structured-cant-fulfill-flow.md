@@ -2,7 +2,7 @@
 
 **Story ID:** US-10-02 | **Epic:** EP-10 (Roaster Fulfillment)
 **Points:** 8 | **Priority:** High
-**Status:** `Todo`
+**Status:** `Done`
 **Owner:** Full-stack
 **Dependencies:** US-10-00, US-10-01, admin orders baseline
 **Depends on this:** US-10-05
@@ -33,11 +33,11 @@ Normalized decisions this story implements:
 
 ## Current repo evidence
 
-- The current token page has no "Can't fulfill" path.
-- The live schema currently has no issue-reporting fields on `Order`.
-- The live event model currently has no `ORDER_FLAGGED` or `FLAG_RESOLVED`.
-- `apps/admin/app/orders/` already exists and already renders order status, details, and event history.
-- `apps/web/lib/inngest/run-sla-check.tsx` currently processes unshipped `CONFIRMED` orders without any flag-aware branching.
+- `apps/roaster/app/fulfill/[token]/page.tsx` now exposes a structured issue-reporting path alongside the shipping flow and renders a flagged confirmation state after submission.
+- `apps/roaster/app/fulfill/[token]/_actions/report-cant-fulfill.ts` stores the issue fields on `Order`, resets `adminAcknowledgedFlag`, writes `ORDER_FLAGGED`, and sends an admin alert when configured.
+- `apps/admin/app/orders/` now surfaces unresolved flagged orders in the list and detail views, and the detail page provides explicit acknowledge / resolve controls.
+- `apps/admin/app/orders/_actions/resolve-flag.ts` writes `FLAG_RESOLVED`.
+- `apps/web/lib/inngest/run-sla-check.tsx` now skips unresolved flagged orders so reminder, buyer-delay, and auto-refund handling stay paused until resolution.
 
 ---
 
@@ -91,30 +91,30 @@ Normalized decisions this story implements:
 
 ## Acceptance criteria
 
-- [ ] The token page offers a "Can't fulfill this order" path
-- [ ] The roaster must choose a reason
-- [ ] The roaster must choose a resolution offer
-- [ ] The roaster may include an optional note
-- [ ] Submitting the issue:
+- [x] The token page offers a "Can't fulfill this order" path
+- [x] The roaster must choose a reason
+- [x] The roaster must choose a resolution offer
+- [x] The roaster may include an optional note
+- [x] Submitting the issue:
   - stores the issue fields on `Order`
   - sets `flaggedAt`
   - resets `adminAcknowledgedFlag` to `false`
   - writes `ORDER_FLAGGED`
-- [ ] Admin receives an alert email
-- [ ] The roaster receives a confirmation state or confirmation email so they know the report was accepted
-- [ ] Admin order surfaces clearly show unresolved flagged orders
-- [ ] Admin can acknowledge a flag without resolving it
-- [ ] Admin can explicitly resolve the flag, which writes `FLAG_RESOLVED`
-- [ ] While unresolved, automated roaster reminder/urgent emails, buyer delay emails, and auto-refund handling do not continue against the order
+- [x] Admin receives an alert email
+- [x] The roaster receives a confirmation state or confirmation email so they know the report was accepted
+- [x] Admin order surfaces clearly show unresolved flagged orders
+- [x] Admin can acknowledge a flag without resolving it
+- [x] Admin can explicitly resolve the flag, which writes `FLAG_RESOLVED`
+- [x] While unresolved, automated roaster reminder/urgent emails, buyer delay emails, and auto-refund handling do not continue against the order
 
 ---
 
 ## UX / copy requirements
 
-- [ ] The issue-reporting flow uses supportive, non-punitive copy
-- [ ] The roaster is told clearly that Joe Perks has been notified
-- [ ] The post-submit confirmation makes it clear that no further action is required until follow-up
-- [ ] The flow remains usable on mobile
+- [x] The issue-reporting flow uses supportive, non-punitive copy
+- [x] The roaster is told clearly that Joe Perks has been notified
+- [x] The post-submit confirmation makes it clear that no further action is required until follow-up
+- [x] The flow remains usable on mobile
 
 ---
 
@@ -130,26 +130,27 @@ Normalized decisions this story implements:
 
 ## Required doc updates
 
-- [ ] target story doc
-- [ ] `docs/SPRINT_8_CHECKLIST.md`
-- [ ] `docs/SPRINT_8_PROGRESS.md`
+- [x] target story doc
+- [x] `docs/SPRINT_8_CHECKLIST.md`
+- [x] `docs/SPRINT_8_PROGRESS.md`
 - [ ] `docs/sprint-8/roaster-fulfillment-epic-v4.md` if issue-field names or resolution semantics change
-- [ ] `docs/04-order-lifecycle.mermaid` if issue-reporting changes the lifecycle
-- [ ] `docs/08-order-state-machine.mermaid` if flagged/resolved state presentation changes
+- [x] `docs/04-order-lifecycle.mermaid` if issue-reporting changes the lifecycle
+- [x] `docs/08-order-state-machine.mermaid` if flagged/resolved state presentation changes
 
 ---
 
 ## QA and verification
 
-- [ ] Reporting an issue writes the order fields and `ORDER_FLAGGED`
-- [ ] Flagged orders surface in admin
-- [ ] The SLA job skips unresolved flagged orders
-- [ ] Resolution writes `FLAG_RESOLVED`
-- [ ] Admin acknowledgement alone does not resume automated handling
-- [ ] At minimum run:
+- [x] Reporting an issue writes the order fields and `ORDER_FLAGGED`
+- [x] Flagged orders surface in admin
+- [x] The SLA job skips unresolved flagged orders
+- [x] Resolution writes `FLAG_RESOLVED`
+- [x] Admin acknowledgement alone does not resume automated handling
+- [x] At minimum run:
   - targeted tests for flag submission / resolution / SLA filtering if added
   - `pnpm --filter roaster typecheck`
   - `pnpm --filter admin typecheck`
+  - `pnpm --filter web typecheck`
   - any focused checks needed for `apps/web/lib/inngest/run-sla-check.tsx`
 
 ---
@@ -167,3 +168,4 @@ Normalized decisions this story implements:
 |---------|------|-------|
 | 0.1 | 2026-04-05 | Initial EP-10 issue-reporting story created from the final fulfillment planning baseline. |
 | 0.2 | 2026-04-05 | Tightened for execution with concrete points, clearer paused-SLA criteria, and minimum verification expectations. |
+| 1.0 | 2026-04-06 | Implemented: added structured token-page issue reporting, admin acknowledge/resolve controls, admin alert email, and unresolved-flag SLA pause behavior. |

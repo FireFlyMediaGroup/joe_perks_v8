@@ -2,7 +2,7 @@
 
 **Story ID:** US-10-01 | **Epic:** EP-10 (Roaster Fulfillment)
 **Points:** 8 | **Priority:** High
-**Status:** `Todo`
+**Status:** `Done`
 **Owner:** Full-stack
 **Dependencies:** US-10-00, US-05-02
 **Depends on this:** US-10-02, US-10-03, US-10-05
@@ -105,34 +105,34 @@ Normalized decisions this story implements:
 
 ## Acceptance criteria
 
-- [ ] `/fulfill/[token]` remains accessible without authentication
-- [ ] A valid token shows:
+- [x] `/fulfill/[token]` remains accessible without authentication
+- [x] A valid token shows:
   - order number
   - fundraiser context
   - item snapshots
   - frozen payout summary
   - full immutable shipping snapshot
   - tracking form
-- [ ] The page supports an optional `fulfillmentNote`
-- [ ] Tracking submission remains transactional and idempotent
-- [ ] On successful submission, the order stores `fulfillmentNote` when present
-- [ ] The buyer shipped email includes the note when present
-- [ ] Expired-token recovery is driven by the expired token, not a free-form order lookup
-- [ ] Expired-token regeneration reuses the existing `MagicLink` row instead of creating a second active fulfillment-link row
-- [ ] If the order has already shipped, the page shows a useful read-only state instead of only a generic status message
-- [ ] No session cookie or portal login is created from this flow
-- [ ] No new logs expose buyer PII
+- [x] The page supports an optional `fulfillmentNote`
+- [x] Tracking submission remains transactional and idempotent
+- [x] On successful submission, the order stores `fulfillmentNote` when present
+- [x] The buyer shipped email includes the note when present
+- [x] Expired-token recovery is driven by the expired token, not a free-form order lookup
+- [x] Expired-token regeneration reuses the existing `MagicLink` row instead of creating a second active fulfillment-link row
+- [x] If the order has already shipped, the page shows a useful read-only state instead of only a generic status message
+- [x] No session cookie or portal login is created from this flow
+- [x] No new logs expose buyer PII
 
 ---
 
 ## UX / accessibility / mobile requirements
 
-- [ ] Keep one clear primary action
-- [ ] Maintain minimum 44x44px touch targets
-- [ ] Preserve a fast, server-rendered first load
-- [ ] Avoid client-side data fetching for the initial page state
-- [ ] Keep error and expired states calm and explicit
-- [ ] Make the page usable on mobile without horizontal overflow
+- [x] Keep one clear primary action
+- [x] Maintain minimum 44x44px touch targets
+- [x] Preserve a fast, server-rendered first load
+- [x] Avoid client-side data fetching for the initial page state
+- [x] Keep error and expired states calm and explicit
+- [x] Make the page usable on mobile without horizontal overflow
 
 ---
 
@@ -148,24 +148,24 @@ Normalized decisions this story implements:
 
 ## Required doc updates
 
-- [ ] target story doc
-- [ ] `docs/SPRINT_8_CHECKLIST.md`
-- [ ] `docs/SPRINT_8_PROGRESS.md`
-- [ ] `docs/sprint-8/README.md` if sprint-level scope or verification changes
-- [ ] `docs/04-order-lifecycle.mermaid` if the expired-link recovery path changes the lifecycle diagram
+- [x] target story doc
+- [x] `docs/SPRINT_8_CHECKLIST.md`
+- [x] `docs/SPRINT_8_PROGRESS.md`
+- [x] `docs/sprint-8/README.md` if sprint-level scope or verification changes
+- [x] `docs/04-order-lifecycle.mermaid` if the expired-link recovery path changes the lifecycle diagram
 - [ ] `docs/01-project-structure.mermaid` if route-local structure changes materially
 
 ---
 
 ## QA and verification
 
-- [ ] Valid token renders shipping snapshot correctly
-- [ ] Expired token can regenerate only when the order is still `CONFIRMED`
-- [ ] Used token does not reopen the ship flow
-- [ ] Shipping the order still consumes the token and emits `SHIPPED`
-- [ ] `fulfillmentNote` persists and appears in the buyer email
-- [ ] Mobile page remains usable without layout breakage
-- [ ] At minimum run:
+- [x] Valid token renders shipping snapshot correctly
+- [x] Expired token can regenerate only when the order is still `CONFIRMED`
+- [x] Used token does not reopen the ship flow
+- [x] Shipping the order still consumes the token and emits `SHIPPED`
+- [x] `fulfillmentNote` persists and appears in the buyer email
+- [x] Mobile page remains usable without layout breakage
+- [x] At minimum run:
   - targeted tests for token validation / tracking action if added
   - `pnpm --filter roaster typecheck`
   - relevant `web` / `roaster` build or focused verification needed by changed files
@@ -186,3 +186,4 @@ Normalized decisions this story implements:
 |---------|------|-------|
 | 0.1 | 2026-04-05 | Initial EP-10 token-page enhancement story created from the final fulfillment planning baseline. |
 | 0.2 | 2026-04-05 | Tightened for execution with concrete points, sharper token criteria, and minimum verification expectations. |
+| 1.0 | 2026-04-06 | Implemented: upgraded the public token page UI, added immutable shipping snapshot display, persisted `fulfillmentNote`, added expired-token recovery on the existing magic-link row, and updated shipped-email note copy. |

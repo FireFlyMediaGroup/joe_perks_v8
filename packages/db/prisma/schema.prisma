@@ -119,6 +119,10 @@ enum OrderEventType {
   FULFILLMENT_VIEWED
   SHIPPED
   DELIVERED
+  ORDER_FLAGGED
+  FLAG_RESOLVED
+  MAGIC_LINK_RESENT
+  TRACKING_UPDATED
   PAYOUT_TRANSFERRED
   PAYOUT_FAILED
   REFUND_INITIATED
@@ -476,20 +480,27 @@ model Order {
   stripeOrgTransfer String?
   transferGroup     String
 
-  trackingNumber   String?
-  carrier          String?
-  shippedAt        DateTime?
-  deliveredAt      DateTime?
-  buyerEmail       String
-  shipToName       String
-  shipToAddress1   String
-  shipToAddress2   String?
-  shipToCity       String
-  shipToState      String
-  shipToPostalCode String
-  shipToCountry    String
-  buyerIp          String
-  isCollab         Boolean   @default(false)
+  trackingNumber        String?
+  carrier               String?
+  shippedAt             DateTime?
+  deliveredAt           DateTime?
+  fulfillmentNote       String?
+  flagReason            String?
+  flagNote              String?
+  resolutionOffered     String?
+  flaggedAt             DateTime?
+  flagResolvedAt        DateTime?
+  adminAcknowledgedFlag Boolean   @default(false)
+  buyerEmail            String
+  shipToName            String
+  shipToAddress1        String
+  shipToAddress2        String?
+  shipToCity            String
+  shipToState           String
+  shipToPostalCode      String
+  shipToCountry         String
+  buyerIp               String
+  isCollab              Boolean   @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

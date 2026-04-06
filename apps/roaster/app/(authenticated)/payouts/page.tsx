@@ -1,8 +1,19 @@
-export default function PayoutsPage() {
-  return (
-    <div className="p-6">
-      <h1 className="text-2xl font-semibold">Payouts</h1>
-      <p className="mt-2 text-muted-foreground">Payout ledger + debt scaffold.</p>
-    </div>
-  );
+import { NoRoasterProfile } from "../products/_components/no-roaster-profile";
+import { requireRoasterId } from "../products/_lib/require-roaster";
+import { PayoutsDashboard } from "./_components/payouts-dashboard";
+import { getRoasterPayoutsPageData } from "./_lib/queries";
+
+export default async function PayoutsPage() {
+  const session = await requireRoasterId();
+  if (!session.ok) {
+    if (session.error === "unauthorized") {
+      return null;
+    }
+
+    return <NoRoasterProfile title="Payouts" />;
+  }
+
+  const data = await getRoasterPayoutsPageData(session.roasterId);
+
+  return <PayoutsDashboard data={data} />;
 }

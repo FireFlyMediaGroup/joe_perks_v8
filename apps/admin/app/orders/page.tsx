@@ -162,6 +162,9 @@ export default async function AdminOrdersPage({
     database.order.findMany({
       orderBy: { createdAt: "desc" },
       select: {
+        adminAcknowledgedFlag: true,
+        flaggedAt: true,
+        flagResolvedAt: true,
         fulfillBy: true,
         status: true,
       },
@@ -188,12 +191,15 @@ export default async function AdminOrdersPage({
         },
       },
       createdAt: true,
+      adminAcknowledgedFlag: true,
       dispute: {
         select: {
           outcome: true,
           respondBy: true,
         },
       },
+      flaggedAt: true,
+      flagResolvedAt: true,
       fulfillBy: true,
       id: true,
       orderNumber: true,
@@ -214,9 +220,11 @@ export default async function AdminOrdersPage({
   });
 
   const orders = rows.map((o) => ({
+    adminAcknowledgedFlag: o.adminAcknowledgedFlag,
     buyerName: o.buyer?.name ?? null,
     campaignName: o.campaign.name,
     disputeRespondBy: o.dispute?.respondBy ?? null,
+    hasUnresolvedFlag: Boolean(o.flaggedAt && !o.flagResolvedAt),
     hasOpenDispute: o.dispute != null && o.dispute.outcome == null,
     id: o.id,
     orderDate: o.createdAt,
@@ -226,6 +234,9 @@ export default async function AdminOrdersPage({
     roasterLabel: o.roaster.application.businessName ?? o.roaster.email,
     shippedAt: o.shippedAt,
     sla: getOrderSlaState({
+      adminAcknowledgedFlag: o.adminAcknowledgedFlag,
+      flaggedAt: o.flaggedAt,
+      flagResolvedAt: o.flagResolvedAt,
       fulfillBy: o.fulfillBy,
       settings,
       status: o.status,
@@ -237,10 +248,16 @@ export default async function AdminOrdersPage({
   const slaSummary = summaryRows.reduce(
     (summary, row) => {
       const state = getOrderSlaState({
+        adminAcknowledgedFlag: row.adminAcknowledgedFlag,
+        flaggedAt: row.flaggedAt,
+        flagResolvedAt: row.flagResolvedAt,
         fulfillBy: row.fulfillBy,
         settings,
         status: row.status,
       });
+      if (row.flaggedAt && !row.flagResolvedAt) {
+        summary.flagged += 1;
+      }
       if (state.summaryBucket === "critical") {
         summary.critical += 1;
       }
@@ -253,7 +270,7 @@ export default async function AdminOrdersPage({
 
       return summary;
     },
-    { critical: 0, onTrack: 0, warning: 0 }
+    { critical: 0, flagged: 0, onTrack: 0, warning: 0 }
   );
 
   const pageStart = totalCount === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;

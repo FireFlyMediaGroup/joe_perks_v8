@@ -40,13 +40,14 @@ graph TD
   WEB --> WEB_SV["app/api/slugs/validate/\nslug uniqueness check"]:::api
 
   %% apps/roaster routes
-  ROASTER --> R_DASH["(authenticated)/dashboard/"]:::route
+  ROASTER --> R_DASH["(authenticated)/dashboard/\npage, _components, _lib\nroaster order queue"]:::route
+  ROASTER --> R_ORD["(authenticated)/orders/[id]/\npage, _actions, _components, _lib\nroaster order detail + tracking correction"]:::route
   ROASTER --> R_FULFILL["fulfill/[token]/\npage, _actions, _components, _lib"]:::route
   ROASTER --> R_ORG_REQ["org-requests/[token]/"]:::route
   ROASTER --> R_PROD["(authenticated)/products/\npage, new/, [id]/, [id]/edit/\n_actions, _components, _lib"]:::route
   ROASTER --> R_UT["app/api/uploadthing/\nUploadThing + Clerk"]:::api
   ROASTER --> R_SHIP["(authenticated)/settings/shipping/\npage + _actions, _components, _lib"]:::route
-  ROASTER --> R_PAY["(authenticated)/payouts/"]:::route
+  ROASTER --> R_PAY["(authenticated)/payouts/\npage, _components, _lib\nroaster payout / debt / dispute view"]:::route
   ROASTER --> R_ONBOARD["(authenticated)/onboarding/\npage + _components/"]:::route
 
   %% apps/org routes

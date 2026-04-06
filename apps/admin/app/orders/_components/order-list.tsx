@@ -4,9 +4,11 @@ import Link from "next/link";
 import type { OrderSlaState } from "../_lib/sla";
 
 interface Row {
+  adminAcknowledgedFlag: boolean;
   buyerName: string | null;
   campaignName: string;
   disputeRespondBy: Date | null;
+  hasUnresolvedFlag: boolean;
   hasOpenDispute: boolean;
   id: string;
   orderDate: Date;
@@ -93,6 +95,7 @@ export function OrderList({
   readonly pageStart: number;
   readonly slaSummary: {
     critical: number;
+    flagged: number;
     onTrack: number;
     warning: number;
   };
@@ -152,7 +155,14 @@ export function OrderList({
 
   return (
     <div className="space-y-6">
-      <section className="grid gap-4 md:grid-cols-3">
+      <section className="grid gap-4 md:grid-cols-4">
+        <div className="rounded-lg border border-amber-300 bg-amber-50 p-4 dark:border-amber-900 dark:bg-amber-950/20">
+          <p className="text-sm text-zinc-600 dark:text-zinc-300">Flagged</p>
+          <p className="mt-1 font-semibold text-2xl">{slaSummary.flagged}</p>
+          <p className="mt-1 text-xs text-zinc-500">
+            Orders paused for manual fulfillment follow-up.
+          </p>
+        </div>
         <div className="rounded-lg border border-rose-200 bg-rose-50 p-4 dark:border-rose-950 dark:bg-rose-950/20">
           <p className="text-sm text-zinc-600 dark:text-zinc-300">Critical</p>
           <p className="mt-1 font-semibold text-2xl">{slaSummary.critical}</p>
@@ -290,6 +300,13 @@ export function OrderList({
                     {o.hasOpenDispute ? (
                       <div className="mt-1 inline-flex rounded-full bg-rose-100 px-2 py-0.5 text-[11px] text-rose-800 dark:bg-rose-950/60 dark:text-rose-200">
                         Dispute open
+                      </div>
+                    ) : null}
+                    {o.hasUnresolvedFlag ? (
+                      <div className="mt-1 inline-flex rounded-full bg-amber-100 px-2 py-0.5 text-[11px] text-amber-900 dark:bg-amber-950/60 dark:text-amber-100">
+                        {o.adminAcknowledgedFlag
+                          ? "Flagged - acknowledged"
+                          : "Flagged - action needed"}
                       </div>
                     ) : null}
                     {o.disputeRespondBy ? (

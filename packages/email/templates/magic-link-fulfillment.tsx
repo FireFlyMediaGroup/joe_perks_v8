@@ -78,8 +78,8 @@ function MagicLinkFulfillmentEmail({
       <Hr className="my-6" />
 
       <Text className="m-0 text-sm text-zinc-500">
-        This secure link expires in 72 hours. If it expires, contact Joe Perks
-        support for a new link.
+        This secure link expires in 72 hours. If it has expired by the time you
+        open it, the fulfillment page will help you request a fresh link.
       </Text>
     </BaseEmailLayout>
   );

@@ -2,7 +2,7 @@
 
 **Story ID:** US-10-05 | **Epic:** EP-10 (Roaster Fulfillment)
 **Points:** 8 | **Priority:** High
-**Status:** `Todo`
+**Status:** `Done`
 **Owner:** Full-stack
 **Dependencies:** US-10-00, US-10-01, US-10-04
 **Depends on this:** none
@@ -34,10 +34,10 @@ Normalized decisions this story implements:
 
 ## Current repo evidence
 
-- There is no authenticated roaster order-detail route yet.
+- `apps/roaster/app/(authenticated)/orders/[id]/page.tsx` currently exists only as a minimal authenticated handoff page.
 - The token flow already proves the data model needed for order detail exists.
 - `apps/admin/app/orders/[id]/_components/event-timeline.tsx` already shows that order events can be rendered as history, but its labels are admin-facing and based on current event names.
-- The placeholder roaster dashboard route can link into a future `orders/[id]` route once created.
+- The authenticated roaster dashboard already links queue rows into `orders/[id]`.
 
 ---
 
@@ -78,35 +78,36 @@ Normalized decisions this story implements:
 
 | Action | File | Purpose |
 |--------|------|---------|
-| Create | `apps/roaster/app/(authenticated)/orders/[id]/page.tsx` | Authenticated order-detail route |
+| Modify | `apps/roaster/app/(authenticated)/orders/[id]/page.tsx` | Expand the handoff route into the authenticated order-detail surface |
 | Create | route-local `_components/` | Detail sections, history, fulfillment/tracking forms |
 | Create | route-local `_actions/` | Fulfill order and update tracking via server actions |
 | Create | route-local `_lib/queries.ts` and helpers | Tenant-safe order detail read model |
+| Create | `apps/roaster/app/_lib/order-shipping.ts` | Shared portal/token shipping and email helpers |
 | Modify | `packages/email/templates/order-shipped.tsx` or related shipped-email logic | Support tracking-update wording |
 
 ---
 
 ## Acceptance criteria
 
-- [ ] Signed-in roasters can access a tenant-safe order-detail route
-- [ ] A roaster cannot view another roaster's order
-- [ ] `CONFIRMED` orders can be fulfilled in-portal using the same core behavior as the token flow
-- [ ] `SHIPPED` orders render a read-only shipped state by default
-- [ ] The portal allows tracking correction for `SHIPPED` orders only
-- [ ] Tracking correction writes `TRACKING_UPDATED`
-- [ ] The buyer receives a tracking-update email after a correction
-- [ ] The page shows a user-facing event history using live event names mapped to friendly labels
-- [ ] The page does not recalculate payout math; it uses the frozen order fields
-- [ ] Authenticated portal mutations are implemented as server actions scoped through `requireRoasterId()`
+- [x] Signed-in roasters can access a tenant-safe order-detail route
+- [x] A roaster cannot view another roaster's order
+- [x] `CONFIRMED` orders can be fulfilled in-portal using the same core behavior as the token flow
+- [x] `SHIPPED` orders render a read-only shipped state by default
+- [x] The portal allows tracking correction for `SHIPPED` orders only
+- [x] Tracking correction writes `TRACKING_UPDATED`
+- [x] The buyer receives a tracking-update email after a correction
+- [x] The page shows a user-facing event history using live event names mapped to friendly labels
+- [x] The page does not recalculate payout math; it uses the frozen order fields
+- [x] Authenticated portal mutations are implemented as server actions scoped through `requireRoasterId()`
 
 ---
 
 ## UX / accessibility / mobile requirements
 
-- [ ] The portal detail should feel closely related to the token page, not like a separate product
-- [ ] The primary action on `CONFIRMED` orders is still fulfillment
-- [ ] Read-only shipped state is easy to scan
-- [ ] Tracking correction is clear but not overly prominent
+- [x] The portal detail should feel closely related to the token page, not like a separate product
+- [x] The primary action on `CONFIRMED` orders is still fulfillment
+- [x] Read-only shipped state is easy to scan
+- [x] Tracking correction is clear but not overly prominent
 
 ---
 
@@ -123,22 +124,22 @@ Normalized decisions this story implements:
 
 ## Required doc updates
 
-- [ ] target story doc
-- [ ] `docs/SPRINT_8_CHECKLIST.md`
-- [ ] `docs/SPRINT_8_PROGRESS.md`
-- [ ] `docs/01-project-structure.mermaid` for the new authenticated order-detail route
-- [ ] `docs/sprint-8/roaster-fulfillment-epic-v4.md` if event-label or tracking-update semantics change
+- [x] target story doc
+- [x] `docs/SPRINT_8_CHECKLIST.md`
+- [x] `docs/SPRINT_8_PROGRESS.md`
+- [x] `docs/01-project-structure.mermaid` for the authenticated order-detail route
+- [x] `docs/sprint-8/roaster-fulfillment-epic-v4.md` because the current repo alignment and portal detail semantics changed
 
 ---
 
 ## QA and verification
 
-- [ ] Roasters cannot view another roaster's order
-- [ ] In-portal fulfillment transitions `CONFIRMED -> SHIPPED`
-- [ ] Tracking correction updates the order and writes `TRACKING_UPDATED`
-- [ ] Buyer tracking-update email sends successfully when configured
-- [ ] Event history labels match the final epic mapping
-- [ ] At minimum run:
+- [x] Roasters cannot view another roaster's order
+- [x] In-portal fulfillment transitions `CONFIRMED -> SHIPPED`
+- [x] Tracking correction updates the order and writes `TRACKING_UPDATED`
+- [x] Buyer tracking-update email sends successfully when configured
+- [x] Event history labels match the final epic mapping
+- [x] At minimum run:
   - targeted tests for detail-query / tracking-update helpers if added
   - `pnpm --filter roaster typecheck`
   - focused verification for the authenticated route and server actions
@@ -158,3 +159,4 @@ Normalized decisions this story implements:
 |---------|------|-------|
 | 0.1 | 2026-04-05 | Initial EP-10 portal-detail and tracking-correction story created from the final fulfillment planning baseline. |
 | 0.2 | 2026-04-05 | Tightened for execution with concrete points, server-action scope rules, and minimum verification expectations. |
+| 0.3 | 2026-04-06 | Implemented the authenticated roaster order-detail route, in-portal fulfillment, portal-only tracking correction, roaster-facing event history, and buyer tracking-update email handling. |

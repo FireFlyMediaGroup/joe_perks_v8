@@ -2,7 +2,7 @@
 
 **Story ID:** US-10-04 | **Epic:** EP-10 (Roaster Fulfillment)
 **Points:** 5 | **Priority:** High
-**Status:** `Todo`
+**Status:** `Done`
 **Owner:** Full-stack
 **Dependencies:** US-10-00, roaster auth baseline
 **Depends on this:** US-10-05, US-10-06
@@ -91,25 +91,25 @@ Normalized decisions this story implements:
 
 ## Acceptance criteria
 
-- [ ] Authenticated roasters see a real order-management view at the dashboard route
-- [ ] Unauthenticated access still follows the existing Clerk portal auth flow
-- [ ] All order queries scope by `session.roasterId`
-- [ ] `To ship` shows `CONFIRMED` orders ordered by `fulfillBy`
-- [ ] `Shipped` shows `SHIPPED` orders
-- [ ] `Delivered` shows `DELIVERED` orders
-- [ ] `All` shows the roaster's full order history
-- [ ] Flagged unresolved orders are surfaced with a clear action-needed indicator
-- [ ] Each row links to a detailed portal order view
-- [ ] The route uses `requireRoasterId()` or a shared equivalent for server-side tenant scoping
+- [x] Authenticated roasters see a real order-management view at the dashboard route
+- [x] Unauthenticated access still follows the existing Clerk portal auth flow
+- [x] All order queries scope by `session.roasterId`
+- [x] `To ship` shows `CONFIRMED` orders ordered by `fulfillBy`
+- [x] `Shipped` shows `SHIPPED` orders
+- [x] `Delivered` shows `DELIVERED` orders
+- [x] `All` shows the roaster's full order history
+- [x] Flagged unresolved orders are surfaced with a clear action-needed indicator
+- [x] Each row links to a detailed portal order view
+- [x] The route uses `requireRoasterId()` or a shared equivalent for server-side tenant scoping
 
 ---
 
 ## UX / accessibility / mobile requirements
 
-- [ ] The default view answers “What needs to ship next?” quickly
-- [ ] The queue works well on mobile without requiring a desktop-only table
-- [ ] Empty states are explicit and calm
-- [ ] Status and SLA signals use text plus visual treatment, not color alone
+- [x] The default view answers “What needs to ship next?” quickly
+- [x] The queue works well on mobile without requiring a desktop-only table
+- [x] Empty states are explicit and calm
+- [x] Status and SLA signals use text plus visual treatment, not color alone
 
 ---
 
@@ -124,21 +124,21 @@ Normalized decisions this story implements:
 
 ## Required doc updates
 
-- [ ] target story doc
-- [ ] `docs/SPRINT_8_CHECKLIST.md`
-- [ ] `docs/SPRINT_8_PROGRESS.md`
-- [ ] `docs/sprint-8/README.md` if implementation alters sprint-level sequencing or route surface
-- [ ] `docs/01-project-structure.mermaid` when the dashboard surface becomes a real queue
+- [x] target story doc
+- [x] `docs/SPRINT_8_CHECKLIST.md`
+- [x] `docs/SPRINT_8_PROGRESS.md`
+- [x] `docs/sprint-8/README.md` because the route surface and next-story summary changed
+- [x] `docs/01-project-structure.mermaid` when the dashboard surface becomes a real queue
 
 ---
 
 ## QA and verification
 
-- [ ] Roasters cannot see another roaster's orders
-- [ ] `To ship` ordering is correct by `fulfillBy`
-- [ ] Flagged unresolved orders appear with the intended action-needed state
-- [ ] Mobile layout remains usable without horizontal overflow
-- [ ] At minimum run:
+- [x] Roasters cannot see another roaster's orders
+- [x] `To ship` ordering is correct by `fulfillBy`
+- [x] Flagged unresolved orders appear with the intended action-needed state
+- [x] Mobile layout remains usable without horizontal overflow
+- [x] At minimum run:
   - targeted tests for query helpers / status labeling if added
   - `pnpm --filter roaster typecheck`
   - focused route verification for the dashboard page
@@ -158,3 +158,4 @@ Normalized decisions this story implements:
 |---------|------|-------|
 | 0.1 | 2026-04-05 | Initial EP-10 authenticated queue story created from the final fulfillment planning baseline. |
 | 0.2 | 2026-04-05 | Tightened for execution with concrete points, tenant-scope criteria, and minimum verification expectations. |
+| 0.3 | 2026-04-06 | Implemented the authenticated roaster order queue with roaster-scoped filters, action-needed flag visibility, mobile-first queue cards, and linked order handoff routes. |

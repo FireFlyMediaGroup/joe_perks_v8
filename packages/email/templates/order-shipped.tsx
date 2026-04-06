@@ -5,6 +5,8 @@ import { BaseEmailLayout } from "./base-layout";
 interface OrderShippedEmailProps {
   readonly buyerName: string;
   readonly carrier: string;
+  readonly fulfillmentNote?: string;
+  readonly kind?: "initial" | "tracking-updated";
   readonly orderNumber: string;
   readonly orgName: string;
   readonly trackingNumber: string;
@@ -31,19 +33,32 @@ function trackingUrl(carrier: string, trackingNumber: string): string | null {
 function OrderShippedEmail({
   buyerName,
   carrier,
+  fulfillmentNote,
+  kind = "initial",
   orderNumber,
   orgName,
   trackingNumber,
 }: OrderShippedEmailProps) {
   const url = trackingUrl(carrier, trackingNumber);
+  const isTrackingUpdate = kind === "tracking-updated";
 
   return (
-    <BaseEmailLayout preview={`Your order ${orderNumber} has shipped`}>
+    <BaseEmailLayout
+      preview={
+        isTrackingUpdate
+          ? `Updated tracking details for order ${orderNumber}`
+          : `Your order ${orderNumber} has shipped`
+      }
+    >
       <Text className="mt-0 mb-4 font-semibold text-2xl text-zinc-950">
-        Your order has shipped!
+        {isTrackingUpdate
+          ? "Your tracking details were updated"
+          : "Your order has shipped!"}
       </Text>
       <Text className="m-0 text-zinc-600">
-        Hi {buyerName}, great news — order #{orderNumber} is on its way.
+        {isTrackingUpdate
+          ? `Hi ${buyerName}, the roaster updated the shipping details for order #${orderNumber}.`
+          : `Hi ${buyerName}, great news — order #${orderNumber} is on its way.`}
       </Text>
 
       <Hr className="my-4" />
@@ -61,6 +76,12 @@ function OrderShippedEmail({
           trackingNumber
         )}
       </Text>
+      {fulfillmentNote ? (
+        <Text className="my-1 text-sm text-zinc-700">
+          <span className="font-semibold text-zinc-900">Note from the roaster:</span>{" "}
+          {fulfillmentNote}
+        </Text>
+      ) : null}
 
       <Hr className="my-4" />
 
@@ -77,6 +98,8 @@ OrderShippedEmail.PreviewProps = {
   orderNumber: "JP-00042",
   trackingNumber: "9405511899562860000000",
   carrier: "USPS",
+  fulfillmentNote: "Packed this morning and dropped off right away.",
+  kind: "initial",
   orgName: "Lincoln Elementary PTA",
 };
 

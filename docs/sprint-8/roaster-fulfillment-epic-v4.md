@@ -59,8 +59,9 @@ These realities are already true in the repository and must shape EP-10:
 - Admin delivery confirmation already transitions `SHIPPED -> DELIVERED`.
 - The SLA job already exists at `apps/web/lib/inngest/run-sla-check.tsx`.
 - The payout release job already exists at `apps/web/lib/inngest/run-payout-release.ts`.
-- `apps/roaster/app/(authenticated)/dashboard/page.tsx` is still a placeholder.
-- `apps/roaster/app/(authenticated)/payouts/page.tsx` is still a placeholder.
+- `apps/roaster/app/(authenticated)/dashboard/page.tsx` now serves the authenticated roaster order queue.
+- `apps/roaster/app/(authenticated)/orders/[id]/page.tsx` now serves the authenticated roaster order-detail route.
+- `apps/roaster/app/(authenticated)/payouts/page.tsx` now serves the roaster finance view for payout history, unsettled debt, and disputes.
 - Live `OrderEventType` values in use include `PAYMENT_SUCCEEDED`, `FULFILLMENT_VIEWED`, `SHIPPED`, and `DELIVERED`.
 - Live payout execution works from `status = DELIVERED` and `payoutStatus = HELD`.
 

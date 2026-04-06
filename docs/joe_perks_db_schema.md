@@ -9,7 +9,7 @@ Database Schema Reference
 | **ORM** | **Prisma 7** (`prisma-client` generator) — canonical schema: **`packages/db/prisma/schema.prisma`** |
 | **Database** | Neon Postgres (serverless) — Postgres 15+ compatible |
 | **Location** | `packages/db/` in the Turborepo monorepo |
-| **Version** | **1.2** — Sprint 7 buyer-account foundation schema |
+| **Version** | **1.3** — Sprint 8 fulfillment schema/event alignment |
 | **Last updated** | April 2026 |
 
 > **Source of truth:** Do not treat this Markdown file as the live DDL. The deployed shape is whatever **`prisma migrate`** applied from `packages/db/prisma/migrations/`. This document summarizes that schema and points to the Prisma file for full detail.
@@ -48,11 +48,21 @@ Principles (unchanged from product design):
 | `Campaign` | Commerce | `orgPct` snapshot; `goalCents`, `totalRaised` |
 | `CampaignItem` | Commerce | Price snapshots; `@@unique([campaignId, variantId])` |
 | `Buyer` | Commerce | Upsert by `email`; `lastSignInAt` reserved for buyer-account auth tracking |
-| `Order` | Commerce | Frozen splits; `buyerIp` required string; immutable `buyerEmail` + shipping snapshot columns now persist historical contact data |
+| `Order` | Commerce | Frozen splits; `buyerIp` required string; immutable `buyerEmail` + shipping snapshot columns now persist historical contact data; fulfillment/flag workflow fields now support Sprint 8 issue reporting |
 | `OrderItem` | Commerce | `productName`, `variantDesc`, line pricing snapshots |
 | `OrderEvent` | Audit | Append-only |
 | `AdminActionLog` | Audit | High-risk admin actions: actor label, action type, target, note, payload, timestamp |
 | `DisputeRecord` | Finance | One per order (`orderId` unique) |
+
+Sprint 8 (`US-10-00`) added the live fulfillment-alignment fields below on `Order`:
+
+- `fulfillmentNote`
+- `flagReason`
+- `flagNote`
+- `resolutionOffered`
+- `flaggedAt`
+- `flagResolvedAt`
+- `adminAcknowledgedFlag`
 
 ### 1.2 Not in the current Prisma schema (planned / doc legacy)
 
@@ -86,6 +96,13 @@ There is **no** `CartItem` in the current schema; snapshot-at-add-to-cart applie
 ### 2.3 Append-only `OrderEvent`
 
 Same intent as before: `Order.status` is a convenience; events are the audit trail. Enum values are in `schema.prisma` (`OrderEventType`).
+
+Sprint 8 added these event types for the fulfillment enhancement flow:
+
+- `ORDER_FLAGGED`
+- `FLAG_RESOLVED`
+- `MAGIC_LINK_RESENT`
+- `TRACKING_UPDATED`
 
 ### 2.4 Soft deletes
 
@@ -167,3 +184,4 @@ Canonical implementation target: **`packages/stripe/splits.ts`** (`calculateSpli
 | 1.0 | Original long-form reference (Prisma 5–style embedded schema, extra models). |
 | 1.1 | Aligned with **`packages/db/prisma/schema.prisma`** as of Story 01; removed obsolete embedded DDL; documented gaps vs legacy doc. |
 | 1.2 | Sprint 7 foundation: added `Order` buyer/shipping snapshots, `Buyer.lastSignInAt`, and `BUYER_AUTH` support in the live Prisma schema. |
+| 1.3 | Sprint 8 US-10-00: added `Order` fulfillment/flag fields and fulfillment-alignment `OrderEventType` values. |

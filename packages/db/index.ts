@@ -13,6 +13,7 @@ export {
   upsertUserFromClerkWebhook,
 } from "./clerk-user-sync";
 export { database } from "./database";
+export { ensureActiveFulfillmentLink } from "./fulfillment-link";
 export { processLostRoasterFaultDispute } from "./dispute-loss";
 export * from "./generated/client";
 export { logOrderEvent } from "./log-event";

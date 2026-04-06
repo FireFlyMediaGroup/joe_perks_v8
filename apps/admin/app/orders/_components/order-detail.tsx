@@ -36,6 +36,69 @@ const statusLabels: Record<OrderStatus, string> = {
   SHIPPED: "Shipped",
 };
 
+function getFlagStatusLabel(order: OrderDetailModel): string {
+  if (order.flagResolvedAt) {
+    return "Resolved";
+  }
+
+  if (order.adminAcknowledgedFlag) {
+    return "Acknowledged";
+  }
+
+  return "Awaiting admin review";
+}
+
+function FulfillmentIssueCard({
+  order,
+}: {
+  readonly order: OrderDetailModel;
+}) {
+  return (
+    <div className="rounded-lg border border-amber-300 bg-amber-50/70 p-4 md:col-span-2 dark:border-amber-950 dark:bg-amber-950/20">
+      <h3 className="mb-2 font-semibold">Fulfillment issue</h3>
+      {order.flaggedAt ? (
+        <>
+          <div className="flex flex-wrap gap-2">
+            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-amber-900 text-xs dark:bg-amber-900/40 dark:text-amber-100">
+              {getFlagStatusLabel(order)}
+            </span>
+          </div>
+          <dl className="mt-3 grid gap-3 md:grid-cols-2">
+            <div>
+              <dt className="text-zinc-600">Reason</dt>
+              <dd className="font-medium">{order.flagReason ?? "—"}</dd>
+            </div>
+            <div>
+              <dt className="text-zinc-600">Requested support</dt>
+              <dd className="font-medium">{order.resolutionOffered ?? "—"}</dd>
+            </div>
+            <div>
+              <dt className="text-zinc-600">Reported at</dt>
+              <dd className="font-medium">{order.flaggedAt.toLocaleString()}</dd>
+            </div>
+            <div>
+              <dt className="text-zinc-600">Resolved at</dt>
+              <dd className="font-medium">
+                {order.flagResolvedAt ? order.flagResolvedAt.toLocaleString() : "—"}
+              </dd>
+            </div>
+            <div className="md:col-span-2">
+              <dt className="text-zinc-600">Roaster note</dt>
+              <dd className="whitespace-pre-wrap font-medium">
+                {order.flagNote ?? "—"}
+              </dd>
+            </div>
+          </dl>
+        </>
+      ) : (
+        <p className="text-sm text-zinc-600">
+          No fulfillment issue is recorded for this order.
+        </p>
+      )}
+    </div>
+  );
+}
+
 export function OrderDetail({ order }: { readonly order: OrderDetailModel }) {
   const orgName =
     order.campaign.org.application.orgName ?? order.campaign.org.slug;
@@ -63,6 +126,7 @@ export function OrderDetail({ order }: { readonly order: OrderDetailModel }) {
       </header>
 
       <section className="grid gap-2 text-sm md:grid-cols-2">
+        <FulfillmentIssueCard order={order} />
         <div className="rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
           <h3 className="mb-2 font-semibold">Ops context</h3>
           <div className="flex justify-between gap-4">

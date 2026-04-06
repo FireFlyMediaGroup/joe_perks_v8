@@ -79,6 +79,13 @@ export type OrderMinAggregateOutputType = {
   carrier: string | null
   shippedAt: Date | null
   deliveredAt: Date | null
+  fulfillmentNote: string | null
+  flagReason: string | null
+  flagNote: string | null
+  resolutionOffered: string | null
+  flaggedAt: Date | null
+  flagResolvedAt: Date | null
+  adminAcknowledgedFlag: boolean | null
   buyerEmail: string | null
   shipToName: string | null
   shipToAddress1: string | null
@@ -122,6 +129,13 @@ export type OrderMaxAggregateOutputType = {
   carrier: string | null
   shippedAt: Date | null
   deliveredAt: Date | null
+  fulfillmentNote: string | null
+  flagReason: string | null
+  flagNote: string | null
+  resolutionOffered: string | null
+  flaggedAt: Date | null
+  flagResolvedAt: Date | null
+  adminAcknowledgedFlag: boolean | null
   buyerEmail: string | null
   shipToName: string | null
   shipToAddress1: string | null
@@ -165,6 +179,13 @@ export type OrderCountAggregateOutputType = {
   carrier: number
   shippedAt: number
   deliveredAt: number
+  fulfillmentNote: number
+  flagReason: number
+  flagNote: number
+  resolutionOffered: number
+  flaggedAt: number
+  flagResolvedAt: number
+  adminAcknowledgedFlag: number
   buyerEmail: number
   shipToName: number
   shipToAddress1: number
@@ -234,6 +255,13 @@ export type OrderMinAggregateInputType = {
   carrier?: true
   shippedAt?: true
   deliveredAt?: true
+  fulfillmentNote?: true
+  flagReason?: true
+  flagNote?: true
+  resolutionOffered?: true
+  flaggedAt?: true
+  flagResolvedAt?: true
+  adminAcknowledgedFlag?: true
   buyerEmail?: true
   shipToName?: true
   shipToAddress1?: true
@@ -277,6 +305,13 @@ export type OrderMaxAggregateInputType = {
   carrier?: true
   shippedAt?: true
   deliveredAt?: true
+  fulfillmentNote?: true
+  flagReason?: true
+  flagNote?: true
+  resolutionOffered?: true
+  flaggedAt?: true
+  flagResolvedAt?: true
+  adminAcknowledgedFlag?: true
   buyerEmail?: true
   shipToName?: true
   shipToAddress1?: true
@@ -320,6 +355,13 @@ export type OrderCountAggregateInputType = {
   carrier?: true
   shippedAt?: true
   deliveredAt?: true
+  fulfillmentNote?: true
+  flagReason?: true
+  flagNote?: true
+  resolutionOffered?: true
+  flaggedAt?: true
+  flagResolvedAt?: true
+  adminAcknowledgedFlag?: true
   buyerEmail?: true
   shipToName?: true
   shipToAddress1?: true
@@ -450,6 +492,13 @@ export type OrderGroupByOutputType = {
   carrier: string | null
   shippedAt: Date | null
   deliveredAt: Date | null
+  fulfillmentNote: string | null
+  flagReason: string | null
+  flagNote: string | null
+  resolutionOffered: string | null
+  flaggedAt: Date | null
+  flagResolvedAt: Date | null
+  adminAcknowledgedFlag: boolean
   buyerEmail: string
   shipToName: string
   shipToAddress1: string
@@ -516,6 +565,13 @@ export type OrderWhereInput = {
   carrier?: Prisma.StringNullableFilter<"Order"> | string | null
   shippedAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
   deliveredAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
+  fulfillmentNote?: Prisma.StringNullableFilter<"Order"> | string | null
+  flagReason?: Prisma.StringNullableFilter<"Order"> | string | null
+  flagNote?: Prisma.StringNullableFilter<"Order"> | string | null
+  resolutionOffered?: Prisma.StringNullableFilter<"Order"> | string | null
+  flaggedAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
+  flagResolvedAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
+  adminAcknowledgedFlag?: Prisma.BoolFilter<"Order"> | boolean
   buyerEmail?: Prisma.StringFilter<"Order"> | string
   shipToName?: Prisma.StringFilter<"Order"> | string
   shipToAddress1?: Prisma.StringFilter<"Order"> | string
@@ -566,6 +622,13 @@ export type OrderOrderByWithRelationInput = {
   carrier?: Prisma.SortOrderInput | Prisma.SortOrder
   shippedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   deliveredAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  fulfillmentNote?: Prisma.SortOrderInput | Prisma.SortOrder
+  flagReason?: Prisma.SortOrderInput | Prisma.SortOrder
+  flagNote?: Prisma.SortOrderInput | Prisma.SortOrder
+  resolutionOffered?: Prisma.SortOrderInput | Prisma.SortOrder
+  flaggedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  flagResolvedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  adminAcknowledgedFlag?: Prisma.SortOrder
   buyerEmail?: Prisma.SortOrder
   shipToName?: Prisma.SortOrder
   shipToAddress1?: Prisma.SortOrder
@@ -619,6 +682,13 @@ export type OrderWhereUniqueInput = Prisma.AtLeast<{
   carrier?: Prisma.StringNullableFilter<"Order"> | string | null
   shippedAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
   deliveredAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
+  fulfillmentNote?: Prisma.StringNullableFilter<"Order"> | string | null
+  flagReason?: Prisma.StringNullableFilter<"Order"> | string | null
+  flagNote?: Prisma.StringNullableFilter<"Order"> | string | null
+  resolutionOffered?: Prisma.StringNullableFilter<"Order"> | string | null
+  flaggedAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
+  flagResolvedAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
+  adminAcknowledgedFlag?: Prisma.BoolFilter<"Order"> | boolean
   buyerEmail?: Prisma.StringFilter<"Order"> | string
   shipToName?: Prisma.StringFilter<"Order"> | string
   shipToAddress1?: Prisma.StringFilter<"Order"> | string
@@ -669,6 +739,13 @@ export type OrderOrderByWithAggregationInput = {
   carrier?: Prisma.SortOrderInput | Prisma.SortOrder
   shippedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   deliveredAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  fulfillmentNote?: Prisma.SortOrderInput | Prisma.SortOrder
+  flagReason?: Prisma.SortOrderInput | Prisma.SortOrder
+  flagNote?: Prisma.SortOrderInput | Prisma.SortOrder
+  resolutionOffered?: Prisma.SortOrderInput | Prisma.SortOrder
+  flaggedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  flagResolvedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  adminAcknowledgedFlag?: Prisma.SortOrder
   buyerEmail?: Prisma.SortOrder
   shipToName?: Prisma.SortOrder
   shipToAddress1?: Prisma.SortOrder
@@ -720,6 +797,13 @@ export type OrderScalarWhereWithAggregatesInput = {
   carrier?: Prisma.StringNullableWithAggregatesFilter<"Order"> | string | null
   shippedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Order"> | Date | string | null
   deliveredAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Order"> | Date | string | null
+  fulfillmentNote?: Prisma.StringNullableWithAggregatesFilter<"Order"> | string | null
+  flagReason?: Prisma.StringNullableWithAggregatesFilter<"Order"> | string | null
+  flagNote?: Prisma.StringNullableWithAggregatesFilter<"Order"> | string | null
+  resolutionOffered?: Prisma.StringNullableWithAggregatesFilter<"Order"> | string | null
+  flaggedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Order"> | Date | string | null
+  flagResolvedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Order"> | Date | string | null
+  adminAcknowledgedFlag?: Prisma.BoolWithAggregatesFilter<"Order"> | boolean
   buyerEmail?: Prisma.StringWithAggregatesFilter<"Order"> | string
   shipToName?: Prisma.StringWithAggregatesFilter<"Order"> | string
   shipToAddress1?: Prisma.StringWithAggregatesFilter<"Order"> | string
@@ -760,6 +844,13 @@ export type OrderCreateInput = {
   carrier?: string | null
   shippedAt?: Date | string | null
   deliveredAt?: Date | string | null
+  fulfillmentNote?: string | null
+  flagReason?: string | null
+  flagNote?: string | null
+  resolutionOffered?: string | null
+  flaggedAt?: Date | string | null
+  flagResolvedAt?: Date | string | null
+  adminAcknowledgedFlag?: boolean
   buyerEmail: string
   shipToName: string
   shipToAddress1: string
@@ -810,6 +901,13 @@ export type OrderUncheckedCreateInput = {
   carrier?: string | null
   shippedAt?: Date | string | null
   deliveredAt?: Date | string | null
+  fulfillmentNote?: string | null
+  flagReason?: string | null
+  flagNote?: string | null
+  resolutionOffered?: string | null
+  flaggedAt?: Date | string | null
+  flagResolvedAt?: Date | string | null
+  adminAcknowledgedFlag?: boolean
   buyerEmail: string
   shipToName: string
   shipToAddress1: string
@@ -854,6 +952,13 @@ export type OrderUpdateInput = {
   carrier?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   shippedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deliveredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  fulfillmentNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flagReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flagNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resolutionOffered?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flaggedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  flagResolvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  adminAcknowledgedFlag?: Prisma.BoolFieldUpdateOperationsInput | boolean
   buyerEmail?: Prisma.StringFieldUpdateOperationsInput | string
   shipToName?: Prisma.StringFieldUpdateOperationsInput | string
   shipToAddress1?: Prisma.StringFieldUpdateOperationsInput | string
@@ -904,6 +1009,13 @@ export type OrderUncheckedUpdateInput = {
   carrier?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   shippedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deliveredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  fulfillmentNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flagReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flagNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resolutionOffered?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flaggedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  flagResolvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  adminAcknowledgedFlag?: Prisma.BoolFieldUpdateOperationsInput | boolean
   buyerEmail?: Prisma.StringFieldUpdateOperationsInput | string
   shipToName?: Prisma.StringFieldUpdateOperationsInput | string
   shipToAddress1?: Prisma.StringFieldUpdateOperationsInput | string
@@ -951,6 +1063,13 @@ export type OrderCreateManyInput = {
   carrier?: string | null
   shippedAt?: Date | string | null
   deliveredAt?: Date | string | null
+  fulfillmentNote?: string | null
+  flagReason?: string | null
+  flagNote?: string | null
+  resolutionOffered?: string | null
+  flaggedAt?: Date | string | null
+  flagResolvedAt?: Date | string | null
+  adminAcknowledgedFlag?: boolean
   buyerEmail: string
   shipToName: string
   shipToAddress1: string
@@ -991,6 +1110,13 @@ export type OrderUpdateManyMutationInput = {
   carrier?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   shippedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deliveredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  fulfillmentNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flagReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flagNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resolutionOffered?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flaggedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  flagResolvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  adminAcknowledgedFlag?: Prisma.BoolFieldUpdateOperationsInput | boolean
   buyerEmail?: Prisma.StringFieldUpdateOperationsInput | string
   shipToName?: Prisma.StringFieldUpdateOperationsInput | string
   shipToAddress1?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1034,6 +1160,13 @@ export type OrderUncheckedUpdateManyInput = {
   carrier?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   shippedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deliveredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  fulfillmentNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flagReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flagNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resolutionOffered?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flaggedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  flagResolvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  adminAcknowledgedFlag?: Prisma.BoolFieldUpdateOperationsInput | boolean
   buyerEmail?: Prisma.StringFieldUpdateOperationsInput | string
   shipToName?: Prisma.StringFieldUpdateOperationsInput | string
   shipToAddress1?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1092,6 +1225,13 @@ export type OrderCountOrderByAggregateInput = {
   carrier?: Prisma.SortOrder
   shippedAt?: Prisma.SortOrder
   deliveredAt?: Prisma.SortOrder
+  fulfillmentNote?: Prisma.SortOrder
+  flagReason?: Prisma.SortOrder
+  flagNote?: Prisma.SortOrder
+  resolutionOffered?: Prisma.SortOrder
+  flaggedAt?: Prisma.SortOrder
+  flagResolvedAt?: Prisma.SortOrder
+  adminAcknowledgedFlag?: Prisma.SortOrder
   buyerEmail?: Prisma.SortOrder
   shipToName?: Prisma.SortOrder
   shipToAddress1?: Prisma.SortOrder
@@ -1147,6 +1287,13 @@ export type OrderMaxOrderByAggregateInput = {
   carrier?: Prisma.SortOrder
   shippedAt?: Prisma.SortOrder
   deliveredAt?: Prisma.SortOrder
+  fulfillmentNote?: Prisma.SortOrder
+  flagReason?: Prisma.SortOrder
+  flagNote?: Prisma.SortOrder
+  resolutionOffered?: Prisma.SortOrder
+  flaggedAt?: Prisma.SortOrder
+  flagResolvedAt?: Prisma.SortOrder
+  adminAcknowledgedFlag?: Prisma.SortOrder
   buyerEmail?: Prisma.SortOrder
   shipToName?: Prisma.SortOrder
   shipToAddress1?: Prisma.SortOrder
@@ -1190,6 +1337,13 @@ export type OrderMinOrderByAggregateInput = {
   carrier?: Prisma.SortOrder
   shippedAt?: Prisma.SortOrder
   deliveredAt?: Prisma.SortOrder
+  fulfillmentNote?: Prisma.SortOrder
+  flagReason?: Prisma.SortOrder
+  flagNote?: Prisma.SortOrder
+  resolutionOffered?: Prisma.SortOrder
+  flaggedAt?: Prisma.SortOrder
+  flagResolvedAt?: Prisma.SortOrder
+  adminAcknowledgedFlag?: Prisma.SortOrder
   buyerEmail?: Prisma.SortOrder
   shipToName?: Prisma.SortOrder
   shipToAddress1?: Prisma.SortOrder
@@ -1439,6 +1593,13 @@ export type OrderCreateWithoutRoasterInput = {
   carrier?: string | null
   shippedAt?: Date | string | null
   deliveredAt?: Date | string | null
+  fulfillmentNote?: string | null
+  flagReason?: string | null
+  flagNote?: string | null
+  resolutionOffered?: string | null
+  flaggedAt?: Date | string | null
+  flagResolvedAt?: Date | string | null
+  adminAcknowledgedFlag?: boolean
   buyerEmail: string
   shipToName: string
   shipToAddress1: string
@@ -1487,6 +1648,13 @@ export type OrderUncheckedCreateWithoutRoasterInput = {
   carrier?: string | null
   shippedAt?: Date | string | null
   deliveredAt?: Date | string | null
+  fulfillmentNote?: string | null
+  flagReason?: string | null
+  flagNote?: string | null
+  resolutionOffered?: string | null
+  flaggedAt?: Date | string | null
+  flagResolvedAt?: Date | string | null
+  adminAcknowledgedFlag?: boolean
   buyerEmail: string
   shipToName: string
   shipToAddress1: string
@@ -1563,6 +1731,13 @@ export type OrderScalarWhereInput = {
   carrier?: Prisma.StringNullableFilter<"Order"> | string | null
   shippedAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
   deliveredAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
+  fulfillmentNote?: Prisma.StringNullableFilter<"Order"> | string | null
+  flagReason?: Prisma.StringNullableFilter<"Order"> | string | null
+  flagNote?: Prisma.StringNullableFilter<"Order"> | string | null
+  resolutionOffered?: Prisma.StringNullableFilter<"Order"> | string | null
+  flaggedAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
+  flagResolvedAt?: Prisma.DateTimeNullableFilter<"Order"> | Date | string | null
+  adminAcknowledgedFlag?: Prisma.BoolFilter<"Order"> | boolean
   buyerEmail?: Prisma.StringFilter<"Order"> | string
   shipToName?: Prisma.StringFilter<"Order"> | string
   shipToAddress1?: Prisma.StringFilter<"Order"> | string
@@ -1603,6 +1778,13 @@ export type OrderCreateWithoutRoasterDebtsInput = {
   carrier?: string | null
   shippedAt?: Date | string | null
   deliveredAt?: Date | string | null
+  fulfillmentNote?: string | null
+  flagReason?: string | null
+  flagNote?: string | null
+  resolutionOffered?: string | null
+  flaggedAt?: Date | string | null
+  flagResolvedAt?: Date | string | null
+  adminAcknowledgedFlag?: boolean
   buyerEmail: string
   shipToName: string
   shipToAddress1: string
@@ -1652,6 +1834,13 @@ export type OrderUncheckedCreateWithoutRoasterDebtsInput = {
   carrier?: string | null
   shippedAt?: Date | string | null
   deliveredAt?: Date | string | null
+  fulfillmentNote?: string | null
+  flagReason?: string | null
+  flagNote?: string | null
+  resolutionOffered?: string | null
+  flaggedAt?: Date | string | null
+  flagResolvedAt?: Date | string | null
+  adminAcknowledgedFlag?: boolean
   buyerEmail: string
   shipToName: string
   shipToAddress1: string
@@ -1711,6 +1900,13 @@ export type OrderUpdateWithoutRoasterDebtsInput = {
   carrier?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   shippedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deliveredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  fulfillmentNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flagReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flagNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resolutionOffered?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flaggedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  flagResolvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  adminAcknowledgedFlag?: Prisma.BoolFieldUpdateOperationsInput | boolean
   buyerEmail?: Prisma.StringFieldUpdateOperationsInput | string
   shipToName?: Prisma.StringFieldUpdateOperationsInput | string
   shipToAddress1?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1760,6 +1956,13 @@ export type OrderUncheckedUpdateWithoutRoasterDebtsInput = {
   carrier?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   shippedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deliveredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  fulfillmentNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flagReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flagNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resolutionOffered?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flaggedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  flagResolvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  adminAcknowledgedFlag?: Prisma.BoolFieldUpdateOperationsInput | boolean
   buyerEmail?: Prisma.StringFieldUpdateOperationsInput | string
   shipToName?: Prisma.StringFieldUpdateOperationsInput | string
   shipToAddress1?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1803,6 +2006,13 @@ export type OrderCreateWithoutCampaignInput = {
   carrier?: string | null
   shippedAt?: Date | string | null
   deliveredAt?: Date | string | null
+  fulfillmentNote?: string | null
+  flagReason?: string | null
+  flagNote?: string | null
+  resolutionOffered?: string | null
+  flaggedAt?: Date | string | null
+  flagResolvedAt?: Date | string | null
+  adminAcknowledgedFlag?: boolean
   buyerEmail: string
   shipToName: string
   shipToAddress1: string
@@ -1851,6 +2061,13 @@ export type OrderUncheckedCreateWithoutCampaignInput = {
   carrier?: string | null
   shippedAt?: Date | string | null
   deliveredAt?: Date | string | null
+  fulfillmentNote?: string | null
+  flagReason?: string | null
+  flagNote?: string | null
+  resolutionOffered?: string | null
+  flaggedAt?: Date | string | null
+  flagResolvedAt?: Date | string | null
+  adminAcknowledgedFlag?: boolean
   buyerEmail: string
   shipToName: string
   shipToAddress1: string
@@ -1921,6 +2138,13 @@ export type OrderCreateWithoutBuyerInput = {
   carrier?: string | null
   shippedAt?: Date | string | null
   deliveredAt?: Date | string | null
+  fulfillmentNote?: string | null
+  flagReason?: string | null
+  flagNote?: string | null
+  resolutionOffered?: string | null
+  flaggedAt?: Date | string | null
+  flagResolvedAt?: Date | string | null
+  adminAcknowledgedFlag?: boolean
   buyerEmail: string
   shipToName: string
   shipToAddress1: string
@@ -1969,6 +2193,13 @@ export type OrderUncheckedCreateWithoutBuyerInput = {
   carrier?: string | null
   shippedAt?: Date | string | null
   deliveredAt?: Date | string | null
+  fulfillmentNote?: string | null
+  flagReason?: string | null
+  flagNote?: string | null
+  resolutionOffered?: string | null
+  flaggedAt?: Date | string | null
+  flagResolvedAt?: Date | string | null
+  adminAcknowledgedFlag?: boolean
   buyerEmail: string
   shipToName: string
   shipToAddress1: string
@@ -2039,6 +2270,13 @@ export type OrderCreateWithoutItemsInput = {
   carrier?: string | null
   shippedAt?: Date | string | null
   deliveredAt?: Date | string | null
+  fulfillmentNote?: string | null
+  flagReason?: string | null
+  flagNote?: string | null
+  resolutionOffered?: string | null
+  flaggedAt?: Date | string | null
+  flagResolvedAt?: Date | string | null
+  adminAcknowledgedFlag?: boolean
   buyerEmail: string
   shipToName: string
   shipToAddress1: string
@@ -2088,6 +2326,13 @@ export type OrderUncheckedCreateWithoutItemsInput = {
   carrier?: string | null
   shippedAt?: Date | string | null
   deliveredAt?: Date | string | null
+  fulfillmentNote?: string | null
+  flagReason?: string | null
+  flagNote?: string | null
+  resolutionOffered?: string | null
+  flaggedAt?: Date | string | null
+  flagResolvedAt?: Date | string | null
+  adminAcknowledgedFlag?: boolean
   buyerEmail: string
   shipToName: string
   shipToAddress1: string
@@ -2147,6 +2392,13 @@ export type OrderUpdateWithoutItemsInput = {
   carrier?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   shippedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deliveredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  fulfillmentNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flagReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flagNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resolutionOffered?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flaggedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  flagResolvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  adminAcknowledgedFlag?: Prisma.BoolFieldUpdateOperationsInput | boolean
   buyerEmail?: Prisma.StringFieldUpdateOperationsInput | string
   shipToName?: Prisma.StringFieldUpdateOperationsInput | string
   shipToAddress1?: Prisma.StringFieldUpdateOperationsInput | string
@@ -2196,6 +2448,13 @@ export type OrderUncheckedUpdateWithoutItemsInput = {
   carrier?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   shippedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deliveredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  fulfillmentNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flagReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flagNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resolutionOffered?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flaggedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  flagResolvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  adminAcknowledgedFlag?: Prisma.BoolFieldUpdateOperationsInput | boolean
   buyerEmail?: Prisma.StringFieldUpdateOperationsInput | string
   shipToName?: Prisma.StringFieldUpdateOperationsInput | string
   shipToAddress1?: Prisma.StringFieldUpdateOperationsInput | string
@@ -2239,6 +2498,13 @@ export type OrderCreateWithoutEventsInput = {
   carrier?: string | null
   shippedAt?: Date | string | null
   deliveredAt?: Date | string | null
+  fulfillmentNote?: string | null
+  flagReason?: string | null
+  flagNote?: string | null
+  resolutionOffered?: string | null
+  flaggedAt?: Date | string | null
+  flagResolvedAt?: Date | string | null
+  adminAcknowledgedFlag?: boolean
   buyerEmail: string
   shipToName: string
   shipToAddress1: string
@@ -2288,6 +2554,13 @@ export type OrderUncheckedCreateWithoutEventsInput = {
   carrier?: string | null
   shippedAt?: Date | string | null
   deliveredAt?: Date | string | null
+  fulfillmentNote?: string | null
+  flagReason?: string | null
+  flagNote?: string | null
+  resolutionOffered?: string | null
+  flaggedAt?: Date | string | null
+  flagResolvedAt?: Date | string | null
+  adminAcknowledgedFlag?: boolean
   buyerEmail: string
   shipToName: string
   shipToAddress1: string
@@ -2347,6 +2620,13 @@ export type OrderUpdateWithoutEventsInput = {
   carrier?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   shippedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deliveredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  fulfillmentNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flagReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flagNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resolutionOffered?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flaggedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  flagResolvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  adminAcknowledgedFlag?: Prisma.BoolFieldUpdateOperationsInput | boolean
   buyerEmail?: Prisma.StringFieldUpdateOperationsInput | string
   shipToName?: Prisma.StringFieldUpdateOperationsInput | string
   shipToAddress1?: Prisma.StringFieldUpdateOperationsInput | string
@@ -2396,6 +2676,13 @@ export type OrderUncheckedUpdateWithoutEventsInput = {
   carrier?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   shippedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deliveredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  fulfillmentNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flagReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flagNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resolutionOffered?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flaggedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  flagResolvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  adminAcknowledgedFlag?: Prisma.BoolFieldUpdateOperationsInput | boolean
   buyerEmail?: Prisma.StringFieldUpdateOperationsInput | string
   shipToName?: Prisma.StringFieldUpdateOperationsInput | string
   shipToAddress1?: Prisma.StringFieldUpdateOperationsInput | string
@@ -2439,6 +2726,13 @@ export type OrderCreateWithoutDisputeInput = {
   carrier?: string | null
   shippedAt?: Date | string | null
   deliveredAt?: Date | string | null
+  fulfillmentNote?: string | null
+  flagReason?: string | null
+  flagNote?: string | null
+  resolutionOffered?: string | null
+  flaggedAt?: Date | string | null
+  flagResolvedAt?: Date | string | null
+  adminAcknowledgedFlag?: boolean
   buyerEmail: string
   shipToName: string
   shipToAddress1: string
@@ -2488,6 +2782,13 @@ export type OrderUncheckedCreateWithoutDisputeInput = {
   carrier?: string | null
   shippedAt?: Date | string | null
   deliveredAt?: Date | string | null
+  fulfillmentNote?: string | null
+  flagReason?: string | null
+  flagNote?: string | null
+  resolutionOffered?: string | null
+  flaggedAt?: Date | string | null
+  flagResolvedAt?: Date | string | null
+  adminAcknowledgedFlag?: boolean
   buyerEmail: string
   shipToName: string
   shipToAddress1: string
@@ -2547,6 +2848,13 @@ export type OrderUpdateWithoutDisputeInput = {
   carrier?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   shippedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deliveredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  fulfillmentNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flagReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flagNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resolutionOffered?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flaggedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  flagResolvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  adminAcknowledgedFlag?: Prisma.BoolFieldUpdateOperationsInput | boolean
   buyerEmail?: Prisma.StringFieldUpdateOperationsInput | string
   shipToName?: Prisma.StringFieldUpdateOperationsInput | string
   shipToAddress1?: Prisma.StringFieldUpdateOperationsInput | string
@@ -2596,6 +2904,13 @@ export type OrderUncheckedUpdateWithoutDisputeInput = {
   carrier?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   shippedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deliveredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  fulfillmentNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flagReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flagNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resolutionOffered?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flaggedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  flagResolvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  adminAcknowledgedFlag?: Prisma.BoolFieldUpdateOperationsInput | boolean
   buyerEmail?: Prisma.StringFieldUpdateOperationsInput | string
   shipToName?: Prisma.StringFieldUpdateOperationsInput | string
   shipToAddress1?: Prisma.StringFieldUpdateOperationsInput | string
@@ -2641,6 +2956,13 @@ export type OrderCreateManyRoasterInput = {
   carrier?: string | null
   shippedAt?: Date | string | null
   deliveredAt?: Date | string | null
+  fulfillmentNote?: string | null
+  flagReason?: string | null
+  flagNote?: string | null
+  resolutionOffered?: string | null
+  flaggedAt?: Date | string | null
+  flagResolvedAt?: Date | string | null
+  adminAcknowledgedFlag?: boolean
   buyerEmail: string
   shipToName: string
   shipToAddress1: string
@@ -2681,6 +3003,13 @@ export type OrderUpdateWithoutRoasterInput = {
   carrier?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   shippedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deliveredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  fulfillmentNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flagReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flagNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resolutionOffered?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flaggedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  flagResolvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  adminAcknowledgedFlag?: Prisma.BoolFieldUpdateOperationsInput | boolean
   buyerEmail?: Prisma.StringFieldUpdateOperationsInput | string
   shipToName?: Prisma.StringFieldUpdateOperationsInput | string
   shipToAddress1?: Prisma.StringFieldUpdateOperationsInput | string
@@ -2729,6 +3058,13 @@ export type OrderUncheckedUpdateWithoutRoasterInput = {
   carrier?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   shippedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deliveredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  fulfillmentNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flagReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flagNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resolutionOffered?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flaggedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  flagResolvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  adminAcknowledgedFlag?: Prisma.BoolFieldUpdateOperationsInput | boolean
   buyerEmail?: Prisma.StringFieldUpdateOperationsInput | string
   shipToName?: Prisma.StringFieldUpdateOperationsInput | string
   shipToAddress1?: Prisma.StringFieldUpdateOperationsInput | string
@@ -2775,6 +3111,13 @@ export type OrderUncheckedUpdateManyWithoutRoasterInput = {
   carrier?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   shippedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deliveredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  fulfillmentNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flagReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flagNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resolutionOffered?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flaggedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  flagResolvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  adminAcknowledgedFlag?: Prisma.BoolFieldUpdateOperationsInput | boolean
   buyerEmail?: Prisma.StringFieldUpdateOperationsInput | string
   shipToName?: Prisma.StringFieldUpdateOperationsInput | string
   shipToAddress1?: Prisma.StringFieldUpdateOperationsInput | string
@@ -2817,6 +3160,13 @@ export type OrderCreateManyCampaignInput = {
   carrier?: string | null
   shippedAt?: Date | string | null
   deliveredAt?: Date | string | null
+  fulfillmentNote?: string | null
+  flagReason?: string | null
+  flagNote?: string | null
+  resolutionOffered?: string | null
+  flaggedAt?: Date | string | null
+  flagResolvedAt?: Date | string | null
+  adminAcknowledgedFlag?: boolean
   buyerEmail: string
   shipToName: string
   shipToAddress1: string
@@ -2857,6 +3207,13 @@ export type OrderUpdateWithoutCampaignInput = {
   carrier?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   shippedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deliveredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  fulfillmentNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flagReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flagNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resolutionOffered?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flaggedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  flagResolvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  adminAcknowledgedFlag?: Prisma.BoolFieldUpdateOperationsInput | boolean
   buyerEmail?: Prisma.StringFieldUpdateOperationsInput | string
   shipToName?: Prisma.StringFieldUpdateOperationsInput | string
   shipToAddress1?: Prisma.StringFieldUpdateOperationsInput | string
@@ -2905,6 +3262,13 @@ export type OrderUncheckedUpdateWithoutCampaignInput = {
   carrier?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   shippedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deliveredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  fulfillmentNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flagReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flagNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resolutionOffered?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flaggedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  flagResolvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  adminAcknowledgedFlag?: Prisma.BoolFieldUpdateOperationsInput | boolean
   buyerEmail?: Prisma.StringFieldUpdateOperationsInput | string
   shipToName?: Prisma.StringFieldUpdateOperationsInput | string
   shipToAddress1?: Prisma.StringFieldUpdateOperationsInput | string
@@ -2951,6 +3315,13 @@ export type OrderUncheckedUpdateManyWithoutCampaignInput = {
   carrier?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   shippedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deliveredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  fulfillmentNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flagReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flagNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resolutionOffered?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flaggedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  flagResolvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  adminAcknowledgedFlag?: Prisma.BoolFieldUpdateOperationsInput | boolean
   buyerEmail?: Prisma.StringFieldUpdateOperationsInput | string
   shipToName?: Prisma.StringFieldUpdateOperationsInput | string
   shipToAddress1?: Prisma.StringFieldUpdateOperationsInput | string
@@ -2993,6 +3364,13 @@ export type OrderCreateManyBuyerInput = {
   carrier?: string | null
   shippedAt?: Date | string | null
   deliveredAt?: Date | string | null
+  fulfillmentNote?: string | null
+  flagReason?: string | null
+  flagNote?: string | null
+  resolutionOffered?: string | null
+  flaggedAt?: Date | string | null
+  flagResolvedAt?: Date | string | null
+  adminAcknowledgedFlag?: boolean
   buyerEmail: string
   shipToName: string
   shipToAddress1: string
@@ -3033,6 +3411,13 @@ export type OrderUpdateWithoutBuyerInput = {
   carrier?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   shippedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deliveredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  fulfillmentNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flagReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flagNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resolutionOffered?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flaggedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  flagResolvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  adminAcknowledgedFlag?: Prisma.BoolFieldUpdateOperationsInput | boolean
   buyerEmail?: Prisma.StringFieldUpdateOperationsInput | string
   shipToName?: Prisma.StringFieldUpdateOperationsInput | string
   shipToAddress1?: Prisma.StringFieldUpdateOperationsInput | string
@@ -3081,6 +3466,13 @@ export type OrderUncheckedUpdateWithoutBuyerInput = {
   carrier?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   shippedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deliveredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  fulfillmentNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flagReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flagNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resolutionOffered?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flaggedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  flagResolvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  adminAcknowledgedFlag?: Prisma.BoolFieldUpdateOperationsInput | boolean
   buyerEmail?: Prisma.StringFieldUpdateOperationsInput | string
   shipToName?: Prisma.StringFieldUpdateOperationsInput | string
   shipToAddress1?: Prisma.StringFieldUpdateOperationsInput | string
@@ -3127,6 +3519,13 @@ export type OrderUncheckedUpdateManyWithoutBuyerInput = {
   carrier?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   shippedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   deliveredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  fulfillmentNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flagReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flagNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  resolutionOffered?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  flaggedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  flagResolvedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  adminAcknowledgedFlag?: Prisma.BoolFieldUpdateOperationsInput | boolean
   buyerEmail?: Prisma.StringFieldUpdateOperationsInput | string
   shipToName?: Prisma.StringFieldUpdateOperationsInput | string
   shipToAddress1?: Prisma.StringFieldUpdateOperationsInput | string
@@ -3219,6 +3618,13 @@ export type OrderSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   carrier?: boolean
   shippedAt?: boolean
   deliveredAt?: boolean
+  fulfillmentNote?: boolean
+  flagReason?: boolean
+  flagNote?: boolean
+  resolutionOffered?: boolean
+  flaggedAt?: boolean
+  flagResolvedAt?: boolean
+  adminAcknowledgedFlag?: boolean
   buyerEmail?: boolean
   shipToName?: boolean
   shipToAddress1?: boolean
@@ -3270,6 +3676,13 @@ export type OrderSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   carrier?: boolean
   shippedAt?: boolean
   deliveredAt?: boolean
+  fulfillmentNote?: boolean
+  flagReason?: boolean
+  flagNote?: boolean
+  resolutionOffered?: boolean
+  flaggedAt?: boolean
+  flagResolvedAt?: boolean
+  adminAcknowledgedFlag?: boolean
   buyerEmail?: boolean
   shipToName?: boolean
   shipToAddress1?: boolean
@@ -3316,6 +3729,13 @@ export type OrderSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   carrier?: boolean
   shippedAt?: boolean
   deliveredAt?: boolean
+  fulfillmentNote?: boolean
+  flagReason?: boolean
+  flagNote?: boolean
+  resolutionOffered?: boolean
+  flaggedAt?: boolean
+  flagResolvedAt?: boolean
+  adminAcknowledgedFlag?: boolean
   buyerEmail?: boolean
   shipToName?: boolean
   shipToAddress1?: boolean
@@ -3362,6 +3782,13 @@ export type OrderSelectScalar = {
   carrier?: boolean
   shippedAt?: boolean
   deliveredAt?: boolean
+  fulfillmentNote?: boolean
+  flagReason?: boolean
+  flagNote?: boolean
+  resolutionOffered?: boolean
+  flaggedAt?: boolean
+  flagResolvedAt?: boolean
+  adminAcknowledgedFlag?: boolean
   buyerEmail?: boolean
   shipToName?: boolean
   shipToAddress1?: boolean
@@ -3376,7 +3803,7 @@ export type OrderSelectScalar = {
   updatedAt?: boolean
 }
 
-export type OrderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "orderNumber" | "campaignId" | "roasterId" | "buyerId" | "fulfillerType" | "productSubtotal" | "shippingAmount" | "grossAmount" | "stripeFee" | "orgPctSnapshot" | "orgAmount" | "platformAmount" | "roasterAmount" | "roasterTotal" | "status" | "fulfillBy" | "payoutStatus" | "payoutEligibleAt" | "stripePiId" | "stripeChargeId" | "stripeTransferId" | "stripeOrgTransfer" | "transferGroup" | "trackingNumber" | "carrier" | "shippedAt" | "deliveredAt" | "buyerEmail" | "shipToName" | "shipToAddress1" | "shipToAddress2" | "shipToCity" | "shipToState" | "shipToPostalCode" | "shipToCountry" | "buyerIp" | "isCollab" | "createdAt" | "updatedAt", ExtArgs["result"]["order"]>
+export type OrderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "orderNumber" | "campaignId" | "roasterId" | "buyerId" | "fulfillerType" | "productSubtotal" | "shippingAmount" | "grossAmount" | "stripeFee" | "orgPctSnapshot" | "orgAmount" | "platformAmount" | "roasterAmount" | "roasterTotal" | "status" | "fulfillBy" | "payoutStatus" | "payoutEligibleAt" | "stripePiId" | "stripeChargeId" | "stripeTransferId" | "stripeOrgTransfer" | "transferGroup" | "trackingNumber" | "carrier" | "shippedAt" | "deliveredAt" | "fulfillmentNote" | "flagReason" | "flagNote" | "resolutionOffered" | "flaggedAt" | "flagResolvedAt" | "adminAcknowledgedFlag" | "buyerEmail" | "shipToName" | "shipToAddress1" | "shipToAddress2" | "shipToCity" | "shipToState" | "shipToPostalCode" | "shipToCountry" | "buyerIp" | "isCollab" | "createdAt" | "updatedAt", ExtArgs["result"]["order"]>
 export type OrderInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   campaign?: boolean | Prisma.CampaignDefaultArgs<ExtArgs>
   roaster?: boolean | Prisma.RoasterDefaultArgs<ExtArgs>
@@ -3438,6 +3865,13 @@ export type $OrderPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     carrier: string | null
     shippedAt: Date | null
     deliveredAt: Date | null
+    fulfillmentNote: string | null
+    flagReason: string | null
+    flagNote: string | null
+    resolutionOffered: string | null
+    flaggedAt: Date | null
+    flagResolvedAt: Date | null
+    adminAcknowledgedFlag: boolean
     buyerEmail: string
     shipToName: string
     shipToAddress1: string
@@ -3908,6 +4342,13 @@ export interface OrderFieldRefs {
   readonly carrier: Prisma.FieldRef<"Order", 'String'>
   readonly shippedAt: Prisma.FieldRef<"Order", 'DateTime'>
   readonly deliveredAt: Prisma.FieldRef<"Order", 'DateTime'>
+  readonly fulfillmentNote: Prisma.FieldRef<"Order", 'String'>
+  readonly flagReason: Prisma.FieldRef<"Order", 'String'>
+  readonly flagNote: Prisma.FieldRef<"Order", 'String'>
+  readonly resolutionOffered: Prisma.FieldRef<"Order", 'String'>
+  readonly flaggedAt: Prisma.FieldRef<"Order", 'DateTime'>
+  readonly flagResolvedAt: Prisma.FieldRef<"Order", 'DateTime'>
+  readonly adminAcknowledgedFlag: Prisma.FieldRef<"Order", 'Boolean'>
   readonly buyerEmail: Prisma.FieldRef<"Order", 'String'>
   readonly shipToName: Prisma.FieldRef<"Order", 'String'>
   readonly shipToAddress1: Prisma.FieldRef<"Order", 'String'>

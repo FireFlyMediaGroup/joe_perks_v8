@@ -33,7 +33,7 @@ sequenceDiagram
     WEB->>DB: Check StripeEvent for idempotency
     WEB->>DB: Update Order (status=CONFIRMED)
     WEB->>DB: Create MagicLink (purpose=ORDER_FULFILLMENT, 72h TTL)
-    WEB->>DB: Create OrderEvent (PAYMENT_SUCCEEDED / ORDER_CONFIRMED, actor=SYSTEM)
+    WEB->>DB: Create OrderEvent (PAYMENT_SUCCEEDED, actor=SYSTEM)
     WEB->>EM: sendEmail(order_confirmation → buyer)
     WEB->>EM: sendEmail(magic_link_fulfillment → roaster)
     WEB-->>STR: HTTP 200
@@ -52,11 +52,37 @@ sequenceDiagram
     EM-->>R: Email with fulfill link → roasters.joeperks.com/fulfill/[token]
     R->>DB: Validate MagicLink (not expired, not used, purpose=ORDER_FULFILLMENT)
     R->>DB: Fetch Order with items, splits, shipping address
-    Note over R: Roaster views order details<br/>and payout breakdown
-    R->>DB: Update Order (status=SHIPPED, tracking_number, carrier, shipped_at)
+    R->>DB: Create OrderEvent (FULFILLMENT_VIEWED, actor=ROASTER)
+    Note over R: Roaster views order details,<br/>shipping snapshot, and payout breakdown
+    opt Expired link and order still CONFIRMED
+      R->>DB: Rotate the existing MagicLink row in place
+      R->>DB: Create OrderEvent (MAGIC_LINK_RESENT, actor=SYSTEM)
+      R->>EM: sendEmail(magic_link_fulfillment_manual_resend → roaster)
+    end
+    opt Roaster can't fulfill the order
+      R->>DB: Update Order (flag_reason, resolution_offered, flag_note, flagged_at, admin_acknowledged_flag=false)
+      R->>DB: Create OrderEvent (ORDER_FLAGGED, actor=ROASTER)
+      R->>EM: sendEmail(order_flagged_admin_alert → admin)
+      Note over INN,DB: SLA reminder, buyer-delay, and auto-refund automation skip unresolved flagged orders
+      WEB->>DB: Admin acknowledges flag (optional)
+      WEB->>DB: Admin resolves issue → flag_resolved_at set
+      WEB->>DB: Create OrderEvent (FLAG_RESOLVED, actor=ADMIN)
+    end
+    opt Order remains unshipped past reminder / breach thresholds
+      INN->>DB: Reuse active MagicLink or regenerate the same row if expired
+      INN->>DB: Create OrderEvent (MAGIC_LINK_RESENT, actor=SYSTEM) only when regenerated
+      INN->>EM: sendEmail(sla_roaster_reminder / sla_roaster_urgent → roaster with fulfill CTA)
+      INN->>EM: sendEmail(sla_buyer_delay / sla_admin_breach / sla_admin_critical) at their configured thresholds
+    end
+    R->>DB: Update Order (status=SHIPPED, tracking_number, carrier, shipped_at, fulfillment_note)
     R->>DB: Set MagicLink.used_at = now()
-    R->>DB: Create OrderEvent (ORDER_SHIPPED, actor=ROASTER)
-    R->>EM: sendEmail(order_shipped + tracking → buyer)
+    R->>DB: Create OrderEvent (SHIPPED, actor=ROASTER)
+    R->>EM: sendEmail(order_shipped + tracking + optional note → buyer)
+    opt Signed-in roaster updates tracking after shipment
+      R->>DB: Update Order (tracking_number and/or carrier)
+      R->>DB: Create OrderEvent (TRACKING_UPDATED, actor=ROASTER)
+      R->>EM: sendEmail(order_tracking_updated → buyer)
+    end
   end
 
   rect rgb(234,243,222)
@@ -64,13 +90,13 @@ sequenceDiagram
     Note over WEB: Admin manually confirms OR<br/>carrier webhook (Phase 2)
     WEB->>DB: Update Order (status=DELIVERED, delivered_at=now)
     WEB->>DB: Set payout_eligible_at = delivered_at + 7 days
-    WEB->>DB: Create OrderEvent (ORDER_DELIVERED, actor=ADMIN|SYSTEM)
+    WEB->>DB: Create OrderEvent (DELIVERED, actor=ADMIN|SYSTEM)
     WEB->>EM: sendEmail(order_delivered + impact message → buyer)
   end
 
   rect rgb(238,237,254)
     Note over INN,STR: PHASE 5 — Automated Payout (Inngest daily job)
-    INN->>DB: Query Orders WHERE status=DELIVERED<br/>AND payout_eligible_at <= now()<br/>AND payout_status=PENDING
+    INN->>DB: Query Orders WHERE status=DELIVERED<br/>AND payout_eligible_at <= now()<br/>AND payout_status=HELD
     INN->>DB: calculateRoasterPayout() — deduct unsettled RoasterDebts
     INN->>STR: stripe.transfers.create({roaster_amount → roaster.stripe_account_id})
     INN->>STR: stripe.transfers.create({org_amount → org.stripe_account_id})

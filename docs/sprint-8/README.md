@@ -13,7 +13,7 @@
 - Cursor execution prompt: [`docs/sprint-8/cursor-agent-prompt.md`](./cursor-agent-prompt.md)
 - Cursor kickoff prompt: [`docs/sprint-8/cursor-agent-kickoff-prompt.md`](./cursor-agent-kickoff-prompt.md)
 
-**Current progress:** Sprint 8 planning is complete. `US-10-00` through `US-10-06` are documented and ready for implementation, but none should be treated as started until the code, tests, and sprint trackers are updated in the same PR.
+**Current progress:** `US-10-00` through `US-10-06` are implemented and verified. The Sprint 8 story set is now complete in the live repo and trackers.
 
 ---
 
@@ -84,7 +84,7 @@ These realities are already true in the repo and must shape Sprint 8:
 - The repo already has a working roaster magic-link fulfillment flow.
 - The repo already enforces one live `ORDER_FULFILLMENT` link per order through `MagicLink.dedupeKey`.
 - The current token page is functional but minimal.
-- The current roaster dashboard and payouts routes are still placeholders.
+- The roaster dashboard, authenticated order detail route, and payouts route are now live.
 - The SLA job already exists and should be extended, not replaced.
 - The payout release job already exists and should be surfaced, not redesigned.
 - Live event names and payout states must be used as implemented, not as imagined in earlier drafts.
@@ -181,7 +181,7 @@ These features remain valid future extensions but are intentionally not part of 
 | US-10-05 | Portal order detail, fulfillment, and tracking correction | High | US-10-00, US-10-01, US-10-04 | `apps/roaster`, `packages/email` |
 | US-10-06 | Roaster payouts, debts, and disputes view | High | US-10-04, payout baseline | `apps/roaster` |
 
-**Story implementation status:** Use [`docs/SPRINT_8_PROGRESS.md`](../SPRINT_8_PROGRESS.md) as the live tracker. At planning handoff time, all Sprint 8 stories remain `Todo`.
+**Story implementation status:** Use [`docs/SPRINT_8_PROGRESS.md`](../SPRINT_8_PROGRESS.md) as the live tracker. `US-10-00` through `US-10-06` are `Done`.
 
 ---
 
@@ -252,8 +252,8 @@ Parallelization opportunities are limited early because Sprint 8 is decision- an
 | US-10-01 | `apps/roaster/app/fulfill/[token]/page.tsx`, route-local `_components/`, `_actions/submit-tracking.ts`, shipped email template |
 | US-10-02 | token-flow issue-reporting UI/actions, `apps/admin/app/orders/...`, `apps/web/lib/inngest/run-sla-check.tsx` |
 | US-10-03 | `apps/web/lib/inngest/run-sla-check.tsx`, `packages/email/templates/sla.tsx`, fulfillment-email helpers |
-| US-10-04 | `apps/roaster/app/(authenticated)/dashboard/page.tsx`, route-local `_components/`, `_lib/queries.ts` |
-| US-10-05 | `apps/roaster/app/(authenticated)/orders/[id]/page.tsx`, route-local `_components/`, `_actions/`, `_lib/queries.ts`, shipped-email update wording |
+| US-10-04 | `apps/roaster/app/(authenticated)/dashboard/page.tsx`, route-local `_components/`, `_lib/queries.ts`, queue handoff route |
+| US-10-05 | `apps/roaster/app/(authenticated)/orders/[id]/page.tsx`, route-local `_components/`, `_actions/`, `_lib/queries.ts`, shared shipping helper, shipped-email update wording |
 | US-10-06 | `apps/roaster/app/(authenticated)/payouts/page.tsx`, route-local `_components/`, `_lib/queries.ts` |
 
 ---
@@ -330,3 +330,9 @@ Sprint 8 is successful when:
 | Version | Date | Notes |
 |---------|------|-------|
 | 0.1 | 2026-04-05 | Initial Sprint 8 implementation guide created from EP-10 v4, the pre-flight decisions note, and the Sprint 7 sprint-doc package structure. |
+| 0.2 | 2026-04-06 | Updated after US-10-02: structured issue reporting, admin flag handling, and SLA pause behavior are now implemented. |
+| 0.3 | 2026-04-06 | Updated after US-10-03: reminder/urgent emails now resolve valid fulfillment links and the next unfinished story is the authenticated roaster queue. |
+| 0.4 | 2026-04-06 | Updated after US-10-04: the dashboard is now a real roaster order queue and the next unfinished story is portal order detail / tracking correction. |
+| 0.5 | 2026-04-06 | Updated after US-10-05: the authenticated order detail route is now live with portal fulfillment and tracking correction, and the next unfinished story is roaster payouts / debts / disputes. |
+| 0.6 | 2026-04-06 | Updated after US-10-06: the payouts route is now a real roaster finance surface with live payout labels, debt/dispute visibility, and no remaining Sprint 8 stories in `Todo`. |
+| 0.7 | 2026-04-06 | Completion follow-up: the disputed held-payout label bug was fixed, the remaining mandatory cross-story UX/QA checklist items were audited and closed, and the docs now support the Sprint 8 completion claim. |

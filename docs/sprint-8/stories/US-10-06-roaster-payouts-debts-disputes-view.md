@@ -2,7 +2,7 @@
 
 **Story ID:** US-10-06 | **Epic:** EP-10 (Roaster Fulfillment)
 **Points:** 5 | **Priority:** High
-**Status:** `Todo`
+**Status:** `Done`
 **Owner:** Full-stack
 **Dependencies:** US-10-04, payout baseline
 **Depends on this:** none
@@ -31,7 +31,7 @@ Normalized decisions this story implements:
 
 ## Current repo evidence
 
-- `apps/roaster/app/(authenticated)/payouts/page.tsx` is currently a placeholder.
+- `apps/roaster/app/(authenticated)/payouts/page.tsx` now renders a roaster-scoped finance dashboard backed by route-local query and display helpers.
 - `apps/web/lib/inngest/run-payout-release.ts` already:
   - processes `DELIVERED` orders with `payoutStatus = HELD`
   - transfers roaster and org shares
@@ -91,27 +91,27 @@ Normalized decisions this story implements:
 
 ## Acceptance criteria
 
-- [ ] Signed-in roasters can access a real payouts page
-- [ ] All payout/debt/dispute queries scope by `session.roasterId`
-- [ ] The page uses live payout vocabulary:
+- [x] Signed-in roasters can access a real payouts page
+- [x] All payout/debt/dispute queries scope by `session.roasterId`
+- [x] The page uses live payout vocabulary:
   - held + future eligible date = in hold period
   - held + past eligible date = awaiting release
   - transferred = paid
   - failed = transfer failed
-- [ ] The page shows payout history for the roaster's orders
-- [ ] The page shows unresolved `RoasterDebt`
-- [ ] The page shows dispute records tied to the roaster's orders
-- [ ] The page does not invent new payout states not present in the live implementation
-- [ ] The route and all queries are scoped through `requireRoasterId()` or a shared equivalent
+- [x] The page shows payout history for the roaster's orders
+- [x] The page shows unresolved `RoasterDebt`
+- [x] The page shows dispute records tied to the roaster's orders
+- [x] The page does not invent new payout states not present in the live implementation
+- [x] The route and all queries are scoped through `requireRoasterId()` or a shared equivalent
 
 ---
 
 ## UX / accessibility / mobile requirements
 
-- [ ] Summary information is understandable without requiring Stripe knowledge
-- [ ] Monetary values are displayed in full dollar-and-cents format
-- [ ] Problem states are explicit without being alarmist
-- [ ] The page remains readable on mobile
+- [x] Summary information is understandable without requiring Stripe knowledge
+- [x] Monetary values are displayed in full dollar-and-cents format
+- [x] Problem states are explicit without being alarmist
+- [x] The page remains readable on mobile
 
 ---
 
@@ -126,21 +126,21 @@ Normalized decisions this story implements:
 
 ## Required doc updates
 
-- [ ] target story doc
-- [ ] `docs/SPRINT_8_CHECKLIST.md`
-- [ ] `docs/SPRINT_8_PROGRESS.md`
-- [ ] `docs/01-project-structure.mermaid` if the payouts route structure changes materially
+- [x] target story doc
+- [x] `docs/SPRINT_8_CHECKLIST.md`
+- [x] `docs/SPRINT_8_PROGRESS.md`
+- [x] `docs/01-project-structure.mermaid` because the payouts route now has route-local `_components/` and `_lib/`
 - [ ] `docs/sprint-8/roaster-fulfillment-epic-v4.md` if payout-label rules change
 
 ---
 
 ## QA and verification
 
-- [ ] Roasters cannot see another roaster's payout/debt/dispute data
-- [ ] Held orders display the correct derived UI state based on `payoutEligibleAt`
-- [ ] Failed payout rows display clearly
-- [ ] Debt and dispute sections match the live underlying records
-- [ ] At minimum run:
+- [x] Roasters cannot see another roaster's payout/debt/dispute data
+- [x] Held orders display the correct derived UI state based on `payoutEligibleAt`
+- [x] Failed payout rows display clearly
+- [x] Debt and dispute sections match the live underlying records
+- [x] At minimum run:
   - targeted tests for payout/debt/dispute read-model helpers if added
   - `pnpm --filter roaster typecheck`
   - focused verification for the payouts route
@@ -160,3 +160,5 @@ Normalized decisions this story implements:
 |---------|------|-------|
 | 0.1 | 2026-04-05 | Initial EP-10 payouts/debts/disputes story created from the final fulfillment planning baseline. |
 | 0.2 | 2026-04-05 | Tightened for execution with concrete points, tenant-scope criteria, and minimum verification expectations. |
+| 1.0 | 2026-04-06 | Implemented: the placeholder payouts page was replaced with a roaster-scoped finance dashboard showing live payout states, unsettled debts, disputes, and focused payout-state tests. |
+| 1.1 | 2026-04-06 | Completion follow-up: dispute payout labels now respect `payoutEligibleAt`, and the focused payouts test suite now covers the dispute-state rendering path that previously defaulted held disputes to the wrong label. |

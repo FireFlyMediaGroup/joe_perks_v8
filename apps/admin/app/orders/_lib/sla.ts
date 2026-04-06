@@ -60,17 +60,37 @@ function getSlaThresholds(fulfillBy: Date, settings: SlaSettings) {
 }
 
 export function getOrderSlaState({
+  adminAcknowledgedFlag = false,
+  flaggedAt = null,
+  flagResolvedAt = null,
   fulfillBy,
   now = new Date(),
   settings,
   status,
 }: {
+  adminAcknowledgedFlag?: boolean;
+  flaggedAt?: Date | null;
+  flagResolvedAt?: Date | null;
   fulfillBy: Date;
   now?: Date;
   settings: SlaSettings;
   status: OrderStatus;
 }): OrderSlaState {
   const thresholds = getSlaThresholds(fulfillBy, settings);
+
+  if (flaggedAt && !flagResolvedAt) {
+    return {
+      ...thresholds,
+      countsTowardSummary: false,
+      description: adminAcknowledgedFlag
+        ? "Fulfillment issue acknowledged by admin. Manual follow-up is in progress."
+        : "Fulfillment issue reported by the roaster. Automated SLA handling is paused.",
+      label: adminAcknowledgedFlag ? "Flagged - acknowledged" : "Flagged",
+      phase: "inactive",
+      summaryBucket: null,
+      tone: "red",
+    };
+  }
 
   if (status === "PENDING") {
     return inactiveSlaState(

@@ -1,9 +1,11 @@
 "use server";
 
 import { database } from "@joe-perks/db";
-import { sendEmail } from "@joe-perks/email/send";
-import OrderShippedEmail from "@joe-perks/email/templates/order-shipped";
-import { createElement } from "react";
+import {
+  normalizeShipmentInputs,
+  sendBuyerShipmentEmail,
+  shipConfirmedOrder,
+} from "@/app/_lib/order-shipping";
 
 import { validateFulfillmentToken } from "../_lib/validate-token";
 
@@ -12,12 +14,16 @@ export type SubmitTrackingResult = { ok: true } | { ok: false; error: string };
 export async function submitTracking(
   token: string,
   trackingNumber: string,
-  carrier: string
+  carrier: string,
+  fulfillmentNote = ""
 ): Promise<SubmitTrackingResult> {
-  const trimmedTracking = trackingNumber.trim();
-  const trimmedCarrier = carrier.trim();
-  if (!(trimmedTracking && trimmedCarrier)) {
-    return { ok: false, error: "Tracking number and carrier are required." };
+  const normalized = normalizeShipmentInputs({
+    carrier,
+    fulfillmentNote,
+    trackingNumber,
+  });
+  if (!normalized.ok) {
+    return { ok: false, error: normalized.error };
   }
 
   const validated = await validateFulfillmentToken(token);
@@ -43,37 +49,13 @@ export async function submitTracking(
         throw new Error("LINK_CONSUMED");
       }
 
-      const current = await tx.order.findFirst({
-        where: { id: orderId, status: "CONFIRMED" },
-        select: { roasterId: true },
+      const shipped = await shipConfirmedOrder(tx, {
+        orderId,
+        ...normalized.value,
       });
-      if (!current) {
+      if (!shipped.ok) {
         throw new Error("ORDER_STATE");
       }
-
-      await tx.order.update({
-        where: { id: orderId },
-        data: {
-          status: "SHIPPED",
-          trackingNumber: trimmedTracking,
-          carrier: trimmedCarrier,
-          shippedAt: new Date(),
-        },
-      });
-
-      // OrderEvent must stay in this transaction with ship + link consumption.
-      await tx.orderEvent.create({
-        data: {
-          orderId,
-          eventType: "SHIPPED",
-          actorType: "ROASTER",
-          actorId: current.roasterId,
-          payload: {
-            carrier: trimmedCarrier,
-            tracking_number: trimmedTracking,
-          },
-        },
-      });
     });
   } catch (e) {
     const code = e instanceof Error ? e.message : "";
@@ -87,43 +69,18 @@ export async function submitTracking(
     return { ok: false, error: "Something went wrong. Please try again." };
   }
 
-  const order = await database.order.findUnique({
-    where: { id: orderId },
-    include: {
-      buyer: true,
-      campaign: {
-        include: {
-          org: {
-            include: {
-              application: { select: { orgName: true } },
-            },
-          },
-        },
-      },
-    },
-  });
-
-  if (order?.buyer?.email) {
-    const orgName =
-      order.campaign.org.application.orgName ?? order.campaign.org.slug;
-    try {
-      await sendEmail({
-        entityId: order.id,
-        entityType: "order",
-        react: createElement(OrderShippedEmail, {
-          buyerName: order.buyer.name ?? "Customer",
-          carrier: trimmedCarrier,
-          orderNumber: order.orderNumber,
-          orgName,
-          trackingNumber: trimmedTracking,
-        }),
-        subject: `Your Joe Perks order ${order.orderNumber} has shipped`,
-        template: "order_shipped",
-        to: order.buyer.email,
-      });
-    } catch {
-      console.error("order shipped email failed", { order_id: orderId });
-    }
+  try {
+    await sendBuyerShipmentEmail({
+      carrier: normalized.value.carrier,
+      entityId: orderId,
+      entityType: "order",
+      fulfillmentNote: normalized.value.fulfillmentNote,
+      kind: "initial",
+      orderId,
+      trackingNumber: normalized.value.trackingNumber,
+    });
+  } catch {
+    console.error("order shipped email failed", { order_id: orderId });
   }
 
   return { ok: true };

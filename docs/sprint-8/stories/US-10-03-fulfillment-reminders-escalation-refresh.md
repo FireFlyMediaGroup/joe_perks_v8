@@ -2,7 +2,7 @@
 
 **Story ID:** US-10-03 | **Epic:** EP-10 (Roaster Fulfillment)
 **Points:** 5 | **Priority:** High
-**Status:** `Todo`
+**Status:** `Done`
 **Owner:** Full-stack
 **Dependencies:** US-10-00, US-10-01, SLA baseline
 **Depends on this:** none
@@ -83,6 +83,7 @@ Normalized decisions this story implements:
 | Action | File | Purpose |
 |--------|------|---------|
 | Modify | `apps/web/lib/inngest/run-sla-check.tsx` | Add fulfillment-link-aware resend/regeneration behavior |
+| Add | `packages/db/fulfillment-link.ts` | Centralize active-link reuse and in-place regeneration rules |
 | Modify | `packages/email/templates/sla.tsx` | Add fulfillment CTA support to roaster reminder/urgent emails |
 | Modify | `packages/email/templates/magic-link-fulfillment.tsx` if needed | Align initial/manual resend content |
 | Modify | `apps/web/app/api/webhooks/stripe/route.ts` only if initial email props need alignment | Keep initial email consistent with the enhanced flow |
@@ -91,24 +92,24 @@ Normalized decisions this story implements:
 
 ## Acceptance criteria
 
-- [ ] Initial order-confirmation-side roaster fulfillment email still uses `magic_link_fulfillment`
-- [ ] Reminder and urgent SLA emails include a fulfillment CTA
-- [ ] When the current fulfillment token is still valid, reminder/urgent emails reuse it
-- [ ] When the current fulfillment token is expired and the order is still `CONFIRMED`, the existing `MagicLink` row is regenerated in place before sending
-- [ ] Regeneration writes `MAGIC_LINK_RESENT`
-- [ ] Existing template names `sla_roaster_reminder` and `sla_roaster_urgent` remain valid unless the epic/docs are updated in the same PR
-- [ ] Template names remain distinct enough for `EmailLog` dedupe to work as intended
-- [ ] No story path creates multiple active fulfillment-link rows for one order
-- [ ] Reminder/escalation emails do not send for unresolved flagged orders
+- [x] Initial order-confirmation-side roaster fulfillment email still uses `magic_link_fulfillment`
+- [x] Reminder and urgent SLA emails include a fulfillment CTA
+- [x] When the current fulfillment token is still valid, reminder/urgent emails reuse it
+- [x] When the current fulfillment token is expired and the order is still `CONFIRMED`, the existing `MagicLink` row is regenerated in place before sending
+- [x] Regeneration writes `MAGIC_LINK_RESENT`
+- [x] Existing template names `sla_roaster_reminder` and `sla_roaster_urgent` remain valid unless the epic/docs are updated in the same PR
+- [x] Template names remain distinct enough for `EmailLog` dedupe to work as intended
+- [x] No story path creates multiple active fulfillment-link rows for one order
+- [x] Reminder/escalation emails do not send for unresolved flagged orders
 
 ---
 
 ## UX / copy requirements
 
-- [ ] Reminder email tone stays helpful and action-oriented
-- [ ] Urgent email tone stays serious without becoming hostile
+- [x] Reminder email tone stays helpful and action-oriented
+- [x] Urgent email tone stays serious without becoming hostile
 - [ ] If a critical roaster email is added, it clearly communicates refund risk
-- [ ] Email CTA copy should point roasters back into the exact fulfillment action, not a vague dashboard destination
+- [x] Email CTA copy should point roasters back into the exact fulfillment action, not a vague dashboard destination
 
 ---
 
@@ -124,23 +125,23 @@ Normalized decisions this story implements:
 
 ## Required doc updates
 
-- [ ] target story doc
-- [ ] `docs/SPRINT_8_CHECKLIST.md`
-- [ ] `docs/SPRINT_8_PROGRESS.md`
+- [x] target story doc
+- [x] `docs/SPRINT_8_CHECKLIST.md`
+- [x] `docs/SPRINT_8_PROGRESS.md`
 - [ ] `docs/sprint-8/roaster-fulfillment-epic-v4.md` if template naming strategy changes
-- [ ] `docs/04-order-lifecycle.mermaid` if reminder/escalation flow changes
+- [x] `docs/04-order-lifecycle.mermaid` if reminder/escalation flow changes
 - [ ] `docs/AGENTS.md` only if a new canonical resend rule is introduced
 
 ---
 
 ## QA and verification
 
-- [ ] Reminder email uses the active token when still valid
-- [ ] Expired active token regenerates in place only for `CONFIRMED` orders
-- [ ] `EmailLog` dedupe still prevents duplicate sends for the same tier
-- [ ] No duplicate `MagicLink` rows are created
-- [ ] Flagged unresolved orders do not receive reminder/urgent sends
-- [ ] At minimum run:
+- [x] Reminder email uses the active token when still valid
+- [x] Expired active token regenerates in place only for `CONFIRMED` orders
+- [x] `EmailLog` dedupe still prevents duplicate sends for the same tier
+- [x] No duplicate `MagicLink` rows are created
+- [x] Flagged unresolved orders do not receive reminder/urgent sends
+- [x] At minimum run:
   - targeted tests for token-resolution / reminder-send behavior if added
   - `pnpm --filter web typecheck`
   - focused verification for the touched email templates and Inngest function
@@ -160,3 +161,4 @@ Normalized decisions this story implements:
 |---------|------|-------|
 | 0.1 | 2026-04-05 | Initial EP-10 reminder/escalation story created from the final fulfillment planning baseline. |
 | 0.2 | 2026-04-05 | Tightened for execution with concrete points, resend constraints, and minimum verification expectations. |
+| 0.3 | 2026-04-06 | Completed: SLA reminder and urgent emails now resolve a valid fulfillment CTA, reuse or regenerate the single fulfillment link in place, and keep manual resend behavior aligned with the same helper. |

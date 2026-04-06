@@ -2,7 +2,7 @@
 
 **Story ID:** US-10-00 | **Epic:** EP-10 (Roaster Fulfillment)
 **Points:** 3 | **Priority:** High
-**Status:** `Todo`
+**Status:** `Done`
 **Owner:** Full-stack
 **Dependencies:** US-01-02, Sprint 4 fulfillment baseline
 **Depends on this:** US-10-01, US-10-02, US-10-03, US-10-04, US-10-05, US-10-06
@@ -98,15 +98,15 @@ Normalized decisions this story implements:
 
 ## Acceptance criteria
 
-- [ ] `Order` includes optional `fulfillmentNote`
-- [ ] `Order` includes the fields required for roaster issue reporting and explicit resolution tracking
-- [ ] `OrderEventType` includes `ORDER_FLAGGED`, `FLAG_RESOLVED`, `MAGIC_LINK_RESENT`, and `TRACKING_UPDATED`
-- [ ] Existing live event names such as `SHIPPED`, `DELIVERED`, and `FULFILLMENT_VIEWED` remain unchanged
-- [ ] No EasyPost-only fields are added in this story
-- [ ] Prisma migration applies successfully
-- [ ] Prisma client regenerates successfully
-- [ ] Schema docs are updated in the same change
-- [ ] Existing webhook, token-fulfillment, SLA-job, and payout-job codepaths still typecheck against the expanded schema
+- [x] `Order` includes optional `fulfillmentNote`
+- [x] `Order` includes the fields required for roaster issue reporting and explicit resolution tracking
+- [x] `OrderEventType` includes `ORDER_FLAGGED`, `FLAG_RESOLVED`, `MAGIC_LINK_RESENT`, and `TRACKING_UPDATED`
+- [x] Existing live event names such as `SHIPPED`, `DELIVERED`, and `FULFILLMENT_VIEWED` remain unchanged
+- [x] No EasyPost-only fields are added in this story
+- [x] Prisma migration applies successfully
+- [x] Prisma client regenerates successfully
+- [x] Schema docs are updated in the same change
+- [x] Existing webhook, token-fulfillment, SLA-job, and payout-job codepaths still typecheck against the expanded schema
 
 ---
 
@@ -131,20 +131,20 @@ Normalized decisions this story implements:
 ## Required doc updates
 
 - [ ] `docs/sprint-8/roaster-fulfillment-epic-v4.md` if field names change
-- [ ] `docs/SPRINT_8_CHECKLIST.md`
-- [ ] `docs/SPRINT_8_PROGRESS.md`
-- [ ] `docs/06-database-schema.mermaid`
-- [ ] `docs/joe_perks_db_schema.md`
-- [ ] `docs/08-order-state-machine.mermaid` if flag state changes the diagram
+- [x] `docs/SPRINT_8_CHECKLIST.md`
+- [x] `docs/SPRINT_8_PROGRESS.md`
+- [x] `docs/06-database-schema.mermaid`
+- [x] `docs/joe_perks_db_schema.md`
+- [x] `docs/08-order-state-machine.mermaid` if flag state changes the diagram
 
 ---
 
 ## QA and verification
 
-- [ ] Prisma migration runs cleanly
-- [ ] Prisma client regenerates successfully
-- [ ] Touched files pass targeted lint / type checks
-- [ ] Existing fulfillment code still compiles against the expanded schema
+- [x] Prisma migration runs cleanly
+- [x] Prisma client regenerates successfully
+- [x] Touched files pass targeted lint / type checks
+- [x] Existing fulfillment code still compiles against the expanded schema
 - [ ] At minimum run:
   - `pnpm typecheck`
   - any required Prisma generate / migrate commands for the story
@@ -165,3 +165,4 @@ Normalized decisions this story implements:
 |---------|------|-------|
 | 0.1 | 2026-04-05 | Initial EP-10 foundation story created from the final fulfillment planning baseline. |
 | 0.2 | 2026-04-05 | Tightened for execution with concrete points, doc-update requirements, and minimum verification expectations. |
+| 1.0 | 2026-04-06 | Implemented: added `Order` fulfillment/flag fields, new fulfillment-alignment event enums, Prisma migration, and required schema/doc updates. |
