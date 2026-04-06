@@ -1,0 +1,608 @@
+EP-10
+Roaster Fulfillment Enhancement
+Magic link redesign · Escalation system · Roaster portal dashboard · Payout ledger
+Feature Implementation Document  ·  v1.0  ·  Apple HIG · Best Practices Applied
+Field
+Value
+Epic
+EP-10 — Roaster Fulfillment Enhancement
+Total stories
+7 stories (US-10-00 through US-10-06)
+Total points
+44 story points
+Sprint plan
+Sprint 4: schema + magic link redesign + escalation + emails (20 pts) · Sprint 5: portal dashboard + order detail + payout ledger (24 pts)
+Design system
+Apple Human Interface Guidelines + shadcn/ui + Tailwind CSS
+Target devices
+Phone + desktop equally — mobile-first, desktop-enhanced
+Phase 2 callouts
+EasyPost carrier integration documented in every relevant story
+Depends on
+US-01-02 (schema), US-01-03 (Clerk auth), US-01-04 (email), US-05-01 (order webhook), US-07-01 (admin dashboard)
+
+Section 1 — Design Philosophy & Architecture
+
+Core design principle: two paths, one experience
+The roaster fulfillment system has two distinct entry points — email (magic link) and portal (authenticated dashboard) — but they must feel like the same product. A roaster who primarily uses email should feel the portal is familiar when they finally visit it. A roaster who lives in the portal should get emails that feel like a lightweight version of the dashboard.
+This is achieved through a single shared OrderFulfillmentSheet component (packages/ui) that renders in both contexts. The magic link page IS the minimal portal — not a different product.
+
+Apple Human Interface Guidelines — applied to a web product
+Apple HIG principles translate directly to web design patterns used throughout this feature:
+
+HIG Principle
+Applied as
+Clarity — content over chrome
+Magic link page strips all navigation. Only the task matters: ship this order.
+Deference — UI recedes, content leads
+The order details and payout headline dominate. The form is secondary until the roaster is ready for it.
+Depth — layered information
+Payout breakdown collapsed behind a toggle. Event timeline collapsed behind a disclosure. Full financial detail in the ledger. Information revealed progressively.
+Minimum 44pt touch targets
+All buttons, carrier pills, tab bar items, and action links are 44px minimum height/width.
+Feedback within 100ms
+Carrier selection highlights immediately. Submit shows a spinner before the network round-trip returns.
+Focused task screens
+The magic link page, escalation sheet, and tracking edit form each have one primary action and no distracting navigation.
+Confirmation for destructive actions
+Can't fulfill requires a two-step sheet. Edit tracking requires an inline confirm. Auto-refund explained clearly before it happens.
+Color carries meaning, never alone
+SLA urgency uses color AND icon. Status pills use color AND text label. Never rely on color alone (accessibility).
+
+Fulfillment flow architecture
+
+Two fulfillment paths — one shared component
+PATH A — Email first (MVP default): Roaster receives email → clicks "Fulfill this order" → lands on magic link page (no auth) → enters carrier + tracking → submits → confirmation shown → optional "View dashboard" CTA.
+PATH B — Portal first (Sprint 5): Roaster signs in to portal → sees "To ship" queue → taps an order → OrderFulfillmentSheet renders inside the portal → enters carrier + tracking → submits → returns to order list.
+SHARED: Both paths use OrderFulfillmentSheet from packages/ui. The component prop isAuthenticated=false on the magic link page, isAuthenticated=true in the portal. Navigation context, payout breakdown behaviour, and action endpoints differ — visual design and interaction patterns are identical.
+PHASE 2: EasyPost adds a third option to both paths — "Generate label" replaces the manual tracking entry. The form structure is designed for this replacement: carrier picker becomes label type picker, tracking field becomes auto-populated.
+
+Escalation system architecture
+
+Trigger
+Action
+Magic link
+Admin impact
+SLA timer
+T+0 — order confirmed
+First fulfillment email sent
+Fresh link (72h TTL)
+None
+Running
+T+24h — sla_warn_hours
+Reminder email sent
+Fresh link (72h TTL)
+None — informational only
+Running
+T+48h — sla_breach_hours
+Breach email + admin alert
+Fresh link (72h TTL)
+Red flag in order list
+Running
+T+72h — sla_critical_hours
+Critical email, auto-refund warning
+Fresh link (72h TTL)
+Critical alert, admin action required
+Running
+T+96h — sla_auto_refund_hours
+Auto-refund processed, notification sent
+No link needed
+Refund shown in admin
+Ended
+Roaster flags order
+Flag logged, admin notified, resolution offered
+Page shows confirmation
+Amber flag in order list
+PAUSED until admin acks
+
+Key architecture decision — fresh links at each escalation
+Each escalation tier creates a new MagicLink record. Old links are NOT invalidated.
+Rationale: a roaster who opens a T+24h email after receiving the T+48h email should still be able to fulfill the order — the link works regardless of age as long as it is within its own 72h TTL and the order is still CONFIRMED.
+Audit trail: each MagicLink.resend_reason field records which escalation tier created it. The history of all magic links for an order serves as the audit trail requested.
+The fulfillment page loads the order by order_id from the link payload — not by token. This means any valid token for the same order reaches the same order detail.
+
+EasyPost Phase 2 integration points
+EasyPost is explicitly excluded from Sprint 4 and 5 scope. However, every story in this document calls out EasyPost integration points so the architecture is designed to accommodate it without refactoring. The key design decisions that enable this:
+	•	The OrderFulfillmentSheet carrier selector is structured as a segmented control — it becomes a label-type selector when EasyPost ships. No form structure change needed.
+	•	The tracking number text field will be replaced with an auto-populated read-only field when EasyPost generates the label. The form layout accommodates this.
+	•	Order.shipping_label_url and Order.label_generated_by (ROASTER | PLATFORM) are already in the schema — no migration needed for Phase 2.
+	•	RoasterShippingRate already has a Phase 2 comment: carrier_account_id added for EasyPost. When EasyPost ships, this field is populated.
+
+Section 2 — Sprint Plan
+
+Story
+Title
+Sprint
+Points
+Priority
+US-10-00
+Schema additions for enhanced fulfillment
+Sprint 4 — first PR
+2 pts
+High
+US-10-01
+Magic link fulfillment page — redesigned
+Sprint 4
+8 pts
+High
+US-10-02
+Can't fulfill — structured escalation
+Sprint 4
+5 pts
+High
+US-10-03
+Escalation email redesign — 5 tiers
+Sprint 4
+5 pts
+High
+US-10-04
+Roaster portal order dashboard — tabbed
+Sprint 5
+8 pts
+High
+US-10-05
+Portal order detail + shared fulfillment component
+Sprint 5
+8 pts
+High
+US-10-06
+Payout ledger + disputes section
+Sprint 5
+8 pts
+High
+
+Sprint 4 build order — strict dependencies
+1. US-10-00 (schema) — must be the first PR merged in this epic
+2. US-10-03 (email redesign) — can be built in parallel with US-10-01 once schema is done
+3. US-10-01 (magic link page redesign) — builds the OrderFulfillmentSheet component used by portal stories
+4. US-10-02 (can't fulfill escalation) — extends the magic link page, depends on US-10-01
+Sprint 5 stories all depend on US-10-01 (the shared component). Build US-10-04 first in Sprint 5, then US-10-05 and US-10-06 in parallel.
+
+Section 3 — User Story Cards
+7 stories covering the complete roaster fulfillment enhancement. Each story includes Acceptance Criteria, Technical Notes, UX / Apple HIG Notes, Phase 2 Integration Points, and Definition of Done.
+
+Shared component: OrderFulfillmentSheet
+This component is referenced in US-10-01, US-10-05. Build it as part of US-10-01 and publish to packages/ui.
+Props: order (Order + items), isAuthenticated (boolean), mode ("magic-link" | "portal"), onSubmitSuccess (callback), onCantFulfill (callback).
+It is a Server Component wrapper with a Client Component form — the order data is loaded server-side, the form interaction is client-side.
+The component is the cornerstone of this epic. If it is built well in Sprint 4, Sprint 5 stories become straightforward integrations.
+
+US-10-00  Schema additions for enhanced fulfillment system
+
+Points
+Priority
+Status
+Epic
+Sprint
+2 pts
+High
+Todo
+EP-10 Roaster Fulfillment
+Sprint 4 — first PR
+
+As a developer, I want to all schema changes for the enhanced fulfillment system applied in a single migration before any feature code is written
+so that no story in EP-10 is blocked by a missing field
+
+Dependencies: US-01-02
+Acceptance Criteria
+#
+Acceptance Criteria
+AC1
+Order model: add fulfillment_note String? — roaster-supplied note on shipment (e.g. "Roasted fresh this morning")
+AC2
+Order model: add flag_reason String? — populated when roaster cannot fulfill, stores the reason code
+AC3
+Order model: add flag_note String? — roaster free-text explanation when flagging an issue
+AC4
+Order model: add flagged_at DateTime? — timestamp when roaster flagged the order
+AC5
+Order model: add resolution_offered String? — enum string: PARTIAL_SHIP | REQUEST_EXTENSION | FULL_CANCEL | OTHER
+AC6
+Order model: add admin_acknowledged_flag Boolean @default(false) — cleared when admin acts on a flag
+AC7
+MagicLink model: add resend_count Int @default(0) — tracks how many times a link has been re-sent for this order (audit trail)
+AC8
+MagicLink model: add resend_reason String? — stores reason for re-send: ESCALATION_T24 | ESCALATION_T48 | ESCALATION_T72 | ADMIN_MANUAL
+AC9
+OrderEventType enum: add ORDER_FLAGGED, FLAG_RESOLVED, MAGIC_LINK_RESENT, FULFILLMENT_NOTE_ADDED values
+AC10
+Migration npx prisma migrate dev --name enhanced-fulfillment completes without errors
+
+Technical Notes
+	•	resolution_offered is stored as a String? not an enum — allows new resolution types to be added without migrations as the product evolves
+	•	resend_count and resend_reason on MagicLink serve the audit trail requested — each escalation creates a NEW MagicLink record (not updating the old one), so resend_count on each link will always be 0 or 1. The history is in the audit trail of multiple MagicLink records per order.
+	•	admin_acknowledged_flag enables the admin dashboard to show/clear the flag badge without changing order status
+
+Definition of Done
+	•	prisma migrate dev completes clean
+	•	prisma studio shows all new fields on Order and MagicLink
+	•	New OrderEventType values present in generated Prisma types
+
+US-10-01  Magic link fulfillment page — redesigned with Apple HIG principles
+
+Points
+Priority
+Status
+Epic
+Sprint
+8 pts
+High
+Todo
+EP-10 Roaster Fulfillment
+Sprint 4
+
+As a roaster, I want to to click a link in my order email and see a focused, fast-loading page that shows me exactly what to ship and lets me enter tracking with minimal taps
+so that I can fulfill an order in under 60 seconds without logging in to any system
+
+Dependencies: US-10-00  ·  US-05-01
+Acceptance Criteria
+#
+Acceptance Criteria
+AC1
+GET roasters.joeperks.com/fulfill/[token] — no authentication required. Token validation: exists, not expired (72h TTL), used_at IS NULL, purpose = ORDER_FULFILLMENT.
+AC2
+Page structure (top to bottom): (1) Joe Perks wordmark — minimal header, no nav; (2) Order summary card; (3) Ship-to address card; (4) Payout card; (5) Fulfillment form; (6) Can't fulfill link.
+AC3
+Order summary card: order number (JP-XXXXX) as the page headline, org name and campaign, ordered items as a clean list (product name + variant + qty + line total), order total.
+AC4
+Ship-to address card: formatted shipping address with copy-to-clipboard button on each line — tap to copy name, tap to copy address — for easy hand-off to shipping software.
+AC5
+Payout card: "Your earnings this order" in large green type ($X.XX), followed by a collapsed breakdown toggle "See breakdown" — expanding to show: product earnings / org cut / platform fee / Stripe fee / shipping (full passthrough). Breakdown is secondary — earnings headline is primary.
+AC6
+Fulfillment form contains exactly two fields: (1) Carrier — segmented control: UPS | FedEx | USPS | DHL | Other. On mobile, renders as a scrollable horizontal pill selector. (2) Tracking number — text input, inputMode="text", autocomplete="off", spellcheck="false". Below the input: "Tip: Copy from your carrier's app, then paste here."
+AC7
+Optional fulfillment note field: collapsed by default behind a "+ Add a note for the buyer" disclosure link. Expands to a single textarea (max 200 chars, character count shown). Stored in Order.fulfillment_note and included in the shipped email to buyer.
+AC8
+"Mark as Shipped" button: full-width, brand green, 56px tall (minimum 44px per HIG), prominent. Button text changes to a spinner while submitting. Disabled until carrier is selected AND tracking number is non-empty.
+AC9
+On submit success: the form is replaced with a confirmation state — checkmark icon, "Order marked as shipped", tracking info echoed back, payout summary, and a "View your dashboard" link to the authenticated portal. No page navigation.
+AC10
+On submit error (network failure): inline error below the button — "Something went wrong. Your order has not been marked as shipped. Try again." Retry is safe — the submission is idempotent (checks if order is already SHIPPED before processing).
+AC11
+Expired token (>72h): dedicated expired state page — "This fulfillment link has expired." with the order number, a "Request a new link" button (POST /api/roaster/request-new-link?order_id=X — sends a fresh magic link to the roaster's email on file), and support contact.
+AC12
+Already-fulfilled token: "This order has already been marked as shipped" with the tracking number and carrier echoed back, shipped timestamp, and "View your dashboard" link.
+AC13
+Page must load in under 2 seconds on a 4G mobile connection — server-rendered, minimal JS bundle, no client-side data fetching for the initial load.
+
+Technical Notes
+	•	Token validation uses atomic DB update: UPDATE MagicLink SET used_at=now() WHERE id=X AND used_at IS NULL — zero rows means already used. Check this before any Order mutation.
+	•	Submit handler: (1) validate token, (2) check Order.status = CONFIRMED (idempotency), (3) update Order in a transaction: status=SHIPPED, shipped_at=now(), tracking_number, carrier, fulfillment_note, (4) set MagicLink.used_at, (5) logOrderEvent(ORDER_SHIPPED, ROASTER), (6) sendEmail(order_shipped → buyer). Steps 5-6 use Promise.all for parallelism.
+	•	The page is a Next.js Server Component loading order data at request time using the token. No useEffect, no client-side fetch for initial render.
+	•	Request-new-link endpoint: POST /api/roaster/request-new-link — validates order_id belongs to this roaster (via email on file), rate-limited to 3 requests/hour/order, creates new MagicLink with resend_reason=ADMIN_MANUAL, sends fulfillment email.
+	•	"View your dashboard" link: roasters.joeperks.com/dashboard — roaster must sign in via Clerk if not already authenticated. Do not issue a session cookie from the magic link page — the magic link auth scope is single-order only.
+	•	NEVER expose: buyer payment method, full card details, platform transfer amounts, or other roaster earnings in the same view. Payout breakdown is roaster-specific only.
+
+UX / Apple HIG Notes
+	•	APPLE HIG — Navigation: the page has no navigation bar, no back button, no sidebar. It is a focused task screen — like a modal sheet. The only exits are "Mark as Shipped" (primary action) and "Can't fulfill this order" (destructive secondary). All other navigation is intentionally removed.
+	•	APPLE HIG — Typography hierarchy: order number is the largest text on the page (acts as the page title). Payout earnings are the second-largest. Everything else is secondary. The visual hierarchy tells the roaster: "here is your order, here is what you earn, now ship it."
+	•	APPLE HIG — Touch targets: all interactive elements are minimum 44×44pt. The carrier segmented control segments are each minimum 64pt wide. The Mark as Shipped button is 56pt tall. The copy-to-clipboard targets on the address card are minimum 44pt.
+	•	APPLE HIG — Feedback: every tap produces immediate visual feedback. Carrier selection highlights immediately. Submit button shows a spinner within 100ms. Success state animates in (fade + subtle scale). Error state does not shake or flash — it appears calmly below the button.
+	•	APPLE HIG — Destructive actions: "Can't fulfill this order" is presented as a text link in a secondary style, not a button. It is intentionally less prominent than the primary action. It requires a second confirmation step before any action is taken.
+	•	APPLE HIG — Color: green is used exclusively for the payout amount and the primary CTA. Amber/orange is used for SLA urgency. Red is used only for errors and the "Can't fulfill" confirmation destructive action. Brand green should not appear in error states.
+	•	On desktop: the form is centered in a max-width 520px card on a light gray background. This creates a focused modal-like appearance without being a literal modal.
+	•	On mobile: the page fills the viewport. The carrier segmented control scrolls horizontally if needed. The submit button is sticky at the bottom of the viewport on screens shorter than 700px — always visible without scrolling.
+	•	Copy-to-clipboard on the address: show a "Copied!" tooltip for 1.5 seconds after tapping. Do not use a persistent icon change — the tooltip disappears and the original state returns. This follows iOS convention exactly.
+
+Phase 2 Integration Points
+	•	EasyPost integration: replace the tracking number text field with a "Generate shipping label" CTA that calls the EasyPost API. The tracking number is then auto-populated from the generated label. The current form structure (carrier + tracking field) is designed to be replaced — the carrier selector becomes the label type selector.
+	•	The fulfillment_note field maps directly to EasyPost parcel notes — no schema change needed.
+
+Definition of Done
+	•	Page loads in <2s on Lighthouse mobile simulation
+	•	Full fulfillment flow tested: click link → select carrier → enter tracking → submit → order status = SHIPPED in DB → buyer shipped email received
+	•	Expired link shows expired state with request-new-link button
+	•	Already-used link shows fulfilled state with tracking echoed
+	•	Copy-to-clipboard works on Safari mobile
+
+US-10-02  Can't fulfill — structured escalation with resolution offer and admin dashboard flag
+
+Points
+Priority
+Status
+Epic
+Sprint
+5 pts
+High
+Todo
+EP-10 Roaster Fulfillment
+Sprint 4
+
+As a roaster, I want to to clearly report that I cannot fulfill an order with a structured reason and a suggested resolution so that the platform can act quickly on my behalf
+so that the buyer is protected, admin is informed, and I am not left with an unresolved obligation
+
+Dependencies: US-10-01  ·  US-07-01
+Acceptance Criteria
+#
+Acceptance Criteria
+AC1
+"Can't fulfill this order" link appears at the bottom of the fulfillment page (US-10-01). Tapping it opens a focused escalation sheet (full-page on mobile, modal on desktop).
+AC2
+Escalation sheet step 1 — Reason: required single-select. Options: "Out of stock — I don't have this product available" | "Can't meet the deadline — I need more time" | "Wrong address — the shipping address appears incorrect" | "Other issue — something else is preventing fulfillment."
+AC3
+Escalation sheet step 2 — Resolution offer: roaster must select what they are willing to do. Options vary by reason: Out of stock → [Request platform re-route to another roaster | Cancel and refund the buyer | Ship when restocked (needs buyer approval)]. Can't meet deadline → [Request a 48-hour extension | Cancel and refund the buyer]. Wrong address → [Request buyer to confirm address via email | Cancel and refund the buyer]. Other → [I need platform admin help | Cancel and refund the buyer].
+AC4
+Escalation sheet step 3 — Note: optional free-text (max 300 chars) for additional context. Placeholder: "Anything else the Joe Perks team should know?"
+AC5
+Submit: updates Order with flag_reason, flag_note, resolution_offered, flagged_at. Sets admin_acknowledged_flag = false. Logs OrderEvent ORDER_FLAGGED with actor=ROASTER and payload containing all three fields. Sends admin alert email.
+AC6
+Admin dashboard (admin.joeperks.com/orders): flagged orders show a red badge "Roaster flagged" in the order list. The flag badge persists until admin sets admin_acknowledged_flag = true via the "Acknowledge" button in order detail.
+AC7
+Admin order detail shows the flag reason, resolution offered, and roaster note in a prominent amber callout box at the top of the order detail view.
+AC8
+When a flag is submitted with any reason: the SLA timer is paused for admin review — the order is tagged as FLAGGED_PENDING_REVIEW and excluded from auto-refund calculations until admin acts. This is stored as a new status flag (admin_acknowledged_flag=false) rather than a new OrderStatus value.
+AC9
+After flagging, the magic link fulfillment page shows a confirmation: "We've notified the Joe Perks team. You'll hear from us within 4 hours. Your order: JP-XXXXX." No further action required from the roaster on this page.
+AC10
+Roaster receives a confirmation email: subject "We received your issue report for #JP-XXXXX" — confirms the platform has been notified, restates the resolution they offered, and gives a support email for follow-up.
+
+Technical Notes
+	•	SLA timer pause implementation: the sla-check Inngest job must skip orders where admin_acknowledged_flag = false AND flagged_at IS NOT NULL. Add this filter to the job query.
+	•	Admin alert email: sent immediately on flag submission. Contains: order number, roaster name, flag reason (human-readable), resolution offered, roaster note, direct link to admin.joeperks.com/orders/[id].
+	•	The resolution_offered options are defined as constants in packages/types — not hardcoded in the UI or API. This allows new options to be added without modifying the form component.
+	•	Confirmation email to roaster uses EmailLog dedup on (order_id, "order_flagged_confirmation") — safe to call even if roaster submits twice.
+
+UX / Apple HIG Notes
+	•	APPLE HIG — Destructive actions: the escalation sheet must open with clear context at the top: "Tell us what's happening with order #JP-XXXXX." The roaster should never feel they are being punished for flagging — the copy should be supportive.
+	•	APPLE HIG — Progression: the three-step sheet (Reason → Resolution → Note) uses a visual step indicator (1 of 3, 2 of 3). Back navigation is available at each step. Submit is only available on step 3.
+	•	APPLE HIG — Confirmation: after submission, the confirmation screen shows a green checkmark and warm reassuring copy. The roaster's job is done. Do not leave them in an anxious state.
+	•	The resolution options should use natural language, not technical terms. "Cancel and refund the buyer" not "INITIATE_REFUND". Each option should have a one-line explanation of what it means.
+	•	On mobile, the escalation sheet slides up from the bottom as a full-screen sheet with a drag handle — matches the iOS sheet interaction model exactly.
+
+Definition of Done
+	•	Flagging an order creates OrderEvent ORDER_FLAGGED with all fields populated
+	•	Admin dashboard shows red "Roaster flagged" badge on the order
+	•	SLA auto-refund job skips flagged-and-unacknowledged orders
+	•	Admin can acknowledge flag and see all three roaster-submitted fields
+
+US-10-03  Escalation email redesign — visual urgency system with fresh magic links at each tier
+
+Points
+Priority
+Status
+Epic
+Sprint
+5 pts
+High
+Todo
+EP-10 Roaster Fulfillment
+Sprint 4
+
+As a roaster, I want to to receive escalating email notifications that clearly communicate urgency and always contain a working fulfillment link
+so that I always have a path to fulfill the order regardless of when I act
+
+Dependencies: US-10-00  ·  US-01-04  ·  US-05-01
+Acceptance Criteria
+#
+Acceptance Criteria
+AC1
+First fulfillment email (sent on order confirmation, T+0): clean and warm in tone. Subject: "New order — #[JP-XXXXX] for [Org Name]". Shows: order items, ship-to address, earnings ($X.XX), one prominent "Fulfill this order" button. NO SLA deadline shown. NO urgency language.
+AC2
+T+24h reminder email (sla_warn_hours): new MagicLink created (resend_reason=ESCALATION_T24, 72h TTL), old link NOT invalidated. Subject: "Reminder: Order #[JP-XXXXX] needs to ship today". Visual treatment: amber accent header bar. SLA deadline shown prominently: "This order should ship by [fulfill_by date and time]." Tone: helpful, not threatening. Shows same order summary and fresh fulfillment button.
+AC3
+T+48h breach email (sla_breach_hours): new MagicLink created (resend_reason=ESCALATION_T48). Subject: "Urgent: Order #[JP-XXXXX] is overdue — action required". Visual treatment: red accent header bar. SLA deadline shown: "This order was due [date]. It is now [X] hours overdue." Additional line: "If you cannot fulfill this order, please use the link below to let us know so we can protect the buyer." Fresh fulfillment button + "Can't fulfill" link both included.
+AC4
+T+72h critical email (sla_critical_hours): new MagicLink created (resend_reason=ESCALATION_T72). Subject: "Critical: Order #[JP-XXXXX] — 24 hours until automatic refund". Visual treatment: red header, bolder typography. States the auto-refund timeline clearly: "If this order is not fulfilled by [auto_refund_time], it will be automatically refunded and may affect your account standing."
+AC5
+T+96h auto-refund email: no magic link needed. Subject: "Order #[JP-XXXXX] has been automatically refunded". Explains: order has been refunded, buyer has been notified, no further action needed from roaster. Links to roaster dashboard for questions.
+AC6
+Each email tier must use a visually distinct header color to signal urgency level: T+0 = brand green header, T+24 = amber header, T+48 = red header, T+72 = dark red header.
+AC7
+Every email except T+96 contains a fresh working magic link. The link token is different each time but points to the same order — the fulfillment page handles this correctly (order found by order_id in the magic link payload, not by token).
+AC8
+EmailLog deduplication: each escalation email keyed on (order_id, template_name) where template_name includes the tier: "magic_link_fulfillment_t24", "magic_link_fulfillment_t48", "magic_link_fulfillment_t72". This prevents duplicate escalation emails if the Inngest job runs twice.
+AC9
+All emails render correctly in Apple Mail, Gmail, and Outlook — tested in React Email dev server.
+
+Technical Notes
+	•	Fresh magic link per escalation: the Inngest sla-check job creates a new MagicLink record for each escalation tier. The old links are NOT invalidated — a roaster who fulfills via an older link still works correctly because the fulfillment handler checks Order.status, not which specific token was used.
+	•	Fulfillment page with a link from any escalation tier: the magic link payload is { order_id } — the page loads the order by order_id and validates it is still CONFIRMED before showing the form.
+	•	React Email templates needed: magic_link_fulfillment_t0 (existing, to be redesigned), magic_link_fulfillment_t24, magic_link_fulfillment_t48, magic_link_fulfillment_t72, order_auto_refunded_roaster.
+	•	The urgency color system uses the same semantic tokens as the admin dashboard SLA indicators: green/amber/red/dark-red — consistent cross-surface vocabulary.
+
+UX / Apple HIG Notes
+	•	APPLE HIG — Email design: Apple Mail renders HTML email with full fidelity. Each email should have a single prominent CTA button in the center. The button must be at least 44pt tall. Use only web-safe fallbacks for fonts (Helvetica Neue, Arial).
+	•	The escalating urgency must be immediately visible on the email preview pane without opening: subject line wording + sender name ("Joe Perks Orders") must signal urgency. Use "Reminder:", "Urgent:", "Critical:" prefixes — these are standard email urgency signals that roasters will recognize.
+	•	The first email (T+0) should feel like a positive new-order notification — warm brand colors, emphasis on earnings. The buyer is excited. The roaster should be too.
+	•	By T+48, the email should feel serious but not hostile. The roaster may have had an emergency. The copy should communicate: "We want to help resolve this — here is what you can do."
+
+Definition of Done
+	•	All 5 email templates render correctly in React Email dev server at all viewport widths
+	•	T+24 email sends from Inngest sla-check job with fresh magic link
+	•	T+48 email sends with both fulfillment link and can't-fulfill link
+	•	EmailLog prevents duplicate escalation emails per tier
+	•	Link from a T+24 email still works to fulfill an order that received a T+48 email
+
+US-10-04  Roaster portal order dashboard — tabbed queue with all orders
+
+Points
+Priority
+Status
+Epic
+Sprint
+8 pts
+High
+Todo
+EP-10 Roaster Fulfillment
+Sprint 5 (next sprint — fully specified)
+
+As a authenticated roaster, I want to to see all my orders in a clear tabbed dashboard with the pending fulfillment queue front and centre
+so that I can manage my order obligations without relying on email and never miss a shipment
+
+Dependencies: US-10-01  ·  US-01-03
+Acceptance Criteria
+#
+Acceptance Criteria
+AC1
+GET roasters.joeperks.com/dashboard — requires Clerk authentication (ROASTER_ADMIN role). Unauthenticated redirects to /sign-in.
+AC2
+Dashboard header: roaster business name, "Welcome back [name]" greeting, and a metrics strip: [Pending (N)] [Shipped this week (N)] [Total earned ($X)] — the Pending count is a red badge if > 0.
+AC3
+Tab bar: "To ship" | "Shipped" | "Delivered" | "All orders" — persistent across navigation. Default tab is "To ship".
+AC4
+"To ship" tab: all orders with status = CONFIRMED, sorted by fulfill_by ascending (most urgent first). SLA indicator on each row: green if >24h remaining, amber if 6–24h remaining, red if <6h or overdue.
+AC5
+"Shipped" tab: all orders with status = SHIPPED, sorted by shipped_at descending. Shows tracking number and carrier on each row.
+AC6
+"Delivered" tab: all orders with status = DELIVERED, sorted by delivered_at descending.
+AC7
+"All orders" tab: all orders regardless of status, sorted by created_at descending, with status pills. Paginated 25 per page with "Load more" pagination.
+AC8
+Each order row shows: order number, org name, item count, order total, fulfill-by (for pending) or shipped/delivered date, status pill, and a "Fulfill" or "View" action button.
+AC9
+Flagged orders: appear in "To ship" with a distinct amber "Action needed" badge instead of the SLA indicator. These are orders the roaster has flagged but admin has not yet resolved.
+AC10
+Empty state for "To ship": warm illustration and "You're all caught up — no orders waiting to ship." with a link to "View all orders".
+AC11
+Search: a search input at the top of the "All orders" tab filters by order number (JP-XXXXX) or buyer name in real time.
+
+Technical Notes
+	•	Query for "To ship" tab: Orders WHERE roaster_id = session.roasterId AND status = CONFIRMED ORDER BY fulfill_by ASC. Uses @@index([roaster_id, status]) — existing critical index.
+	•	SLA time remaining calculated client-side from fulfill_by timestamp — refreshes every 60 seconds without a full page reload (use React state + setInterval).
+	•	Metrics strip: three separate queries or a single aggregate query with groupBy. Cache for 30 seconds — acceptable staleness for a counter display.
+	•	Tenant isolation: every query in this page MUST scope by roaster_id from the Clerk session. Never trust a roaster_id from URL params or request body.
+	•	The "To ship" tab is server-rendered for initial load (fast first paint). "Shipped", "Delivered", "All" tabs load client-side on first tab click — skeleton loaders shown while fetching.
+
+UX / Apple HIG Notes
+	•	APPLE HIG — Tab bars: use a segmented control style tab bar (not underline tabs). On mobile, the tab bar sits below the metrics strip and above the order list. On desktop, it appears as a top-level navigation below the dashboard header.
+	•	APPLE HIG — List rows: each order row has clear visual hierarchy: order number (bold, primary), org name (secondary), then meta info (date, total) as tertiary. The action button ("Fulfill" or "View") is right-aligned and uses a minimum 44pt touch target.
+	•	APPLE HIG — SLA urgency: the SLA indicator uses color AND an icon (not color alone) — accessibility requirement. Green = clock icon, amber = exclamation clock, red = warning triangle. Screen readers announce the urgency level.
+	•	APPLE HIG — Empty states: empty states use an illustration, a single headline, and one CTA. Never a blank list. The empty state for "To ship" should feel celebratory — "all caught up" is good news.
+	•	On iPad (landscape): the dashboard uses a split layout — order list on the left (40% width), order detail on the right (60% width). Selecting a row shows the detail inline without navigation.
+	•	Mobile: the tab bar scrolls horizontally if the labels are long. Each tab label shows a count badge when > 0 (e.g. "To ship 3").
+
+Phase 2 Integration Points
+	•	EasyPost label generation: "Fulfill" button becomes "Generate label + mark shipped" — integrates with EasyPost API to create a label, download it, and auto-populate tracking number.
+
+Definition of Done
+	•	Authenticated roaster sees only their own orders in all tabs
+	•	"To ship" tab sorted correctly by fulfill_by with SLA color indicators
+	•	Unauthenticated request redirects to /sign-in
+	•	Metrics strip shows correct counts from test data
+
+US-10-05  Portal order detail — shared fulfillment component with inline tracking entry
+
+Points
+Priority
+Status
+Epic
+Sprint
+8 pts
+High
+Todo
+EP-10 Roaster Fulfillment
+Sprint 5
+
+As a authenticated roaster, I want to to tap any order in my dashboard and see its full details with the same tracking entry experience as the magic link page — but inside my authenticated portal
+so that I have a single place to manage all my orders regardless of whether I started from an email or from the dashboard
+
+Dependencies: US-10-04  ·  US-10-01
+Acceptance Criteria
+#
+Acceptance Criteria
+AC1
+GET roasters.joeperks.com/orders/[order_id] — authenticated. Query scoped to session.roasterId (403 if order belongs to a different roaster).
+AC2
+Page renders the OrderFulfillmentSheet component — the same shared component used on the magic link page (US-10-01). The component accepts an isAuthenticated prop that controls which features are visible.
+AC3
+When isAuthenticated=true: the "View your dashboard" link is replaced with "← Back to orders" breadcrumb. The request-new-link section is hidden (not relevant in portal context). The payout breakdown is always expanded (not collapsed behind a toggle) — authenticated roasters want full financial transparency.
+AC4
+Order status timeline: below the fulfillment form, show a chronological event timeline using OrderEvent records. Events translated to human labels: ORDER_CREATED="Order received", ORDER_SHIPPED="Marked as shipped", ORDER_DELIVERED="Delivered", ORDER_FLAGGED="Issue reported to Joe Perks", FLAG_RESOLVED="Issue resolved". Internal SLA and payout events are NOT shown.
+AC5
+For CONFIRMED orders: the fulfillment form is shown in the active, fillable state — identical to the magic link page form (carrier selector + tracking number + optional note).
+AC6
+For SHIPPED orders: the fulfillment form is replaced with a "Shipped details" read-only card showing: carrier, tracking number, shipped_at, any fulfillment note. An "Edit shipping details" link allows corrections — see AC below.
+AC7
+"Edit shipping details" for SHIPPED orders: opens an inline edit form (same fields: carrier + tracking number). On save: updates Order.tracking_number and Order.carrier, logs OrderEvent TRACKING_ADDED with actor=ROASTER, sends an updated tracking email to the buyer (using the same shipped notification template, not a new email type — buyer sees "Updated tracking information for your order").
+AC8
+For DELIVERED orders: read-only view. No editing. Shows delivery date, final payout amount, and payout status (PENDING | HELD | TRANSFERRED | FAILED) with human labels.
+AC9
+Dispute callout: if a DisputeRecord exists for this order, show an amber callout box: "A dispute has been opened on this order. See your Disputes section for details." Links to /payouts/disputes.
+AC10
+For CONFIRMED orders: below the fulfillment form, show the SLA countdown: "Ship by [date and time] — [X hours remaining]" in the appropriate SLA color.
+
+Technical Notes
+	•	OrderFulfillmentSheet is a shared React component in packages/ui. It accepts: order (Order with items), isAuthenticated (boolean), onSubmit (callback), mode ("magic-link" | "portal"). The magic link page passes mode="magic-link", the portal page passes mode="portal".
+	•	The component handles its own submission logic differently based on mode: in magic-link mode it calls the public /api/roaster/fulfill/[token] endpoint; in portal mode it calls the authenticated /api/roaster/orders/[id]/fulfill endpoint which uses the Clerk session for auth.
+	•	Edit tracking: PATCH /api/roaster/orders/[id]/tracking — requires Clerk session, validates roaster_id ownership, updates fields, logs event, sends buyer email. Rate-limited to 5 edits/hour/order to prevent abuse.
+	•	Buyer email on tracking update: uses the order_shipped template but with subject "Updated: Your order #[JP-XXXXX] shipping information" — not a new template, just a subject line variant. EmailLog key: (order_id, "tracking_updated") to prevent duplicate update emails.
+
+UX / Apple HIG Notes
+	•	APPLE HIG — Shared components: the OrderFulfillmentSheet must feel identical in both contexts. The only differences are the navigation context (back button vs breadcrumb) and minor content differences (collapsed vs expanded payout breakdown). Visual design, spacing, typography, and interaction patterns are identical.
+	•	APPLE HIG — Inline editing: "Edit shipping details" should use an inline edit pattern — the read-only card animates into an editable form in-place. Not a new page, not a modal. On save, the card animates back to the read-only state with updated values.
+	•	APPLE HIG — Progressive disclosure: the event timeline is collapsed behind a "Show order history" disclosure link by default. Most roasters do not need the full timeline on every view. Power users who want it can expand it.
+	•	On iPad: the order detail renders in the right-hand 60% panel of the split layout (from US-10-04). It does not navigate — tapping another order in the list updates the right panel in-place.
+
+Phase 2 Integration Points
+	•	EasyPost: replace carrier selector + tracking input with "Generate label" CTA in portal mode. The read-only SHIPPED state shows a "Download label (PDF)" link.
+
+Definition of Done
+	•	403 returned when authenticated roaster accesses another roaster's order
+	•	Fulfillment via portal marks order as SHIPPED — identical result to magic link path
+	•	Edit tracking updates DB, logs event, sends buyer email
+	•	OrderFulfillmentSheet renders identically in both magic-link and portal modes
+
+US-10-06  Payout ledger — full earnings visibility with pending, paid, and debt transparency
+
+Points
+Priority
+Status
+Epic
+Sprint
+8 pts
+High
+Todo
+EP-10 Roaster Fulfillment
+Sprint 5
+
+As a authenticated roaster, I want to to see a complete picture of my earnings: what I've been paid, what is pending, what is being held, and any amounts owed due to disputes
+so that I can reconcile my Joe Perks earnings without contacting support
+
+Dependencies: US-10-04
+Acceptance Criteria
+#
+Acceptance Criteria
+AC1
+GET roasters.joeperks.com/payouts — authenticated. Three-section layout: (1) Earnings summary strip, (2) Payout history list, (3) Disputes section.
+AC2
+Earnings summary strip: four metric cards — "Lifetime earned" (SUM of roaster_total on TRANSFERRED orders), "Pending payout" (SUM of roaster_total on DELIVERED orders with payout_status=PENDING), "In hold period" (SUM of roaster_total on DELIVERED orders where payout_eligible_at > now()), "Outstanding debts" (SUM of RoasterDebt.amount WHERE settled=false). Outstanding debts card uses amber color if > $0.
+AC3
+Payout history list: all orders where payout_status IN [TRANSFERRED, FAILED, HELD], sorted by created_at descending. Each row: order number, org name, order date, gross_order_amount, roaster_total (their net), payout_status pill, Stripe transfer date (if TRANSFERRED).
+AC4
+Payout status pills: TRANSFERRED = green "Paid [date]", HELD = amber "In review", PENDING = gray "Awaiting delivery", FAILED = red "Transfer failed — contact support".
+AC5
+Row expansion: tapping a row expands an inline breakdown — product earnings / org cut / platform fee / Stripe fee / shipping passthrough / net payout. If a RoasterDebt was deducted from this payout, it shows as a line item: "Dispute fee deducted: -$15.00 (see Disputes)".
+AC6
+Disputes section: at the bottom of the /payouts page. Shows all DisputeRecord rows for this roaster's orders. Each dispute card: order number, dispute opened date, dispute reason (Stripe reason code translated to human label), fault_attribution (if set by admin), outcome (if resolved), amounts at stake.
+AC7
+Outstanding debt rows (RoasterDebt WHERE settled=false): shown in the Disputes section as "Amount owed" cards with: reason (human-readable: "Dispute fee", "Processing fee recovery", "Chargeback recovery"), amount, linked order number, settlement status. A settled debt shows: "Deducted from payout on [date]."
+AC8
+Roasters can see their dispute_count_90d: a callout if > 0 disputes in 90 days: "You have [N] dispute(s) in the last 90 days. Maintaining below 2 disputes per 90 days protects your account standing."
+AC9
+FAILED payouts: show a "Contact support" link with mailto:support@joeperks.com?subject=Payout issue for order [order_number] pre-filled.
+
+Technical Notes
+	•	All queries on this page MUST scope by roaster_id from Clerk session — no exceptions.
+	•	Payout history query: Orders WHERE roaster_id = session.roasterId AND payout_status IN [TRANSFERRED, PENDING, HELD, FAILED] ORDER BY created_at DESC. Paginated 25 per page.
+	•	Debt query: RoasterDebt WHERE roaster_id = session.roasterId ORDER BY created_at DESC. Uses @@index([roaster_id, settled]).
+	•	DisputeRecord query: join through Order WHERE roaster_id = session.roasterId.
+	•	Stripe reason codes mapped to human labels in packages/types: DUPLICATE → "Duplicate charge", FRAUDULENT → "Reported as fraudulent", SUBSCRIPTION_CANCELED → "Subscription cancelled", etc.
+	•	The dispute_count_90d field on Roaster is updated by the chargeback webhook handler — read it directly from the Roaster record, no need to re-count.
+
+UX / Apple HIG Notes
+	•	APPLE HIG — Data presentation: financial data requires extra care. Never truncate amounts. Show full dollar values with cents ($1,234.56 not $1.2K). Use tabular number rendering so decimal points align.
+	•	APPLE HIG — Color in financial contexts: green = money received (positive), amber = pending/at risk, red = problem/owed. These semantic meanings must be absolutely consistent across all financial screens.
+	•	The "Outstanding debts" card in amber creates a natural urgency — roasters see immediately if they owe money. But the copy should be factual and non-threatening: "You have $X.XX in outstanding amounts that will be deducted from your next payout."
+	•	Disputes section: roasters may not understand what a dispute is. Include a brief one-liner explanation: "A dispute occurs when a buyer contacts their bank about a charge. We handle it — this section keeps you informed."
+	•	Empty state for Disputes: "No disputes on record. Keep up the great work!" — brief, positive, not alarming.
+
+Phase 2 Integration Points
+	•	Stripe dashboard link: "View in Stripe" link next to each TRANSFERRED payout — deep links to the Stripe transfer in the roaster's Express dashboard.
+
+Definition of Done
+	•	Earnings summary metrics match manual calculation from test data
+	•	Payout history row expansion shows correct split breakdown
+	•	Dispute with linked RoasterDebt shows deduction line item
+	•	dispute_count_90d callout appears when count > 0
+	•	All queries return only authenticated roaster's data
+
