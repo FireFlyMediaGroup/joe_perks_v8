@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 
 interface HeaderProps {
   dictionary: Dictionary;
+  locale: string;
 }
 
 const navLinks = [
@@ -43,9 +44,10 @@ function ThemeToggle() {
   );
 }
 
-export const Header = ({ dictionary: _dictionary }: HeaderProps) => {
+export const Header = ({ dictionary: _dictionary, locale }: HeaderProps) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const accountHref = `/${locale}/account`;
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -107,6 +109,13 @@ export const Header = ({ dictionary: _dictionary }: HeaderProps) => {
           <ThemeToggle />
 
           <Link
+            className="hidden items-center rounded-[var(--jp-radius-md)] border border-[var(--jp-border-dark)] px-4 py-2 font-body font-semibold text-[var(--jp-text)] text-sm transition-colors hover:bg-[var(--jp-bg-alt)] md:inline-flex"
+            href={accountHref}
+          >
+            Account
+          </Link>
+
+          <Link
             className="hidden items-center gap-2 rounded-[var(--jp-radius-md)] bg-jp-terra px-4 py-2 font-body font-semibold text-sm text-white shadow-[var(--jp-shadow-sm)] transition-all hover:-translate-y-px hover:bg-jp-terra-dark hover:shadow-[0_6px_20px_rgba(212,96,58,0.35)] md:inline-flex"
             href="/orgs/apply"
           >
@@ -147,6 +156,14 @@ export const Header = ({ dictionary: _dictionary }: HeaderProps) => {
               </Link>
             ))}
             <div className="mt-3 flex flex-col gap-2">
+              <Link
+                className="flex items-center justify-center rounded-[var(--jp-radius-md)] border px-4 py-3 font-body font-semibold text-[var(--jp-text)] text-sm"
+                href={accountHref}
+                onClick={() => setMobileOpen(false)}
+                style={{ borderColor: "var(--jp-border-dark)" }}
+              >
+                Your account
+              </Link>
               <Link
                 className="flex items-center justify-center gap-2 rounded-[var(--jp-radius-md)] bg-jp-terra px-4 py-3 font-body font-semibold text-sm text-white"
                 href="/orgs/apply"

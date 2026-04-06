@@ -2,7 +2,7 @@ const ABSOLUTE_URL_PATTERN = /^[a-z][a-z\d+\-.]*:\/\//i;
 const LOCALE_SEGMENT_PATTERN = /^[a-z]{2}(?:-[A-Z]{2})?$/;
 
 export function getBuyerDefaultRedirectPath(locale: string): string {
-  return `/${locale}`;
+  return `/${locale}/account?focus=orders-heading`;
 }
 
 export function buildBuyerSignInPath(

@@ -5,6 +5,10 @@ import {
 } from "./redirect";
 
 describe("buyer auth redirect helpers", () => {
+  test("defaults to the buyer dashboard when no redirect is provided", () => {
+    expect(sanitizeBuyerRedirect("en")).toBe("/en/account?focus=orders-heading");
+  });
+
   test("keeps same-locale redirects", () => {
     expect(sanitizeBuyerRedirect("en", "/en/account/orders/ord_123")).toBe(
       "/en/account/orders/ord_123"
@@ -19,12 +23,14 @@ describe("buyer auth redirect helpers", () => {
 
   test("rejects absolute redirects", () => {
     expect(sanitizeBuyerRedirect("en", "https://evil.example/steal")).toBe(
-      "/en"
+      "/en/account?focus=orders-heading"
     );
   });
 
   test("rejects mismatched locale redirects", () => {
-    expect(sanitizeBuyerRedirect("en", "/fr/account")).toBe("/en");
+    expect(sanitizeBuyerRedirect("en", "/fr/account")).toBe(
+      "/en/account?focus=orders-heading"
+    );
   });
 
   test("builds sign-in path with safe redirect", () => {
