@@ -2,11 +2,12 @@ import "./load-env-bootstrap";
 
 import { neonConfig } from "@neondatabase/serverless";
 import { PrismaNeon } from "@prisma/adapter-neon";
-import ws from "ws";
 import { PrismaClient } from "./generated/client";
 import { keys } from "./keys";
 
-neonConfig.webSocketConstructor = ws;
+if (!process.env.VERCEL) {
+  neonConfig.webSocketConstructor = (await import("ws")).default;
+}
 
 const adapter = new PrismaNeon({ connectionString: keys().DATABASE_URL });
 

@@ -10,6 +10,11 @@ const monorepoRoot = path.join(
 );
 
 let nextConfig: NextConfig = {
+  serverExternalPackages: [
+    "ws",
+    "@neondatabase/serverless",
+    "@prisma/adapter-neon",
+  ],
   turbopack: {
     root: monorepoRoot,
   },

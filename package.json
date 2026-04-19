@@ -41,6 +41,7 @@
     "db:smoke:prod": "cd packages/db && PRISMA_DATABASE_PROFILE=production bun run ./scripts/smoke-db.ts",
     "db:seed:prod": "cd packages/db && PRISMA_DATABASE_PROFILE=production bunx prisma db seed",
     "db:push": "cd packages/db && bunx prisma format && bunx prisma generate && bunx prisma db push",
+    "vercel:env:sync": "node ./scripts/vercel-sync-envs.mjs",
     "clean": "git clean -xdf node_modules",
     "release": "npm publish"
   },

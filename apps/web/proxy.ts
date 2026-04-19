@@ -8,7 +8,12 @@ import {
   securityMiddleware,
 } from "@repo/security/proxy";
 import { createNEMO } from "@rescale/nemo";
-import { type NextProxy, type NextRequest, NextResponse } from "next/server";
+import {
+  type NextFetchEvent,
+  type NextProxy,
+  type NextRequest,
+  NextResponse,
+} from "next/server";
 import { env } from "@/env";
 
 export const config = {
@@ -53,17 +58,18 @@ const composedMiddleware = createNEMO(
   }
 );
 
-// Clerk middleware wraps other middleware in its callback
-export default authMiddleware(async (_auth, request, event) => {
-  // Run security headers first
+async function innerMiddleware(request: NextRequest, event: NextFetchEvent) {
   const headersResponse = securityHeaders();
-
-  // Then run composed middleware (i18n + arcjet)
-  const middlewareResponse = await composedMiddleware(
-    request as unknown as NextRequest,
-    event
-  );
-
-  // Return middleware response if it exists, otherwise headers response
+  const middlewareResponse = await composedMiddleware(request, event);
   return middlewareResponse || headersResponse;
-}) as unknown as NextProxy;
+}
+
+// The web storefront is public, so Clerk is only used when configured.
+const hasClerk = !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+
+export default (hasClerk
+  ? authMiddleware(async (_auth, request, event) =>
+      innerMiddleware(request as unknown as NextRequest, event as NextFetchEvent)
+    )
+  : (async (request: NextRequest, event: NextFetchEvent) =>
+      innerMiddleware(request, event))) as unknown as NextProxy;

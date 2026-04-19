@@ -11,10 +11,10 @@ interface HeaderProps {
 }
 
 const navLinks = [
-  { label: "How it works", href: "#how-it-works" },
-  { label: "Features", href: "#features" },
-  { label: "For orgs", href: "#for-orgs" },
-  { label: "For roasters", href: "#for-roasters" },
+  { label: "How it works", href: "/#how-it-works" },
+  { label: "Features", href: "/#features" },
+  { label: "For orgs", href: "/#for-orgs" },
+  { label: "For roasters", href: "/#for-roasters" },
 ];
 
 function ThemeToggle() {

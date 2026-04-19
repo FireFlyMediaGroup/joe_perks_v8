@@ -137,9 +137,9 @@ async function createPaymentIntent(
   return {
     ok: true,
     data: {
-      clientSecret: data.clientSecret,
-      grossAmount: data.grossAmount,
-      paymentIntentId: data.paymentIntentId,
+      clientSecret: data.clientSecret as string,
+      grossAmount: data.grossAmount as number,
+      paymentIntentId: data.paymentIntentId as string,
     },
   };
 }
