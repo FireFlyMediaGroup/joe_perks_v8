@@ -131,7 +131,55 @@ Living document. **Full narrative checklist (accounts, Vercel, CI secrets, ports
 
 | Item | Status | Notes |
 |------|--------|--------|
-| Full legal + security + E2E + infra checklist | **Manual** | Before live money. |
+| Full legal + security + E2E + infra checklist | **Manual** | Before live money. Executed via **`docs/runbooks/v1-launch-runbook.md`**. |
+| Pre-mortem completed and reviewed | **Done** | See **`docs/pre-mortems/2026-04-19-v1-launch.md`**. Mitigations for launch-blocking Tigers tracked in Phase 10 below. |
+
+---
+
+## Phase 10 — Pre-mortem mitigation gate
+
+All items derived from the 2026-04-19 pre-mortem (**`docs/pre-mortems/2026-04-19-v1-launch.md`**). Each launch-blocking Tiger (LB-1…LB-7) must be **Done** before the first real-money production deploy. Fast-follow Tigers (FF-1…FF-6) must have a **named owner and week-1-or-2 commitment** before launch. Track Tigers (T-1…T-3) must have **monitoring + trigger conditions** defined.
+
+### Launch-blocking (gate for go-live)
+
+| ID | Item | Status | Owner | Notes |
+|----|------|--------|-------|-------|
+| **LB-1** | Legal entity finalized (LLC / EIN / bank); Stripe Connect live-mode keys in Vercel `production` env; one pilot roaster onboarded end-to-end in live mode | **Manual** | Chris | Blocks all of Phase 6/7 going to production. |
+| **LB-2** | Clerk (orgs app) wired in `apps/org`; tenant-isolation integration test committed and green (`Org A cannot read Org B`) | **Todo** | Eng lead | Gate `pnpm turbo build` on the test. Related to Phase 5 "Org app" row above. |
+| **LB-3** | `apps/admin` protected by real auth — HTTP Basic Auth (bcrypt + constant-time compare) *or* Clerk admin-role claim | **Todo** | Eng lead | Vercel deployment protection added as belt-and-braces. |
+| **LB-4** | Roaster ToS, Org ToS, Buyer ToS, Privacy Policy, DPA reviewed by counsel and **replaced** in `apps/web/app/[locale]/privacy-policy/page.tsx` and `apps/web/app/[locale]/terms/roasters/page.tsx` (placeholders are marked "PENDING LEGAL REVIEW") | **Manual** | Chris + counsel | Include explicit 48h fulfillment SLA, 30-day payout hold, dispute/refund/suspension, binding arbitration. |
+| **LB-5** | Full dress-rehearsal deploy to **preview** green: DNS records, env vars, Stripe/Clerk/Inngest webhooks, scripted smoke test. Then repeat on **production**. | **Todo** | Eng lead | Script lives in `docs/runbooks/v1-launch-runbook.md`. |
+| **LB-6** | `prisma migrate deploy` wired into release pipeline (Vercel build step or GH Action); Neon snapshot before each production migration; rollback procedure documented | **Todo** | Eng lead | Rollback doc lives in `docs/runbooks/v1-launch-runbook.md`. |
+| **LB-7** | Money-path E2E test committed and running on every PR — scenarios in `docs/testing/money-path-e2e-scenarios.md` | **Todo** | Eng lead | Covers checkout → webhook → split transfer → payout, including edge cases. |
+
+### Fast-follow (owned + scheduled before launch, shipped weeks 1–3)
+
+| ID | Item | Status | Owner | Week |
+|----|------|--------|-------|------|
+| **FF-1** | Rate limit `/api/order-lookup`, `/api/order-status`, `/api/webhooks/stripe`; add replay-window check on `event.id` | **Todo** | Eng | W1 |
+| **FF-2** | Email-magic-link buyer accounts; bind order-lookup to `(orderNumber + email)` or authed session | **Todo** | Eng | W1–2 |
+| **FF-3** | Contract test: every `OrderEvent` type maps to a registered email template that fires | **Todo** | Eng | W1 |
+| **FF-4** | Read-only `/admin/audit` page; two-person approval (or reason field) for refunds > $100 and roaster suspensions | **Todo** | Eng | W2 |
+| **FF-5** | Public status page; three incident-comms templates (degraded / outage / payments down); on-call rotation defined | **Todo** | Ops | W1 |
+| **FF-6** | Centralize order-state transitions behind `Order.transitionTo()`; reject invalid transitions; migrate existing writers | **Todo** | Eng | W2–3 |
+
+### Track (monitor with trigger conditions)
+
+| ID | Item | Status | Owner | Trigger |
+|----|------|--------|-------|---------|
+| **T-1** | Magic-link token expiry enforced on use (currently schema-only) | **Todo** | Eng | Any token used > 24h post-issuance → incident |
+| **T-2** | Auto-suspension for repeated Stripe disputes | **Todo** | Eng | ≥ 2 disputes per roaster in 30d → manual review |
+| **T-3** | i18n content coverage vs non-en-US traffic | **Manual** | Chris | Non-en-US locale > 5% weekly → deprioritize or hide |
+
+### Elephants (unspoken risks — surface in next team review)
+
+| ID | Elephant | Resolution path |
+|----|----------|-----------------|
+| **E-1** | No signed pilot roasters/orgs yet | Execute `docs/gtm/pilot-outreach.md` — target 3 roasters + 3 orgs signed before go-live |
+| **E-2** | Org portal behind roaster portal; "concierge" covers gap | Decide: self-serve v1 vs. concierge v0. Document decision. |
+| **E-3** | Built from PRD, not from discovery | Run 5 discovery calls (3 roasters, 2 orgs) before locking v1 scope |
+| **E-4** | Team size/capacity unstated | Document real team shape; shrink LB/FF list to match |
+| **E-5** | Inngest jobs untested under load | Synthetic-load test SLA + payout jobs at 500 and 5,000 orders |
 
 ---
 
@@ -145,4 +193,4 @@ Living document. **Full narrative checklist (accounts, Vercel, CI secrets, ports
 
 ---
 
-*Last reviewed against repo: March 2026 — see `docs/SCAFFOLD_CHECKLIST.md` (v1.4+) for the full checklist; DB, Stripe, email, and Inngest baseline jobs are implemented in code.*
+*Last reviewed against repo: **April 2026** — see `docs/SCAFFOLD_CHECKLIST.md` (v1.4+) for the full narrative checklist; DB, Stripe, email, and Inngest baseline jobs are implemented in code. Phase 10 added from pre-mortem (`docs/pre-mortems/2026-04-19-v1-launch.md`). Launch execution handled by `docs/runbooks/v1-launch-runbook.md`.*
