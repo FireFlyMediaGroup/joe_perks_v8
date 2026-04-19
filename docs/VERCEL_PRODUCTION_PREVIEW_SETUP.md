@@ -4,7 +4,7 @@
 This runbook explains how to deploy the current Joe Perks monorepo to Vercel using:
 
 - `Production` for the `main` branch
-- `Preview` as the staging environment for `develop` and pull requests
+- `Preview` for pull requests by default, with optional shared-stage previews on `develop`
 
 This matches the current repo direction in `docs/AGENTS.md`, `docs/SCAFFOLD_CHECKLIST.md`, and `.github/workflows/ci.yml`.
 
@@ -19,8 +19,8 @@ There are four deployable apps in this repo:
 Recommended branch mapping:
 
 - `main` -> Vercel `Production`
-- `develop` -> Vercel `Preview` and treated as the shared stage environment
 - feature branches / PR branches -> Vercel `Preview`
+- `develop` -> optional shared Vercel `Preview` stage branch if your team wants one
 
 If you want a stable stage URL instead of using Vercel's generated preview URLs, attach branch domains to `develop`, for example:
 
@@ -33,7 +33,7 @@ If you want a stable stage URL instead of using Vercel's generated preview URLs,
 GitHub Actions remains CI only.
 
 - CI file: `.github/workflows/ci.yml`
-- Runs on `main` and `develop`
+- Runs on `main` and `develop` (so optional shared-stage teams still get CI)
 - Executes:
   - `pnpm install --frozen-lockfile`
   - `pnpm check`
@@ -41,9 +41,9 @@ GitHub Actions remains CI only.
 
 Vercel Git integration handles deployments.
 
-- Push or merge to `develop` -> stage preview deploys
 - Open or update a PR -> branch preview deploys
 - Push or merge to `main` -> production deploys
+- Push or merge to `develop` -> optional shared-stage preview deploys
 
 ## Important Repo Notes
 Before configuring Vercel, keep these repo-specific rules in mind:
@@ -55,11 +55,11 @@ Before configuring Vercel, keep these repo-specific rules in mind:
 5. Stripe, Clerk, Inngest, and DNS wiring are manual dashboard steps even though the routes already exist in code.
 
 ## Step 1: Prepare GitHub
-1. Make sure both `main` and `develop` exist on GitHub.
+1. Make sure `main` exists on GitHub. Create `develop` only if you want a shared staging branch in addition to PR previews.
 2. Keep `.github/workflows/ci.yml` enabled.
 3. Add branch protection:
    - `main`: require PRs and green CI
-   - `develop`: require green CI
+   - `develop`: require green CI if you choose to use it as a shared stage branch
 4. Add or confirm GitHub Actions secrets:
    - `DATABASE_URL_DEV`
    - `BASEHUB_TOKEN` if your builds need it
@@ -431,11 +431,11 @@ Then:
 ## Step 10: Ongoing Workflow
 Use this operating model going forward:
 
-1. Branch from `develop`
-2. Open PRs into `develop`
+1. Branch from `main`
+2. Open PRs into `main`
 3. Review feature previews in Vercel
-4. Merge into `develop` for shared stage testing
-5. Promote `develop` into `main` for production
+4. Merge into `main` for production
+5. If you need a long-lived shared stage, treat `develop` as optional and promote `develop` into `main` intentionally
 
 ## Repo State
 App-level Vercel config is now present across all four deployable apps:
