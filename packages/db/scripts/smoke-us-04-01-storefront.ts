@@ -135,7 +135,13 @@ async function getStorefrontDataForSmoke(slug: string) {
     platformFeePct: settings.platformFeePct,
   };
 
-  return { campaign, hasShippingRates, org, shippingRates, splitPreviewDefaults };
+  return {
+    campaign,
+    hasShippingRates,
+    org,
+    shippingRates,
+    splitPreviewDefaults,
+  };
 }
 
 async function smokePrismaBaseline(): Promise<void> {
@@ -200,8 +206,13 @@ async function validateMirrorForSlug(sampleSlug: string): Promise<void> {
     fail("getStorefrontData mirror returned null for known ACTIVE slug");
     return;
   }
-  const { campaign, hasShippingRates, org, shippingRates, splitPreviewDefaults } =
-    data;
+  const {
+    campaign,
+    hasShippingRates,
+    org,
+    shippingRates,
+    splitPreviewDefaults,
+  } = data;
   if (org.application.orgName.length === 0) {
     fail("orgName empty");
     return;
@@ -223,7 +234,7 @@ async function validateMirrorForSlug(sampleSlug: string): Promise<void> {
     fail("splitPreviewDefaults.platformFeePct missing");
     return;
   }
-  if (hasShippingRates !== (shippingRates.length > 0)) {
+  if (hasShippingRates !== shippingRates.length > 0) {
     fail("hasShippingRates / shippingRates length mismatch");
     return;
   }
@@ -338,12 +349,7 @@ async function smokeHttpStorefrontGuards(): Promise<void> {
     pass("GET /en/roasters + missing slug → 404 (reserved + notFound guards)");
     return;
   }
-  if (
-    r1 !== null &&
-    r2 !== null &&
-    r1 >= 500 &&
-    r2 >= 500
-  ) {
+  if (r1 !== null && r2 !== null && r1 >= 500 && r2 >= 500) {
     skip(
       "GET reserved + missing slug → 404",
       `web on 3000 returned 5xx (roasters=${r1}, missing=${r2}) — fix app env/runtime or run without a broken server on 3000`

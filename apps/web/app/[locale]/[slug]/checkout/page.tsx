@@ -2,8 +2,8 @@ import { RESERVED_SLUGS } from "@joe-perks/types";
 import { createMetadata } from "@repo/seo/metadata";
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
-import { CheckoutForm } from "./_components/checkout-form";
 import { getStorefrontData } from "../_lib/queries";
+import { CheckoutForm } from "./_components/checkout-form";
 
 interface Props {
   params: Promise<{ locale: string; slug: string }>;

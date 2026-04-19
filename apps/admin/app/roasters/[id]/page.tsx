@@ -137,7 +137,9 @@ export default async function AdminRoasterDetailPage({ params }: PageProps) {
           <p className="mt-1 font-semibold text-2xl">
             {formatUsd(unsettledDebtAggregate._sum.amount ?? 0)}
           </p>
-          <p className="mt-1 text-xs text-zinc-500">{unsettledDebtCount} item(s)</p>
+          <p className="mt-1 text-xs text-zinc-500">
+            {unsettledDebtCount} item(s)
+          </p>
         </div>
         <div className="rounded-lg border border-zinc-200 p-4">
           <p className="text-sm text-zinc-500">Open orders</p>
@@ -145,7 +147,9 @@ export default async function AdminRoasterDetailPage({ params }: PageProps) {
         </div>
         <div className="rounded-lg border border-zinc-200 p-4">
           <p className="text-sm text-zinc-500">Stripe</p>
-          <p className="mt-1 font-semibold text-lg">{roaster.stripeOnboarding}</p>
+          <p className="mt-1 font-semibold text-lg">
+            {roaster.stripeOnboarding}
+          </p>
           <p className="mt-1 text-xs text-zinc-500">
             Charges {roaster.chargesEnabled ? "on" : "off"} · Payouts{" "}
             {roaster.payoutsEnabled ? "on" : "off"}
@@ -166,11 +170,15 @@ export default async function AdminRoasterDetailPage({ params }: PageProps) {
               </div>
               <div>
                 <dt className="text-zinc-500">Contact name</dt>
-                <dd className="font-medium">{roaster.application.contactName}</dd>
+                <dd className="font-medium">
+                  {roaster.application.contactName}
+                </dd>
               </div>
               <div>
                 <dt className="text-zinc-500">Phone</dt>
-                <dd className="font-medium">{roaster.application.phone ?? "—"}</dd>
+                <dd className="font-medium">
+                  {roaster.application.phone ?? "—"}
+                </dd>
               </div>
               <div>
                 <dt className="text-zinc-500">Location</dt>
@@ -192,14 +200,16 @@ export default async function AdminRoasterDetailPage({ params }: PageProps) {
           <div className="rounded-lg border border-zinc-200 bg-white p-5">
             <h2 className="font-semibold text-lg">Reactivation readiness</h2>
             <p className="mt-2 text-sm text-zinc-600">
-              Default reactivation is available only when there are no operational
-              blockers and Stripe readiness is still healthy.
+              Default reactivation is available only when there are no
+              operational blockers and Stripe readiness is still healthy.
             </p>
             <div className="mt-4 grid gap-4 md:grid-cols-2">
               <div className="rounded-lg border border-zinc-200 p-4">
                 <p className="font-medium text-sm">Operational blockers</p>
                 {readiness.blockers.length === 0 ? (
-                  <p className="mt-2 text-emerald-700 text-sm">None detected.</p>
+                  <p className="mt-2 text-emerald-700 text-sm">
+                    None detected.
+                  </p>
                 ) : (
                   <ul className="mt-2 list-inside list-disc space-y-1 text-sm text-zinc-700">
                     {readiness.blockers.map((blocker) => (
@@ -211,7 +221,9 @@ export default async function AdminRoasterDetailPage({ params }: PageProps) {
               <div className="rounded-lg border border-zinc-200 p-4">
                 <p className="font-medium text-sm">Stripe prerequisites</p>
                 {readiness.stripeRequirements.length === 0 ? (
-                  <p className="mt-2 text-emerald-700 text-sm">Ready for ACTIVE.</p>
+                  <p className="mt-2 text-emerald-700 text-sm">
+                    Ready for ACTIVE.
+                  </p>
                 ) : (
                   <ul className="mt-2 list-inside list-disc space-y-1 text-sm text-zinc-700">
                     {readiness.stripeRequirements.map((item) => (
@@ -220,7 +232,8 @@ export default async function AdminRoasterDetailPage({ params }: PageProps) {
                   </ul>
                 )}
                 <p className="mt-3 text-xs text-zinc-500">
-                  If reactivated now, next status will be {readiness.nextStatus}.
+                  If reactivated now, next status will be {readiness.nextStatus}
+                  .
                 </p>
               </div>
             </div>
@@ -243,7 +256,10 @@ export default async function AdminRoasterDetailPage({ params }: PageProps) {
                         {order.status} · payout {order.payoutStatus}
                       </p>
                     </div>
-                    <Link className="text-sm underline" href={`/orders/${order.id}`}>
+                    <Link
+                      className="text-sm underline"
+                      href={`/orders/${order.id}`}
+                    >
                       View order
                     </Link>
                   </div>
@@ -295,10 +311,15 @@ export default async function AdminRoasterDetailPage({ params }: PageProps) {
             <h2 className="font-semibold text-lg">Recent admin activity</h2>
             <div className="mt-4 space-y-3">
               {recentActions.length === 0 ? (
-                <p className="text-sm text-zinc-600">No admin actions logged.</p>
+                <p className="text-sm text-zinc-600">
+                  No admin actions logged.
+                </p>
               ) : (
                 recentActions.map((action) => (
-                  <div className="rounded-lg border border-zinc-200 p-3" key={action.id}>
+                  <div
+                    className="rounded-lg border border-zinc-200 p-3"
+                    key={action.id}
+                  >
                     <p className="font-medium text-sm">{action.actionType}</p>
                     <p className="mt-1 text-xs text-zinc-500">
                       {action.createdAt.toLocaleString()} · {action.actorLabel}

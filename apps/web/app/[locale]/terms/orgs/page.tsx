@@ -3,8 +3,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = createMetadata({
   title: "Organization Terms of Service",
-  description:
-    "Terms of service for organizations on the Joe Perks platform.",
+  description: "Terms of service for organizations on the Joe Perks platform.",
 });
 
 const OrgTermsPage = () => (

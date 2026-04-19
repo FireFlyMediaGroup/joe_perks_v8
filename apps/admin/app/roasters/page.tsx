@@ -23,7 +23,8 @@ export default async function AdminRoastersPage() {
     }),
   ]);
 
-  const activeCount = summary.find((row) => row.status === "ACTIVE")?._count._all ?? 0;
+  const activeCount =
+    summary.find((row) => row.status === "ACTIVE")?._count._all ?? 0;
   const suspendedCount =
     summary.find((row) => row.status === "SUSPENDED")?._count._all ?? 0;
   const onboardingCount =
@@ -35,7 +36,8 @@ export default async function AdminRoastersPage() {
         <div>
           <h1 className="font-semibold text-3xl">Roasters</h1>
           <p className="mt-1 text-sm text-zinc-600">
-            Lifecycle management for roaster accounts, dispute risk, and reactivation review.
+            Lifecycle management for roaster accounts, dispute risk, and
+            reactivation review.
           </p>
         </div>
         <Link className="text-sm text-zinc-600 underline" href="/">
@@ -98,7 +100,9 @@ export default async function AdminRoastersPage() {
               </div>
               <div>
                 <dt className="text-zinc-500">Updated</dt>
-                <dd className="font-medium">{roaster.updatedAt.toLocaleString()}</dd>
+                <dd className="font-medium">
+                  {roaster.updatedAt.toLocaleString()}
+                </dd>
               </div>
             </dl>
           </section>

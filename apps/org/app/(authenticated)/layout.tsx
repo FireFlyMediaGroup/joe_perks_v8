@@ -1,11 +1,11 @@
-import { auth, currentUser } from "@repo/auth/server";
-import { SidebarProvider } from "@repo/design-system/components/ui/sidebar";
-import type { ReactNode } from "react";
 import {
   database,
   getSuspensionReasonCategoryFromAction,
   getSuspensionReasonLabel,
 } from "@joe-perks/db";
+import { auth, currentUser } from "@repo/auth/server";
+import { SidebarProvider } from "@repo/design-system/components/ui/sidebar";
+import type { ReactNode } from "react";
 
 import { GlobalSidebar } from "./components/sidebar";
 

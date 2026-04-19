@@ -23,6 +23,30 @@ function buildHref(status: "ALL" | "CLOSED" | "OPEN"): string {
   return status === "ALL" ? "/disputes" : `/disputes?status=${status}`;
 }
 
+function buildOutcomeFilter(status: "ALL" | "CLOSED" | "OPEN") {
+  if (status === "OPEN") {
+    return { outcome: null };
+  }
+
+  if (status === "CLOSED") {
+    return { outcome: { not: null } };
+  }
+
+  return undefined;
+}
+
+function getStatusLabel(status: "ALL" | "CLOSED" | "OPEN"): string {
+  if (status === "OPEN") {
+    return "Open";
+  }
+
+  if (status === "CLOSED") {
+    return "Closed";
+  }
+
+  return "All";
+}
+
 export default async function AdminDisputesPage({
   searchParams,
 }: {
@@ -71,18 +95,16 @@ export default async function AdminDisputesPage({
         },
       },
       orderBy: [{ updatedAt: "desc" }],
-      where:
-        statusFilter === "OPEN"
-          ? { outcome: null }
-          : statusFilter === "CLOSED"
-            ? { outcome: { not: null } }
-            : undefined,
+      where: buildOutcomeFilter(statusFilter),
     }),
   ]);
 
-  const openCount = summary.find((row) => row.outcome === null)?._count._all ?? 0;
-  const lostCount = summary.find((row) => row.outcome === "LOST")?._count._all ?? 0;
-  const wonCount = summary.find((row) => row.outcome === "WON")?._count._all ?? 0;
+  const openCount =
+    summary.find((row) => row.outcome === null)?._count._all ?? 0;
+  const lostCount =
+    summary.find((row) => row.outcome === "LOST")?._count._all ?? 0;
+  const wonCount =
+    summary.find((row) => row.outcome === "WON")?._count._all ?? 0;
 
   return (
     <main className="mx-auto max-w-7xl p-6 md:p-8">
@@ -104,17 +126,23 @@ export default async function AdminDisputesPage({
         <div className="rounded-lg border border-rose-200 bg-rose-50 p-4 dark:border-rose-950 dark:bg-rose-950/20">
           <p className="text-sm text-zinc-600 dark:text-zinc-300">Open</p>
           <p className="mt-1 font-semibold text-2xl">{openCount}</p>
-          <p className="mt-1 text-xs text-zinc-500">Needs evidence review or final outcome.</p>
+          <p className="mt-1 text-xs text-zinc-500">
+            Needs evidence review or final outcome.
+          </p>
         </div>
         <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-950 dark:bg-amber-950/20">
           <p className="text-sm text-zinc-600 dark:text-zinc-300">Lost</p>
           <p className="mt-1 font-semibold text-2xl">{lostCount}</p>
-          <p className="mt-1 text-xs text-zinc-500">Check fault attribution and recovery state.</p>
+          <p className="mt-1 text-xs text-zinc-500">
+            Check fault attribution and recovery state.
+          </p>
         </div>
         <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-950 dark:bg-emerald-950/20">
           <p className="text-sm text-zinc-600 dark:text-zinc-300">Won</p>
           <p className="mt-1 font-semibold text-2xl">{wonCount}</p>
-          <p className="mt-1 text-xs text-zinc-500">Funds can continue through the normal payout path.</p>
+          <p className="mt-1 text-xs text-zinc-500">
+            Funds can continue through the normal payout path.
+          </p>
         </div>
       </section>
 
@@ -129,7 +157,7 @@ export default async function AdminDisputesPage({
             href={buildHref(value)}
             key={value}
           >
-            {value === "ALL" ? "All" : value === "OPEN" ? "Open" : "Closed"}
+            {getStatusLabel(value)}
           </Link>
         ))}
       </nav>
@@ -167,7 +195,8 @@ export default async function AdminDisputesPage({
                       </span>
                     </div>
                     <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                      {orgLabel} · {dispute.order.campaign.name} · {roasterLabel}
+                      {orgLabel} · {dispute.order.campaign.name} ·{" "}
+                      {roasterLabel}
                     </p>
                     <p className="text-sm text-zinc-600 dark:text-zinc-400">
                       Stripe dispute ID:{" "}
@@ -195,13 +224,18 @@ export default async function AdminDisputesPage({
                 <div className="mt-5 grid gap-4 xl:grid-cols-[1.3fr_0.9fr]">
                   <div className="grid gap-4 md:grid-cols-2">
                     <div className="rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
-                      <h3 className="mb-2 font-semibold text-sm">Dispute context</h3>
+                      <h3 className="mb-2 font-semibold text-sm">
+                        Dispute context
+                      </h3>
                       <p className="text-sm text-zinc-600 dark:text-zinc-400">
                         Respond by:{" "}
-                        {dispute.respondBy ? dispute.respondBy.toLocaleString() : "—"}
+                        {dispute.respondBy
+                          ? dispute.respondBy.toLocaleString()
+                          : "—"}
                       </p>
                       <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-                        Evidence submitted: {dispute.evidenceSubmitted ? "Yes" : "No"}
+                        Evidence submitted:{" "}
+                        {dispute.evidenceSubmitted ? "Yes" : "No"}
                       </p>
                       <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
                         Opened: {dispute.createdAt.toLocaleString()}
@@ -211,7 +245,9 @@ export default async function AdminDisputesPage({
                       </p>
                     </div>
                     <div className="rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
-                      <h3 className="mb-2 font-semibold text-sm">Order evidence basics</h3>
+                      <h3 className="mb-2 font-semibold text-sm">
+                        Order evidence basics
+                      </h3>
                       <p className="text-sm text-zinc-600 dark:text-zinc-400">
                         Buyer IP:{" "}
                         <span className="font-mono text-zinc-900 dark:text-zinc-100">
@@ -229,9 +265,12 @@ export default async function AdminDisputesPage({
                       </p>
                     </div>
                     <div className="rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
-                      <h3 className="mb-2 font-semibold text-sm">Financial context</h3>
+                      <h3 className="mb-2 font-semibold text-sm">
+                        Financial context
+                      </h3>
                       <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                        Roaster total transfer leg: {formatUsd(dispute.order.roasterTotal)}
+                        Roaster total transfer leg:{" "}
+                        {formatUsd(dispute.order.roasterTotal)}
                       </p>
                       <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
                         Order status: {dispute.order.status}
@@ -241,12 +280,18 @@ export default async function AdminDisputesPage({
                       </p>
                     </div>
                     <div className="rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
-                      <h3 className="mb-2 font-semibold text-sm">Fulfillment context</h3>
+                      <h3 className="mb-2 font-semibold text-sm">
+                        Fulfillment context
+                      </h3>
                       <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                        Shipped: {dispute.order.shippedAt ? dispute.order.shippedAt.toLocaleString() : "—"}
+                        Shipped:{" "}
+                        {dispute.order.shippedAt
+                          ? dispute.order.shippedAt.toLocaleString()
+                          : "—"}
                       </p>
                       <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-                        Tracking available: {dispute.order.trackingNumber ? "Yes" : "No"}
+                        Tracking available:{" "}
+                        {dispute.order.trackingNumber ? "Yes" : "No"}
                       </p>
                     </div>
                   </div>
@@ -257,10 +302,10 @@ export default async function AdminDisputesPage({
                       disputeId={dispute.id}
                     />
                     <p className="mt-3 text-xs text-zinc-500 dark:text-zinc-400">
-                      Saving `ROASTER` on a lost dispute will record the dispute fee
-                      plus Stripe fee as debt, attempt a roaster transfer reversal
-                      when one exists, and auto-suspend at 3+ lost roaster-fault
-                      disputes in 90 days.
+                      Saving `ROASTER` on a lost dispute will record the dispute
+                      fee plus Stripe fee as debt, attempt a roaster transfer
+                      reversal when one exists, and auto-suspend at 3+ lost
+                      roaster-fault disputes in 90 days.
                     </p>
                   </div>
                 </div>

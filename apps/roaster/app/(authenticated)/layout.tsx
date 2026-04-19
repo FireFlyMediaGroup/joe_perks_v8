@@ -1,3 +1,8 @@
+import {
+  database,
+  getSuspensionReasonCategoryFromAction,
+  getSuspensionReasonLabel,
+} from "@joe-perks/db";
 import { auth, currentUser } from "@repo/auth/server";
 import { SidebarProvider } from "@repo/design-system/components/ui/sidebar";
 import { showBetaFeature } from "@repo/feature-flags";
@@ -8,11 +13,6 @@ import { Suspense } from "react";
 import { extractRouterConfig } from "uploadthing/server";
 import { roasterFileRouter } from "@/app/api/uploadthing/core";
 import { env } from "@/env";
-import {
-  database,
-  getSuspensionReasonCategoryFromAction,
-  getSuspensionReasonLabel,
-} from "@joe-perks/db";
 
 import { NotificationsProvider } from "./components/notifications-provider";
 import { GlobalSidebar } from "./components/sidebar";
@@ -77,8 +77,9 @@ const AppLayout = async ({ children }: AppLayoutProperties) => {
           )}
           {roaster?.status === "SUSPENDED" ? (
             <div className="m-4 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-amber-950 text-sm">
-              Account suspended: {suspensionReason ?? "Account review"}. New orders
-              and catalog/shipping updates are blocked until review is complete.
+              Account suspended: {suspensionReason ?? "Account review"}. New
+              orders and catalog/shipping updates are blocked until review is
+              complete.
             </div>
           ) : null}
           {children}

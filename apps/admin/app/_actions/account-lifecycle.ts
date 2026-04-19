@@ -3,18 +3,18 @@
 import {
   database,
   getSuspensionReasonLabel,
-  parseSuspensionReasonCategory,
   type OrgStatus,
+  parseSuspensionReasonCategory,
   type RoasterStatus,
 } from "@joe-perks/db";
 import { sendEmail } from "@joe-perks/email/send";
 import {
-  AccountReactivatedEmail,
   ACCOUNT_REACTIVATED_SUBJECT,
+  AccountReactivatedEmail,
 } from "@joe-perks/email/templates/account-reactivated";
 import {
-  AccountSuspendedEmail,
   ACCOUNT_SUSPENDED_SUBJECT,
+  AccountSuspendedEmail,
 } from "@joe-perks/email/templates/account-suspended";
 import { getAdminActorLabel } from "@joe-perks/types";
 import { revalidatePath } from "next/cache";
@@ -45,7 +45,9 @@ interface LoadedLifecycleTarget {
   unsettledDebtCount: number;
 }
 
-function parseTargetType(raw: FormDataEntryValue | null): LifecycleTargetType | null {
+function parseTargetType(
+  raw: FormDataEntryValue | null
+): LifecycleTargetType | null {
   return raw === "ROASTER" || raw === "ORG" ? raw : null;
 }
 
@@ -69,7 +71,10 @@ function formatStatusLabel(status: OrgStatus | RoasterStatus): string {
   return status.charAt(0) + status.slice(1).toLowerCase();
 }
 
-function revalidateTargetPaths(targetType: LifecycleTargetType, targetId: string) {
+function revalidateTargetPaths(
+  targetType: LifecycleTargetType,
+  targetId: string
+) {
   const basePath = targetType === "ROASTER" ? "/roasters" : "/orgs";
   revalidatePath("/");
   revalidatePath(basePath);
@@ -180,7 +185,9 @@ export async function suspendAccount(
 ): Promise<AccountLifecycleState> {
   const targetId = String(formData.get("targetId") ?? "").trim();
   const targetType = parseTargetType(formData.get("targetType"));
-  const note = String(formData.get("note") ?? "").trim().slice(0, 2000);
+  const note = String(formData.get("note") ?? "")
+    .trim()
+    .slice(0, 2000);
   const reasonCategory = parseSuspensionReasonCategory(
     formData.get("reasonCategory")
   );
@@ -223,7 +230,8 @@ export async function suspendAccount(
   }
 
   const actorLabel = getAdminActorLabel();
-  const actionType = targetType === "ROASTER" ? "ROASTER_SUSPENDED" : "ORG_SUSPENDED";
+  const actionType =
+    targetType === "ROASTER" ? "ROASTER_SUSPENDED" : "ORG_SUSPENDED";
 
   const actionLog = await database.$transaction(async (tx) => {
     if (targetType === "ROASTER") {
@@ -295,7 +303,9 @@ export async function reactivateAccount(
 ): Promise<AccountLifecycleState> {
   const targetId = String(formData.get("targetId") ?? "").trim();
   const targetType = parseTargetType(formData.get("targetType"));
-  const note = String(formData.get("note") ?? "").trim().slice(0, 2000);
+  const note = String(formData.get("note") ?? "")
+    .trim()
+    .slice(0, 2000);
   const confirmReactivation = formData.get("confirmReactivation") === "on";
   const confirmOverride = formData.get("confirmOverride") === "on";
 
@@ -423,6 +433,8 @@ export async function reactivateAccount(
   };
 }
 
-export async function submitReactivateAccount(formData: FormData): Promise<void> {
+export async function submitReactivateAccount(
+  formData: FormData
+): Promise<void> {
   await reactivateAccount({ error: null, message: null, ok: false }, formData);
 }

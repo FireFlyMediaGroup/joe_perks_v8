@@ -68,7 +68,9 @@ export async function processLostRoasterFaultDispute({
       },
     });
 
-    const hasChargebackDebt = existingDebts.some((debt) => debt.reason === "CHARGEBACK");
+    const hasChargebackDebt = existingDebts.some(
+      (debt) => debt.reason === "CHARGEBACK"
+    );
     const hasDisputeLossDebt = existingDebts.some(
       (debt) => debt.reason === "DISPUTE_LOSS"
     );

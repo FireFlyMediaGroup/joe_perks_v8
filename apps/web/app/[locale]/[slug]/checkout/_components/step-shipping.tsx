@@ -1,21 +1,21 @@
 "use client";
 
-import type { ShippingFormValues } from "../_lib/schema";
-import { shippingFormSchema } from "../_lib/schema";
-import type { ShippingRateOption } from "../../_lib/queries";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
 import { useForm } from "react-hook-form";
 import { formatCentsAsDollars } from "../../_lib/format";
+import type { ShippingRateOption } from "../../_lib/queries";
+import type { ShippingFormValues } from "../_lib/schema";
+import { shippingFormSchema } from "../_lib/schema";
 
 export interface StepShippingProps {
   defaultRateId: string | null;
-  shippingRates: ShippingRateOption[];
-  subtotalCents: number;
   onBack: () => void;
   onContinue: (values: ShippingFormValues) => void;
+  shippingRates: ShippingRateOption[];
+  subtotalCents: number;
 }
 
 export function StepShipping({
@@ -76,7 +76,9 @@ export function StepShipping({
             {...register("buyerName")}
           />
           {errors.buyerName ? (
-            <p className="text-destructive text-xs">{errors.buyerName.message}</p>
+            <p className="text-destructive text-xs">
+              {errors.buyerName.message}
+            </p>
           ) : null}
         </div>
         <div className="space-y-2 sm:col-span-2">
@@ -90,7 +92,9 @@ export function StepShipping({
             {...register("buyerEmail")}
           />
           {errors.buyerEmail ? (
-            <p className="text-destructive text-xs">{errors.buyerEmail.message}</p>
+            <p className="text-destructive text-xs">
+              {errors.buyerEmail.message}
+            </p>
           ) : null}
         </div>
         <div className="space-y-2 sm:col-span-2">
@@ -180,14 +184,14 @@ export function StepShipping({
         <div className="mt-3 space-y-2 text-sm">
           <div className="flex justify-between gap-4">
             <span className="text-muted-foreground">Subtotal</span>
-            <span className="tabular-nums">{formatCentsAsDollars(subtotalCents)}</span>
+            <span className="tabular-nums">
+              {formatCentsAsDollars(subtotalCents)}
+            </span>
           </div>
           <div className="flex justify-between gap-4">
             <span className="text-muted-foreground">Shipping</span>
             <span className="tabular-nums">
-              {selectedRate
-                ? formatCentsAsDollars(selectedRate.flatRate)
-                : "—"}
+              {selectedRate ? formatCentsAsDollars(selectedRate.flatRate) : "—"}
             </span>
           </div>
           <div className="flex justify-between gap-4 border-border border-t pt-2 font-semibold text-foreground">
