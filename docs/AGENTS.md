@@ -138,6 +138,46 @@ Turbo starts multiple Next (and related) dev servers on **fixed ports** (see the
 
 ---
 
+## Git workflow
+
+Use a **main-first** workflow by default. A long-lived `develop` branch is **optional** and should only be used when the team explicitly wants a shared staging or release-integration branch.
+
+1. Start from a clean, updated `main`:
+   ```bash
+   git switch main
+   git pull --ff-only origin main
+   git status
+   ```
+2. Create a **short-lived branch** from `main` for each unit of work:
+   ```bash
+   git switch -c <branch-name>
+   ```
+3. Commit only the files that belong to that branch. Do **not** mix unrelated work into the same PR.
+4. Push the branch and open a PR **to `main`**.
+5. Merge via PR — do **not** push directly to `main` unless the user explicitly asks.
+6. After merge, return to a clean `main`:
+   ```bash
+   git switch main
+   git pull --ff-only origin main
+   git status
+   ```
+
+### Working tree hygiene
+
+- Keep `main` **clean**. If you have local-only work, move it to a branch or stash it before switching branches.
+- “Saved” should mean **committed and pushed** on a branch, or intentionally preserved in a **named stash**. Do not leave important work only as loose local edits.
+- If a file is personal scratch and should not ship, leave it untracked or add an ignore rule in a separate intentional change.
+- If the working tree is dirty and the user wants local and remote “in sync,” first preserve the local changes safely, then sync `main`.
+
+### For AI agents
+
+- Default base branch: `main`.
+- Default PR target: `main`.
+- Prefer `git pull --ff-only` when syncing local branches.
+- Only use `develop` when the user explicitly wants a shared staging branch or batched promotion flow.
+
+---
+
 ## Critical rules — always follow these
 
 ### Money

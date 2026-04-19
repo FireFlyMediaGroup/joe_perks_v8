@@ -87,7 +87,7 @@ Living document. **Full narrative checklist (accounts, Vercel, CI secrets, ports
 | Bun installed (for `bunx`, app scripts) | **Done** | e.g. `~/.bun/bin`; ensure `PATH` in your shell. |
 | `pnpm install` at root | **Done** | Primary install path today. |
 | `.env` / `.env.local` files | **Partial** | Examples exist; fill from Phase 3. Root + per-app vars per `SCAFFOLD.md`. |
-| `git init` + `develop` default | **Todo** | Run locally if not done (`git init -b develop`). |
+| `git init` + `main` default | **Done** | Keep `main` as the clean source-of-truth branch; use feature branches for work. |
 | Prisma migrate + seed after 26-model schema | **Todo** | After schema replacement. |
 | Stripe CLI → `localhost:3000/api/webhooks/stripe` | **Manual** | When implementing webhooks. |
 | `pnpm dev` / `turbo dev` all apps | **Partial** | Ports 3000–3003 set for web/roaster/org/admin; other apps (email, studio) still in graph. |
@@ -113,7 +113,7 @@ Living document. **Full narrative checklist (accounts, Vercel, CI secrets, ports
 
 | Item | Status | Notes |
 |------|--------|--------|
-| Push `develop`, green builds | **Todo** | After repo + secrets. |
+| Push `main`, green builds | **Todo** | After repo + secrets; PR previews cover branch validation. |
 | Smoke tests (URLs in `SCAFFOLD.md`) | **Todo** | — |
 | Sentry + Stripe webhook checks | **Todo** | — |
 
@@ -123,7 +123,7 @@ Living document. **Full narrative checklist (accounts, Vercel, CI secrets, ports
 
 | Item | Status | Notes |
 |------|--------|--------|
-| Policy: feature branches off `develop` | **Manual** | Document in `CONVENTIONS.md` / `AGENTS.md`. |
+| Policy: feature branches off `main` (with optional `develop` stage branch) | **Done** | Documented in `CONVENTIONS.md` / `AGENTS.md`. |
 
 ---
 

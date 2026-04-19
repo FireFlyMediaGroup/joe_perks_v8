@@ -5,6 +5,32 @@ AI coding agents must follow these when generating or modifying code.
 
 ---
 
+## Git and branching
+
+- `main` is the source-of-truth branch for day-to-day work.
+- Start new work from an updated `main`:
+  ```bash
+  git switch main
+  git pull --ff-only origin main
+  ```
+- Create a short-lived branch from `main` for each task:
+  ```bash
+  git switch -c <branch-name>
+  ```
+- Open pull requests **to `main`** unless a user explicitly asks for a different branch strategy.
+- Merge through PRs instead of pushing directly to `main`.
+- After a merge, return to `main`, fast-forward from `origin/main`, and confirm `git status` is clean.
+- Treat `develop` as optional. Use it only when the team intentionally wants a shared staging branch before promotion to `main`.
+
+### Worktree hygiene
+
+- Do not leave important work only as uncommitted local changes.
+- If work is ready to keep, commit and push it on its own branch.
+- If work is not ready but must be preserved, use a **named stash** before switching branches.
+- Keep scratch files untracked unless they belong in the repo; if a scratch-file pattern is recurring, add it to ignore rules in a separate intentional change.
+
+---
+
 ## TypeScript
 
 - Strict mode enabled in all apps and packages (`"strict": true` in tsconfig).

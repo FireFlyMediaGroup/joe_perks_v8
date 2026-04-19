@@ -609,8 +609,8 @@ After first deploy, verify each surface:
 
 ### 8.1 Branch naming convention
 ```
-main           → production — NEVER commit directly
-develop        → active development — base for all feature branches
+main           → source of truth / production — NEVER commit directly
+develop        → optional shared staging / integration branch
 feature/US-XX-XX-short-description   → feature branches
 fix/US-XX-XX-bug-description         → bug fix branches
 chore/description                    → tooling, deps, config changes
@@ -618,29 +618,29 @@ chore/description                    → tooling, deps, config changes
 
 ### 8.2 Development workflow
 ```bash
-# Start a new story
-git checkout develop
-git pull origin develop
-git checkout -b feature/US-01-01-turborepo-scaffold
+# Default: start a new story from main
+git switch main
+git pull --ff-only origin main
+git switch -c feature/US-01-01-turborepo-scaffold
 
 # Work on the feature...
 
-# Push and open PR targeting develop
+# Push and open PR targeting main
 git push origin feature/US-01-01-turborepo-scaffold
 # → Vercel creates a preview deployment automatically
-# → GitHub Actions CI runs typecheck + lint + build
+# → GitHub Actions CI runs check + build
 # → Review the preview URL
-# → Open PR to develop
+# → Open PR to main
 
-# After PR is approved and merged to develop:
-# → develop auto-deploys to preview (you can set develop as a "development" deployment)
-
-# When a sprint is complete and tested:
-git checkout main
-git merge develop
-git push origin main
+# After PR is approved and merged to main:
 # → Production deploy triggers automatically
+
+# Sync local after merge
+git switch main
+git pull --ff-only origin main
 ```
+
+Optional shared-stage flow if your team wants a long-lived integration branch: branch from `develop`, open PRs to `develop`, validate there, then promote `develop` to `main`.
 
 ### 8.3 AI agent workflow with branches
 When using AI coding agents (Cursor, Claude Code, etc.):
