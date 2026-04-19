@@ -386,13 +386,28 @@ All thresholds are configurable in `PlatformSettings` singleton — never hardco
 | Document                | Location                                         | Contents                                                           |
 | ----------------------- | ------------------------------------------------ | ------------------------------------------------------------------ |
 | `CONVENTIONS.md`        | `docs/CONVENTIONS.md`                            | Coding patterns, file layout, anti-patterns                        |
-| `SCAFFOLD_CHECKLIST.md` | `docs/SCAFFOLD_CHECKLIST.md` (or repo root copy) | Scaffold status: done vs remaining                                 |
+| `SCAFFOLD_CHECKLIST.md` | `docs/SCAFFOLD_CHECKLIST.md` (or repo root copy) | Scaffold status: done vs remaining; **Phase 10 = pre-mortem gate** |
 | `SCAFFOLD.md`           | repo root                                        | Full environment / phase setup guide                               |
 | PRD v1.0                | `docs/joe_perks_prd.docx`                        | Product requirements, user personas, functional specs              |
 | DB Schema Reference     | `docs/joe_perks_db_schema.docx`                  | Full Prisma schema, Drizzle alternative, split calc implementation |
 | Epics & Stories v2.0    | `docs/joe_perks_epics_stories_v2.docx`           | 39 user stories with acceptance criteria, 5 sprints                |
 
 Repo root **`AGENTS.md`** and **`CONVENTIONS.md`** are short pointers to the canonical **`docs/`** files above.
+
+---
+
+## Launch & risk docs
+
+Added in April 2026 after the v1 pre-mortem. These are the live docs for shipping v1; they cross-reference each other and the scaffold checklist.
+
+| Document                       | Location                                        | When to read                                                                              |
+| ------------------------------ | ----------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| v1 Pre-Mortem (dated snapshot) | `docs/pre-mortems/2026-04-19-v1-launch.md`      | Understand why each launch-blocking Tiger exists. Immutable snapshot — do not edit.       |
+| v1 Launch Runbook              | `docs/runbooks/v1-launch-runbook.md`            | Opened during launch week. Phased pre-/dress-rehearsal/launch/watch steps + rollback.     |
+| Money-Path E2E Test Scenarios  | `docs/testing/money-path-e2e-scenarios.md`      | When implementing LB-7 E2E tests. Happy paths, edge cases (EC-01…EC-24), invariants.      |
+| Pilot Outreach Scripts         | `docs/gtm/pilot-outreach.md`                    | When sourcing the first 3 roasters + 3 orgs (Elephant E-1). Discovery + pilot agreements. |
+
+**Source of truth for action items**: `SCAFFOLD_CHECKLIST.md` **Phase 10**. The pre-mortem is rationale; the checklist is execution. If they drift, the checklist wins — run a new pre-mortem if the world has changed.
 
 ---
 
