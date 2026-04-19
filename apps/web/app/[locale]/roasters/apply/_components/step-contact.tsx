@@ -1,6 +1,5 @@
 "use client";
 
-import { Input } from "@repo/design-system/components/ui/input";
 import {
   FormControl,
   FormField,
@@ -8,6 +7,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@repo/design-system/components/ui/form";
+import { Input } from "@repo/design-system/components/ui/input";
 import type { UseFormReturn } from "react-hook-form";
 import type { ApplicationFormData } from "../_lib/schema";
 
@@ -19,8 +19,8 @@ export function StepContact({ form }: StepContactProps) {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-lg font-semibold">Contact information</h2>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <h2 className="font-semibold text-lg">Contact information</h2>
+        <p className="mt-1 text-muted-foreground text-sm">
           How can we reach you about your application?
         </p>
       </div>
@@ -33,8 +33,8 @@ export function StepContact({ form }: StepContactProps) {
             <FormLabel>Full name *</FormLabel>
             <FormControl>
               <Input
-                placeholder="Jane Smith"
                 className="min-h-[44px]"
+                placeholder="Jane Smith"
                 {...field}
               />
             </FormControl>
@@ -51,9 +51,9 @@ export function StepContact({ form }: StepContactProps) {
             <FormLabel>Email address *</FormLabel>
             <FormControl>
               <Input
-                type="email"
-                placeholder="jane@example.com"
                 className="min-h-[44px]"
+                placeholder="jane@example.com"
+                type="email"
                 {...field}
               />
             </FormControl>
@@ -70,9 +70,9 @@ export function StepContact({ form }: StepContactProps) {
             <FormLabel>Phone number</FormLabel>
             <FormControl>
               <Input
-                type="tel"
-                placeholder="(555) 123-4567"
                 className="min-h-[44px]"
+                placeholder="(555) 123-4567"
+                type="tel"
                 {...field}
               />
             </FormControl>

@@ -1,7 +1,7 @@
 export interface Benefit {
+  description: string;
   iconVariant: "terra" | "teal";
   title: string;
-  description: string;
 }
 
 export const benefits: Benefit[] = [

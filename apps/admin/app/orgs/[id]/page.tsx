@@ -27,43 +27,48 @@ export default async function AdminOrgDetailPage({ params }: PageProps) {
     notFound();
   }
 
-  const [activeCampaignCount, openDisputesCount, openOrderCount, recentActions, recentOrders] =
-    await Promise.all([
-      database.campaign.count({
-        where: { orgId: org.id, status: "ACTIVE" },
-      }),
-      database.disputeRecord.count({
-        where: {
-          order: { campaign: { orgId: org.id } },
-          outcome: null,
-        },
-      }),
-      database.order.count({
-        where: {
-          campaign: { orgId: org.id },
-          status: { in: ["CONFIRMED", "SHIPPED"] },
-        },
-      }),
-      database.adminActionLog.findMany({
-        orderBy: { createdAt: "desc" },
-        take: 8,
-        where: {
-          targetId: org.id,
-          targetType: "ORG",
-        },
-      }),
-      database.order.findMany({
-        orderBy: { createdAt: "desc" },
-        select: {
-          id: true,
-          orderNumber: true,
-          payoutStatus: true,
-          status: true,
-        },
-        take: 5,
-        where: { campaign: { orgId: org.id } },
-      }),
-    ]);
+  const [
+    activeCampaignCount,
+    openDisputesCount,
+    openOrderCount,
+    recentActions,
+    recentOrders,
+  ] = await Promise.all([
+    database.campaign.count({
+      where: { orgId: org.id, status: "ACTIVE" },
+    }),
+    database.disputeRecord.count({
+      where: {
+        order: { campaign: { orgId: org.id } },
+        outcome: null,
+      },
+    }),
+    database.order.count({
+      where: {
+        campaign: { orgId: org.id },
+        status: { in: ["CONFIRMED", "SHIPPED"] },
+      },
+    }),
+    database.adminActionLog.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 8,
+      where: {
+        targetId: org.id,
+        targetType: "ORG",
+      },
+    }),
+    database.order.findMany({
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        orderNumber: true,
+        payoutStatus: true,
+        status: true,
+      },
+      take: 5,
+      where: { campaign: { orgId: org.id } },
+    }),
+  ]);
 
   const readiness = getAccountReactivationReadiness({
     chargesEnabled: org.chargesEnabled,
@@ -159,7 +164,9 @@ export default async function AdminOrgDetailPage({ params }: PageProps) {
               </div>
               <div>
                 <dt className="text-zinc-500">Updated</dt>
-                <dd className="font-medium">{org.updatedAt.toLocaleString()}</dd>
+                <dd className="font-medium">
+                  {org.updatedAt.toLocaleString()}
+                </dd>
               </div>
             </dl>
           </div>
@@ -170,7 +177,9 @@ export default async function AdminOrgDetailPage({ params }: PageProps) {
               <div className="rounded-lg border border-zinc-200 p-4">
                 <p className="font-medium text-sm">Operational blockers</p>
                 {readiness.blockers.length === 0 ? (
-                  <p className="mt-2 text-emerald-700 text-sm">None detected.</p>
+                  <p className="mt-2 text-emerald-700 text-sm">
+                    None detected.
+                  </p>
                 ) : (
                   <ul className="mt-2 list-inside list-disc space-y-1 text-sm text-zinc-700">
                     {readiness.blockers.map((blocker) => (
@@ -182,7 +191,9 @@ export default async function AdminOrgDetailPage({ params }: PageProps) {
               <div className="rounded-lg border border-zinc-200 p-4">
                 <p className="font-medium text-sm">Stripe prerequisites</p>
                 {readiness.stripeRequirements.length === 0 ? (
-                  <p className="mt-2 text-emerald-700 text-sm">Ready for ACTIVE.</p>
+                  <p className="mt-2 text-emerald-700 text-sm">
+                    Ready for ACTIVE.
+                  </p>
                 ) : (
                   <ul className="mt-2 list-inside list-disc space-y-1 text-sm text-zinc-700">
                     {readiness.stripeRequirements.map((item) => (
@@ -191,7 +202,8 @@ export default async function AdminOrgDetailPage({ params }: PageProps) {
                   </ul>
                 )}
                 <p className="mt-3 text-xs text-zinc-500">
-                  If reactivated now, next status will be {readiness.nextStatus}.
+                  If reactivated now, next status will be {readiness.nextStatus}
+                  .
                 </p>
               </div>
             </div>
@@ -214,7 +226,10 @@ export default async function AdminOrgDetailPage({ params }: PageProps) {
                         {order.status} · payout {order.payoutStatus}
                       </p>
                     </div>
-                    <Link className="text-sm underline" href={`/orders/${order.id}`}>
+                    <Link
+                      className="text-sm underline"
+                      href={`/orders/${order.id}`}
+                    >
                       View order
                     </Link>
                   </div>
@@ -266,10 +281,15 @@ export default async function AdminOrgDetailPage({ params }: PageProps) {
             <h2 className="font-semibold text-lg">Recent admin activity</h2>
             <div className="mt-4 space-y-3">
               {recentActions.length === 0 ? (
-                <p className="text-sm text-zinc-600">No admin actions logged.</p>
+                <p className="text-sm text-zinc-600">
+                  No admin actions logged.
+                </p>
               ) : (
                 recentActions.map((action) => (
-                  <div className="rounded-lg border border-zinc-200 p-3" key={action.id}>
+                  <div
+                    className="rounded-lg border border-zinc-200 p-3"
+                    key={action.id}
+                  >
                     <p className="font-medium text-sm">{action.actionType}</p>
                     <p className="mt-1 text-xs text-zinc-500">
                       {action.createdAt.toLocaleString()} · {action.actorLabel}

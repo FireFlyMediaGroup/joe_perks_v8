@@ -1,5 +1,8 @@
+import {
+  getAdminBasicAuthCredentials,
+  parseBasicAuthHeader,
+} from "@joe-perks/types";
 import type { NextRequest } from "next/server";
-import { getAdminBasicAuthCredentials, parseBasicAuthHeader } from "@joe-perks/types";
 import { NextResponse } from "next/server";
 
 export function middleware(request: NextRequest) {

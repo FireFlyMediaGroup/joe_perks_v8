@@ -36,9 +36,7 @@ export const BaseEmailLayout = ({
           </Section>
 
           <Section className="mt-4 rounded-md bg-zinc-200 p-px">
-            <Section className="rounded-[5px] bg-white p-8">
-              {children}
-            </Section>
+            <Section className="rounded-[5px] bg-white p-8">{children}</Section>
           </Section>
 
           <Hr className="my-8 border-zinc-200" />

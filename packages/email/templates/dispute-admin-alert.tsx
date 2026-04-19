@@ -29,8 +29,8 @@ export function DisputeAdminAlertEmail(props: {
                 Roaster auto-suspended after chargeback loss
               </Text>
               <Text className="text-zinc-600">
-                Order {props.orderNumber} closed as a roaster-fault dispute.
-                The roaster has now reached {props.disputeCount90d} lost
+                Order {props.orderNumber} closed as a roaster-fault dispute. The
+                roaster has now reached {props.disputeCount90d} lost
                 roaster-fault disputes in the trailing 90-day window and was
                 automatically moved to `SUSPENDED`.
               </Text>

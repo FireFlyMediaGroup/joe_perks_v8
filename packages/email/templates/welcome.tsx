@@ -39,8 +39,7 @@ export const WelcomeEmail = ({ name, role }: WelcomeEmailProps) => (
     </Text>
     <Text className="m-0 text-zinc-600">
       Hi {name}, your account has been approved as a{" "}
-      <strong>{roleLabels[role]}</strong> on Joe Perks.{" "}
-      {roleDescriptions[role]}
+      <strong>{roleLabels[role]}</strong> on Joe Perks. {roleDescriptions[role]}
     </Text>
 
     <Text className="mt-6 mb-2 font-semibold text-sm text-zinc-900">

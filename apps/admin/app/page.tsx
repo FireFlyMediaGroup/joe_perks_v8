@@ -326,7 +326,8 @@ export default async function Home() {
                       </Link>
                     </p>
                     <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                      {orgLabel} · {event.order.campaign.name} · {event.actorType}
+                      {orgLabel} · {event.order.campaign.name} ·{" "}
+                      {event.actorType}
                     </p>
                   </div>
                   <p className="text-sm text-zinc-500 dark:text-zinc-400">

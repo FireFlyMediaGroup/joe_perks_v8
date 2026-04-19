@@ -87,7 +87,8 @@ function OnboardingSuccessCard() {
           Stripe is connected
         </CardTitle>
         <CardDescription>
-          Your organization can receive fundraiser payouts from Joe Perks orders.
+          Your organization can receive fundraiser payouts from Joe Perks
+          orders.
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-wrap gap-3">
@@ -167,8 +168,8 @@ export function ConnectStatus({
               className="mt-0.5 size-4 shrink-0 text-destructive"
             />
             <p>
-              Your Stripe account needs attention before you can receive payouts.
-              Contact Joe Perks support with your organization details.
+              Your Stripe account needs attention before you can receive
+              payouts. Contact Joe Perks support with your organization details.
             </p>
           </div>
         </div>

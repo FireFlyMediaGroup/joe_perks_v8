@@ -8,10 +8,9 @@ import { useCallback, useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { submitRoasterApplication } from "../_actions/submit-application";
 import {
+  type ApplicationFormData,
   applicationSchema,
   STEP_LABELS,
-  STEP_SCHEMAS,
-  type ApplicationFormData,
 } from "../_lib/schema";
 import { StepBusiness } from "./step-business";
 import { StepCoffee } from "./step-coffee";
@@ -28,6 +27,21 @@ const STEP_FIELDS: (keyof ApplicationFormData)[][] = [
   ["coffeeInfo"],
   ["termsAccepted"],
 ];
+
+function getProgressBarClassName(
+  isComplete: boolean,
+  isCurrent: boolean
+): string {
+  if (isComplete) {
+    return "bg-primary";
+  }
+
+  if (isCurrent) {
+    return "bg-primary/50";
+  }
+
+  return "bg-muted";
+}
 
 export function RoasterApplyForm() {
   const [step, setStep] = useState(0);
@@ -64,32 +78,29 @@ export function RoasterApplyForm() {
     setStep((s) => Math.max(s - 1, 0));
   }, []);
 
-  const onSubmit = useCallback(
-    (data: ApplicationFormData) => {
-      setSubmitError(null);
-      startTransition(async () => {
-        const result = await submitRoasterApplication(data);
-        if (result.success) {
-          setSubmitted(true);
-        } else {
-          setSubmitError(result.error);
-        }
-      });
-    },
-    []
-  );
+  const onSubmit = useCallback((data: ApplicationFormData) => {
+    setSubmitError(null);
+    startTransition(async () => {
+      const result = await submitRoasterApplication(data);
+      if (result.success) {
+        setSubmitted(true);
+      } else {
+        setSubmitError(result.error);
+      }
+    });
+  }, []);
 
   if (submitted) {
     return (
-      <div className="mx-auto max-w-lg text-center py-12">
+      <div className="mx-auto max-w-lg py-12 text-center">
         <CheckCircle2 className="mx-auto h-16 w-16 text-green-600" />
-        <h2 className="mt-6 text-2xl font-semibold">Application submitted</h2>
+        <h2 className="mt-6 font-semibold text-2xl">Application submitted</h2>
         <p className="mt-3 text-muted-foreground">
           Thanks for applying to be a Joe Perks roaster partner. We&apos;ll
           review your application and get back to you within{" "}
           <strong>2–3 business days</strong>.
         </p>
-        <p className="mt-2 text-sm text-muted-foreground">
+        <p className="mt-2 text-muted-foreground text-sm">
           A confirmation email has been sent to the address you provided.
         </p>
       </div>
@@ -105,16 +116,10 @@ export function RoasterApplyForm() {
             const isCurrent = i === step;
             const isComplete = i < step;
             return (
-              <li key={label} className="flex flex-1 items-center gap-2">
-                <div className="flex flex-col items-center gap-1 flex-1">
+              <li className="flex flex-1 items-center gap-2" key={label}>
+                <div className="flex flex-1 flex-col items-center gap-1">
                   <div
-                    className={`h-1.5 w-full rounded-full transition-colors ${
-                      isComplete
-                        ? "bg-primary"
-                        : isCurrent
-                          ? "bg-primary/50"
-                          : "bg-muted"
-                    }`}
+                    className={`h-1.5 w-full rounded-full transition-colors ${getProgressBarClassName(isComplete, isCurrent)}`}
                   />
                   <span
                     className={`hidden text-xs sm:block ${
@@ -130,13 +135,13 @@ export function RoasterApplyForm() {
             );
           })}
         </ol>
-        <p className="mt-2 text-xs text-muted-foreground sm:hidden">
+        <p className="mt-2 text-muted-foreground text-xs sm:hidden">
           Step {step + 1} of {TOTAL_STEPS}: {STEP_LABELS[step]}
         </p>
       </nav>
 
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        <form className="space-y-8" onSubmit={form.handleSubmit(onSubmit)}>
           {step === 0 && <StepContact form={form} />}
           {step === 1 && <StepBusiness form={form} />}
           {step === 2 && <StepLocation form={form} />}
@@ -145,8 +150,8 @@ export function RoasterApplyForm() {
 
           {submitError && (
             <div
+              className="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-destructive text-sm"
               role="alert"
-              className="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive"
             >
               {submitError}
             </div>
@@ -155,11 +160,11 @@ export function RoasterApplyForm() {
           {/* Navigation */}
           <div className="flex items-center justify-between gap-4 pt-2">
             <Button
+              className="min-h-[44px] min-w-[44px]"
+              disabled={step === 0 || isPending}
+              onClick={goBack}
               type="button"
               variant="outline"
-              onClick={goBack}
-              disabled={step === 0 || isPending}
-              className="min-h-[44px] min-w-[44px]"
             >
               <ChevronLeft className="mr-1 h-4 w-4" />
               Back
@@ -167,18 +172,18 @@ export function RoasterApplyForm() {
 
             {step < TOTAL_STEPS - 1 ? (
               <Button
-                type="button"
-                onClick={goNext}
                 className="min-h-[44px] min-w-[44px]"
+                onClick={goNext}
+                type="button"
               >
                 Next
                 <ChevronRight className="ml-1 h-4 w-4" />
               </Button>
             ) : (
               <Button
-                type="submit"
-                disabled={isPending}
                 className="min-h-[44px] min-w-[44px]"
+                disabled={isPending}
+                type="submit"
               >
                 {isPending ? (
                   <>

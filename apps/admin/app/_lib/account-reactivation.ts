@@ -1,4 +1,8 @@
-import type { OrgStatus, RoasterStatus, StripeOnboardingStatus } from "@joe-perks/db";
+import type {
+  OrgStatus,
+  RoasterStatus,
+  StripeOnboardingStatus,
+} from "@joe-perks/db";
 
 export interface AccountReactivationReadinessInput {
   chargesEnabled: boolean;

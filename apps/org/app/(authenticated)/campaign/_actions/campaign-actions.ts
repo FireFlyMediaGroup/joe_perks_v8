@@ -14,7 +14,9 @@ export type SaveDraftResult =
   | { success: true; campaignId: string }
   | { success: false; error: string };
 
-function getOrgCampaignAccessError(status: "ACTIVE" | "ONBOARDING" | "SUSPENDED"): string | null {
+function getOrgCampaignAccessError(
+  status: "ACTIVE" | "ONBOARDING" | "SUSPENDED"
+): string | null {
   if (status === "ACTIVE") {
     return null;
   }
@@ -172,7 +174,10 @@ export async function saveCampaignDraft(
     });
   } catch (e) {
     if (e instanceof Error && e.message === "VARIANT_GONE") {
-      return { success: false, error: "A selected variant is no longer available." };
+      return {
+        success: false,
+        error: "A selected variant is no longer available.",
+      };
     }
     throw e;
   }

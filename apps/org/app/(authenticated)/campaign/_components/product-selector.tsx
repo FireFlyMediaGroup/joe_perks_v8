@@ -2,15 +2,19 @@
 
 import { Checkbox } from "@repo/design-system/components/ui/checkbox";
 import { Label } from "@repo/design-system/components/ui/label";
+import Image from "next/image";
 import type { SerializedProduct } from "../_lib/catalog";
 
-export type SelectedItem = { variantId: string; isFeatured: boolean };
+export interface SelectedItem {
+  isFeatured: boolean;
+  variantId: string;
+}
 
 interface ProductSelectorProps {
+  readonly onToggleFeatured: (variantId: string, featured: boolean) => void;
+  readonly onToggleVariant: (variantId: string, checked: boolean) => void;
   readonly products: SerializedProduct[];
   readonly selected: Map<string, SelectedItem>;
-  readonly onToggleVariant: (variantId: string, checked: boolean) => void;
-  readonly onToggleFeatured: (variantId: string, featured: boolean) => void;
 }
 
 export function ProductSelector({
@@ -25,9 +29,8 @@ export function ProductSelector({
         <section className="space-y-3" key={product.id}>
           <div className="flex flex-wrap items-start gap-3">
             {product.imageUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                alt=""
+              <Image
+                alt={`${product.name} product image`}
                 className="size-14 rounded-md object-cover"
                 height={56}
                 src={product.imageUrl}
@@ -36,7 +39,9 @@ export function ProductSelector({
             ) : null}
             <div>
               <h3 className="font-medium">{product.name}</h3>
-              <p className="text-muted-foreground text-xs">{product.roastLevel}</p>
+              <p className="text-muted-foreground text-xs">
+                {product.roastLevel}
+              </p>
             </div>
           </div>
           <ul className="space-y-3 border-t pt-3">
@@ -53,9 +58,7 @@ export function ProductSelector({
                       checked={isOn}
                       className="mt-1"
                       id={`v-${v.id}`}
-                      onCheckedChange={(c) =>
-                        onToggleVariant(v.id, c === true)
-                      }
+                      onCheckedChange={(c) => onToggleVariant(v.id, c === true)}
                     />
                     <Label
                       className="cursor-pointer font-normal"
@@ -68,7 +71,7 @@ export function ProductSelector({
                     </Label>
                   </div>
                   {isOn ? (
-                    <label className="flex items-center gap-2 text-sm">
+                    <div className="flex items-center gap-2 text-sm">
                       <Checkbox
                         checked={featured}
                         id={`f-${v.id}`}
@@ -76,8 +79,13 @@ export function ProductSelector({
                           onToggleFeatured(v.id, c === true)
                         }
                       />
-                      <span>Featured on storefront</span>
-                    </label>
+                      <Label
+                        className="cursor-pointer font-normal"
+                        htmlFor={`f-${v.id}`}
+                      >
+                        Featured on storefront
+                      </Label>
+                    </div>
                   ) : null}
                 </li>
               );

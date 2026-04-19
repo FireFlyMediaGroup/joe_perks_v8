@@ -1,87 +1,90 @@
 /* ─── JOE PERKS BRAND TOKENS (Light Mode) ──────────────────── */
 :root {
   /* Surfaces */
-  --jp-bg-page:       #FDF9F4;
-  --jp-bg-alt:        #F8F5F0;
-  --jp-bg-card:       #FFFFFF;
-  --jp-bg-dark:       #1C1C1E;
-  --jp-bg-dark-raised:#2E2E30;
-  --jp-bg-dark-card:  #3F3F42;
+  --jp-bg-page: #fdf9f4;
+  --jp-bg-alt: #f8f5f0;
+  --jp-bg-card: #ffffff;
+  --jp-bg-dark: #1c1c1e;
+  --jp-bg-dark-raised: #2e2e30;
+  --jp-bg-dark-card: #3f3f42;
 
   /* Text */
-  --jp-text:          #1C1C1E;
-  --jp-muted:         #6B6B70;
-  --jp-light:         #9B9BA0;
+  --jp-text: #1c1c1e;
+  --jp-muted: #6b6b70;
+  --jp-light: #9b9ba0;
 
   /* Borders */
-  --jp-border:        rgba(28,28,30,0.10);
-  --jp-border-dark:   rgba(28,28,30,0.20);
+  --jp-border: rgba(28, 28, 30, 0.1);
+  --jp-border-dark: rgba(28, 28, 30, 0.2);
 
   /* Nav */
-  --jp-nav-bg:        rgba(253,249,244,0.88);
-  --jp-nav-border:    rgba(28,28,30,0.10);
+  --jp-nav-bg: rgba(253, 249, 244, 0.88);
+  --jp-nav-border: rgba(28, 28, 30, 0.1);
 
   /* Brand accent — Organizations (terracotta) */
-  --jp-terra:         #D4603A;
-  --jp-terra-dark:    #B84E2A;
-  --jp-terra-light:   #E8835F;
+  --jp-terra: #d4603a;
+  --jp-terra-dark: #b84e2a;
+  --jp-terra-light: #e8835f;
 
   /* Brand accent — Roasters (teal) */
-  --jp-teal:          #4A8C8C;
-  --jp-teal-dark:     #357070;
-  --jp-teal-light:    #6AACAC;
+  --jp-teal: #4a8c8c;
+  --jp-teal-dark: #357070;
+  --jp-teal-light: #6aacac;
 
   /* Chips / labels */
-  --jp-chip-bg:       rgba(28,28,30,0.06);
-  --jp-chip-border:   rgba(28,28,30,0.12);
-  --jp-chip-text:     #6B6B70;
+  --jp-chip-bg: rgba(28, 28, 30, 0.06);
+  --jp-chip-border: rgba(28, 28, 30, 0.12);
+  --jp-chip-text: #6b6b70;
 
   /* Shadows */
-  --jp-shadow-sm:  0 1px 3px rgba(28,28,30,0.08),  0 1px 2px rgba(28,28,30,0.06);
-  --jp-shadow-md:  0 4px 16px rgba(28,28,30,0.10), 0 2px 6px rgba(28,28,30,0.06);
-  --jp-shadow-lg:  0 12px 40px rgba(28,28,30,0.14), 0 4px 12px rgba(28,28,30,0.08);
+  --jp-shadow-sm:
+    0 1px 3px rgba(28, 28, 30, 0.08), 0 1px 2px rgba(28, 28, 30, 0.06);
+  --jp-shadow-md:
+    0 4px 16px rgba(28, 28, 30, 0.1), 0 2px 6px rgba(28, 28, 30, 0.06);
+  --jp-shadow-lg:
+    0 12px 40px rgba(28, 28, 30, 0.14), 0 4px 12px rgba(28, 28, 30, 0.08);
 
   /* Radii */
-  --jp-radius-sm:  6px;
-  --jp-radius-md:  12px;
-  --jp-radius-lg:  20px;
-  --jp-radius-xl:  32px;
+  --jp-radius-sm: 6px;
+  --jp-radius-md: 12px;
+  --jp-radius-lg: 20px;
+  --jp-radius-xl: 32px;
 }
 
 /* ─── JOE PERKS DARK MODE ──────────────────────────────────── */
 .dark {
-  --jp-bg-page:       #181614;
-  --jp-bg-alt:        #211F1C;
-  --jp-bg-card:       #2A2724;
-  --jp-bg-dark:       #1E1C19;
-  --jp-bg-dark-raised:#252320;
-  --jp-bg-dark-card:  #302E2B;
+  --jp-bg-page: #181614;
+  --jp-bg-alt: #211f1c;
+  --jp-bg-card: #2a2724;
+  --jp-bg-dark: #1e1c19;
+  --jp-bg-dark-raised: #252320;
+  --jp-bg-dark-card: #302e2b;
 
-  --jp-text:          #F0EDE8;
-  --jp-muted:         #9B9690;
-  --jp-light:         #6B6760;
+  --jp-text: #f0ede8;
+  --jp-muted: #9b9690;
+  --jp-light: #6b6760;
 
-  --jp-border:        rgba(240,237,232,0.08);
-  --jp-border-dark:   rgba(240,237,232,0.14);
+  --jp-border: rgba(240, 237, 232, 0.08);
+  --jp-border-dark: rgba(240, 237, 232, 0.14);
 
-  --jp-nav-bg:        rgba(24,22,20,0.92);
-  --jp-nav-border:    rgba(240,237,232,0.08);
+  --jp-nav-bg: rgba(24, 22, 20, 0.92);
+  --jp-nav-border: rgba(240, 237, 232, 0.08);
 
-  --jp-terra:         #E07050;
-  --jp-terra-dark:    #C85C3C;
-  --jp-terra-light:   #F09070;
+  --jp-terra: #e07050;
+  --jp-terra-dark: #c85c3c;
+  --jp-terra-light: #f09070;
 
-  --jp-teal:          #5A9E9E;
-  --jp-teal-dark:     #458484;
-  --jp-teal-light:    #7ABCBC;
+  --jp-teal: #5a9e9e;
+  --jp-teal-dark: #458484;
+  --jp-teal-light: #7abcbc;
 
-  --jp-chip-bg:       rgba(240,237,232,0.07);
-  --jp-chip-border:   rgba(240,237,232,0.12);
-  --jp-chip-text:     #9B9690;
+  --jp-chip-bg: rgba(240, 237, 232, 0.07);
+  --jp-chip-border: rgba(240, 237, 232, 0.12);
+  --jp-chip-text: #9b9690;
 
-  --jp-shadow-sm:  0 1px 3px rgba(0,0,0,0.30), 0 1px 2px rgba(0,0,0,0.20);
-  --jp-shadow-md:  0 4px 16px rgba(0,0,0,0.35), 0 2px 6px rgba(0,0,0,0.25);
-  --jp-shadow-lg:  0 12px 40px rgba(0,0,0,0.40), 0 4px 12px rgba(0,0,0,0.30);
+  --jp-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
+  --jp-shadow-md: 0 4px 16px rgba(0, 0, 0, 0.35), 0 2px 6px rgba(0, 0, 0, 0.25);
+  --jp-shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.4), 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 /* ─── JP TAILWIND COLOR TOKENS ─────────────────────────────── */
@@ -108,8 +111,8 @@
   --color-jp-teal-dark: var(--jp-teal-dark);
   --color-jp-teal-light: var(--jp-teal-light);
 
-  --color-jp-charcoal: #1C1C1E;
-  --color-jp-charcoal-80: #2E2E30;
-  --color-jp-charcoal-60: #3F3F42;
+  --color-jp-charcoal: #1c1c1e;
+  --color-jp-charcoal-80: #2e2e30;
+  --color-jp-charcoal-60: #3f3f42;
   --color-jp-near-black: #111010;
 }

@@ -1,5 +1,12 @@
 "use client";
 
+import {
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@repo/design-system/components/ui/form";
 import { Input } from "@repo/design-system/components/ui/input";
 import {
   Select,
@@ -8,15 +15,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
-import {
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@repo/design-system/components/ui/form";
 import type { UseFormReturn } from "react-hook-form";
-import { US_STATES, type ApplicationFormData } from "../_lib/schema";
+import { type ApplicationFormData, US_STATES } from "../_lib/schema";
 
 interface StepLocationProps {
   form: UseFormReturn<ApplicationFormData>;
@@ -26,8 +26,8 @@ export function StepLocation({ form }: StepLocationProps) {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-lg font-semibold">Roastery location</h2>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <h2 className="font-semibold text-lg">Roastery location</h2>
+        <p className="mt-1 text-muted-foreground text-sm">
           Where is your roastery based?
         </p>
       </div>
@@ -40,8 +40,8 @@ export function StepLocation({ form }: StepLocationProps) {
             <FormLabel>City *</FormLabel>
             <FormControl>
               <Input
-                placeholder="Portland"
                 className="min-h-[44px]"
+                placeholder="Portland"
                 {...field}
               />
             </FormControl>
@@ -58,7 +58,7 @@ export function StepLocation({ form }: StepLocationProps) {
             <FormLabel>State *</FormLabel>
             <Select onValueChange={field.onChange} value={field.value}>
               <FormControl>
-                <SelectTrigger className="w-full min-h-[44px]">
+                <SelectTrigger className="min-h-[44px] w-full">
                   <SelectValue placeholder="Select a state" />
                 </SelectTrigger>
               </FormControl>

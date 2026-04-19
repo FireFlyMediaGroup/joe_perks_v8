@@ -97,7 +97,9 @@ export function ShippingGuide() {
   return (
     <Collapsible className="mb-6" onOpenChange={setOpen} open={open}>
       <CollapsibleTrigger className="flex w-full items-center justify-between rounded-lg border bg-muted/40 px-4 py-3 text-left font-medium text-sm transition-colors hover:bg-muted/60">
-        <span>How to price your shipping rates — buyers choose at checkout</span>
+        <span>
+          How to price your shipping rates — buyers choose at checkout
+        </span>
         <ChevronDownIcon
           className={`size-4 text-muted-foreground transition-transform duration-200 ${open ? "rotate-180" : ""}`}
         />

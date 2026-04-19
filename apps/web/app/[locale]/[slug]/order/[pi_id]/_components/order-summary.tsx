@@ -92,7 +92,9 @@ export function OrderSummary({
                   {formatCentsAsDollars(item.lineTotal)}
                 </span>
               </div>
-              <p className="text-muted-foreground text-xs">{item.variantDesc}</p>
+              <p className="text-muted-foreground text-xs">
+                {item.variantDesc}
+              </p>
               <p className="text-muted-foreground text-xs">
                 {formatCentsAsDollars(item.unitPrice)} x {item.quantity}
               </p>
@@ -103,7 +105,9 @@ export function OrderSummary({
         <div className="mt-4 space-y-2 border-border border-t pt-4 text-sm">
           <div className="flex justify-between gap-4">
             <span className="text-muted-foreground">Subtotal</span>
-            <span className="tabular-nums">{formatCentsAsDollars(productSubtotal)}</span>
+            <span className="tabular-nums">
+              {formatCentsAsDollars(productSubtotal)}
+            </span>
           </div>
           <div className="flex justify-between gap-4">
             <span className="text-muted-foreground">Shipping</span>
@@ -113,12 +117,18 @@ export function OrderSummary({
           </div>
           <div className="flex justify-between gap-4 font-semibold text-foreground">
             <span>Total</span>
-            <span className="tabular-nums">{formatCentsAsDollars(grossAmount)}</span>
+            <span className="tabular-nums">
+              {formatCentsAsDollars(grossAmount)}
+            </span>
           </div>
         </div>
       </div>
 
-      <Button asChild className="min-h-11 w-full touch-manipulation" variant="outline">
+      <Button
+        asChild
+        className="min-h-11 w-full touch-manipulation"
+        variant="outline"
+      >
         <Link href={`/${locale}/${slug}`}>Continue shopping</Link>
       </Button>
     </div>
