@@ -1,8 +1,5 @@
 "use client";
 
-import type { ShippingFormValues } from "../_lib/schema";
-import { shippingFormSchema } from "../_lib/schema";
-import type { ShippingRateOption } from "../../_lib/queries";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Input } from "@repo/design-system/components/ui/input";
@@ -10,15 +7,18 @@ import { Label } from "@repo/design-system/components/ui/label";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { formatCentsAsDollars } from "../../_lib/format";
+import type { ShippingRateOption } from "../../_lib/queries";
+import type { ShippingFormValues } from "../_lib/schema";
+import { shippingFormSchema } from "../_lib/schema";
 
 export interface StepShippingProps {
   defaultRateId: string | null;
   hasPrefill: boolean;
   initialValues: ShippingFormValues | null;
-  shippingRates: ShippingRateOption[];
-  subtotalCents: number;
   onBack: () => void;
   onContinue: (values: ShippingFormValues) => void;
+  shippingRates: ShippingRateOption[];
+  subtotalCents: number;
 }
 
 export function StepShipping({
@@ -38,22 +38,21 @@ export function StepShipping({
     formState: { errors },
   } = useForm<ShippingFormValues>({
     resolver: zodResolver(shippingFormSchema),
-    defaultValues:
-      initialValues ?? {
-        buyerName: "",
-        buyerEmail: "",
-        street: "",
-        street2: "",
-        city: "",
-        country: "US",
-        state: "",
-        zip: "",
-        shippingRateId:
-          defaultRateId ??
-          shippingRates.find((r) => r.isDefault)?.id ??
-          shippingRates[0]?.id ??
-          "",
-      },
+    defaultValues: initialValues ?? {
+      buyerName: "",
+      buyerEmail: "",
+      street: "",
+      street2: "",
+      city: "",
+      country: "US",
+      state: "",
+      zip: "",
+      shippingRateId:
+        defaultRateId ??
+        shippingRates.find((r) => r.isDefault)?.id ??
+        shippingRates[0]?.id ??
+        "",
+    },
   });
 
   useEffect(() => {

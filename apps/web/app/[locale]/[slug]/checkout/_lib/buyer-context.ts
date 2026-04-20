@@ -2,8 +2,8 @@ import "server-only";
 
 import { database } from "@joe-perks/db";
 import { readBuyerSession } from "@/lib/buyer-auth/session";
-import type { ShippingFormValues } from "./schema";
 import { buildShippingPrefillFromOrderSnapshot } from "./buyer-prefill";
+import type { ShippingFormValues } from "./schema";
 
 export interface CheckoutBuyerContext {
   buyerEmail: string;

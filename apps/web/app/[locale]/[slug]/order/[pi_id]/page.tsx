@@ -1,5 +1,5 @@
-import { RESERVED_SLUGS } from "@joe-perks/types";
 import { database } from "@joe-perks/db";
+import { RESERVED_SLUGS } from "@joe-perks/types";
 import { createMetadata } from "@repo/seo/metadata";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -67,7 +67,9 @@ export default async function OrderConfirmationPage({ params }: Props) {
   if (!order) {
     return (
       <main className="mx-auto max-w-lg px-4 py-16">
-        <h1 className="font-semibold text-foreground text-xl">Order not found</h1>
+        <h1 className="font-semibold text-foreground text-xl">
+          Order not found
+        </h1>
         <p className="mt-2 text-muted-foreground text-sm">
           We couldn&apos;t find an order for this link. Check your email for
           confirmation or return to the storefront.
