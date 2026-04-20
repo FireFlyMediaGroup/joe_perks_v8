@@ -1,6 +1,10 @@
 "use server";
 
-import { database, logAdminAction, processLostRoasterFaultDispute } from "@joe-perks/db";
+import {
+  database,
+  logAdminAction,
+  processLostRoasterFaultDispute,
+} from "@joe-perks/db";
 import { reverseTransferIfPossible } from "@joe-perks/stripe";
 import { getAdminActorLabel } from "@joe-perks/types";
 import { revalidatePath } from "next/cache";
@@ -14,13 +18,11 @@ const VALID_FAULTS = new Set([
   "UNCLEAR",
 ] as const);
 
-type FaultAttributionValue =
-  | "BUYER_FRAUD"
-  | "PLATFORM"
-  | "ROASTER"
-  | "UNCLEAR";
+type FaultAttributionValue = "BUYER_FRAUD" | "PLATFORM" | "ROASTER" | "UNCLEAR";
 
-function parseFaultAttribution(raw: FormDataEntryValue | null): FaultAttributionValue | null {
+function parseFaultAttribution(
+  raw: FormDataEntryValue | null
+): FaultAttributionValue | null {
   if (typeof raw !== "string") {
     return null;
   }
@@ -66,7 +68,10 @@ export async function updateDisputeFault(
   }
 
   if (dispute.faultAttribution === nextFault) {
-    return { message: "Fault attribution is already set to that value.", ok: true };
+    return {
+      message: "Fault attribution is already set to that value.",
+      ok: true,
+    };
   }
 
   const existingRecoveryDebtCount = await database.roasterDebt.count({

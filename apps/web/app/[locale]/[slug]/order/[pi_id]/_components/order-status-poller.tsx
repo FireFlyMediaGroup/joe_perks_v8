@@ -2,9 +2,9 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { OrderProcessing } from "./order-processing";
-import { OrderSummary, type OrderLine } from "./order-summary";
+import { type OrderLine, OrderSummary } from "./order-summary";
 
-type ApiOrder = {
+interface ApiOrder {
   grossAmount: number;
   items: OrderLine[];
   orderNumber: string;
@@ -14,7 +14,7 @@ type ApiOrder = {
   productSubtotal: number;
   shippingAmount: number;
   status: string;
-};
+}
 
 export interface OrderStatusPollerProps {
   locale: string;
@@ -99,9 +99,9 @@ export function OrderStatusPoller({
         </p>
         <p className="text-muted-foreground text-sm leading-relaxed">
           This can take a moment. Check your email for order{" "}
-          <span className="font-medium text-foreground">confirmation</span> —
-          if you don&apos;t see it within a few minutes, contact support with
-          your payment details from your card statement.
+          <span className="font-medium text-foreground">confirmation</span> — if
+          you don&apos;t see it within a few minutes, contact support with your
+          payment details from your card statement.
         </p>
       </div>
     );

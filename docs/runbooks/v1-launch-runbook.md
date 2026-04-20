@@ -8,6 +8,7 @@
 - [`../pre-mortems/2026-04-19-v1-launch.md`](../pre-mortems/2026-04-19-v1-launch.md) — risk analysis that produced this runbook
 - [`../../SCAFFOLD_CHECKLIST.md`](../../SCAFFOLD_CHECKLIST.md) — execution tracker (Phase 10 is the gate for this runbook)
 - [`../testing/money-path-e2e-scenarios.md`](../testing/money-path-e2e-scenarios.md) — E2E test coverage
+- [`./2026-04-database-schema-reconciliation.md`](./2026-04-database-schema-reconciliation.md) — DB drift findings from launch-readiness debugging
 - [`../VERCEL_DEPLOYMENT_GAP_CHECKLIST.md`](../VERCEL_DEPLOYMENT_GAP_CHECKLIST.md) — original Vercel-specific gaps
 - [`../VERCEL_PRODUCTION_PREVIEW_SETUP.md`](../VERCEL_PRODUCTION_PREVIEW_SETUP.md) — Vercel project setup
 
@@ -62,6 +63,12 @@ Abort criteria at the end of each phase.
 - [ ] `prisma migrate deploy` wired into release flow (Vercel build step, or a GH Action that runs `pnpm migrate:deploy:prod` *before* promoting a Vercel deployment).
 - [ ] Neon production snapshot retention ≥ 7 days; restore tested at least once on a staging branch.
 - [ ] Rollback procedure section below tested end-to-end on preview.
+
+**April 2026 schema note**
+- Production Neon was verified against the current repo and matched committed Prisma state: `packages/db/prisma/schema.prisma` plus the checked-in migrations under `packages/db/prisma/migrations`.
+- The older dev Neon branch had two additional applied migrations in `_prisma_migrations` that were **not** present in the current checkout: `20260405134350_buyer_account_foundation` and `20260406032052_sprint8_fulfillment_schema_event_alignment` (historical commits `03943f3` and `472749d`).
+- Result: dev may have extra columns, enum values, and seed data that do not reflect the current source of truth. For launch, deploy, and frontend E2E, treat the current repo schema + committed migrations as canonical unless those missing migrations are intentionally restored to the repo first.
+- Before seeding, restoring, or copying data between Neon branches, compare `_prisma_migrations` on both sides. Do not assume the more-populated branch is the correct schema.
 
 ### A.6 DNS & env vars
 - [ ] Preview env vars complete per [`../VERCEL_DEPLOYMENT_GAP_CHECKLIST.md`](../VERCEL_DEPLOYMENT_GAP_CHECKLIST.md).

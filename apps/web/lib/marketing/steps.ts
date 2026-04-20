@@ -1,8 +1,8 @@
 export interface Step {
-  num: string;
-  iconVariant: "terra" | "teal" | "white";
-  title: string;
   description: string;
+  iconVariant: "terra" | "teal" | "white";
+  num: string;
+  title: string;
 }
 
 export const steps: Step[] = [
@@ -30,10 +30,10 @@ export const steps: Step[] = [
 ];
 
 export interface SplitBar {
-  party: string;
   amount: string;
-  pct: string;
   color: string;
+  party: string;
+  pct: string;
   width: string;
 }
 

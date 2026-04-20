@@ -20,7 +20,9 @@ export async function requestOrgReactivation(
     };
   }
 
-  const note = String(formData.get("note") ?? "").trim().slice(0, 2000);
+  const note = String(formData.get("note") ?? "")
+    .trim()
+    .slice(0, 2000);
   if (!note) {
     return {
       error: "Add a remediation note before submitting the request.",

@@ -43,9 +43,11 @@ export async function GET(
   }
 
   const orgLabel =
-    dispute.order.campaign.org.application.orgName ?? dispute.order.campaign.org.slug;
+    dispute.order.campaign.org.application.orgName ??
+    dispute.order.campaign.org.slug;
   const roasterLabel =
-    dispute.order.roaster.application.businessName ?? dispute.order.roaster.email;
+    dispute.order.roaster.application.businessName ??
+    dispute.order.roaster.email;
 
   const evidencePacket = {
     dispute: {

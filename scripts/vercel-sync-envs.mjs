@@ -306,7 +306,9 @@ function chunk(items, size) {
 
 function buildPayload(project, envVars, target, sourceFile) {
   const allowedKeys = ALLOWED_KEYS[project];
-  const invalidKeys = Object.keys(envVars).filter((key) => !allowedKeys.has(key));
+  const invalidKeys = Object.keys(envVars).filter(
+    (key) => !allowedKeys.has(key)
+  );
 
   if (invalidKeys.length > 0) {
     throw new Error(
@@ -354,7 +356,9 @@ async function main() {
   for (const project of projects) {
     const filePath = resolve(dir, `${project}.${target}.env`);
     if (!existsSync(filePath)) {
-      console.log(`Skipping ${project}: no file at ${relative(process.cwd(), filePath)}`);
+      console.log(
+        `Skipping ${project}: no file at ${relative(process.cwd(), filePath)}`
+      );
       continue;
     }
 
@@ -362,7 +366,9 @@ async function main() {
     const payload = buildPayload(project, parsed, target, filePath);
 
     if (payload.length === 0) {
-      console.log(`Skipping ${project}: ${relative(process.cwd(), filePath)} is empty`);
+      console.log(
+        `Skipping ${project}: ${relative(process.cwd(), filePath)} is empty`
+      );
       continue;
     }
 
@@ -389,17 +395,15 @@ async function main() {
     console.log(
       `${upload.logicalProject} -> ${upload.projectName} (${upload.payload.length} vars)`
     );
-    console.log(
-      `  source: ${relative(process.cwd(), upload.filePath)}`
-    );
-    console.log(
-      `  keys: ${upload.payload.map((item) => item.key).join(", ")}`
-    );
+    console.log(`  source: ${relative(process.cwd(), upload.filePath)}`);
+    console.log(`  keys: ${upload.payload.map((item) => item.key).join(", ")}`);
   }
 
   if (!apply) {
     console.log("");
-    console.log("Dry run complete. Re-run with --apply to upload these variables.");
+    console.log(
+      "Dry run complete. Re-run with --apply to upload these variables."
+    );
     return;
   }
 
@@ -415,7 +419,9 @@ async function main() {
       });
     }
 
-    console.log(`Uploaded ${upload.payload.length} vars to ${upload.projectName}`);
+    console.log(
+      `Uploaded ${upload.payload.length} vars to ${upload.projectName}`
+    );
   }
 }
 

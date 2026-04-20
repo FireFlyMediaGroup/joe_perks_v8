@@ -14,19 +14,19 @@ import type { SerializedProduct } from "../_lib/catalog";
 import { ProductSelector, type SelectedItem } from "./product-selector";
 
 interface CampaignFormProps {
-  readonly products: SerializedProduct[];
-  readonly orgPctPercent: number;
-  readonly orgSlug?: string;
-  readonly initialName: string;
+  readonly campaignId: string | null;
   readonly initialGoalCents: number | null;
   readonly initialItems: SelectedItem[];
-  readonly campaignId: string | null;
-  readonly readOnlyLive: boolean;
+  readonly initialName: string;
   readonly liveSummary?: {
     name: string;
     goalCents: number | null;
     itemCount: number;
   };
+  readonly orgPctPercent: number;
+  readonly orgSlug?: string;
+  readonly products: SerializedProduct[];
+  readonly readOnlyLive: boolean;
 }
 
 function buildMap(items: SelectedItem[]): Map<string, SelectedItem> {
@@ -57,7 +57,9 @@ export function CampaignForm({
   const [selected, setSelected] = useState<Map<string, SelectedItem>>(() =>
     buildMap(initialItems)
   );
-  const [campaignId, setCampaignId] = useState<string | null>(initialCampaignId);
+  const [campaignId, setCampaignId] = useState<string | null>(
+    initialCampaignId
+  );
   const [error, setError] = useState<string | null>(null);
   const [activateError, setActivateError] = useState<string | null>(null);
 

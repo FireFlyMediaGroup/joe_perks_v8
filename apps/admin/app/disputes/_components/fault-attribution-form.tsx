@@ -1,12 +1,11 @@
 "use client";
 
 import { useActionState } from "react";
-
+import { updateDisputeFault } from "../_actions/update-dispute-fault";
 import {
   initialUpdateDisputeFaultState,
   type UpdateDisputeFaultState,
 } from "../_actions/update-dispute-fault-state";
-import { updateDisputeFault } from "../_actions/update-dispute-fault";
 
 const FAULT_OPTIONS = [
   { label: "Not set", value: "" },
@@ -20,10 +19,23 @@ export function FaultAttributionForm(props: {
   currentFault: "" | "BUYER_FRAUD" | "PLATFORM" | "ROASTER" | "UNCLEAR";
   disputeId: string;
 }) {
-  const [state, formAction, isPending] = useActionState<UpdateDisputeFaultState, FormData>(
-    updateDisputeFault,
-    initialUpdateDisputeFaultState
-  );
+  const [state, formAction, isPending] = useActionState<
+    UpdateDisputeFaultState,
+    FormData
+  >(updateDisputeFault, initialUpdateDisputeFaultState);
+  let statusMessage: React.ReactNode = null;
+
+  if (state.ok) {
+    statusMessage = (
+      <p className="text-emerald-700 text-xs dark:text-emerald-300">
+        {state.message}
+      </p>
+    );
+  } else if (state.error) {
+    statusMessage = (
+      <p className="text-red-600 text-xs dark:text-red-400">{state.error}</p>
+    );
+  }
 
   return (
     <form action={formAction} className="space-y-2">
@@ -63,13 +75,7 @@ export function FaultAttributionForm(props: {
       >
         {isPending ? "Saving..." : "Save fault"}
       </button>
-      {state.ok ? (
-        <p className="text-emerald-700 text-xs dark:text-emerald-300">
-          {state.message}
-        </p>
-      ) : state.error ? (
-        <p className="text-red-600 text-xs dark:text-red-400">{state.error}</p>
-      ) : null}
+      {statusMessage}
     </form>
   );
 }

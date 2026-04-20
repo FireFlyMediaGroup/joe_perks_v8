@@ -13,8 +13,7 @@ const adapter = new PrismaNeon({ connectionString: keys().DATABASE_URL });
 
 const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
 
-export const database =
-  globalForPrisma.prisma ?? new PrismaClient({ adapter });
+export const database = globalForPrisma.prisma ?? new PrismaClient({ adapter });
 
 if (process.env.NODE_ENV !== "production") {
   globalForPrisma.prisma = database;

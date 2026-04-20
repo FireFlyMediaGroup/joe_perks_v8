@@ -81,32 +81,65 @@ async function main() {
   const products = [
     {
       name: "Morning Sunrise Blend",
-      description: "A bright, citrusy medium roast perfect for morning brewing.",
+      description:
+        "A bright, citrusy medium roast perfect for morning brewing.",
       origin: "Ethiopia / Colombia",
       roastLevel: "MEDIUM" as const,
       variants: [
-        { sizeOz: 12, grind: "WHOLE_BEAN" as const, retailPrice: 1899, wholesalePrice: 1100 },
-        { sizeOz: 12, grind: "GROUND_DRIP" as const, retailPrice: 1899, wholesalePrice: 1100 },
-        { sizeOz: 16, grind: "WHOLE_BEAN" as const, retailPrice: 2399, wholesalePrice: 1400 },
+        {
+          sizeOz: 12,
+          grind: "WHOLE_BEAN" as const,
+          retailPrice: 1899,
+          wholesalePrice: 1100,
+        },
+        {
+          sizeOz: 12,
+          grind: "GROUND_DRIP" as const,
+          retailPrice: 1899,
+          wholesalePrice: 1100,
+        },
+        {
+          sizeOz: 16,
+          grind: "WHOLE_BEAN" as const,
+          retailPrice: 2399,
+          wholesalePrice: 1400,
+        },
       ],
     },
     {
       name: "Dark Roast Reserve",
-      description: "Bold and smoky with chocolate undertones. Our signature dark roast.",
+      description:
+        "Bold and smoky with chocolate undertones. Our signature dark roast.",
       origin: "Sumatra",
       roastLevel: "DARK" as const,
       variants: [
-        { sizeOz: 12, grind: "WHOLE_BEAN" as const, retailPrice: 2099, wholesalePrice: 1250 },
-        { sizeOz: 12, grind: "GROUND_ESPRESSO" as const, retailPrice: 2099, wholesalePrice: 1250 },
+        {
+          sizeOz: 12,
+          grind: "WHOLE_BEAN" as const,
+          retailPrice: 2099,
+          wholesalePrice: 1250,
+        },
+        {
+          sizeOz: 12,
+          grind: "GROUND_ESPRESSO" as const,
+          retailPrice: 2099,
+          wholesalePrice: 1250,
+        },
       ],
     },
     {
       name: "Single Origin Kenya AA",
-      description: "Juicy blackcurrant and grapefruit notes from high-altitude Kenyan farms.",
+      description:
+        "Juicy blackcurrant and grapefruit notes from high-altitude Kenyan farms.",
       origin: "Kenya",
       roastLevel: "LIGHT" as const,
       variants: [
-        { sizeOz: 12, grind: "WHOLE_BEAN" as const, retailPrice: 2499, wholesalePrice: 1500 },
+        {
+          sizeOz: 12,
+          grind: "WHOLE_BEAN" as const,
+          retailPrice: 2499,
+          wholesalePrice: 1500,
+        },
       ],
     },
   ];
@@ -116,23 +149,38 @@ async function main() {
       where: { roasterId: roaster.id, name: p.name, deletedAt: null },
     });
 
-    const product = existing ?? await prisma.product.create({
-      data: {
-        roasterId: roaster.id,
-        name: p.name,
-        description: p.description,
-        origin: p.origin,
-        roastLevel: p.roastLevel,
-        status: "ACTIVE",
-      },
-    });
+    const product =
+      existing ??
+      (await prisma.product.create({
+        data: {
+          roasterId: roaster.id,
+          name: p.name,
+          description: p.description,
+          origin: p.origin,
+          roastLevel: p.roastLevel,
+          status: "ACTIVE",
+        },
+      }));
     console.log("  Product:", product.name, product.id);
 
     for (const v of p.variants) {
       const existingVariant = await prisma.productVariant.findFirst({
-        where: { productId: product.id, sizeOz: v.sizeOz, grind: v.grind, deletedAt: null },
+        where: {
+          productId: product.id,
+          sizeOz: v.sizeOz,
+          grind: v.grind,
+          deletedAt: null,
+        },
       });
-      if (!existingVariant) {
+      if (existingVariant) {
+        console.log(
+          "    Variant:",
+          v.sizeOz,
+          "oz",
+          v.grind,
+          "→ already exists"
+        );
+      } else {
         const variant = await prisma.productVariant.create({
           data: {
             productId: product.id,
@@ -144,8 +192,6 @@ async function main() {
           },
         });
         console.log("    Variant:", v.sizeOz, "oz", v.grind, "→", variant.id);
-      } else {
-        console.log("    Variant:", v.sizeOz, "oz", v.grind, "→ already exists");
       }
     }
   }
@@ -153,7 +199,9 @@ async function main() {
   const existingRate = await prisma.roasterShippingRate.findFirst({
     where: { roasterId: roaster.id },
   });
-  if (!existingRate) {
+  if (existingRate) {
+    console.log("  ShippingRates: already exist for this roaster");
+  } else {
     const rate1 = await prisma.roasterShippingRate.create({
       data: {
         roasterId: roaster.id,
@@ -175,8 +223,6 @@ async function main() {
       },
     });
     console.log("  ShippingRate:", rate2.label, rate2.id);
-  } else {
-    console.log("  ShippingRates: already exist for this roaster");
   }
 
   console.log("\n--- E2E Roaster seeded successfully ---");

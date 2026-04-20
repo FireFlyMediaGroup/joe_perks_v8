@@ -107,8 +107,14 @@ async function createPaymentIntent(
     buyerEmail: string;
     buyerName: string;
     campaignId: string;
+    city: string;
+    country: string;
     items: { campaignItemId: string; quantity: number }[];
     shippingRateId: string;
+    state: string;
+    street: string;
+    street2?: string;
+    zip: string;
   },
   signal: AbortSignal
 ): Promise<{ ok: true; data: CheckoutResult } | { ok: false; error: string }> {
@@ -171,11 +177,17 @@ export function StepPaymentWrapper({
         buyerEmail: shippingValues.buyerEmail,
         buyerName: shippingValues.buyerName,
         campaignId,
+        city: shippingValues.city,
+        country: shippingValues.country,
         items: lines.map((l) => ({
           campaignItemId: l.campaignItemId,
           quantity: l.quantity,
         })),
         shippingRateId: shippingValues.shippingRateId,
+        state: shippingValues.state,
+        street: shippingValues.street,
+        street2: shippingValues.street2,
+        zip: shippingValues.zip,
       },
       ac.signal
     )
