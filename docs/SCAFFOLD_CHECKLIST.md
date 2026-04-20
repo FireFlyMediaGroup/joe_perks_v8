@@ -1,9 +1,11 @@
 # Joe Perks — Project Scaffold & Environment Setup Checklist
 ## Complete developer setup guide from zero to first deployment
 
-**Version:** 1.1 | **Environment model:** Production + Development + Vercel Preview deployments  
+**Version:** 1.4 | **Environment model:** Production + Development + Vercel Preview deployments  
 **Audience:** Developer setting up the project for the first time, or AI coding agents helping with setup  
-**Estimated time:** 3–4 hours for a complete setup (accounts + Vercel); **additional** time for the Joe Perks schema and integration work listed below.
+**Estimated time:** 3–4 hours for a complete setup (accounts + Vercel); **additional** time for the Joe Perks schema and integration work listed below.  
+**Companion tracker:** `docs/SCAFFOLD_PROGRESS.md` — versioned current-state comparison against this checklist.  
+**Story series:** `docs/scaffold-stories/README.md` — one focused scaffold story per workstream, ordered for the dev team.
 
 ---
 
@@ -19,16 +21,15 @@
 - [x] **CI** at `.github/workflows/ci.yml`: pnpm 10, `pnpm install --frozen-lockfile`, **`pnpm check`** (Ultracite), **`pnpm turbo build`** with secrets `DATABASE_URL_DEV`, `BASEHUB_TOKEN`, and `SKIP_ENV_VALIDATION=true`.
 - [x] **Dependabot** at `.github/dependabot.yml` (npm + GitHub Actions).
 - [x] Optional integration env vars: empty strings treated as unset in `packages/*/keys.ts` where applicable so **`pnpm dev`** can start without every vendor key filled in.
-- [x] **Stub API routes** on `apps/web`: `api/checkout/create-intent`, `api/order-status`, `api/webhooks/stripe` (501 scaffold), `api/inngest` (stub response).
-- [x] **`@joe-perks/stripe`** package present; **Stripe client and split math are still stubs** (`client.ts` exports a placeholder).
-- [x] **`@joe-perks/email`** with **`sendEmail()` stub** (throws until Resend + `EmailLog` and schema exist per `docs/AGENTS.md`).
-- [x] **`packages/db`**: Prisma 7 config, Neon adapter deps, **`seed.ts` stub** (logs only until real schema).
+- [x] **API routes** on `apps/web`: `api/checkout/create-intent` (PaymentIntent + Order creation with frozen splits, rate limiting), `api/order-status` (GET by PI id or order id), `api/webhooks/stripe` (signature verification, idempotency, handlers for `account.updated`, `payment_intent.succeeded`, `payment_intent.payment_failed`), `api/inngest` (Inngest **`serve()`** — `sla-check`, `payout-release`, `cart-cleanup`). Local smoke test verified with `stripe trigger` (webhooks) and `GET /api/inngest` (function registration).
+- [x] **`@joe-perks/stripe`** package complete: `getStripe()` singleton, `calculateSplits()` / `calculateStripeFeeCents()`, Upstash checkout rate limiter, Connect Express helpers, `mapStripeAccountToOnboardingStatus`, `assertStripeSecretKeyAllowed`. Unit tests passing.
+- [x] **`@joe-perks/email`**: **`sendEmail()`** uses Resend + **`EmailLog`** dedupe `(entityType, entityId, template)`; web contact form uses `@joe-perks/email/send` (see `docs/AGENTS.md`).
+- [x] **Middleware API exclusion**: `apps/web/proxy.ts` matcher excludes `api` paths so i18n/auth/Arcjet middleware does not intercept route handlers.
+- [x] **Root `.env` loading**: `apps/web/load-root-env.ts` (imported in `next.config.ts`) loads root `.env` into the web app process — required because Next.js only auto-loads `.env` from the app directory.
+- [x] **`packages/db`**: Prisma 7 config, Neon adapter, **Joe Perks domain schema** (`packages/db/prisma/schema.prisma`), migrations under `packages/db/prisma/migrations/`, **seed** upserts `PlatformSettings` + `OrderSequence` singletons (`seed.ts`), `generateOrderNumber` in `order-number.ts`. Production deploy path: `pnpm migrate:deploy:prod`, `packages/db/.env.production` (see `docs/AGENTS.md`).
+- [x] **Inngest:** `apps/web/app/api/inngest/route.ts` uses **`serve()`**; registered crons **`sla-check`** (hourly), **`payout-release`** (daily 09:00 UTC), **`cart-cleanup`** (daily 02:00 UTC). Implementation under `apps/web/lib/inngest/`; Stripe helpers in `packages/stripe/src/payouts.ts`. See `docs/scaffold-stories/story-05-inngest-jobs.md`.
 
 ### Remaining for a complete Joe Perks *technical* scaffold
-- [ ] **Prisma:** replace next-forge **stub schema** (single `Page` model today) with the **full Joe Perks schema** (~26 models), run migrations from `packages/db`, then implement a real **seed** (`PlatformSettings`, `OrderSequence`, etc.).
-- [ ] **Email:** implement **`sendEmail()`** with Resend and `EmailLog` dedupe `(entity_id, template)`.
-- [ ] **Stripe:** implement **`@joe-perks/stripe`** (client, `calculateSplits`, rate limit) and wire **webhooks + checkout** to real Stripe + DB idempotency (`StripeEvent`).
-- [ ] **Inngest:** replace stub with **`serve()`** and register **`sla-check`**, **`payout-release`**, **`cart-cleanup`** in `apps/web/app/api/inngest/route.ts`.
 - [ ] **Portals:** Clerk-backed roaster/org flows, admin Basic Auth + platform routes — beyond placeholder pages — per PRD / epics.
 - [ ] **CMS (optional):** set `BASEHUB_TOKEN` for local **`pnpm dev:all`** if marketing/content depends on Basehub.
 - [ ] **Metadata:** point root `package.json` **`repository.url`** at your real GitHub remote when you publish (may still reference next-forge upstream).
@@ -360,15 +361,15 @@ ADMIN_PASSWORD=use-a-strong-password-here
 
 ### 5.6 Database migrations and seed
 
-**Current state:** Prisma still uses the **next-forge stub schema** (a single `Page` model). The **Joe Perks ~26-model schema** is not in this repo yet — see **“Remaining for a complete Joe Perks technical scaffold”** at the top of this file.
-
-When the real schema is added:
+**Current state:** The repo has the **Joe Perks Prisma schema**, **migrations** under `packages/db/prisma/migrations/`, and a **real seed** for `PlatformSettings` + `OrderSequence` singletons. See **`docs/SCAFFOLD_PROGRESS.md`** and Story 01 (`docs/scaffold-stories/story-01-db-foundation.md`).
 
 ```bash
 # From repo root (uses bunx + packages/db — see root package.json)
-pnpm migrate                    # or: cd packages/db && bunx prisma migrate dev
+pnpm migrate                    # dev: migrate dev + new migration when schema changes
+pnpm migrate:deploy             # apply existing migrations (CI / shared DBs)
+pnpm migrate:deploy:prod        # production Neon: requires packages/db/.env.production
 
-# Seed (today: stub only; will populate PlatformSettings + OrderSequence after schema lands)
+# Seed (singletons)
 cd packages/db && bunx prisma db seed
 
 # Prisma Studio (requires DATABASE_URL — e.g. packages/db/.env)
@@ -587,9 +588,10 @@ After first deploy, verify each surface:
 - [ ] `https://joeperks.com/privacy-policy` → loads with PENDING LEGAL REVIEW banner
 
 ### 7.3 Database verification
-- [ ] Prisma Studio connects to **dev** DB (locally) — use **`pnpm dev:studio`** with `DATABASE_URL` set
-- [ ] **After Joe Perks schema is migrated:** `PlatformSettings` singleton exists with correct default values
-- [ ] **After Joe Perks schema is migrated:** `OrderSequence` singleton exists with `next_val = 1`
+- [ ] Prisma Studio connects to **dev** DB (locally) — use **`pnpm dev:studio`** with `DATABASE_URL` set (`packages/db/.env`)
+- [ ] `PlatformSettings` singleton (`id = singleton`) exists with expected defaults — confirm after **`pnpm migrate`** + **`bunx prisma db seed`**
+- [ ] `OrderSequence` singleton (`id = singleton`) exists — `nextVal` starts at **0** until the first order number is generated (`JP-00001` on first increment)
+- [ ] **Production:** migrations applied (`pnpm migrate:deploy:prod`) and smoke test passes (`pnpm db:smoke:prod`) — see `docs/AGENTS.md`
 
 ### 7.4 Sentry verification
 - [ ] `https://joeperks.com/api/test-sentry` → error appears in Sentry within 30 seconds
@@ -607,8 +609,8 @@ After first deploy, verify each surface:
 
 ### 8.1 Branch naming convention
 ```
-main           → production — NEVER commit directly
-develop        → active development — base for all feature branches
+main           → source of truth / production — NEVER commit directly
+develop        → optional shared staging / integration branch
 feature/US-XX-XX-short-description   → feature branches
 fix/US-XX-XX-bug-description         → bug fix branches
 chore/description                    → tooling, deps, config changes
@@ -616,29 +618,29 @@ chore/description                    → tooling, deps, config changes
 
 ### 8.2 Development workflow
 ```bash
-# Start a new story
-git checkout develop
-git pull origin develop
-git checkout -b feature/US-01-01-turborepo-scaffold
+# Default: start a new story from main
+git switch main
+git pull --ff-only origin main
+git switch -c feature/US-01-01-turborepo-scaffold
 
 # Work on the feature...
 
-# Push and open PR targeting develop
+# Push and open PR targeting main
 git push origin feature/US-01-01-turborepo-scaffold
 # → Vercel creates a preview deployment automatically
-# → GitHub Actions CI runs typecheck + lint + build
+# → GitHub Actions CI runs check + build
 # → Review the preview URL
-# → Open PR to develop
+# → Open PR to main
 
-# After PR is approved and merged to develop:
-# → develop auto-deploys to preview (you can set develop as a "development" deployment)
-
-# When a sprint is complete and tested:
-git checkout main
-git merge develop
-git push origin main
+# After PR is approved and merged to main:
 # → Production deploy triggers automatically
+
+# Sync local after merge
+git switch main
+git pull --ff-only origin main
 ```
+
+Optional shared-stage flow if your team wants a long-lived integration branch: branch from `develop`, open PRs to `develop`, validate there, then promote `develop` to `main`.
 
 ### 8.3 AI agent workflow with branches
 When using AI coding agents (Cursor, Claude Code, etc.):
@@ -713,7 +715,7 @@ pnpm build                   # turbo build
 pnpm check                   # Ultracite (also used in CI)
 pnpm typecheck               # turbo typecheck
 pnpm migrate                 # from root: prisma migrate dev in packages/db (uses bunx)
-cd packages/db && bunx prisma db seed   # seed (stub until Joe Perks schema exists)
+cd packages/db && bunx prisma db seed   # seed PlatformSettings + OrderSequence singletons
 stripe listen --forward-to localhost:3000/api/webhooks/stripe  # local Stripe webhooks
 ```
 

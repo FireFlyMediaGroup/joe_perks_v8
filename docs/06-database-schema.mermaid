@@ -74,8 +74,14 @@ erDiagram
     String               id              PK
     OrgApplicationStatus status             "PENDING_PLATFORM_REVIEW | PENDING_ROASTER_APPROVAL | APPROVED | REJECTED"
     String               email           UK
+    String               org_name
+    String               contact_name
+    String               phone              "nullable"
+    String               description        "nullable"
     String               desired_slug    UK
     Float                desired_org_pct    "5–25%"
+    DateTime             terms_agreed_at    "nullable"
+    String               terms_version
   }
 
   RoasterOrgRequest {
@@ -94,6 +100,8 @@ erDiagram
     String                slug             UK "joeperks.com/[slug]"
     String                stripe_account_id UK
     StripeOnboardingStatus stripe_onboarding
+    Boolean               charges_enabled
+    Boolean               payouts_enabled
   }
 
   %% ── Catalog ──────────────────────────────────────────────────────
@@ -126,7 +134,7 @@ erDiagram
     CampaignStatus status        "DRAFT | ACTIVE | PAUSED | ENDED"
     Float          org_pct       "SNAPSHOT — frozen at campaign creation"
     Int            goal_cents    "nullable"
-    Int            total_raised  "denormalized — updated on payout"
+    Int            total_raised  "denormalized — updated at payment confirmation (MVP)"
   }
 
   CampaignItem {
@@ -202,6 +210,17 @@ erDiagram
     DateTime       created_at     "IMMUTABLE — append-only"
   }
 
+  AdminActionLog {
+    String   id          PK
+    String   actor_label
+    String   action_type
+    String   target_type
+    String   target_id
+    String   note           "nullable"
+    Json     payload        "nullable — audit metadata only"
+    DateTime created_at
+  }
+
   DisputeRecord {
     String          id               PK
     String          order_id         FK UK
@@ -215,6 +234,7 @@ erDiagram
   MagicLink {
     String           id         PK
     String           token      UK "crypto 32 bytes"
+    String           dedupe_key UK "nullable — one fulfillment link per order"
     MagicLinkPurpose purpose       "ORDER_FULFILLMENT | ORG_APPROVAL | ROASTER_REVIEW"
     String           actor_id      "roaster.id or org.id"
     ActorType        actor_type

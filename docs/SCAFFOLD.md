@@ -57,7 +57,7 @@ The next-forge assessment concluded an ~85% stack match with Joe Perks. This mea
 | apps/admin (new Next.js app) | apps/admin | Sprint 1 scaffold |
 | packages/stripe — calculateSplits(), Stripe singleton, rate limiter | packages/stripe | Sprint 1 |
 | packages/types — RESERVED_SLUGS, shared TS types | packages/types | Sprint 1 |
-| Inngest background jobs | apps/web/api/inngest/route.ts | Sprint 1 |
+| Inngest background jobs | apps/web/app/api/inngest/route.ts (+ `apps/web/lib/inngest/`) | Sprint 1 (wired) |
 | Upstash Redis (rate limiting) | packages/stripe/ratelimit.ts | Sprint 1 |
 | UploadThing (image uploads) | apps/web + apps/roaster + apps/org | Sprint 2–3 |
 | Zustand cart store | packages/ui | Sprint 3 |
@@ -203,7 +203,7 @@ Joe Perks uses two completely separate Clerk applications — one for roasters, 
 - Copy Event Key → INNGEST EVENT KEY
 - Copy Signing Key → INNGEST SIGNING KEY
 
-Three jobs will be registered: sla-check (hourly), payout-release (daily 09:00 UTC), cart-cleanup (daily 02:00 UTC). Inngest endpoint synced in Phase 6.
+Three jobs are registered in code: **sla-check** (hourly), **payout-release** (daily 09:00 UTC), **cart-cleanup** (daily 02:00 UTC). Sync the deployed **`/api/inngest`** URL in the Inngest dashboard in Phase 6.
 
 ### 3.6 Upstash — Redis rate limiting
 - Create account at upstash.com
@@ -430,13 +430,7 @@ bun add inngest --filter web
 bun add @upstash/ratelimit @upstash/redis --filter @joe-perks/stripe
 ```
 
-**apps/web/app/api/inngest/route.ts** (stub):
-```typescript
-// TODO Sprint 1: Wire up Inngest serve() with sla-check,
-// payout-release, and cart-cleanup functions
-export const GET = () => new Response("Inngest endpoint — not yet configured")
-export const POST = GET
-```
+**Inngest (implemented):** `apps/web/app/api/inngest/route.ts` uses **`serve()`** from `inngest/next` and registers **`sla-check`** (hourly), **`payout-release`** (09:00 UTC), **`cart-cleanup`** (02:00 UTC). Function bodies and runners live under **`apps/web/lib/inngest/`**. Payout transfers and SLA auto-refund use **`packages/stripe/src/payouts.ts`** (`transferToConnectedAccount`, `refundCharge`). Set **`INNGEST_SIGNING_KEY`** and **`INNGEST_EVENT_KEY`** in root `.env`; sync the deployed URL (`/api/inngest`) in the Inngest dashboard.
 
 ### 5.9 Create .env files
 Use credentials from Phase 3. Never commit these files.
@@ -567,11 +561,13 @@ Visit `/api/test-sentry` — error in Sentry within ~30s.
 
 ### 8.1 Branch naming
 - `main` → production — never commit directly
-- `develop` → active development
+- `develop` → optional shared staging / integration branch
 - `feature/US-XX-XX-description`, `fix/...`, `chore/...`
 
 ### 8.2 Development workflow
-Branch from `develop`, PR to `develop`, merge to `main` when sprint complete.
+Default workflow: branch from `main`, open PRs to `main`, and rely on per-PR preview deployments for staging-level validation.
+
+Optional shared-stage workflow: if the team wants a long-lived integration branch, branch from `develop`, open PRs to `develop`, validate there, then promote `develop` to `main`.
 
 ### 8.3 AI agent workflow
 - Work on feature branches only
@@ -625,7 +621,7 @@ stripe listen --forward-to localhost:3000/api/webhooks/stripe
 ---
 
 ## NEXT STEPS
-Once Phase 7 smoke tests pass and the repo is green, switch to Epics & Stories v2.0 and begin Sprint 1 story **US-01-01**. Always branch from `develop`, reference AGENTS.md, and run `bun turbo typecheck` before committing.
+Once Phase 7 smoke tests pass and the repo is green, switch to Epics & Stories v2.0 and begin Sprint 1 story **US-01-01**. Always branch from a clean, updated `main` by default, reference `AGENTS.md`, and run `pnpm typecheck` (or the repo-standard equivalent) before committing.
 
 ---
 
@@ -634,6 +630,6 @@ Once Phase 7 smoke tests pass and the repo is green, switch to Epics & Stories v
 - **Source:** [next-forge](https://github.com/vercel/next-forge) **v6.0.2**, hoisted to the workspace root (not nested under `joe-perks/`).
 - **Package manager:** **pnpm** `10.31.0` at the monorepo root (matches upstream `package.json`). Apps still run Next via **`bun --bun`** where next-forge configured it. To standardize on Bun-only installs, plan a deliberate migration (lockfile + CI).
 - **Prisma:** Template ships **Prisma 7.x** with schema under `packages/db/prisma/schema.prisma` (the guide’s “Prisma 5.x” line is generic).
-- **Joe Perks–specific renames:** `apps/app` → **`apps/roaster`**, `packages/database` → **`packages/db`**, package name **`@joe-perks/db`**. Removed **`apps/api`**, **`apps/storybook`**, Mintlify **`apps/docs`** (use root **`docs/`** for reference material). Added **`apps/org`**, **`apps/admin`**, **`@joe-perks/stripe`**, **`@joe-perks/types`**, stub **`apps/web/app/api/inngest/route.ts`**, and **`inngest`** on **`web`**.
+- **Joe Perks–specific renames:** `apps/app` → **`apps/roaster`**, `packages/database` → **`packages/db`**, package name **`@joe-perks/db`**. Removed **`apps/api`**, **`apps/storybook`**, Mintlify **`apps/docs`** (use root **`docs/`** for reference material). Added **`apps/org`**, **`apps/admin`**, **`@joe-perks/stripe`**, **`@joe-perks/types`**, **`apps/web/app/api/inngest/route.ts`** (Inngest **`serve()`** + jobs under **`apps/web/lib/inngest/`**), and **`inngest`** on **`web`**.
 - **Dev ports:** web **3000**, roaster **3001**, org **3002**, admin **3003**, Prisma Studio (studio app) **3005** (unchanged).
 - **CI:** `.github/workflows/ci.yml` runs `pnpm check` and `pnpm turbo build`. Configure GitHub Actions secrets **`DATABASE_URL_DEV`** (Neon dev branch) and **`BASEHUB_TOKEN`** (Basehub / CMS; required for `@repo/cms` build). Local `pnpm turbo typecheck` may need the same env vars where CMS and AI packages are in the graph.

@@ -12,11 +12,11 @@ graph TD
 
   %% ── Shared packages ─────────────────────────────────────────────
   subgraph PKGS["packages — shared internal libraries"]
-    DB["@joe-perks/db\n─────────────────\nPrisma 5.x client\n26 models, all enums\ncalculateSplits() host\norder number generation\nEmailLog dedup queries"]:::pkg
+    DB["@joe-perks/db\n─────────────────\nPrisma client\nAdminActionLog + order events\norder number generation\nEmailLog dedup queries"]:::pkg
 
-    UI["@joe-perks/ui\n─────────────────\nshadcn/ui components\nbrand theme CSS vars\nuseCart() Zustand store\nLocalStorage cart persist"]:::pkg
+    UI["@joe-perks/ui\n─────────────────\nshadcn/ui components\nbrand theme CSS vars\nuseCartStore Zustand\nLocalStorage cart persist"]:::pkg
 
-    STRIPE_PKG["@joe-perks/stripe\n─────────────────\nStripe Node.js client\ncalculateSplits()\nUpstash ratelimit helpers\nwebhook verify helper"]:::pkg
+    STRIPE_PKG["@joe-perks/stripe\n─────────────────\nStripe Node.js client\n@joe-perks/stripe/splits\nfor client split math\nUpstash ratelimit helpers"]:::pkg
 
     EMAIL_PKG["@joe-perks/email\n─────────────────\nResend client\nsendEmail() + EmailLog\n11 React Email templates\ntracking URL map"]:::pkg
 
@@ -58,7 +58,7 @@ graph TD
   STRIPE_PKG  -->|"rate limit\nsliding window"| UPSTASH_API
 
   %% ── Key rules ────────────────────────────────────────────────────
-  note1["RULES FOR AI AGENTS:\n1. Never import Stripe directly in an app — use @joe-perks/stripe\n2. Never query DB directly without scoping by entity ID (tenant isolation)\n3. Never call Resend directly — always use sendEmail() for EmailLog dedup\n4. All money values are integers in cents — never floats\n5. Split calculations use calculateSplits() from @joe-perks/stripe only"]:::note
+  note1["RULES FOR AI AGENTS:\n1. Never import Stripe directly in an app — use @joe-perks/stripe\n2. Never query DB directly without scoping by entity ID (tenant isolation)\n3. Never call Resend directly — always use sendEmail() for EmailLog dedup\n4. All money values are integers in cents — never floats\n5. Server: calculateSplits from @joe-perks/stripe. Client UI: @joe-perks/stripe/splits only"]:::note
 
   classDef app  fill:#0F6E56,stroke:#085041,color:#E1F5EE,font-weight:bold
   classDef pkg  fill:#BA7517,stroke:#854F0B,color:#FAEEDA,font-weight:bold
