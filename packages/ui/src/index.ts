@@ -1,1 +1,5 @@
-export { useCartStore, type CartLine } from "./store/cart";
+export {
+  type AddLineContext,
+  type CartLine,
+  useCartStore,
+} from "./store/cart";

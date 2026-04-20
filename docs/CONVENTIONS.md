@@ -5,6 +5,32 @@ AI coding agents must follow these when generating or modifying code.
 
 ---
 
+## Git and branching
+
+- `main` is the source-of-truth branch for day-to-day work.
+- Start new work from an updated `main`:
+  ```bash
+  git switch main
+  git pull --ff-only origin main
+  ```
+- Create a short-lived branch from `main` for each task:
+  ```bash
+  git switch -c <branch-name>
+  ```
+- Open pull requests **to `main`** unless a user explicitly asks for a different branch strategy.
+- Merge through PRs instead of pushing directly to `main`.
+- After a merge, return to `main`, fast-forward from `origin/main`, and confirm `git status` is clean.
+- Treat `develop` as optional. Use it only when the team intentionally wants a shared staging branch before promotion to `main`.
+
+### Worktree hygiene
+
+- Do not leave important work only as uncommitted local changes.
+- If work is ready to keep, commit and push it on its own branch.
+- If work is not ready but must be preserved, use a **named stash** before switching branches.
+- Keep scratch files untracked unless they belong in the repo; if a scratch-file pattern is recurring, add it to ignore rules in a separate intentional change.
+
+---
+
 ## TypeScript
 
 - Strict mode enabled in all apps and packages (`"strict": true` in tsconfig).
@@ -46,20 +72,90 @@ export async function POST(req: Request) {
 }
 ```
 
+### Server actions (portal CRUD)
+
+Portal apps (`apps/roaster`, `apps/org`) use Next.js server actions for mutations instead of API routes. Every action follows this shape:
+
+```typescript
+'use server'
+
+import { database } from '@joe-perks/db'
+import { revalidatePath } from 'next/cache'
+
+import { requireRoasterId } from '../_lib/require-roaster'
+import { productFormSchema } from '../_lib/schema'
+
+export async function createProduct(input: ProductFormInput): Promise<ActionResult> {
+  // 1. Authenticate + resolve tenant
+  const session = await requireRoasterId()
+  if (!session.ok) return { success: false, error: 'Not authorized.' }
+
+  // 2. Validate with Zod
+  const parsed = productFormSchema.safeParse(input)
+  if (!parsed.success) return { success: false, error: parsed.error.issues[0]?.message ?? 'Invalid input' }
+
+  // 3. Mutate — always scope by session tenant ID, never from input
+  const product = await database.product.create({
+    data: { roasterId: session.roasterId, ...parsed.data },
+  })
+
+  // 4. Revalidate affected paths
+  revalidatePath('/products')
+  return { success: true, productId: product.id }
+}
+```
+
+Key differences from API routes: no `Request`/`Response`, uses `revalidatePath` instead of returning JSON, returns a discriminated union result type.
+
+**Org portal:** import `requireOrgId` from `apps/org/app/(authenticated)/_lib/require-org.ts` and scope mutations with `session.orgId` (same shape as `requireRoasterId`).
+
 ### Route structure in apps/web
 ```
 app/
-├── (marketing)/        # Route group — no layout effect
-│   └── page.tsx        # joeperks.com/
-├── [slug]/             # Dynamic — one per org
-│   ├── page.tsx        # Storefront
-│   └── checkout/
-│       └── page.tsx
+├── [locale]/                    # next-forge i18n (all public pages)
+│   ├── (home)/ …                # Marketing / landing
+│   ├── [slug]/                  # Buyer org storefront (one segment = org slug)
+│   │   ├── page.tsx
+│   │   ├── _components/         # cart-drawer, product-grid, shipping-guard, …
+│   │   ├── _lib/queries.ts      # getStorefrontData
+│   │   ├── checkout/
+│   │   │   ├── page.tsx
+│   │   │   └── _components/     # checkout-form, step-*, Stripe Elements
+│   │   └── order/[pi_id]/
+│   │       └── page.tsx         # confirmation + polling
+│   └── …
 └── api/
-    └── webhooks/
-        └── stripe/
-            └── route.ts
+    ├── checkout/create-intent/
+    ├── order-status/
+    └── webhooks/stripe/
 ```
+
+### Route structure in portal apps (roaster, org)
+
+Portal route segments colocate actions, components, and lib under private folders:
+
+```
+app/(authenticated)/products/          # route segment
+├── page.tsx                           # server component — list view
+├── new/page.tsx                       # server component — create form shell
+├── [id]/page.tsx                      # server component — detail view
+├── [id]/edit/page.tsx                 # server component — edit form shell
+├── _actions/                          # "use server" mutation functions
+│   ├── product-actions.ts
+│   └── variant-actions.ts
+├── _components/                       # client + server components for this segment
+│   ├── product-form.tsx               # "use client" — create/edit form
+│   ├── product-list.tsx               # table/grid for list page
+│   ├── variant-form.tsx               # "use client" — variant create/edit
+│   └── variant-list.tsx               # variant table with edit/delete
+└── _lib/                              # shared utilities scoped to this segment
+    ├── schema.ts                      # Zod validation schemas
+    ├── require-roaster.ts             # tenant auth helper (reusable)
+    ├── money.ts                       # parseDollarsToCents, formatCentsAsDollars
+    └── format.ts                      # enum display labels
+```
+
+Pages are always server components. Forms are always client components. Actions live in `_actions/` and are imported by client components via `"use server"`. Follow this layout for new portal features (e.g. shipping, payouts).
 
 ---
 
@@ -135,7 +231,10 @@ const shippingCents = 895 // $8.95
 const display = `$${(cents / 100).toFixed(2)}`
 
 // ✅ Split calculation — always use the package function
+// Server components / API routes:
 import { calculateSplits } from '@joe-perks/stripe'
+// Client components (cart drawer, etc.) — use the client-safe sub-export:
+// import { calculateSplits } from '@joe-perks/stripe/splits'
 const splits = calculateSplits(productSubtotal, shippingAmount, orgPct, settings)
 // splits.org_amount, splits.platform_amount, splits.roaster_amount — all cents
 
@@ -143,6 +242,32 @@ const splits = calculateSplits(productSubtotal, shippingAmount, orgPct, settings
 const orgAmount = totalPrice * 0.15 // float multiplication on money
 const orgAmount = parseFloat((totalPrice * 0.15).toFixed(2)) // still wrong
 ```
+
+### Dollar-to-cents form input round-trip
+
+Portal forms display prices in dollars but store/transmit cents. Use `parseDollarsToCents` for input and `formatCentsAsDollars` for display (see `products/_lib/money.ts`):
+
+```typescript
+// ✅ Input: user types "19.99" → store 1999
+function parseDollarsToCents(raw: string): { ok: true; cents: number } | { ok: false; error: string } {
+  const n = Number.parseFloat(raw.replace(/^\$/, '').trim())
+  if (Number.isNaN(n) || n <= 0) return { ok: false, error: 'Enter a valid price' }
+  return { ok: true, cents: Math.round(n * 100) }
+}
+
+// ✅ Display: DB has 1999 → show "19.99"
+function formatCentsAsDollars(cents: number): string {
+  return (cents / 100).toFixed(2)
+}
+
+// ✅ Margin warning: alert when (retail − wholesale) / retail < 20%
+function isLowMarginWarning(wholesaleCents: number, retailCents: number): boolean {
+  if (retailCents <= 0) return false
+  return (retailCents - wholesaleCents) / retailCents < 0.2
+}
+```
+
+Reuse these helpers for any dollar input (variant prices, shipping rates, etc.) rather than reimplementing the conversion.
 
 ---
 
@@ -183,13 +308,19 @@ await stripe.transfers.create({
 ```typescript
 // ✅ Always use sendEmail() — never call Resend directly
 import { sendEmail } from '@joe-perks/email'
+import { OrderShippedEmail } from '@joe-perks/email/templates/order-shipped'
+import { createElement } from 'react'
 
 await sendEmail({
   template: 'order_shipped',
+  subject: `Your order ${order.order_number} has shipped`,
   to: order.buyer_email,
   entityId: order.id,
   entityType: 'order',
-  props: { orderNumber: order.order_number, trackingNumber: order.tracking_number },
+  react: createElement(OrderShippedEmail, {
+    orderNumber: order.order_number,
+    trackingNumber: order.tracking_number,
+  }),
 })
 // sendEmail() handles EmailLog dedup — safe to call multiple times
 
@@ -252,7 +383,7 @@ import { logOrderEvent } from '@joe-perks/db'
 
 await logOrderEvent(
   order.id,
-  'ORDER_SHIPPED',
+  'SHIPPED',
   'ROASTER',
   roaster.id,
   { tracking_number: trackingNumber, carrier },
@@ -263,9 +394,25 @@ await logOrderEvent(
 // logOrderEvent() handles errors gracefully — won't throw on failure
 ```
 
+**Transactional inserts:** Inside `$transaction`, use `database.orderEvent.create` when the event must commit with sibling writes (checkout, webhook confirmation, SLA auto-refund, fulfillment ship).
+
+**Roaster fulfillment (magic link):** `apps/roaster/app/fulfill/[token]/` — `_lib/validate-token.ts`, `_components/fulfillment-details.tsx`, `_components/tracking-form.tsx`, `_actions/submit-tracking.ts` (consumes link, `SHIPPED`, buyer email).
+
+**Admin delivery:** `apps/admin/app/orders/` — list + detail + `confirm-delivery` server action (`DELIVERED`, `payoutEligibleAt` from `PlatformSettings.payoutHoldDays`, stable admin `actorId` from the configured Basic Auth email).
+
+**Shared admin Basic Auth:** normalize parsing and trimmed credentials through `@joe-perks/types` so `apps/admin` middleware and `apps/web` admin-only APIs accept the same credentials.
+
 ---
 
 ## Component patterns (apps/web storefront)
+
+**Data loading:** `getStorefrontData(slug)` in `apps/web/app/[locale]/[slug]/_lib/queries.ts` loads `Org` (ACTIVE), active `Campaign`, and `CampaignItem` rows with product/variant filters. It returns **`splitPreviewDefaults`** (`PlatformSettings` + default roaster `RoasterShippingRate`) for the cart drawer estimate, plus **`hasShippingRates`** and **`shippingRates`** (all rates for the campaign roaster) for the shipping guard and checkout — reuse this function on the storefront and checkout pages instead of duplicating queries.
+
+**Checkout:** `checkout/page.tsx` is a server component that calls `getStorefrontData`, redirects if there are no shipping rates (`?error=no-shipping`), and renders **`checkout-form.tsx`** (client) for the three-step flow. Step 3 uses **`@stripe/react-stripe-js`** (`Elements`, `PaymentElement`) and `POST /api/checkout/create-intent` (returns `clientSecret`, `paymentIntentId`, `grossAmount`, …). Never import the server Stripe SDK in client components.
+
+**Order confirmation:** `order/[pi_id]/page.tsx` loads the order server-side when possible; **`order-status-poller.tsx`** polls `GET /api/order-status?pi=` until the order is no longer `PENDING` (or times out). The order-status API includes **`orgName`** for fundraiser copy on the confirmation UI.
+
+**Split math in the browser:** Use `calculateSplits()` from **`@joe-perks/stripe/splits`**. Do **not** import the main `@joe-perks/stripe` package in client components — the barrel re-exports `server-only` modules (`client.ts`, `ratelimit.ts`, etc.) and will break `next build`.
 
 ```typescript
 // ✅ Server component for data fetching
@@ -276,18 +423,16 @@ export default async function ProductGrid({ campaignId }: { campaignId: string }
 
 // ✅ Client component for cart interaction
 'use client'
-import { useCart } from '@joe-perks/ui'
+import { useCartStore } from '@joe-perks/ui'
+import { calculateSplits } from '@joe-perks/stripe/splits'
 
-export function AddToCartButton({ item }: { item: CampaignItem }) {
-  const { addItem } = useCart()
-  return <button onClick={() => addItem({ variant_id: item.variant_id, unit_price: item.retail_price, ... })}>
-    Add to cart
-  </button>
+export function CartDrawer({ splitPreviewDefaults }: { splitPreviewDefaults: SplitPreviewDefaults }) {
+  const lines = useCartStore((s) => s.lines)
+  // … compute subtotalCents from lines, then calculateSplits({ productSubtotalCents, shippingAmountCents, orgPct, … })
 }
 
-// ✅ Mobile-first: bottom sheet on mobile, side drawer on desktop
-// Cart drawer: class="fixed bottom-0 md:right-0 md:top-0 md:bottom-auto"
-// Touch targets: min-h-[44px] min-w-[44px] on all interactive elements
+// ✅ Mobile-first: bottom sheet on mobile, side drawer on desktop (see `cart-drawer.tsx` + `useIsMobile`)
+// Touch targets: min 44×44px on interactive controls
 ```
 
 ---
@@ -300,7 +445,7 @@ export function AddToCartButton({ item }: { item: CampaignItem }) {
 | TypeScript variables | camelCase | `roasterId`, `orgPctSnapshot` |
 | React components | PascalCase | `ProductCard`, `CartDrawer` |
 | API routes | kebab-case directories | `create-intent/route.ts` |
-| Inngest function IDs | kebab-case | `sla-check`, `payout-release` |
+| Inngest function IDs | kebab-case | `sla-check`, `payout-release`, `cart-cleanup` |
 | Email templates | kebab-case | `order_confirmation`, `magic_link_fulfillment` |
 | Prisma models | PascalCase | `RoasterApplication`, `OrderEvent` |
 | Enums | SCREAMING_SNAKE_CASE | `PENDING_REVIEW`, `ROASTER_ADMIN` |
@@ -320,7 +465,7 @@ packages/db/
 packages/stripe/
 ├── client.ts           # export { stripe } — singleton
 ├── splits.ts           # export { calculateSplits }
-└── ratelimit.ts        # export { checkoutLimiter, onboardingLimiter }
+└── ratelimit.ts        # export { limitCheckout, limitRoasterApplication, limitOrgApplication, limitSlugValidation }
 
 packages/email/        # npm: @joe-perks/email
 ├── send.ts             # export { sendEmail }
@@ -334,6 +479,7 @@ packages/email/        # npm: @joe-perks/email
     ├── sla-breach.tsx
     ├── roaster-application-received.tsx
     ├── roaster-approved.tsx
+    ├── roaster-rejected.tsx
     ├── org-application-received.tsx
     └── org-approved.tsx
 ```

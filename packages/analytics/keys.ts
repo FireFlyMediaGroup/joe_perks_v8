@@ -5,15 +5,9 @@ const emptyToUndefined = (v: unknown) =>
   v === "" || v === undefined ? undefined : v;
 
 const optionalPrefixed = (prefix: string) =>
-  z.preprocess(
-    emptyToUndefined,
-    z.string().startsWith(prefix).optional()
-  );
+  z.preprocess(emptyToUndefined, z.string().startsWith(prefix).optional());
 
-const optionalUrl = z.preprocess(
-  emptyToUndefined,
-  z.string().url().optional()
-);
+const optionalUrl = z.preprocess(emptyToUndefined, z.string().url().optional());
 
 export const keys = () =>
   createEnv({

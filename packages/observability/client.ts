@@ -2,43 +2,87 @@
  * This file configures the initialization of Sentry on the client.
  * The config you add here will be used whenever a users loads a page in their browser.
  * https://docs.sentry.io/platforms/javascript/guides/nextjs/
+ *
+ * Sentry is loaded with dynamic `import()` (no static `@sentry/nextjs` import) so:
+ * - Local dev without NEXT_PUBLIC_SENTRY_DSN does not pull the SDK into the graph.
+ * - Turbopack HMR is less likely to hit "module factory is not available" for stale Sentry chunks.
  */
 
-// biome-ignore lint/performance/noNamespaceImport: Sentry SDK convention
-import * as Sentry from "@sentry/nextjs";
 import { keys } from "./keys";
 
-export const initializeSentry = (): ReturnType<typeof Sentry.init> =>
-  Sentry.init({
-    dsn: keys().NEXT_PUBLIC_SENTRY_DSN,
+type SentryModule = typeof import("@sentry/nextjs");
 
-    // Enable logging
-    enableLogs: true,
+let sentry: SentryModule | null | undefined;
+let loadPromise: Promise<void> | undefined;
 
-    // Adjust this value in production, or use tracesSampler for greater control
-    tracesSampleRate: 1,
+export function initializeSentry(): void {
+  const dsn = keys().NEXT_PUBLIC_SENTRY_DSN;
+  if (!dsn) {
+    sentry = null;
+    return;
+  }
 
-    // Setting this option to true will print useful information to the console while you're setting up Sentry.
-    debug: false,
+  loadPromise = import("@sentry/nextjs")
+    .then((Sentry) => {
+      sentry = Sentry;
+      Sentry.init({
+        dsn,
 
-    replaysOnErrorSampleRate: 1,
+        // Enable logging
+        enableLogs: true,
 
-    /*
-     * This sets the sample rate to be 10%. You may want this to be 100% while
-     * in development and sample at a lower rate in production
-     */
-    replaysSessionSampleRate: 0.1,
+        // Adjust this value in production, or use tracesSampler for greater control
+        tracesSampleRate: 1,
 
-    // You can remove this option if you're not planning to use the Sentry Session Replay feature:
-    integrations: [
-      Sentry.replayIntegration({
-        // Additional Replay configuration goes in here, for example:
-        maskAllText: true,
-        blockAllMedia: true,
-      }),
-      // Send console.log, console.error, and console.warn calls as logs to Sentry
-      Sentry.consoleLoggingIntegration({ levels: ["log", "error", "warn"] }),
-    ],
-  });
+        // Setting this option to true will print useful information to the console while you're setting up Sentry.
+        debug: false,
 
-export const onRouterTransitionStart = Sentry.captureRouterTransitionStart;
+        replaysOnErrorSampleRate: 1,
+
+        /*
+         * This sets the sample rate to be 10%. You may want this to be 100% while
+         * in development and sample at a lower rate in production
+         */
+        replaysSessionSampleRate: 0.1,
+
+        integrations: [
+          Sentry.replayIntegration({
+            maskAllText: true,
+            blockAllMedia: true,
+          }),
+          Sentry.consoleLoggingIntegration({
+            levels: ["log", "error", "warn"],
+          }),
+        ],
+      });
+    })
+    .catch((error: unknown) => {
+      // Uncaught rejections here break client bootstrap (e.g. Clerk sign-in never mounts) when
+      // Turbopack HMR leaves the Sentry chunk in a bad state. Degrade gracefully.
+      sentry = null;
+      console.warn(
+        "[@repo/observability] Sentry client failed to load; continuing without Sentry.",
+        error
+      );
+    });
+}
+
+export function onRouterTransitionStart(
+  href: string,
+  navigationType: string
+): void {
+  if (sentry === null) {
+    return;
+  }
+  if (sentry) {
+    sentry.captureRouterTransitionStart(href, navigationType);
+    return;
+  }
+  loadPromise
+    ?.then(() => {
+      sentry?.captureRouterTransitionStart(href, navigationType);
+    })
+    .catch(() => {
+      /* ignore: best-effort router hook if Sentry failed to load */
+    });
+}

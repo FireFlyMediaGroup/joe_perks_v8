@@ -1,2 +1,6 @@
 @import "tailwindcss";
+@import "uploadthing/tw/v4";
 @import "@repo/design-system/styles/globals.css";
+@import "@repo/design-system/styles/brand.css";
+
+@source "../../../packages/auth/**/*.{ts,tsx}";
