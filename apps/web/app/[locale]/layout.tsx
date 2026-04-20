@@ -31,7 +31,7 @@ const RootLayout = async ({ children, params }: RootLayoutProperties) => {
       <body className="bg-jp-bg-page text-jp-text">
         <AnalyticsProvider>
           <DesignSystemProvider>
-            <Header dictionary={dictionary} />
+            <Header dictionary={dictionary} locale={locale} />
             {children}
             <Footer />
           </DesignSystemProvider>
