@@ -15,11 +15,7 @@ export const CtaBanner = () => (
     <div className="mx-auto max-w-[700px] px-6 text-center md:px-10">
       <div className="reveal">
         <h2 className="mb-4 font-black font-display text-[clamp(32px,4vw,52px)] text-white leading-[1.1] tracking-[-0.025em]">
-          Ready to brew{" "}
-          <em className="text-jp-terra-light">
-            something good
-          </em>
-          ?
+          Ready to brew <em className="text-jp-terra-light">something good</em>?
         </h2>
         <p className="mx-auto mb-8 max-w-md font-body text-base text-white/60 leading-relaxed">
           Whether you run an org or roast the beans, Joe Perks makes fundraising

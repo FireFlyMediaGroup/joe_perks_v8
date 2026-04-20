@@ -44,6 +44,8 @@ function skip(label: string, reason: string) {
   console.log(`  SKIP  ${label} (${reason})`);
 }
 
+const HEX_64_TOKEN_RE = /^[a-f0-9]{64}$/;
+
 function isRoasterReviewPayload(
   p: unknown
 ): p is { applicationId: string; roasterId: string; orgName: string } {
@@ -69,6 +71,7 @@ async function checkAdminHttp(path: string): Promise<number | null> {
   }
 }
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: smoke script intentionally performs many sequential environment checks
 async function main() {
   console.log("\n--- US-03-02 Smoke Tests (Admin Org Approval Queue) ---\n");
 
@@ -95,10 +98,7 @@ async function main() {
       `OrgApplication list query with roasterRequests + roaster.application (${rows.length} pending platform row(s) in sample)`
     );
   } catch (e) {
-    fail(
-      "Org queue query failed",
-      e instanceof Error ? e.message : "unknown"
-    );
+    fail("Org queue query failed", e instanceof Error ? e.message : "unknown");
   }
 
   // ── 2. Status filters (all OrgApplicationStatus values queryable) ──
@@ -158,7 +158,7 @@ async function main() {
         );
         continue;
       }
-      if (!/^[a-f0-9]{64}$/.test(link.token)) {
+      if (!HEX_64_TOKEN_RE.test(link.token)) {
         linkStructErrors++;
         fail(
           `MagicLink ${link.id}: token should be 64 hex chars`,
@@ -283,10 +283,10 @@ async function main() {
       "connection refused — start admin dev server on 3003"
     );
   } else if (httpStatus === 401) {
-    pass(`GET /approvals/orgs returns 401 without auth (middleware active)`);
+    pass("GET /approvals/orgs returns 401 without auth (middleware active)");
   } else if (httpStatus === 503) {
     pass(
-      `GET /approvals/orgs returns 503 — ADMIN_EMAIL/ADMIN_PASSWORD not set in admin env`
+      "GET /approvals/orgs returns 503 — ADMIN_EMAIL/ADMIN_PASSWORD not set in admin env"
     );
   } else {
     pass(`GET /approvals/orgs returns ${httpStatus} (admin reachable)`);

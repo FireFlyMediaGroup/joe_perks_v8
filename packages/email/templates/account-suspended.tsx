@@ -1,7 +1,8 @@
 import { Button, Text } from "@react-email/components";
 import { BaseEmailLayout } from "./base-layout";
 
-export const ACCOUNT_SUSPENDED_SUBJECT = "Your Joe Perks account has been suspended";
+export const ACCOUNT_SUSPENDED_SUBJECT =
+  "Your Joe Perks account has been suspended";
 
 interface AccountSuspendedEmailProps {
   readonly accountName: string;
@@ -21,8 +22,9 @@ export const AccountSuspendedEmail = ({
       Account temporarily suspended
     </Text>
     <Text className="m-0 text-zinc-600">
-      Your Joe Perks {accountTypeLabel} account for <strong>{accountName}</strong>{" "}
-      is temporarily suspended while our team reviews the account.
+      Your Joe Perks {accountTypeLabel} account for{" "}
+      <strong>{accountName}</strong> is temporarily suspended while our team
+      reviews the account.
     </Text>
     <Text className="m-0 mt-4 text-zinc-600">
       Reason category: <strong>{reasonLabel}</strong>
@@ -38,8 +40,8 @@ export const AccountSuspendedEmail = ({
       View account status
     </Button>
     <Text className="m-0 mt-6 text-sm text-zinc-500">
-      Sign in to review the status details and submit a reactivation request once
-      you&apos;ve addressed the issue.
+      Sign in to review the status details and submit a reactivation request
+      once you&apos;ve addressed the issue.
     </Text>
   </BaseEmailLayout>
 );

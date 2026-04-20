@@ -60,13 +60,18 @@ async function httpStatus(base: string, path: string): Promise<number | null> {
   }
 }
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: smoke script intentionally performs many sequential assertions
 async function main() {
   console.log("\n--- Sprint 3 Smoke Tests (EP-03 org onboarding) ---\n");
 
   // ── 1. Singletons (baseline) ──
   try {
-    await prisma.platformSettings.findUniqueOrThrow({ where: { id: "singleton" } });
-    await prisma.orderSequence.findUniqueOrThrow({ where: { id: "singleton" } });
+    await prisma.platformSettings.findUniqueOrThrow({
+      where: { id: "singleton" },
+    });
+    await prisma.orderSequence.findUniqueOrThrow({
+      where: { id: "singleton" },
+    });
     pass("PlatformSettings + OrderSequence singletons exist");
   } catch (e) {
     fail(
@@ -101,7 +106,9 @@ async function main() {
     await prisma.org.findFirst({
       select: { chargesEnabled: true, payoutsEnabled: true },
     });
-    pass("Org model exposes chargesEnabled and payoutsEnabled (schema in sync)");
+    pass(
+      "Org model exposes chargesEnabled and payoutsEnabled (schema in sync)"
+    );
   } catch (e) {
     fail(
       "Org charges/payouts columns missing — run pnpm migrate",
@@ -181,7 +188,10 @@ async function main() {
       );
     }
   } catch (e) {
-    fail("Org ↔ application slug check failed", e instanceof Error ? e.message : "unknown");
+    fail(
+      "Org ↔ application slug check failed",
+      e instanceof Error ? e.message : "unknown"
+    );
   }
 
   // ── 8. US-03-03: APPROVED application → Org + ORG_ADMIN user ──
@@ -308,7 +318,9 @@ async function main() {
     if (items.length === 0) {
       skip("CampaignItem snapshot prices positive", "no CampaignItem rows");
     } else if (bad === 0) {
-      pass(`CampaignItem retail/wholesale snapshots valid (${items.length} row(s))`);
+      pass(
+        `CampaignItem retail/wholesale snapshots valid (${items.length} row(s))`
+      );
     }
   } catch (e) {
     fail(
@@ -327,10 +339,7 @@ async function main() {
       },
     });
     if (active.length === 0) {
-      skip(
-        "ACTIVE campaigns have items and ACTIVE org",
-        "no ACTIVE campaigns"
-      );
+      skip("ACTIVE campaigns have items and ACTIVE org", "no ACTIVE campaigns");
     } else {
       let bad = false;
       for (const c of active) {
@@ -398,7 +407,10 @@ async function main() {
   }
 
   // ── 14. HTTP: admin org queue (Basic Auth) ──
-  const adminOrgs = await httpStatus("http://localhost:3003", "/approvals/orgs");
+  const adminOrgs = await httpStatus(
+    "http://localhost:3003",
+    "/approvals/orgs"
+  );
   if (adminOrgs === null) {
     skip(
       "GET /approvals/orgs (localhost:3003)",
@@ -411,13 +423,20 @@ async function main() {
   }
 
   // ── 15. HTTP: org portal onboarding + campaign (expect redirect to sign-in) ──
-  const orgOnboarding = await httpStatus("http://localhost:3002", "/onboarding");
+  const orgOnboarding = await httpStatus(
+    "http://localhost:3002",
+    "/onboarding"
+  );
   if (orgOnboarding === null) {
     skip(
       "GET /onboarding (localhost:3002)",
       "connection refused — start org app on 3002"
     );
-  } else if (orgOnboarding === 307 || orgOnboarding === 308 || orgOnboarding === 302) {
+  } else if (
+    orgOnboarding === 307 ||
+    orgOnboarding === 308 ||
+    orgOnboarding === 302
+  ) {
     pass(`GET /onboarding → ${orgOnboarding} (redirect, likely sign-in)`);
   } else if (orgOnboarding === 200) {
     pass("GET /onboarding → 200");
@@ -431,7 +450,11 @@ async function main() {
       "GET /campaign (localhost:3002)",
       "connection refused — start org app on 3002"
     );
-  } else if (orgCampaign === 307 || orgCampaign === 308 || orgCampaign === 302) {
+  } else if (
+    orgCampaign === 307 ||
+    orgCampaign === 308 ||
+    orgCampaign === 302
+  ) {
     pass(`GET /campaign → ${orgCampaign} (redirect, likely sign-in)`);
   } else if (orgCampaign === 200) {
     pass("GET /campaign → 200");

@@ -21,4 +21,7 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL_DEV }}
           BASEHUB_TOKEN: ${{ secrets.BASEHUB_TOKEN }}
+          SESSION_SECRET: ci-session-secret-0123456789abcdef0123456789abcdef
+          NEXT_PUBLIC_APP_URL: http://localhost:3000
+          NEXT_PUBLIC_WEB_URL: http://localhost:3001
           SKIP_ENV_VALIDATION: "true"

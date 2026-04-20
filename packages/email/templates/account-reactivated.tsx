@@ -22,15 +22,15 @@ export const AccountReactivatedEmail = ({
       Account review complete
     </Text>
     <Text className="m-0 text-zinc-600">
-      Your Joe Perks {accountTypeLabel} account for <strong>{accountName}</strong>{" "}
-      has been reviewed and restored.
+      Your Joe Perks {accountTypeLabel} account for{" "}
+      <strong>{accountName}</strong> has been reviewed and restored.
     </Text>
     <Text className="m-0 mt-4 text-zinc-600">
       Current status: <strong>{nextStatusLabel}</strong>
     </Text>
     <Text className="m-0 mt-4 text-zinc-600">
-      If your status is onboarding, finish the remaining Stripe or setup steps in
-      the portal before the account becomes fully active again.
+      If your status is onboarding, finish the remaining Stripe or setup steps
+      in the portal before the account becomes fully active again.
     </Text>
     <Button
       className="mt-8 rounded-md bg-zinc-900 px-5 py-3 text-center font-semibold text-sm text-white"

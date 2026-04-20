@@ -1,13 +1,13 @@
 import { ReactivationRequestForm } from "./reactivation-request-form";
 
 interface SuspendedDashboardProps {
-  readonly orgName: string;
-  readonly status: string;
-  readonly stripeOnboarding: string;
   readonly chargesEnabled: boolean;
+  readonly latestRequestDate: Date | null;
+  readonly orgName: string;
   readonly payoutsEnabled: boolean;
   readonly reasonLabel: string;
-  readonly latestRequestDate: Date | null;
+  readonly status: string;
+  readonly stripeOnboarding: string;
 }
 
 export function SuspendedDashboard({

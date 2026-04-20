@@ -25,7 +25,9 @@ export const env = createEnv({
     rateLimit(),
     stripe(),
   ],
-  server: {},
+  server: {
+    SESSION_SECRET: z.preprocess(emptyToUndefined, z.string().min(32)),
+  },
   client: {
     NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z.preprocess(
       emptyToUndefined,
@@ -33,6 +35,7 @@ export const env = createEnv({
     ),
   },
   runtimeEnv: {
+    SESSION_SECRET: process.env.SESSION_SECRET,
     NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY:
       process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
   },

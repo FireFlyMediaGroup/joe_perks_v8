@@ -8,8 +8,8 @@ import {
 } from "@joe-perks/db";
 import { sendEmail } from "@joe-perks/email/send";
 import {
-  AccountSuspendedEmail,
   ACCOUNT_SUSPENDED_SUBJECT,
+  AccountSuspendedEmail,
 } from "@joe-perks/email/templates/account-suspended";
 import DisputeAdminAlertEmail from "@joe-perks/email/templates/dispute-admin-alert";
 import MagicLinkFulfillmentEmail from "@joe-perks/email/templates/magic-link-fulfillment";
@@ -398,7 +398,9 @@ async function handlePaymentIntentFailed(
   );
 }
 
-async function handleChargeDisputeCreated(dispute: Stripe.Dispute): Promise<void> {
+async function handleChargeDisputeCreated(
+  dispute: Stripe.Dispute
+): Promise<void> {
   const chargeId = getDisputeChargeId(dispute);
   if (!chargeId) {
     return;
@@ -463,7 +465,9 @@ async function handleChargeDisputeCreated(dispute: Stripe.Dispute): Promise<void
   });
 }
 
-async function handleChargeDisputeClosed(dispute: Stripe.Dispute): Promise<void> {
+async function handleChargeDisputeClosed(
+  dispute: Stripe.Dispute
+): Promise<void> {
   const chargeId = getDisputeChargeId(dispute);
   if (!chargeId) {
     return;
@@ -655,7 +659,10 @@ export async function POST(request: Request) {
       },
     });
   } catch (error) {
-    if (!(error instanceof Prisma.PrismaClientKnownRequestError) || error.code !== "P2002") {
+    if (
+      !(error instanceof Prisma.PrismaClientKnownRequestError) ||
+      error.code !== "P2002"
+    ) {
       throw error;
     }
   }

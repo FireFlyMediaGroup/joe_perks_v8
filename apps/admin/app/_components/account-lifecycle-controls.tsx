@@ -44,11 +44,13 @@ export function AccountLifecycleControls({
         <div className="rounded-lg border border-zinc-200 p-4">
           <p className="font-medium text-sm">Reactivation outcome</p>
           <p className="mt-1 text-sm text-zinc-600">
-            If approved now, this account will move to <strong>{nextStatus}</strong>.
+            If approved now, this account will move to{" "}
+            <strong>{nextStatus}</strong>.
           </p>
           {defaultCanReactivate ? (
             <p className="mt-2 text-emerald-700 text-sm">
-              No blockers detected. Default reactivation will restore full access.
+              No blockers detected. Default reactivation will restore full
+              access.
             </p>
           ) : null}
         </div>
@@ -56,7 +58,9 @@ export function AccountLifecycleControls({
         <div className="rounded-lg border border-zinc-200 p-4">
           <p className="font-medium text-sm">Readiness checks</p>
           {blockers.length === 0 ? (
-            <p className="mt-2 text-sm text-zinc-600">No operational blockers detected.</p>
+            <p className="mt-2 text-sm text-zinc-600">
+              No operational blockers detected.
+            </p>
           ) : (
             <ul className="mt-2 list-inside list-disc space-y-1 text-sm text-zinc-700">
               {blockers.map((blocker) => (
@@ -65,7 +69,9 @@ export function AccountLifecycleControls({
             </ul>
           )}
           {stripeRequirements.length === 0 ? (
-            <p className="mt-3 text-sm text-zinc-600">Stripe readiness is healthy.</p>
+            <p className="mt-3 text-sm text-zinc-600">
+              Stripe readiness is healthy.
+            </p>
           ) : (
             <ul className="mt-3 list-inside list-disc space-y-1 text-sm text-zinc-700">
               {stripeRequirements.map((requirement) => (
@@ -86,16 +92,28 @@ export function AccountLifecycleControls({
         </label>
 
         <label className="flex items-start gap-2 text-sm">
-          <input className="mt-1" name="confirmReactivation" type="checkbox" value="on" />
-          <span>I have reviewed this account and want to remove the suspension.</span>
+          <input
+            className="mt-1"
+            name="confirmReactivation"
+            type="checkbox"
+            value="on"
+          />
+          <span>
+            I have reviewed this account and want to remove the suspension.
+          </span>
         </label>
 
         {blockers.length > 0 ? (
           <label className="flex items-start gap-2 text-sm">
-            <input className="mt-1" name="confirmOverride" type="checkbox" value="on" />
+            <input
+              className="mt-1"
+              name="confirmOverride"
+              type="checkbox"
+              value="on"
+            />
             <span>
-              Reactivate anyway even though blockers remain. This decision will be
-              recorded in the admin audit log.
+              Reactivate anyway even though blockers remain. This decision will
+              be recorded in the admin audit log.
             </span>
           </label>
         ) : null}

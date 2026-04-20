@@ -1,9 +1,9 @@
 export interface Testimonial {
-  quote: string;
   author: string;
-  role: string;
   avatarInitial: string;
   avatarVariant: "terra" | "teal" | "default";
+  quote: string;
+  role: string;
 }
 
 export const testimonials: Testimonial[] = [

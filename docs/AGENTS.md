@@ -226,6 +226,7 @@ Use a **main-first** workflow by default. A long-lived `develop` branch is **opt
 - `logOrderEvent()` from `@joe-perks/db` is the preferred helper for non-transactional inserts (swallows errors). For events that must be atomic with other writes, use `database.orderEvent.create` inside `$transaction` (e.g. checkout, webhook confirmation, SLA auto-refund).
 - `Order.org_pct_snapshot`, `Order.org_amount`, `Order.platform_amount`, `Order.roaster_amount` are immutable after creation.
 - `CampaignItem.retail_price` and `CampaignItem.wholesale_price` are snapshots — read these for pricing, not `ProductVariant`.
+- **Schema source of truth** — treat `packages/db/prisma/schema.prisma` plus committed files in `packages/db/prisma/migrations` as canonical. In April 2026, prod Neon matched the repo, while an older dev Neon branch had two extra applied historical migrations (`20260405134350_buyer_account_foundation`, `20260406032052_sprint8_fulfillment_schema_event_alignment`) from commits `03943f3` and `472749d` that were not present in the current checkout. If databases disagree, inspect `_prisma_migrations` before assuming prod is wrong or copying rows between databases.
 
 ### Magic links
 - Tokens are generated with `crypto.randomBytes(32).toString('hex')` — 256 bits of entropy.
@@ -444,6 +445,7 @@ Added in April 2026 after the v1 pre-mortem. These are the live docs for shippin
 | ------------------------------ | ----------------------------------------------- | ----------------------------------------------------------------------------------------- |
 | v1 Pre-Mortem (dated snapshot) | `docs/pre-mortems/2026-04-19-v1-launch.md`      | Understand why each launch-blocking Tiger exists. Immutable snapshot — do not edit.       |
 | v1 Launch Runbook              | `docs/runbooks/v1-launch-runbook.md`            | Opened during launch week. Phased pre-/dress-rehearsal/launch/watch steps + rollback.     |
+| DB Schema Reconciliation Note  | `docs/runbooks/2026-04-database-schema-reconciliation.md` | Reference when dev/prod DB shape or seed data appears inconsistent during testing. |
 | Money-Path E2E Test Scenarios  | `docs/testing/money-path-e2e-scenarios.md`      | When implementing LB-7 E2E tests. Happy paths, edge cases (EC-01…EC-24), invariants.      |
 | Pilot Outreach Scripts         | `docs/gtm/pilot-outreach.md`                    | When sourcing the first 3 roasters + 3 orgs (Elephant E-1). Discovery + pilot agreements. |
 

@@ -69,7 +69,10 @@ const hasClerk = !!process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
 export default (hasClerk
   ? authMiddleware(async (_auth, request, event) =>
-      innerMiddleware(request as unknown as NextRequest, event as NextFetchEvent)
+      innerMiddleware(
+        request as unknown as NextRequest,
+        event as NextFetchEvent
+      )
     )
-  : (async (request: NextRequest, event: NextFetchEvent) =>
-      innerMiddleware(request, event))) as unknown as NextProxy;
+  : async (request: NextRequest, event: NextFetchEvent) =>
+      innerMiddleware(request, event)) as unknown as NextProxy;
