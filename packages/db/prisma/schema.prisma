@@ -143,6 +143,7 @@ enum MagicLinkPurpose {
   ORDER_FULFILLMENT
   ORG_APPROVAL
   ROASTER_REVIEW
+  BUYER_AUTH
 }
 
 enum FaultType {
@@ -431,9 +432,10 @@ model CampaignItem {
 // ── Commerce ─────────────────────────────────────────────────────────
 
 model Buyer {
-  id    String  @id @default(cuid())
-  email String  @unique
-  name  String?
+  id           String    @id @default(cuid())
+  email        String    @unique
+  name         String?
+  lastSignInAt DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -474,12 +476,20 @@ model Order {
   stripeOrgTransfer String?
   transferGroup     String
 
-  trackingNumber String?
-  carrier        String?
-  shippedAt      DateTime?
-  deliveredAt    DateTime?
-  buyerIp        String
-  isCollab       Boolean   @default(false)
+  trackingNumber   String?
+  carrier          String?
+  shippedAt        DateTime?
+  deliveredAt      DateTime?
+  buyerEmail       String
+  shipToName       String
+  shipToAddress1   String
+  shipToAddress2   String?
+  shipToCity       String
+  shipToState      String
+  shipToPostalCode String
+  shipToCountry    String
+  buyerIp          String
+  isCollab         Boolean   @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -492,6 +502,7 @@ model Order {
   @@index([campaignId])
   @@index([roasterId])
   @@index([buyerId])
+  @@index([buyerEmail, orderNumber])
 }
 
 model OrderItem {

@@ -5,14 +5,14 @@ import { Button } from "@repo/design-system/components/ui/button";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { CartLineItem } from "../../_components/cart-line-item";
 import { formatCentsAsDollars } from "../../_lib/format";
+import { CartLineItem } from "../../_components/cart-line-item";
 
 export interface StepCartReviewProps {
-  campaignId: string;
   locale: string;
-  onContinue: () => void;
   slug: string;
+  campaignId: string;
+  onContinue: () => void;
 }
 
 export function StepCartReview({
@@ -58,9 +58,7 @@ export function StepCartReview({
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="font-semibold text-foreground text-lg">
-          Review your cart
-        </h2>
+        <h2 className="font-semibold text-foreground text-lg">Review your cart</h2>
         <p className="mt-1 text-muted-foreground text-sm">
           Adjust quantities before shipping and payment.
         </p>

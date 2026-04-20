@@ -1,15 +1,10 @@
 "use client";
 
-import { Button } from "@repo/design-system/components/ui/button";
-import {
-  Elements,
-  PaymentElement,
-  useElements,
-  useStripe,
-} from "@stripe/react-stripe-js";
-import { loadStripe } from "@stripe/stripe-js";
-import { useCallback, useEffect, useState } from "react";
 import { env } from "@/env";
+import { Elements, PaymentElement, useElements, useStripe } from "@stripe/react-stripe-js";
+import { loadStripe } from "@stripe/stripe-js";
+import { Button } from "@repo/design-system/components/ui/button";
+import { useCallback, useEffect, useState } from "react";
 import { formatCentsAsDollars } from "../../_lib/format";
 
 const stripePk = env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
@@ -103,7 +98,9 @@ export function StepPayment({
   }
 
   if (!returnUrl) {
-    return <p className="text-muted-foreground text-sm">Preparing payment…</p>;
+    return (
+      <p className="text-muted-foreground text-sm">Preparing payment…</p>
+    );
   }
 
   return (
