@@ -5,7 +5,7 @@ import { Prisma } from "@joe-perks/db/generated/client";
 import { revalidatePath } from "next/cache";
 import type { ZodError } from "zod";
 
-import { requireRoasterId } from "../_lib/require-roaster";
+import { requireActiveRoasterId } from "../../_lib/require-active-roaster";
 import {
   createVariantInputSchema,
   updateVariantInputSchema,
@@ -33,9 +33,15 @@ function assertProductOwnedByRoaster(roasterId: string, productId: string) {
 export async function createVariant(
   raw: unknown
 ): Promise<VariantActionResult> {
-  const session = await requireRoasterId();
+  const session = await requireActiveRoasterId();
   if (!session.ok) {
-    return { success: false, error: "You must be signed in as a roaster." };
+    return {
+      success: false,
+      error:
+        session.error === "suspended"
+          ? "Your account is suspended. Review the status message on your dashboard."
+          : "You must be signed in as a roaster.",
+    };
   }
 
   const parsed = createVariantInputSchema.safeParse(raw);
@@ -86,9 +92,15 @@ export async function createVariant(
 export async function updateVariant(
   raw: unknown
 ): Promise<VariantActionResult> {
-  const session = await requireRoasterId();
+  const session = await requireActiveRoasterId();
   if (!session.ok) {
-    return { success: false, error: "You must be signed in as a roaster." };
+    return {
+      success: false,
+      error:
+        session.error === "suspended"
+          ? "Your account is suspended. Review the status message on your dashboard."
+          : "You must be signed in as a roaster.",
+    };
   }
 
   const parsed = updateVariantInputSchema.safeParse(raw);
@@ -152,9 +164,15 @@ export async function deleteVariant(
   productId: string,
   variantId: string
 ): Promise<VariantActionResult> {
-  const session = await requireRoasterId();
+  const session = await requireActiveRoasterId();
   if (!session.ok) {
-    return { success: false, error: "You must be signed in as a roaster." };
+    return {
+      success: false,
+      error:
+        session.error === "suspended"
+          ? "Your account is suspended. Review the status message on your dashboard."
+          : "You must be signed in as a roaster.",
+    };
   }
 
   const product = await assertProductOwnedByRoaster(

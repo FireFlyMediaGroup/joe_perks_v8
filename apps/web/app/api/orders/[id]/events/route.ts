@@ -1,7 +1,10 @@
 import { database } from "@joe-perks/db";
 import { NextResponse } from "next/server";
 
-import { getAdminBasicAuth, verifyAdminBasicAuth } from "@/lib/admin-basic-auth";
+import {
+  getAdminBasicAuth,
+  verifyAdminBasicAuth,
+} from "@/lib/admin-basic-auth";
 
 export const runtime = "nodejs";
 

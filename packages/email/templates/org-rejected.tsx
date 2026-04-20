@@ -8,8 +8,8 @@ export const ORG_REJECTED_SUBJECT =
   "Update on your Joe Perks organization application";
 
 interface OrgRejectedEmailProps {
-  readonly orgName: string;
   readonly contactName: string;
+  readonly orgName: string;
 }
 
 export const OrgRejectedEmail = ({
@@ -25,9 +25,9 @@ export const OrgRejectedEmail = ({
       applying on behalf of <strong>{orgName}</strong>.
     </Text>
     <Text className="m-0 mt-4 text-zinc-600">
-      After review, we are unable to move forward with this application at
-      this time. If you believe this is a mistake or you have questions, please
-      reply to this email or contact support@joeperks.com.
+      After review, we are unable to move forward with this application at this
+      time. If you believe this is a mistake or you have questions, please reply
+      to this email or contact support@joeperks.com.
     </Text>
   </BaseEmailLayout>
 );

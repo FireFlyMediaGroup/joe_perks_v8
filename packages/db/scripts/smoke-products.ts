@@ -48,6 +48,7 @@ function fail(label: string, detail?: string) {
   console.error(`  FAIL  ${label}${detail ? ` — ${detail}` : ""}`);
 }
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: smoke script intentionally performs many sequential environment checks
 async function main() {
   console.log("\n--- US-02-04 Smoke Tests (Products & Variants) ---\n");
 
@@ -56,7 +57,10 @@ async function main() {
     const count = await prisma.product.count();
     pass(`Product model queryable (${count} row(s))`);
   } catch (e) {
-    fail("Product model query failed", e instanceof Error ? e.message : "unknown");
+    fail(
+      "Product model query failed",
+      e instanceof Error ? e.message : "unknown"
+    );
   }
 
   // ── 2. Schema: ProductVariant model queryable with price fields ──
@@ -64,7 +68,10 @@ async function main() {
     const count = await prisma.productVariant.count();
     pass(`ProductVariant model queryable (${count} row(s))`);
   } catch (e) {
-    fail("ProductVariant model query failed", e instanceof Error ? e.message : "unknown");
+    fail(
+      "ProductVariant model query failed",
+      e instanceof Error ? e.message : "unknown"
+    );
   }
 
   // ── 3. Schema: display fields exist on Product (description, origin, imageUrl) ──
@@ -74,17 +81,30 @@ async function main() {
     });
     pass("Product display fields (description, origin, imageUrl) exist");
   } catch (e) {
-    fail("Product display fields missing", e instanceof Error ? e.message : "unknown");
+    fail(
+      "Product display fields missing",
+      e instanceof Error ? e.message : "unknown"
+    );
   }
 
   // ── 4. Schema: ProductVariant price fields are Int (query succeeds) ──
   try {
     await prisma.productVariant.findFirst({
-      select: { wholesalePrice: true, retailPrice: true, sizeOz: true, grind: true, isAvailable: true, deletedAt: true },
+      select: {
+        wholesalePrice: true,
+        retailPrice: true,
+        sizeOz: true,
+        grind: true,
+        isAvailable: true,
+        deletedAt: true,
+      },
     });
     pass("ProductVariant price + filter fields exist");
   } catch (e) {
-    fail("ProductVariant field query failed", e instanceof Error ? e.message : "unknown");
+    fail(
+      "ProductVariant field query failed",
+      e instanceof Error ? e.message : "unknown"
+    );
   }
 
   // ── 5. Schema: deletedAt field queryable (soft-delete filter) ──
@@ -92,14 +112,23 @@ async function main() {
     await prisma.product.findMany({ where: { deletedAt: null }, take: 1 });
     pass("Product soft-delete filter (deletedAt: null) works");
   } catch (e) {
-    fail("Product soft-delete filter failed", e instanceof Error ? e.message : "unknown");
+    fail(
+      "Product soft-delete filter failed",
+      e instanceof Error ? e.message : "unknown"
+    );
   }
 
   try {
-    await prisma.productVariant.findMany({ where: { deletedAt: null }, take: 1 });
+    await prisma.productVariant.findMany({
+      where: { deletedAt: null },
+      take: 1,
+    });
     pass("ProductVariant soft-delete filter (deletedAt: null) works");
   } catch (e) {
-    fail("ProductVariant soft-delete filter failed", e instanceof Error ? e.message : "unknown");
+    fail(
+      "ProductVariant soft-delete filter failed",
+      e instanceof Error ? e.message : "unknown"
+    );
   }
 
   // ── 6. Schema: roasterId tenant scoping works ──
@@ -110,7 +139,10 @@ async function main() {
     });
     pass("Product tenant-scoped query (roasterId filter) works");
   } catch (e) {
-    fail("Product tenant-scoped query failed", e instanceof Error ? e.message : "unknown");
+    fail(
+      "Product tenant-scoped query failed",
+      e instanceof Error ? e.message : "unknown"
+    );
   }
 
   // ── 7–9. Route reachability ──
@@ -120,7 +152,9 @@ async function main() {
   // route is registered and the authenticated layout is enforcing auth.
   let baselineStatus: number | null = null;
   try {
-    const res = await fetch("http://localhost:3001/dashboard", { redirect: "manual" });
+    const res = await fetch("http://localhost:3001/dashboard", {
+      redirect: "manual",
+    });
     baselineStatus = res.status;
   } catch {
     /* server unreachable — handled below */
@@ -133,32 +167,52 @@ async function main() {
 
   for (const route of routes) {
     try {
-      const res = await fetch(`http://localhost:3001${route.path}`, { redirect: "manual" });
+      const res = await fetch(`http://localhost:3001${route.path}`, {
+        redirect: "manual",
+      });
       if (baselineStatus !== null && res.status === baselineStatus) {
-        pass(`${route.label} returns ${res.status} (matches /dashboard baseline — route registered, auth enforced)`);
-      } else if (res.status === 200 || res.status === 302 || res.status === 307) {
+        pass(
+          `${route.label} returns ${res.status} (matches /dashboard baseline — route registered, auth enforced)`
+        );
+      } else if (
+        res.status === 200 ||
+        res.status === 302 ||
+        res.status === 307
+      ) {
         pass(`${route.label} returns ${res.status}`);
       } else {
-        fail(`${route.label} returned ${res.status} (baseline=${baselineStatus})`);
+        fail(
+          `${route.label} returned ${res.status} (baseline=${baselineStatus})`
+        );
       }
     } catch (e) {
-      fail(`${route.label} unreachable`, e instanceof Error ? e.message : "unknown");
+      fail(
+        `${route.label} unreachable`,
+        e instanceof Error ? e.message : "unknown"
+      );
     }
   }
 
   // UploadThing API route — not behind authenticated layout
   try {
-    const res = await fetch("http://localhost:3001/api/uploadthing", { redirect: "manual" });
+    const res = await fetch("http://localhost:3001/api/uploadthing", {
+      redirect: "manual",
+    });
     if (res.status >= 200 && res.status < 500) {
       pass(`GET /api/uploadthing returns ${res.status} (route registered)`);
     } else if (res.status === 500) {
       // UploadThing may 500 without UPLOADTHING_TOKEN — still confirms route exists
-      pass(`GET /api/uploadthing returns 500 (route registered; may need UPLOADTHING_TOKEN)`);
+      pass(
+        "GET /api/uploadthing returns 500 (route registered; may need UPLOADTHING_TOKEN)"
+      );
     } else {
       fail(`GET /api/uploadthing returned ${res.status}`);
     }
   } catch (e) {
-    fail("GET /api/uploadthing unreachable", e instanceof Error ? e.message : "unknown");
+    fail(
+      "GET /api/uploadthing unreachable",
+      e instanceof Error ? e.message : "unknown"
+    );
   }
 
   // ── 10. Data integrity: no products with null roasterId ──
@@ -173,7 +227,10 @@ async function main() {
       fail(`${count} product(s) have NULL roasterId`);
     }
   } catch (e) {
-    fail("Orphan product check failed", e instanceof Error ? e.message : "unknown");
+    fail(
+      "Orphan product check failed",
+      e instanceof Error ? e.message : "unknown"
+    );
   }
 
   // ── 11. Data integrity: no variants with retailPrice <= wholesalePrice ──
@@ -189,7 +246,10 @@ async function main() {
       fail(`${count} active variant(s) violate retail > wholesale constraint`);
     }
   } catch (e) {
-    fail("Price constraint check failed", e instanceof Error ? e.message : "unknown");
+    fail(
+      "Price constraint check failed",
+      e instanceof Error ? e.message : "unknown"
+    );
   }
 
   // ── 12. Migration: verify migration row exists ──
@@ -202,7 +262,9 @@ async function main() {
     if (migration.length > 0) {
       pass(`Migration applied: ${migration[0].migration_name}`);
     } else {
-      fail("Migration 20260330180000_add_product_display_fields not found in _prisma_migrations");
+      fail(
+        "Migration 20260330180000_add_product_display_fields not found in _prisma_migrations"
+      );
     }
   } catch (e) {
     fail("Migration check failed", e instanceof Error ? e.message : "unknown");
@@ -210,7 +272,9 @@ async function main() {
 
   // ── Summary ──
   console.log(`\n--- Results: ${passed} passed, ${failed} failed ---\n`);
-  if (failed > 0) process.exit(1);
+  if (failed > 0) {
+    process.exit(1);
+  }
 }
 
 main()

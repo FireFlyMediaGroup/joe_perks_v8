@@ -55,6 +55,7 @@ function skip(label: string, reason: string) {
   console.log(`  SKIP  ${label} (${reason})`);
 }
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: smoke script intentionally performs many sequential environment checks
 async function main() {
   console.log("\n--- US-02-05 Smoke Tests (Shipping Rate Config) ---\n");
 
@@ -83,7 +84,9 @@ async function main() {
         updatedAt: true,
       },
     });
-    pass("RoasterShippingRate fields (id, roasterId, label, carrier, flatRate, isDefault) selectable");
+    pass(
+      "RoasterShippingRate fields (id, roasterId, label, carrier, flatRate, isDefault) selectable"
+    );
   } catch (e) {
     fail(
       "RoasterShippingRate field select failed",
@@ -144,11 +147,15 @@ async function main() {
       HAVING COUNT(*) > 1
     `;
     if (roasterDefaults.length === 0) {
-      pass("No roaster has more than one default shipping rate (invariant holds)");
+      pass(
+        "No roaster has more than one default shipping rate (invariant holds)"
+      );
     } else {
       fail(
         `${roasterDefaults.length} roaster(s) have multiple default rates`,
-        roasterDefaults.map((r) => `roasterId=${r.roasterId} count=${r.default_count}`).join(", ")
+        roasterDefaults
+          .map((r) => `roasterId=${r.roasterId} count=${r.default_count}`)
+          .join(", ")
       );
     }
   } catch (e) {
@@ -207,12 +214,18 @@ async function main() {
   }
 
   if (baselineStatus === null) {
-    skip("Route tests (3 checks)", "roaster dev server not running on localhost:3001");
+    skip(
+      "Route tests (3 checks)",
+      "roaster dev server not running on localhost:3001"
+    );
   } else {
     const routes = [
       { path: "/settings/shipping", label: "GET /settings/shipping" },
       { path: "/products", label: "GET /products (shipping alert query)" },
-      { path: "/products/new", label: "GET /products/new (shipping alert query)" },
+      {
+        path: "/products/new",
+        label: "GET /products/new (shipping alert query)",
+      },
     ];
     for (const route of routes) {
       try {
@@ -223,13 +236,22 @@ async function main() {
           pass(
             `${route.label} returns ${res.status} (matches /dashboard baseline — route registered, auth enforced)`
           );
-        } else if (res.status === 200 || res.status === 302 || res.status === 307) {
+        } else if (
+          res.status === 200 ||
+          res.status === 302 ||
+          res.status === 307
+        ) {
           pass(`${route.label} returns ${res.status}`);
         } else {
-          fail(`${route.label} returned ${res.status} (baseline=${baselineStatus})`);
+          fail(
+            `${route.label} returned ${res.status} (baseline=${baselineStatus})`
+          );
         }
       } catch (e) {
-        fail(`${route.label} unreachable`, e instanceof Error ? e.message : "unknown");
+        fail(
+          `${route.label} unreachable`,
+          e instanceof Error ? e.message : "unknown"
+        );
       }
     }
   }
@@ -248,9 +270,13 @@ async function main() {
       ORDER BY total DESC
     `;
     if (summary.length === 0) {
-      console.log("\n  INFO  No shipping rates in DB (roaster needs to add rates via UI)");
+      console.log(
+        "\n  INFO  No shipping rates in DB (roaster needs to add rates via UI)"
+      );
     } else {
-      console.log(`\n  INFO  Shipping rates summary (${summary.length} roaster(s)):`);
+      console.log(
+        `\n  INFO  Shipping rates summary (${summary.length} roaster(s)):`
+      );
       for (const r of summary) {
         console.log(
           `        roasterId=${r.roasterId}  total=${r.total}  defaults=${r.defaults}`
@@ -267,7 +293,9 @@ async function main() {
 
   // ── Summary ──
   console.log(`\n--- Results: ${passed} passed, ${failed} failed ---\n`);
-  if (failed > 0) process.exit(1);
+  if (failed > 0) {
+    process.exit(1);
+  }
 }
 
 main()

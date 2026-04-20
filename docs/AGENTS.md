@@ -138,6 +138,46 @@ Turbo starts multiple Next (and related) dev servers on **fixed ports** (see the
 
 ---
 
+## Git workflow
+
+Use a **main-first** workflow by default. A long-lived `develop` branch is **optional** and should only be used when the team explicitly wants a shared staging or release-integration branch.
+
+1. Start from a clean, updated `main`:
+   ```bash
+   git switch main
+   git pull --ff-only origin main
+   git status
+   ```
+2. Create a **short-lived branch** from `main` for each unit of work:
+   ```bash
+   git switch -c <branch-name>
+   ```
+3. Commit only the files that belong to that branch. Do **not** mix unrelated work into the same PR.
+4. Push the branch and open a PR **to `main`**.
+5. Merge via PR — do **not** push directly to `main` unless the user explicitly asks.
+6. After merge, return to a clean `main`:
+   ```bash
+   git switch main
+   git pull --ff-only origin main
+   git status
+   ```
+
+### Working tree hygiene
+
+- Keep `main` **clean**. If you have local-only work, move it to a branch or stash it before switching branches.
+- “Saved” should mean **committed and pushed** on a branch, or intentionally preserved in a **named stash**. Do not leave important work only as loose local edits.
+- If a file is personal scratch and should not ship, leave it untracked or add an ignore rule in a separate intentional change.
+- If the working tree is dirty and the user wants local and remote “in sync,” first preserve the local changes safely, then sync `main`.
+
+### For AI agents
+
+- Default base branch: `main`.
+- Default PR target: `main`.
+- Prefer `git pull --ff-only` when syncing local branches.
+- Only use `develop` when the user explicitly wants a shared staging branch or batched promotion flow.
+
+---
+
 ## Critical rules — always follow these
 
 ### Money
@@ -186,6 +226,7 @@ Turbo starts multiple Next (and related) dev servers on **fixed ports** (see the
 - `logOrderEvent()` from `@joe-perks/db` is the preferred helper for non-transactional inserts (swallows errors). For events that must be atomic with other writes, use `database.orderEvent.create` inside `$transaction` (e.g. checkout, webhook confirmation, SLA auto-refund).
 - `Order.org_pct_snapshot`, `Order.org_amount`, `Order.platform_amount`, `Order.roaster_amount` are immutable after creation.
 - `CampaignItem.retail_price` and `CampaignItem.wholesale_price` are snapshots — read these for pricing, not `ProductVariant`.
+- **Schema source of truth** — treat `packages/db/prisma/schema.prisma` plus committed files in `packages/db/prisma/migrations` as canonical. In April 2026, prod Neon matched the repo, while an older dev Neon branch had two extra applied historical migrations (`20260405134350_buyer_account_foundation`, `20260406032052_sprint8_fulfillment_schema_event_alignment`) from commits `03943f3` and `472749d` that were not present in the current checkout. If databases disagree, inspect `_prisma_migrations` before assuming prod is wrong or copying rows between databases.
 
 ### Magic links
 - Tokens are generated with `crypto.randomBytes(32).toString('hex')` — 256 bits of entropy.
@@ -386,13 +427,29 @@ All thresholds are configurable in `PlatformSettings` singleton — never hardco
 | Document                | Location                                         | Contents                                                           |
 | ----------------------- | ------------------------------------------------ | ------------------------------------------------------------------ |
 | `CONVENTIONS.md`        | `docs/CONVENTIONS.md`                            | Coding patterns, file layout, anti-patterns                        |
-| `SCAFFOLD_CHECKLIST.md` | `docs/SCAFFOLD_CHECKLIST.md` (or repo root copy) | Scaffold status: done vs remaining                                 |
+| `SCAFFOLD_CHECKLIST.md` | `docs/SCAFFOLD_CHECKLIST.md` (or repo root copy) | Scaffold status: done vs remaining; **Phase 10 = pre-mortem gate** |
 | `SCAFFOLD.md`           | repo root                                        | Full environment / phase setup guide                               |
 | PRD v1.0                | `docs/joe_perks_prd.docx`                        | Product requirements, user personas, functional specs              |
 | DB Schema Reference     | `docs/joe_perks_db_schema.docx`                  | Full Prisma schema, Drizzle alternative, split calc implementation |
 | Epics & Stories v2.0    | `docs/joe_perks_epics_stories_v2.docx`           | 39 user stories with acceptance criteria, 5 sprints                |
 
 Repo root **`AGENTS.md`** and **`CONVENTIONS.md`** are short pointers to the canonical **`docs/`** files above.
+
+---
+
+## Launch & risk docs
+
+Added in April 2026 after the v1 pre-mortem. These are the live docs for shipping v1; they cross-reference each other and the scaffold checklist.
+
+| Document                       | Location                                        | When to read                                                                              |
+| ------------------------------ | ----------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| v1 Pre-Mortem (dated snapshot) | `docs/pre-mortems/2026-04-19-v1-launch.md`      | Understand why each launch-blocking Tiger exists. Immutable snapshot — do not edit.       |
+| v1 Launch Runbook              | `docs/runbooks/v1-launch-runbook.md`            | Opened during launch week. Phased pre-/dress-rehearsal/launch/watch steps + rollback.     |
+| DB Schema Reconciliation Note  | `docs/runbooks/2026-04-database-schema-reconciliation.md` | Reference when dev/prod DB shape or seed data appears inconsistent during testing. |
+| Money-Path E2E Test Scenarios  | `docs/testing/money-path-e2e-scenarios.md`      | When implementing LB-7 E2E tests. Happy paths, edge cases (EC-01…EC-24), invariants.      |
+| Pilot Outreach Scripts         | `docs/gtm/pilot-outreach.md`                    | When sourcing the first 3 roasters + 3 orgs (Elephant E-1). Discovery + pilot agreements. |
+
+**Source of truth for action items**: `SCAFFOLD_CHECKLIST.md` **Phase 10**. The pre-mortem is rationale; the checklist is execution. If they drift, the checklist wins — run a new pre-mortem if the world has changed.
 
 ---
 

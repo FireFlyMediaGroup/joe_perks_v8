@@ -8,11 +8,11 @@ export const ORG_ROASTER_REVIEW_SUBJECT =
   "Action needed: review a fundraising organization";
 
 interface OrgRoasterReviewEmailProps {
-  readonly roasterBusinessName: string;
-  readonly orgName: string;
   readonly contactName: string;
   readonly description: string | null;
+  readonly orgName: string;
   readonly reviewUrl: string;
+  readonly roasterBusinessName: string;
 }
 
 export const OrgRoasterReviewEmail = ({
@@ -70,7 +70,8 @@ OrgRoasterReviewEmail.PreviewProps = {
   roasterBusinessName: "North Star Roasting Co.",
   orgName: "Lincoln High School Boosters",
   contactName: "Jamie Chen",
-  description: "We run annual athletics fundraisers and would love to offer your coffee.",
+  description:
+    "We run annual athletics fundraisers and would love to offer your coffee.",
   reviewUrl: "https://roasters.joeperks.com/org-requests/abc123token",
 };
 

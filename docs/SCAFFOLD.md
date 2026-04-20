@@ -561,11 +561,13 @@ Visit `/api/test-sentry` — error in Sentry within ~30s.
 
 ### 8.1 Branch naming
 - `main` → production — never commit directly
-- `develop` → active development
+- `develop` → optional shared staging / integration branch
 - `feature/US-XX-XX-description`, `fix/...`, `chore/...`
 
 ### 8.2 Development workflow
-Branch from `develop`, PR to `develop`, merge to `main` when sprint complete.
+Default workflow: branch from `main`, open PRs to `main`, and rely on per-PR preview deployments for staging-level validation.
+
+Optional shared-stage workflow: if the team wants a long-lived integration branch, branch from `develop`, open PRs to `develop`, validate there, then promote `develop` to `main`.
 
 ### 8.3 AI agent workflow
 - Work on feature branches only
@@ -619,7 +621,7 @@ stripe listen --forward-to localhost:3000/api/webhooks/stripe
 ---
 
 ## NEXT STEPS
-Once Phase 7 smoke tests pass and the repo is green, switch to Epics & Stories v2.0 and begin Sprint 1 story **US-01-01**. Always branch from `develop`, reference AGENTS.md, and run `bun turbo typecheck` before committing.
+Once Phase 7 smoke tests pass and the repo is green, switch to Epics & Stories v2.0 and begin Sprint 1 story **US-01-01**. Always branch from a clean, updated `main` by default, reference `AGENTS.md`, and run `pnpm typecheck` (or the repo-standard equivalent) before committing.
 
 ---
 

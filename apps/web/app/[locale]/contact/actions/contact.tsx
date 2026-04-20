@@ -1,8 +1,8 @@
 "use server";
 
+import { randomUUID } from "node:crypto";
 import { sendEmail } from "@joe-perks/email/send";
 import { ContactTemplate } from "@joe-perks/email/templates/contact";
-import { randomUUID } from "node:crypto";
 import { parseError } from "@repo/observability/error";
 import { createRateLimiter, slidingWindow } from "@repo/rate-limit";
 import { headers } from "next/headers";

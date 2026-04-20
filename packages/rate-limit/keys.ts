@@ -4,10 +4,7 @@ import { z } from "zod";
 const emptyToUndefined = (v: unknown) =>
   v === "" || v === undefined ? undefined : v;
 
-const optionalUrl = z.preprocess(
-  emptyToUndefined,
-  z.string().url().optional()
-);
+const optionalUrl = z.preprocess(emptyToUndefined, z.string().url().optional());
 
 export const keys = () =>
   createEnv({

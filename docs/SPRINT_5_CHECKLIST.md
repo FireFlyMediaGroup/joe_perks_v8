@@ -2,7 +2,7 @@
 
 ## Admin dashboard, chargebacks, platform settings, and account controls
 
-**Version:** 1.5 | **Sprint:** 5 (Weeks 9-10) | **Points:** 26 | **Stories:** 5
+**Version:** 1.7 | **Sprint:** 5 (Weeks 9-10) | **Points:** 26 | **Stories:** 5
 **Audience:** AI coding agents, developers implementing Sprint 5 stories
 **Companion documents:**
 - Sprint overview: [`docs/sprint-5/README.md`](sprint-5/README.md)
@@ -111,21 +111,21 @@ These decisions align Sprint 5 to the current repo and should be treated as the 
 
 ### 3.1 Webhook coverage
 
-- [ ] Add `charge.dispute.created` handling to `apps/web/app/api/webhooks/stripe/route.ts`
-- [ ] Add `charge.dispute.closed` handling with outcome-specific logic
-- [ ] Preserve existing Stripe signature verification and `StripeEvent` idempotency rules
+- [x] Add `charge.dispute.created` handling to `apps/web/app/api/webhooks/stripe/route.ts`
+- [x] Add `charge.dispute.closed` handling with outcome-specific logic
+- [x] Preserve existing Stripe signature verification and `StripeEvent` idempotency rules
 
 ### 3.2 Dispute record lifecycle
 
-- [ ] Create/update `DisputeRecord` on dispute open/close
-- [ ] Set and display `respondBy`
-- [ ] Add evidence export support as an admin helper/button; do not require automated Stripe evidence submission in Sprint 5
+- [x] Create/update `DisputeRecord` on dispute open/close
+- [x] Set and display `respondBy`
+- [x] Add evidence export support as an admin helper/button; do not require automated Stripe evidence submission in Sprint 5
 
 ### 3.3 Debt and payout handling
 
-- [ ] Create `RoasterDebt` entries when a lost dispute is roaster fault using the normalized `DebtReason` mapping
-- [ ] Represent active dispute handling via `DisputeRecord` + existing `PayoutStatus` states instead of adding new payout states in Sprint 5
-- [ ] If a roaster reaches 3+ roaster-fault disputes in trailing 90 days, auto-suspend the roaster, write `AdminActionLog`, and notify admin
+- [x] Create `RoasterDebt` entries when a lost dispute is roaster fault using the normalized `DebtReason` mapping
+- [x] Represent active dispute handling via `DisputeRecord` + existing `PayoutStatus` states instead of adding new payout states in Sprint 5
+- [x] If a roaster reaches 3+ roaster-fault disputes in trailing 90 days, auto-suspend the roaster, write `AdminActionLog`, and notify admin
 
 **Reference:** [`docs/sprint-5/stories/US-06-02-chargeback-webhook-handler.md`](sprint-5/stories/US-06-02-chargeback-webhook-handler.md)
 
@@ -137,15 +137,15 @@ These decisions align Sprint 5 to the current repo and should be treated as the 
 
 ### 4.1 Replace admin home scaffold
 
-- [ ] Replace `apps/admin/app/page.tsx` starter content with server-rendered dashboard cards
-- [ ] Add metric cards for orders, GMV, platform revenue, campaigns, active accounts, pending payouts, and open disputes
-- [ ] Make cards link into relevant filtered admin routes
+- [x] Replace `apps/admin/app/page.tsx` starter content with server-rendered dashboard cards
+- [x] Add metric cards for orders, GMV, platform revenue, campaigns, active accounts, pending payouts, and open disputes
+- [x] Make cards link into relevant filtered admin routes
 
 ### 4.2 Live event feed
 
-- [ ] Show the latest order events across orders
-- [ ] Limit the feed to the latest 20 `OrderEvent` rows in Sprint 5
-- [ ] Add manual refresh or timed refresh behavior
+- [x] Show the latest order events across orders
+- [x] Limit the feed to the latest 20 `OrderEvent` rows in Sprint 5
+- [x] Add manual refresh or timed refresh behavior
 
 **Reference:** [`docs/sprint-5/stories/US-07-03-basic-metrics-dashboard.md`](sprint-5/stories/US-07-03-basic-metrics-dashboard.md)
 
@@ -157,32 +157,32 @@ These decisions align Sprint 5 to the current repo and should be treated as the 
 
 ### 5.1 Admin account detail surfaces
 
-- [ ] Create admin roaster list/detail pages
-- [ ] Create admin org list/detail pages
-- [ ] Show lifecycle status, key profile details, and relevant business context (orders, debt, campaign/account readiness)
+- [x] Create admin roaster list/detail pages
+- [x] Create admin org list/detail pages
+- [x] Show lifecycle status, key profile details, and relevant business context (orders, debt, campaign/account readiness)
 
 ### 5.2 Suspend / reactivate actions
 
-- [ ] Add required suspend reason / audit note capture
-- [ ] Update `Roaster.status` / `Org.status`
-- [ ] Write suspension/reactivation/reactivation-request events to `AdminActionLog`
-- [ ] Send suspension notification email and reactivation-approved email using `sendEmail()`
+- [x] Add required suspend reason / audit note capture
+- [x] Update `Roaster.status` / `Org.status`
+- [x] Write suspension/reactivation/reactivation-request events to `AdminActionLog`
+- [x] Send suspension notification email and reactivation-approved email using `sendEmail()`
 
 ### 5.3 Runtime behavior and UX
 
-- [ ] Prevent suspended roasters from receiving new storefront orders
-- [ ] Prevent suspended orgs from presenting an active public storefront
-- [ ] Confirm existing confirmed orders continue to completion
-- [ ] Ensure suspension logic does not fight Stripe `account.updated` promotion behavior
-- [ ] Add suspended-state portal UI in `apps/roaster` and `apps/org`: clear banner/status card, what is blocked, why, what to do next
-- [ ] Add `Request Reactivation` flow with remediation note, visible review status, and expected response guidance
-- [ ] Add admin reactivation-readiness panel: open disputes, unsettled debt, Stripe readiness, open fulfillment obligations, recent admin notes
+- [x] Prevent suspended roasters from receiving new storefront orders
+- [x] Prevent suspended orgs from presenting an active public storefront
+- [x] Confirm existing confirmed orders continue to completion
+- [x] Ensure suspension logic does not fight Stripe `account.updated` promotion behavior
+- [x] Add suspended-state portal UI in `apps/roaster` and `apps/org`: clear banner/status card, what is blocked, why, what to do next
+- [x] Add `Request Reactivation` flow with remediation note, visible review status, and expected response guidance
+- [x] Add admin reactivation-readiness panel: open disputes, unsettled debt, Stripe readiness, open fulfillment obligations, recent admin notes
 
 ### 5.4 Reactivation decision rules
 
-- [ ] Default reactivation requires no open disputes, no unsettled dispute-linked debt requiring review, and Stripe onboarding still in a valid state
-- [ ] Allow admin override reactivation with explicit confirmation and audit note when blockers remain
-- [ ] If prerequisites are still incomplete after reactivation, keep the account non-active and show the missing steps clearly
+- [x] Default reactivation requires no open disputes, no unsettled dispute-linked debt requiring review, and Stripe onboarding still in a valid state
+- [x] Allow admin override reactivation with explicit confirmation and audit note when blockers remain
+- [x] If prerequisites are still incomplete after reactivation, keep the account non-active and show the missing steps clearly
 
 **Reference:** [`docs/sprint-5/stories/US-07-04-admin-account-management.md`](sprint-5/stories/US-07-04-admin-account-management.md)
 
@@ -194,22 +194,22 @@ These decisions align Sprint 5 to the current repo and should be treated as the 
 
 - [x] `docs/sprint-5/README.md` kept in sync with actual implementation status
 - [x] `docs/SPRINT_5_PROGRESS.md` updated after each story lands
-- [x] Story documents updated with real evidence and checked acceptance criteria (US-07-01 / US-07-02 Done; see story files)
-- [ ] `docs/01-project-structure.mermaid` updated for new admin routes
+- [x] Story documents updated with real evidence and checked acceptance criteria (US-06-02 / US-07-01 / US-07-02 / US-07-03 / US-07-04 Done; see story files)
+- [x] `docs/01-project-structure.mermaid` updated for new admin routes
 - [ ] `docs/06-database-schema.mermaid` updated if dispute/account audit schema changes
-- [ ] `docs/07-stripe-payment-flow.mermaid` updated if the implemented dispute flow differs from the planned one
+- [x] `docs/07-stripe-payment-flow.mermaid` updated if the implemented dispute flow differs from the planned one
 - [ ] `docs/AGENTS.md` / `docs/CONVENTIONS.md` updated if Sprint 5 introduces new platform rules or admin patterns
 
 ### AGENTS.md rules checklist
 
-- [ ] Money values remain integer cents
-- [ ] `PlatformSettings` is the source of truth for future-order business rules
-- [ ] Order split fields are never recalculated for existing orders
-- [ ] Webhook handlers use Stripe signature verification and `StripeEvent` idempotency
-- [ ] `sendEmail()` is used for any new admin/account notification emails
-- [ ] `logOrderEvent()` is used for non-transactional order timeline writes
-- [ ] `AdminActionLog` is used for non-order admin audit actions
-- [ ] No PII is logged in webhook, refund, dispute, or admin flows
+- [x] Money values remain integer cents
+- [x] `PlatformSettings` is the source of truth for future-order business rules
+- [x] Order split fields are never recalculated for existing orders
+- [x] Webhook handlers use Stripe signature verification and `StripeEvent` idempotency
+- [x] `sendEmail()` is used for any new admin/account notification emails
+- [x] `logOrderEvent()` is used for non-transactional order timeline writes
+- [x] `AdminActionLog` is used for non-order admin audit actions
+- [x] No PII is logged in webhook, refund, dispute, or admin flows
 
 ### Ready-for-build defaults
 

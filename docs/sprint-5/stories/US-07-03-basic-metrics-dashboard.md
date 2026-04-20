@@ -2,7 +2,7 @@
 
 **Story ID:** US-07-03 | **Epic:** EP-07 (Admin Dashboard)
 **Points:** 5 | **Priority:** Medium
-**Status:** `Todo`
+**Status:** `Done`
 **Owner:** Full-stack
 **Dependencies:** US-05-01, US-07-01
 **Depends on this:** None
@@ -25,9 +25,10 @@ Replace the admin home scaffold with a simple server-rendered dashboard that giv
 
 ## Current repo evidence
 
-- `apps/admin/app/page.tsx` is still the default Next.js starter page.
+- `apps/admin/app/page.tsx` now renders the Sprint 5 dashboard instead of the default Next.js starter page.
 - The underlying data needed for a basic dashboard already exists in `Order`, `Campaign`, `Roaster`, `Org`, `DisputeRecord`, and `OrderEvent`.
 - Sprint 4 already established admin orders, payout tracking, and event timelines that this dashboard can link into.
+- `apps/admin/app/_components/dashboard-refresh-button.tsx` provides a lightweight manual refresh via `router.refresh()`.
 
 ---
 
@@ -59,11 +60,11 @@ Replace the admin home scaffold with a simple server-rendered dashboard that giv
 
 ## Acceptance criteria
 
-- [ ] Admin home page shows 7 metric cards: Orders Today, GMV This Month, Platform Revenue This Month, Active Campaigns, Roasters Active, Pending Payouts ($), Open Disputes
-- [ ] Metric values are calculated server-side on initial load
-- [ ] Metric cards link to the relevant filtered admin pages where possible
-- [ ] Recent activity feed shows the latest 20 `OrderEvent` rows in reverse chronological order
-- [ ] Dashboard can be refreshed manually or via a lightweight auto-refresh pattern
+- [x] Admin home page shows 7 metric cards: Orders Today, GMV This Month, Platform Revenue This Month, Active Campaigns, Roasters Active, Pending Payouts ($), Open Disputes
+- [x] Metric values are calculated server-side on initial load
+- [x] Metric cards link to the relevant filtered admin pages where possible
+- [x] Recent activity feed shows the latest 20 `OrderEvent` rows in reverse chronological order
+- [x] Dashboard can be refreshed manually or via a lightweight auto-refresh pattern
 
 ---
 
@@ -99,3 +100,4 @@ Replace the admin home scaffold with a simple server-rendered dashboard that giv
 |---------|------|-------|
 | 0.1 | 2026-04-01 | Initial Sprint 5 story created from source planning doc and current repo review. |
 | 0.2 | 2026-04-01 | Normalized metric definitions and dashboard scope to match the current payout/dispute model and a server-rendered admin MVP. |
+| 0.3 | 2026-04-01 | Implemented: admin home now shows the seven-card dashboard, latest 20 `OrderEvent` rows, links into existing admin routes, and a manual refresh control. |
