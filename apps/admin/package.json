@@ -17,7 +17,7 @@
     "@joe-perks/types": "workspace:*",
     "@repo/observability": "workspace:*",
     "@sentry/nextjs": "^10.42.0",
-    "dotenv": "^16.5.0",
+    "dotenv": "^17.4.2",
     "import-in-the-middle": "^3.0.0",
     "next": "16.2.1",
     "react": "19.2.4",
