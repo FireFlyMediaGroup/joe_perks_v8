@@ -2,7 +2,7 @@
 
 **Story ID:** US-07-04 | **Epic:** EP-07 (Admin Dashboard)
 **Points:** 3 | **Priority:** Low
-**Status:** `Partial`
+**Status:** `Done`
 **Owner:** Full-stack
 **Dependencies:** US-07-01
 **Depends on this:** None
@@ -25,12 +25,12 @@ Give platform admins a lifecycle-management surface for roaster and org accounts
 
 ## Current repo evidence
 
-- `Roaster.status` and `Org.status` already include `SUSPENDED`.
-- `apps/web/app/api/webhooks/stripe/route.ts` already avoids auto-promoting suspended roasters during `account.updated`.
-- Admin approval flows exist for applications, but there are no admin routes for general account lifecycle management after approval.
-- No storefront guard currently blocks new orders based on roaster suspension state.
-- `apps/roaster/app/(authenticated)/dashboard/page.tsx` and `apps/org/app/(authenticated)/dashboard/page.tsx` already exist and are natural homes for suspended-state guidance and reactivation-request UX.
-- Package A now provides `AdminActionLog` plus a shared admin actor helper, giving suspend/reactivate flows a common audit foundation before the lifecycle UI lands.
+- `apps/admin/app/roasters/` and `apps/admin/app/orgs/` now provide list/detail lifecycle surfaces with readiness context, recent admin activity, and suspend/reactivate controls.
+- `apps/admin/app/_actions/account-lifecycle.ts` now records suspension/reactivation via `AdminActionLog`, requires audit notes where appropriate, and sends lifecycle notification emails.
+- `apps/roaster/app/(authenticated)/layout.tsx` / `apps/org/app/(authenticated)/layout.tsx` now show suspension banners; both dashboards render blocked-state guidance plus `Request Reactivation` forms.
+- `apps/roaster/app/(authenticated)/products/_actions/*` and shipping actions reject suspended roasters, while `apps/org/app/(authenticated)/campaign/_actions/campaign-actions.ts` rejects suspended org campaign activity.
+- `apps/web/app/[locale]/[slug]/_lib/queries.ts` now excludes suspended-roaster storefronts earlier, `apps/web/app/api/checkout/create-intent/route.ts` rejects inactive org/roaster checkout attempts, and the Stripe webhook still avoids re-promoting suspended roasters during `account.updated`.
+- `apps/web/app/api/webhooks/stripe/route.ts` now also sends the suspension email when dispute-threshold auto-suspension fires.
 
 ---
 
@@ -66,15 +66,15 @@ Give platform admins a lifecycle-management surface for roaster and org accounts
 
 ## Acceptance criteria
 
-- [ ] Admin can open roaster and org detail pages and see lifecycle-relevant profile information
-- [ ] Suspend action captures a required reason or note and sets status to `SUSPENDED`
-- [ ] Suspended roasters/orgs see a clear blocked-state banner or page in their portal with reason category, what is blocked, what remains available, and what to do next
-- [ ] Suspended roasters/orgs can submit a `Request Reactivation` note with remediation details
-- [ ] Admin reactivation UI shows readiness context before enabling reactivation: open disputes, unsettled debt, Stripe readiness, and open undelivered orders
-- [ ] Reactivate action restores the account to the correct active state with an explicit admin confirmation step
-- [ ] Suspended roasters cannot receive new storefront orders
-- [ ] Suspended orgs cannot present an active public fundraising storefront until reactivated
-- [ ] Existing confirmed orders remain unaffected and continue through fulfillment/payout
+- [x] Admin can open roaster and org detail pages and see lifecycle-relevant profile information
+- [x] Suspend action captures a required reason or note and sets status to `SUSPENDED`
+- [x] Suspended roasters/orgs see a clear blocked-state banner or page in their portal with reason category, what is blocked, what remains available, and what to do next
+- [x] Suspended roasters/orgs can submit a `Request Reactivation` note with remediation details
+- [x] Admin reactivation UI shows readiness context before enabling reactivation: open disputes, unsettled debt, Stripe readiness, and open undelivered orders
+- [x] Reactivate action restores the account to the correct active state with an explicit admin confirmation step
+- [x] Suspended roasters cannot receive new storefront orders
+- [x] Suspended orgs cannot present an active public fundraising storefront until reactivated
+- [x] Existing confirmed orders remain unaffected and continue through fulfillment/payout
 
 ---
 
@@ -121,3 +121,4 @@ Give platform admins a lifecycle-management surface for roaster and org accounts
 | 0.1 | 2026-04-01 | Initial Sprint 5 story created from source planning doc and current repo review. |
 | 0.2 | 2026-04-01 | Normalized to a request/review reactivation workflow with suspended-portal UX, admin readiness checks, and `AdminActionLog` replacing the source-story `ApplicationEvent` concept. |
 | 0.3 | 2026-04-01 | Package A landed: shared admin audit/actor helpers now exist in the repo and this story status is now `Partial`. |
+| 1.0 | 2026-04-01 | Story implemented: admin `roasters/` + `orgs/` lifecycle routes, suspend/reactivate actions with readiness checks + emails, suspended portal UX with reactivation requests, stricter storefront/runtime guards, and auto-suspension email coverage all landed. |

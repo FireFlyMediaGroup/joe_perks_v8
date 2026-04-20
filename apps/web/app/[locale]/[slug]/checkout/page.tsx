@@ -2,12 +2,13 @@ import { RESERVED_SLUGS } from "@joe-perks/types";
 import { createMetadata } from "@repo/seo/metadata";
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
-import { CheckoutForm } from "./_components/checkout-form";
 import { getStorefrontData } from "../_lib/queries";
+import { CheckoutForm } from "./_components/checkout-form";
+import { getCheckoutBuyerContext } from "./_lib/buyer-context";
 
-type Props = {
+interface Props {
   params: Promise<{ locale: string; slug: string }>;
-};
+}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
@@ -49,10 +50,12 @@ export default async function CheckoutPage({ params }: Props) {
     data.shippingRates.find((r) => r.isDefault)?.id ??
     data.shippingRates[0]?.id ??
     null;
+  const buyerContext = await getCheckoutBuyerContext(defaultRateId);
 
   return (
-    <main className="min-h-screen bg-background px-4 py-8 md:py-12">
+    <main className="min-h-screen bg-jp-bg-page px-4 py-8 md:py-12">
       <CheckoutForm
+        buyerContext={buyerContext}
         campaignId={data.campaign.id}
         defaultShippingRateId={defaultRateId}
         locale={locale}

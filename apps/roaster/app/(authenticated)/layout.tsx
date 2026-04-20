@@ -1,3 +1,8 @@
+import {
+  database,
+  getSuspensionReasonCategoryFromAction,
+  getSuspensionReasonLabel,
+} from "@joe-perks/db";
 import { auth, currentUser } from "@repo/auth/server";
 import { SidebarProvider } from "@repo/design-system/components/ui/sidebar";
 import { showBetaFeature } from "@repo/feature-flags";
@@ -29,6 +34,35 @@ const AppLayout = async ({ children }: AppLayoutProperties) => {
     return redirectToSignIn();
   }
 
+  const dbUser = await database.user.findUnique({
+    select: { roasterId: true },
+    where: { externalAuthId: user.id },
+  });
+
+  const [roaster, latestSuspension] = dbUser?.roasterId
+    ? await Promise.all([
+        database.roaster.findUnique({
+          select: { status: true },
+          where: { id: dbUser.roasterId },
+        }),
+        database.adminActionLog.findFirst({
+          orderBy: { createdAt: "desc" },
+          where: {
+            actionType: { in: ["ROASTER_AUTO_SUSPENDED", "ROASTER_SUSPENDED"] },
+            targetId: dbUser.roasterId,
+            targetType: "ROASTER",
+          },
+        }),
+      ])
+    : [null, null];
+
+  const suspensionReason =
+    roaster?.status === "SUSPENDED" && latestSuspension
+      ? getSuspensionReasonLabel(
+          getSuspensionReasonCategoryFromAction(latestSuspension)
+        )
+      : null;
+
   return (
     <NotificationsProvider userId={user.id}>
       <Suspense>
@@ -41,6 +75,13 @@ const AppLayout = async ({ children }: AppLayoutProperties) => {
               Beta feature now available
             </div>
           )}
+          {roaster?.status === "SUSPENDED" ? (
+            <div className="m-4 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-amber-950 text-sm">
+              Account suspended: {suspensionReason ?? "Account review"}. New
+              orders and catalog/shipping updates are blocked until review is
+              complete.
+            </div>
+          ) : null}
           {children}
         </GlobalSidebar>
       </SidebarProvider>

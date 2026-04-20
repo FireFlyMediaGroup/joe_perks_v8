@@ -17,8 +17,8 @@ export function CartLineItem({ line }: CartLineItemProps) {
   const title = `${line.productName} — ${line.variantDesc}`;
 
   return (
-    <li className="flex gap-3 border-border/60 border-b py-4 last:border-b-0">
-      <div className="relative size-16 shrink-0 overflow-hidden rounded-md bg-muted">
+    <li className="flex gap-3 py-4">
+      <div className="relative size-16 shrink-0 overflow-hidden rounded-(--jp-radius-sm) bg-jp-bg-alt">
         {line.imageUrl ? (
           <Image
             alt={line.productName}
@@ -31,19 +31,19 @@ export function CartLineItem({ line }: CartLineItemProps) {
         ) : (
           <div
             aria-hidden
-            className="flex h-full w-full items-center justify-center bg-linear-to-br from-muted to-muted/60"
+            className="flex h-full w-full items-center justify-center bg-linear-to-br from-jp-bg-alt to-jp-bg-page"
           />
         )}
       </div>
       <div className="min-w-0 flex-1">
-        <p className="font-semibold text-foreground text-sm leading-snug">
+        <p className="font-body font-semibold text-jp-text text-sm leading-snug">
           {title}
         </p>
-        <p className="mt-0.5 text-muted-foreground text-xs tabular-nums">
+        <p className="mt-0.5 font-body text-jp-muted text-xs tabular-nums">
           {formatCentsAsDollars(line.retailPrice)} ea
         </p>
         <div className="mt-2 flex flex-wrap items-center gap-2">
-          <div className="flex items-center rounded-md border border-border bg-background">
+          <div className="flex items-center rounded-(--jp-radius-sm) border border-jp-border bg-jp-bg-card">
             <Button
               aria-label="Decrease quantity"
               className="size-11 min-h-11 min-w-11 touch-manipulation"
@@ -55,7 +55,7 @@ export function CartLineItem({ line }: CartLineItemProps) {
             >
               −
             </Button>
-            <span className="min-w-8 text-center font-mono text-sm tabular-nums">
+            <span className="min-w-8 text-center font-jp-mono text-sm tabular-nums">
               {line.quantity}
             </span>
             <Button
@@ -73,7 +73,7 @@ export function CartLineItem({ line }: CartLineItemProps) {
           </div>
           <Button
             aria-label={`Remove ${line.productName} from cart`}
-            className="min-h-11 touch-manipulation"
+            className="min-h-11 touch-manipulation text-jp-muted hover:text-jp-terra"
             onClick={() => removeLine(line.campaignItemId)}
             type="button"
             variant="ghost"
@@ -83,7 +83,7 @@ export function CartLineItem({ line }: CartLineItemProps) {
         </div>
       </div>
       <div className="shrink-0 text-right">
-        <p className="font-semibold text-foreground tabular-nums">
+        <p className="font-body font-semibold text-jp-text tabular-nums">
           {formatCentsAsDollars(lineTotalCents)}
         </p>
       </div>

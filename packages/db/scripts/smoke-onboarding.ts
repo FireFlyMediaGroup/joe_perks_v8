@@ -228,7 +228,9 @@ async function main() {
       `Roaster ${onboardingRoaster.id} is still ONBOARDING (waiting for Stripe KYC completion)`
     );
   } else if (roasters.length > 0) {
-    pass(`Roaster(s) exist with status: ${roasters.map((r) => r.status).join(", ")}`);
+    pass(
+      `Roaster(s) exist with status: ${roasters.map((r) => r.status).join(", ")}`
+    );
   }
 
   // ── Summary ──

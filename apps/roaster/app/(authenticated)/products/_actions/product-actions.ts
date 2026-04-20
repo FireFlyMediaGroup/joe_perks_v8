@@ -4,7 +4,7 @@ import { database } from "@joe-perks/db";
 import { revalidatePath } from "next/cache";
 import type { ZodError } from "zod";
 
-import { requireRoasterId } from "../_lib/require-roaster";
+import { requireActiveRoasterId } from "../../_lib/require-active-roaster";
 import { type ProductFormInput, productFormSchema } from "../_lib/schema";
 
 export type ProductActionResult =
@@ -18,9 +18,15 @@ function zodFirstMessage(error: ZodError): string {
 export async function createProduct(
   input: ProductFormInput
 ): Promise<ProductActionResult> {
-  const session = await requireRoasterId();
+  const session = await requireActiveRoasterId();
   if (!session.ok) {
-    return { success: false, error: "You must be signed in as a roaster." };
+    return {
+      success: false,
+      error:
+        session.error === "suspended"
+          ? "Your account is suspended. Review the status message on your dashboard."
+          : "You must be signed in as a roaster.",
+    };
   }
 
   const parsed = productFormSchema.safeParse(input);
@@ -50,9 +56,15 @@ export async function updateProduct(
   productId: string,
   input: ProductFormInput
 ): Promise<ProductActionResult> {
-  const session = await requireRoasterId();
+  const session = await requireActiveRoasterId();
   if (!session.ok) {
-    return { success: false, error: "You must be signed in as a roaster." };
+    return {
+      success: false,
+      error:
+        session.error === "suspended"
+          ? "Your account is suspended. Review the status message on your dashboard."
+          : "You must be signed in as a roaster.",
+    };
   }
 
   const parsed = productFormSchema.safeParse(input);
@@ -96,9 +108,15 @@ export async function updateProduct(
 export async function deleteProduct(
   productId: string
 ): Promise<ProductActionResult> {
-  const session = await requireRoasterId();
+  const session = await requireActiveRoasterId();
   if (!session.ok) {
-    return { success: false, error: "You must be signed in as a roaster." };
+    return {
+      success: false,
+      error:
+        session.error === "suspended"
+          ? "Your account is suspended. Review the status message on your dashboard."
+          : "You must be signed in as a roaster.",
+    };
   }
 
   const existing = await database.product.findFirst({

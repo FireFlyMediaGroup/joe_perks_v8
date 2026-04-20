@@ -13,6 +13,7 @@ import {
 } from "@repo/design-system/components/ui/sheet";
 import { useIsMobile } from "@repo/design-system/hooks/use-mobile";
 import { cn } from "@repo/design-system/lib/utils";
+import { Heart, ShoppingBag } from "lucide-react";
 import Link from "next/link";
 import { useMemo } from "react";
 import { formatCentsAsDollars } from "../_lib/format";
@@ -29,10 +30,6 @@ export interface CartDrawerProps {
   splitPreviewDefaults: SplitPreviewDefaults;
 }
 
-/**
- * Sliding cart — desktop: right drawer; mobile: bottom sheet.
- * Visual rhythm aligned with roaster fulfillment line-item layout (label + list + totals).
- */
 export function CartDrawer({
   campaignName,
   locale,
@@ -97,47 +94,51 @@ export function CartDrawer({
       </SheetTrigger>
       <SheetContent
         className={cn(
-          "flex w-full flex-col gap-0 p-0 sm:max-w-md",
+          "flex w-full flex-col gap-0 border-jp-border p-0 sm:max-w-md",
           isMobile && "max-h-[min(88vh,720px)] rounded-t-2xl"
         )}
         side={isMobile ? "bottom" : "right"}
       >
-        <SheetHeader className="border-border/60 border-b bg-[#FDF9F4] px-4 py-5 text-left">
-          <p className="font-mono text-[10px] text-muted-foreground uppercase tracking-widest">
+        <SheetHeader className="border-jp-border border-b bg-jp-bg-page px-5 py-5 text-left">
+          <p className="font-jp-mono text-[10px] text-jp-muted uppercase tracking-[0.14em]">
             {orgName}
           </p>
-          <SheetTitle className="font-bold text-foreground text-xl leading-snug">
+          <SheetTitle className="font-bold font-display text-jp-text text-xl leading-snug">
             Your cart
           </SheetTitle>
-          <div className="mt-3 rounded-lg border border-border/60 bg-background/80 px-3 py-2">
-            <p className="font-mono text-[10px] text-muted-foreground uppercase tracking-wider">
+          <div className="mt-3 rounded-(--jp-radius-sm) border border-jp-border bg-jp-bg-card px-3 py-2">
+            <p className="font-jp-mono text-[10px] text-jp-light uppercase tracking-[0.12em]">
               Campaign
             </p>
-            <p className="font-semibold text-foreground text-sm leading-snug">
+            <p className="font-body font-semibold text-jp-text text-sm leading-snug">
               {campaignName}
             </p>
           </div>
         </SheetHeader>
 
-        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4">
+        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto bg-jp-bg-card px-5">
           {lines.length === 0 ? (
             <div className="flex flex-1 flex-col items-center justify-center gap-4 py-16 text-center">
-              <p className="max-w-xs text-muted-foreground text-sm leading-relaxed">
+              <ShoppingBag className="size-10 text-jp-light" />
+              <p className="max-w-xs font-body text-jp-muted text-sm leading-relaxed">
                 Your cart is empty. Add coffee from the menu to support{" "}
                 {orgName}.
               </p>
               <SheetTrigger asChild>
-                <Button className="min-h-11 touch-manipulation" type="button">
+                <Button
+                  className="min-h-11 touch-manipulation bg-jp-terra text-white hover:bg-jp-terra-dark"
+                  type="button"
+                >
                   Continue shopping
                 </Button>
               </SheetTrigger>
             </div>
           ) : (
             <>
-              <p className="pt-5 font-mono text-[10px] text-muted-foreground uppercase tracking-widest">
-                Items
+              <p className="pt-5 font-jp-mono text-[10px] text-jp-muted uppercase tracking-[0.14em]">
+                Items ({lineCount})
               </p>
-              <ul className="mt-1">
+              <ul className="mt-1 divide-y divide-jp-border">
                 {lines.map((line) => (
                   <CartLineItem key={line.campaignItemId} line={line} />
                 ))}
@@ -147,74 +148,77 @@ export function CartDrawer({
         </div>
 
         {lines.length > 0 ? (
-          <SheetFooter className="border-border/60 border-t bg-background">
+          <SheetFooter className="border-jp-border border-t bg-jp-bg-page px-5 pt-4 pb-5">
             <div className="flex w-full flex-col gap-3">
-              <p className="font-mono text-[10px] text-muted-foreground uppercase tracking-widest">
+              <p className="font-jp-mono text-[10px] text-jp-muted uppercase tracking-[0.14em]">
                 Estimate
               </p>
-              <div className="flex flex-col gap-2.5 text-sm">
+              <div className="flex flex-col gap-2.5 font-body text-sm">
                 <div className="flex items-baseline justify-between gap-4">
-                  <span className="text-muted-foreground">Coffee subtotal</span>
-                  <span className="font-medium text-foreground tabular-nums">
+                  <span className="text-jp-muted">Coffee subtotal</span>
+                  <span className="font-medium text-jp-text tabular-nums">
                     {formatCentsAsDollars(subtotalCents)}
                   </span>
                 </div>
                 <div className="flex items-baseline justify-between gap-4">
-                  <span className="text-muted-foreground">Shipping</span>
+                  <span className="text-jp-muted">Shipping</span>
                   {splitPreviewDefaults.estimatedShippingCents !== null ? (
-                    <span className="font-medium text-foreground tabular-nums">
+                    <span className="font-medium text-jp-text tabular-nums">
                       {formatCentsAsDollars(
                         splitPreviewDefaults.estimatedShippingCents
                       )}
                     </span>
                   ) : (
-                    <span className="text-muted-foreground text-xs">
-                      At checkout
-                    </span>
+                    <span className="text-jp-light text-xs">At checkout</span>
                   )}
                 </div>
+
                 {splitPreview ? (
-                  <div className="rounded-lg bg-emerald-50/90 px-3 py-2.5 dark:bg-emerald-950/30">
+                  <div className="rounded-(--jp-radius-sm) bg-jp-terra/8 px-3 py-2.5">
                     <div className="flex items-baseline justify-between gap-2">
-                      <span className="text-emerald-900 text-sm dark:text-emerald-100">
+                      <span className="flex items-center gap-1.5 text-jp-terra-dark text-sm">
+                        <Heart className="size-3.5" />
                         Est. fundraiser for {orgName}
                       </span>
-                      <span className="font-semibold text-emerald-900 tabular-nums dark:text-emerald-100">
+                      <span className="font-semibold text-jp-terra-dark tabular-nums">
                         {formatCentsAsDollars(splitPreview.orgAmount)}
                       </span>
                     </div>
-                    <p className="mt-1 text-emerald-800/90 text-xs dark:text-emerald-200/90">
+                    <p className="mt-1 text-jp-terra/80 text-xs">
                       {orgPctDisplay}% of coffee subtotal (before card fees).
                     </p>
                   </div>
                 ) : (
-                  <p className="text-muted-foreground text-xs">
+                  <p className="text-jp-light text-xs">
                     Fundraiser estimate unavailable for this cart.
                   </p>
                 )}
-                <div className="flex items-baseline justify-between gap-4 border-border/60 border-t pt-2">
-                  <span className="font-medium text-foreground">
+
+                <div className="flex items-baseline justify-between gap-4 border-jp-border border-t pt-2.5">
+                  <span className="font-medium text-jp-text">
                     {estimatedTotalLabel}
                   </span>
-                  <span className="font-bold text-foreground text-lg tabular-nums">
+                  <span className="font-bold text-jp-text text-lg tabular-nums">
                     {formatCentsAsDollars(estimatedTotalCents)}
                   </span>
                 </div>
               </div>
+
               {splitPreviewDefaults.estimatedShippingCents === null ? (
-                <p className="text-muted-foreground text-xs leading-relaxed">
+                <p className="font-body text-jp-light text-xs leading-relaxed">
                   Shipping is selected at checkout; your card is charged for
                   coffee plus the rate you choose.
                 </p>
               ) : (
-                <p className="text-muted-foreground text-xs leading-relaxed">
+                <p className="font-body text-jp-light text-xs leading-relaxed">
                   Uses this store&apos;s default shipping rate. Final total is
                   confirmed at checkout.
                 </p>
               )}
+
               <div className="flex flex-col gap-2 sm:flex-row">
                 <Button
-                  className="min-h-11 flex-1 touch-manipulation"
+                  className="min-h-11 flex-1 touch-manipulation border-jp-border"
                   onClick={() => clear()}
                   type="button"
                   variant="outline"
@@ -222,7 +226,10 @@ export function CartDrawer({
                   Clear cart
                 </Button>
                 {purchasesEnabled ? (
-                  <Button asChild className="min-h-11 flex-1 touch-manipulation">
+                  <Button
+                    asChild
+                    className="min-h-11 flex-1 touch-manipulation bg-jp-terra text-white hover:bg-jp-terra-dark"
+                  >
                     <Link href={checkoutHref}>Checkout</Link>
                   </Button>
                 ) : (

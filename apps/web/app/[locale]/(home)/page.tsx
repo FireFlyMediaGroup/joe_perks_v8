@@ -1,51 +1,31 @@
-import { showBetaFeature } from "@repo/feature-flags";
-import { getDictionary } from "@repo/internationalization";
 import { createMetadata } from "@repo/seo/metadata";
 import type { Metadata } from "next";
-import { Cases } from "./components/cases";
-import { CTA } from "./components/cta";
-import { FAQ } from "./components/faq";
+import { AudienceSection } from "./components/audience-section";
+import { BenefitsSection } from "./components/benefits-section";
+import { CtaBanner } from "./components/cta-banner";
 import { Features } from "./components/features";
 import { Hero } from "./components/hero";
-import { Stats } from "./components/stats";
+import { HowItWorks } from "./components/how-it-works";
+import { ScrollReveal } from "./components/scroll-reveal";
 import { Testimonials } from "./components/testimonials";
 
-interface HomeProps {
-  params: Promise<{
-    locale: string;
-  }>;
-}
+export const metadata: Metadata = createMetadata({
+  title: "Joe Perks — Coffee Fundraising That Works",
+  description:
+    "Connect specialty coffee roasters with schools, sports teams, and nonprofits. Every bag sold funds what matters — automatically.",
+});
 
-export const generateMetadata = async ({
-  params,
-}: HomeProps): Promise<Metadata> => {
-  const { locale } = await params;
-  const dictionary = await getDictionary(locale);
-
-  return createMetadata(dictionary.web.home.meta);
-};
-
-const Home = async ({ params }: HomeProps) => {
-  const { locale } = await params;
-  const dictionary = await getDictionary(locale);
-  const betaFeature = await showBetaFeature();
-
-  return (
-    <>
-      {betaFeature && (
-        <div className="w-full bg-black py-2 text-center text-white">
-          Beta feature now available
-        </div>
-      )}
-      <Hero dictionary={dictionary} />
-      <Cases dictionary={dictionary} />
-      <Features dictionary={dictionary} />
-      <Stats dictionary={dictionary} />
-      <Testimonials dictionary={dictionary} />
-      <FAQ dictionary={dictionary} />
-      <CTA dictionary={dictionary} />
-    </>
-  );
-};
+const Home = () => (
+  <>
+    <ScrollReveal />
+    <Hero />
+    <HowItWorks />
+    <Features />
+    <AudienceSection />
+    <BenefitsSection />
+    <Testimonials />
+    <CtaBanner />
+  </>
+);
 
 export default Home;

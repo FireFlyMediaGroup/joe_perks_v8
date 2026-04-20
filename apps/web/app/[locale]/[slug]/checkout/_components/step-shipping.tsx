@@ -1,25 +1,30 @@
 "use client";
 
-import type { ShippingFormValues } from "../_lib/schema";
-import { shippingFormSchema } from "../_lib/schema";
-import type { ShippingRateOption } from "../../_lib/queries";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { formatCentsAsDollars } from "../../_lib/format";
+import type { ShippingRateOption } from "../../_lib/queries";
+import type { ShippingFormValues } from "../_lib/schema";
+import { shippingFormSchema } from "../_lib/schema";
 
 export interface StepShippingProps {
   defaultRateId: string | null;
-  shippingRates: ShippingRateOption[];
-  subtotalCents: number;
+  hasPrefill: boolean;
+  initialValues: ShippingFormValues | null;
   onBack: () => void;
   onContinue: (values: ShippingFormValues) => void;
+  shippingRates: ShippingRateOption[];
+  subtotalCents: number;
 }
 
 export function StepShipping({
   defaultRateId,
+  hasPrefill,
+  initialValues,
   shippingRates,
   subtotalCents,
   onBack,
@@ -28,15 +33,18 @@ export function StepShipping({
   const {
     register,
     handleSubmit,
+    reset,
     watch,
     formState: { errors },
   } = useForm<ShippingFormValues>({
     resolver: zodResolver(shippingFormSchema),
-    defaultValues: {
+    defaultValues: initialValues ?? {
       buyerName: "",
       buyerEmail: "",
       street: "",
+      street2: "",
       city: "",
+      country: "US",
       state: "",
       zip: "",
       shippingRateId:
@@ -46,6 +54,29 @@ export function StepShipping({
         "",
     },
   });
+
+  useEffect(() => {
+    if (initialValues) {
+      reset(initialValues);
+      return;
+    }
+
+    reset({
+      buyerName: "",
+      buyerEmail: "",
+      street: "",
+      street2: "",
+      city: "",
+      country: "US",
+      state: "",
+      zip: "",
+      shippingRateId:
+        defaultRateId ??
+        shippingRates.find((r) => r.isDefault)?.id ??
+        shippingRates[0]?.id ??
+        "",
+    });
+  }, [defaultRateId, initialValues, reset, shippingRates]);
 
   const selectedRateId = watch("shippingRateId");
   const selectedRate = shippingRates.find((r) => r.id === selectedRateId);
@@ -64,9 +95,16 @@ export function StepShipping({
         <p className="mt-1 text-muted-foreground text-sm">
           Where should we send the order confirmation and shipment updates?
         </p>
+        {hasPrefill ? (
+          <p className="mt-2 text-muted-foreground text-sm">
+            We used your latest order snapshot to prefill these details. Review
+            and update anything you want before paying.
+          </p>
+        ) : null}
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
+        <input type="hidden" {...register("country")} />
         <div className="space-y-2 sm:col-span-2">
           <Label htmlFor="buyerName">Full name</Label>
           <Input
@@ -76,7 +114,9 @@ export function StepShipping({
             {...register("buyerName")}
           />
           {errors.buyerName ? (
-            <p className="text-destructive text-xs">{errors.buyerName.message}</p>
+            <p className="text-destructive text-xs">
+              {errors.buyerName.message}
+            </p>
           ) : null}
         </div>
         <div className="space-y-2 sm:col-span-2">
@@ -90,7 +130,9 @@ export function StepShipping({
             {...register("buyerEmail")}
           />
           {errors.buyerEmail ? (
-            <p className="text-destructive text-xs">{errors.buyerEmail.message}</p>
+            <p className="text-destructive text-xs">
+              {errors.buyerEmail.message}
+            </p>
           ) : null}
         </div>
         <div className="space-y-2 sm:col-span-2">
@@ -103,6 +145,18 @@ export function StepShipping({
           />
           {errors.street ? (
             <p className="text-destructive text-xs">{errors.street.message}</p>
+          ) : null}
+        </div>
+        <div className="space-y-2 sm:col-span-2">
+          <Label htmlFor="street2">Apt, suite, etc. (optional)</Label>
+          <Input
+            autoComplete="address-line2"
+            className="min-h-11"
+            id="street2"
+            {...register("street2")}
+          />
+          {errors.street2 ? (
+            <p className="text-destructive text-xs">{errors.street2.message}</p>
           ) : null}
         </div>
         <div className="space-y-2">
@@ -143,7 +197,7 @@ export function StepShipping({
         <fieldset className="space-y-2">
           {shippingRates.map((rate) => (
             <label
-              className="flex cursor-pointer items-start gap-3 rounded-lg border border-border bg-card p-3 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-ring"
+              className="flex cursor-pointer items-start gap-3 rounded-lg border border-border bg-card p-3 has-focus-visible:ring-2 has-focus-visible:ring-ring"
               key={rate.id}
             >
               <input
@@ -180,14 +234,14 @@ export function StepShipping({
         <div className="mt-3 space-y-2 text-sm">
           <div className="flex justify-between gap-4">
             <span className="text-muted-foreground">Subtotal</span>
-            <span className="tabular-nums">{formatCentsAsDollars(subtotalCents)}</span>
+            <span className="tabular-nums">
+              {formatCentsAsDollars(subtotalCents)}
+            </span>
           </div>
           <div className="flex justify-between gap-4">
             <span className="text-muted-foreground">Shipping</span>
             <span className="tabular-nums">
-              {selectedRate
-                ? formatCentsAsDollars(selectedRate.flatRate)
-                : "—"}
+              {selectedRate ? formatCentsAsDollars(selectedRate.flatRate) : "—"}
             </span>
           </div>
           <div className="flex justify-between gap-4 border-border border-t pt-2 font-semibold text-foreground">

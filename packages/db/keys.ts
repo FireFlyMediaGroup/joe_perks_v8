@@ -7,10 +7,7 @@ const emptyToUndefined = (v: unknown) =>
 export const keys = () =>
   createEnv({
     server: {
-      DATABASE_URL: z.preprocess(
-        emptyToUndefined,
-        z.string().url().optional()
-      ),
+      DATABASE_URL: z.preprocess(emptyToUndefined, z.string().url().optional()),
     },
     runtimeEnv: {
       DATABASE_URL: process.env.DATABASE_URL,

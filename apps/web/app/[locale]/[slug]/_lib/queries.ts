@@ -23,24 +23,24 @@ export interface SplitPreviewDefaults {
 
 /** Roaster shipping options for checkout (US-04-03) and availability guard (US-04-05). */
 export interface ShippingRateOption {
-  id: string;
-  label: string;
   carrier: string;
   flatRate: number;
+  id: string;
   isDefault: boolean;
+  label: string;
 }
 
 export interface StorefrontData {
   campaign: Campaign & { items: StorefrontCampaignItem[] };
+  /** True when the campaign roaster has at least one `RoasterShippingRate`. */
+  hasShippingRates: boolean;
   org: {
     id: string;
     slug: string;
     orgName: string;
   };
-  splitPreviewDefaults: SplitPreviewDefaults;
-  /** True when the campaign roaster has at least one `RoasterShippingRate`. */
-  hasShippingRates: boolean;
   shippingRates: ShippingRateOption[];
+  splitPreviewDefaults: SplitPreviewDefaults;
 }
 
 /**
@@ -63,11 +63,28 @@ export async function getStorefrontData(
   }
 
   const campaign = await database.campaign.findFirst({
-    where: { orgId: org.id, status: "ACTIVE" },
+    where: {
+      items: {
+        some: {
+          product: {
+            deletedAt: null,
+            roaster: { status: "ACTIVE" },
+            status: "ACTIVE",
+          },
+          variant: { deletedAt: null, isAvailable: true },
+        },
+      },
+      orgId: org.id,
+      status: "ACTIVE",
+    },
     include: {
       items: {
         where: {
-          product: { deletedAt: null },
+          product: {
+            deletedAt: null,
+            roaster: { status: "ACTIVE" },
+            status: "ACTIVE",
+          },
           variant: { deletedAt: null, isAvailable: true },
         },
         orderBy: [{ isFeatured: "desc" }, { id: "asc" }],

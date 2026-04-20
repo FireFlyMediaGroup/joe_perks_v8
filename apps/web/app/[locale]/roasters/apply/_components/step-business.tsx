@@ -1,7 +1,5 @@
 "use client";
 
-import { Input } from "@repo/design-system/components/ui/input";
-import { Textarea } from "@repo/design-system/components/ui/textarea";
 import {
   FormControl,
   FormDescription,
@@ -10,6 +8,8 @@ import {
   FormLabel,
   FormMessage,
 } from "@repo/design-system/components/ui/form";
+import { Input } from "@repo/design-system/components/ui/input";
+import { Textarea } from "@repo/design-system/components/ui/textarea";
 import type { UseFormReturn } from "react-hook-form";
 import type { ApplicationFormData } from "../_lib/schema";
 
@@ -21,8 +21,8 @@ export function StepBusiness({ form }: StepBusinessProps) {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-lg font-semibold">Business details</h2>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <h2 className="font-semibold text-lg">Business details</h2>
+        <p className="mt-1 text-muted-foreground text-sm">
           Tell us about your roasting business.
         </p>
       </div>
@@ -35,8 +35,8 @@ export function StepBusiness({ form }: StepBusinessProps) {
             <FormLabel>Business name *</FormLabel>
             <FormControl>
               <Input
-                placeholder="North Star Roasting Co."
                 className="min-h-[44px]"
+                placeholder="North Star Roasting Co."
                 {...field}
               />
             </FormControl>
@@ -53,9 +53,9 @@ export function StepBusiness({ form }: StepBusinessProps) {
             <FormLabel>Website</FormLabel>
             <FormControl>
               <Input
-                type="url"
-                placeholder="https://yourroastery.com"
                 className="min-h-[44px]"
+                placeholder="https://yourroastery.com"
+                type="url"
                 {...field}
               />
             </FormControl>
@@ -72,8 +72,8 @@ export function StepBusiness({ form }: StepBusinessProps) {
             <FormLabel>Business description</FormLabel>
             <FormControl>
               <Textarea
-                placeholder="Tell us about your roastery, your story, and what makes your coffee special..."
                 className="min-h-[100px]"
+                placeholder="Tell us about your roastery, your story, and what makes your coffee special..."
                 {...field}
               />
             </FormControl>

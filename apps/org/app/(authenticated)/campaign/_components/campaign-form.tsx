@@ -14,18 +14,19 @@ import type { SerializedProduct } from "../_lib/catalog";
 import { ProductSelector, type SelectedItem } from "./product-selector";
 
 interface CampaignFormProps {
-  readonly products: SerializedProduct[];
-  readonly orgPctPercent: number;
-  readonly initialName: string;
+  readonly campaignId: string | null;
   readonly initialGoalCents: number | null;
   readonly initialItems: SelectedItem[];
-  readonly campaignId: string | null;
-  readonly readOnlyLive: boolean;
+  readonly initialName: string;
   readonly liveSummary?: {
     name: string;
     goalCents: number | null;
     itemCount: number;
   };
+  readonly orgPctPercent: number;
+  readonly orgSlug?: string;
+  readonly products: SerializedProduct[];
+  readonly readOnlyLive: boolean;
 }
 
 function buildMap(items: SelectedItem[]): Map<string, SelectedItem> {
@@ -39,6 +40,7 @@ function buildMap(items: SelectedItem[]): Map<string, SelectedItem> {
 export function CampaignForm({
   products,
   orgPctPercent,
+  orgSlug,
   initialName,
   initialGoalCents,
   initialItems,
@@ -55,7 +57,9 @@ export function CampaignForm({
   const [selected, setSelected] = useState<Map<string, SelectedItem>>(() =>
     buildMap(initialItems)
   );
-  const [campaignId, setCampaignId] = useState<string | null>(initialCampaignId);
+  const [campaignId, setCampaignId] = useState<string | null>(
+    initialCampaignId
+  );
   const [error, setError] = useState<string | null>(null);
   const [activateError, setActivateError] = useState<string | null>(null);
 
@@ -76,7 +80,10 @@ export function CampaignForm({
       <div className="max-w-2xl space-y-4">
         <p className="text-green-700 text-sm dark:text-green-400">
           Your fundraiser is live. Buyers can shop your storefront at{" "}
-          <span className="font-medium">joeperks.com/[your-org-slug]</span>.
+          <span className="font-medium">
+            joeperks.com/{orgSlug ?? "[your-org-slug]"}
+          </span>
+          .
         </p>
         <dl className="space-y-2 text-sm">
           <div>
