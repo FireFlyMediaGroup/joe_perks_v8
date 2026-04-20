@@ -6,6 +6,7 @@ import {
   useCartStore,
 } from "@joe-perks/ui";
 import { Button } from "@repo/design-system/components/ui/button";
+import { Check, ShoppingBag } from "lucide-react";
 import { useCallback, useState } from "react";
 
 export interface AddToCartButtonProps {
@@ -15,21 +16,42 @@ export interface AddToCartButtonProps {
   line: Omit<CartLine, "quantity">;
 }
 
-function addToCartLabel(
-  added: boolean,
-  existingQty: number,
-  disabled: boolean
-): string {
+function getButtonColorClass(added: boolean, disabled: boolean): string {
+  if (added) {
+    return "bg-jp-teal text-white hover:bg-jp-teal-dark";
+  }
+  if (disabled) {
+    return "";
+  }
+  return "bg-jp-terra text-white hover:bg-jp-terra-dark";
+}
+
+function renderLabel(added: boolean, existingQty: number, disabled: boolean) {
   if (disabled) {
     return "Unavailable";
   }
   if (added) {
-    return "Added";
+    return (
+      <>
+        <Check className="mr-1.5 size-4" />
+        Added
+      </>
+    );
   }
   if (existingQty > 0) {
-    return `Add another (${existingQty} in cart)`;
+    return (
+      <>
+        <ShoppingBag className="mr-1.5 size-4" />
+        Add another ({existingQty} in cart)
+      </>
+    );
   }
-  return "Add to cart";
+  return (
+    <>
+      <ShoppingBag className="mr-1.5 size-4" />
+      Add to cart
+    </>
+  );
 }
 
 export function AddToCartButton({
@@ -56,7 +78,11 @@ export function AddToCartButton({
 
   return (
     <Button
-      className={`min-h-11 w-full touch-manipulation ${className ?? ""}`}
+      className={[
+        "min-h-11 w-full touch-manipulation font-body",
+        getButtonColorClass(added, disabled),
+        className ?? "",
+      ].join(" ")}
       disabled={disabled}
       onClick={handleAdd}
       title={
@@ -65,9 +91,9 @@ export function AddToCartButton({
           : undefined
       }
       type="button"
-      variant={added ? "secondary" : "default"}
+      variant={disabled ? "secondary" : "default"}
     >
-      {addToCartLabel(added, existingQty, disabled)}
+      {renderLabel(added, existingQty, disabled)}
     </Button>
   );
 }

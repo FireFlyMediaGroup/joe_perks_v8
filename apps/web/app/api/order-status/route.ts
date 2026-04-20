@@ -12,14 +12,14 @@ export async function GET(request: Request) {
   const piId = searchParams.get("pi");
   const orderId = searchParams.get("id");
 
-  if (!piId && !orderId) {
+  if (!(piId || orderId)) {
     return NextResponse.json(
       { error: "Missing pi or id parameter" },
       { status: 400 }
     );
   }
 
-  const where = piId ? { stripePiId: piId } : { id: orderId! };
+  const where = piId ? { stripePiId: piId } : { id: orderId as string };
 
   const order = await database.order.findUnique({
     where,

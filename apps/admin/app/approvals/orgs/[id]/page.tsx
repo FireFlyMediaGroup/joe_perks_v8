@@ -57,7 +57,10 @@ export default async function OrgApplicationDetailPage({ params }: PageProps) {
         <h2 className="mb-3 font-medium text-sm text-zinc-500 uppercase tracking-wide">
           Decision
         </h2>
-        <OrgApproveRejectButtons applicationId={application.id} canAct={canAct} />
+        <OrgApproveRejectButtons
+          applicationId={application.id}
+          canAct={canAct}
+        />
         {canAct ? null : (
           <p className="mt-3 text-sm text-zinc-600">
             This application has already left platform review. Approve and

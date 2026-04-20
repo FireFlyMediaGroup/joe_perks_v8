@@ -16,10 +16,7 @@ function getClientIp(request: Request): string {
 export async function GET(request: Request) {
   const { success } = await limitSlugValidation(getClientIp(request));
   if (!success) {
-    return NextResponse.json(
-      { error: "Too many requests" },
-      { status: 429 }
-    );
+    return NextResponse.json({ error: "Too many requests" }, { status: 429 });
   }
 
   const { searchParams } = new URL(request.url);

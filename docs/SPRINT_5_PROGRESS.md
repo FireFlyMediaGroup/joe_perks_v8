@@ -1,7 +1,7 @@
 # Joe Perks -- Sprint 5 Progress Tracker
 
-**Tracker version:** 0.7
-**Baseline document:** [`docs/SPRINT_5_CHECKLIST.md`](SPRINT_5_CHECKLIST.md) (v1.5)
+**Tracker version:** 1.0
+**Baseline document:** [`docs/SPRINT_5_CHECKLIST.md`](SPRINT_5_CHECKLIST.md) (v1.7)
 **Story documents:** [`docs/sprint-5/stories/`](sprint-5/stories/)
 **Sprint overview:** [`docs/sprint-5/README.md`](sprint-5/README.md)
 **Purpose:** Track what is actually complete in this repository for Sprint 5 compared with the sprint checklist.
@@ -36,6 +36,9 @@
 | 0.5 | 2026-04-01 | `US-07-01` implemented: admin orders now have 50/page pagination, status/roaster/org/date filters, SLA rollups and row badges, payout/dispute context, and a `Contact Roaster` detail action. |
 | 0.6 | 2026-04-01 | `US-07-02` implemented: admin settings page loads the `PlatformSettings` singleton, full schema-aligned editor with validation, acknowledgment of future-only impact, save via server action + `revalidatePath`, and `AdminActionLog` rows with before/after JSON and optional note. |
 | 0.7 | 2026-04-01 | Sprint 5 docs sync: progress Phase 2 table aligned with shipped settings editor; checklist prerequisites and doc-sync checkboxes updated; sprint README “current repo alignment” corrected for admin orders + settings; admin Vitest smoke tests and `pnpm admin:smoke:us-07` documented in checklist. |
+| 0.8 | 2026-04-01 | `US-07-03` implemented: admin home now shows seven server-rendered operational cards, orders/disputes links where available, a manual refresh control, and the latest 20 `OrderEvent` rows; sprint docs updated in sync. |
+| 0.9 | 2026-04-01 | `US-06-02` implemented: Stripe webhook now handles dispute open/close events, admin disputes supports fault attribution + evidence export, payout release skips unresolved/lost roaster-fault disputes, roaster-fault losses create debt via normalized mapping, and 3-loss auto-suspension now writes `AdminActionLog` plus admin alert email. |
+| 1.0 | 2026-04-01 | `US-07-04` implemented: admin `roasters/` + `orgs/` lifecycle routes now support suspend/reactivate review with readiness context and audit logging, roaster/org dashboards show suspended-state guidance plus reactivation requests, mutation paths reject suspended accounts, storefront eligibility blocks suspended actors earlier, and suspension/reactivation emails now ship for manual review plus dispute-threshold auto-suspension. |
 
 ---
 
@@ -44,11 +47,11 @@
 | Area | Status | Notes |
 |------|--------|-------|
 | Shared foundations (Package A) | `Done` | `AdminActionLog` is now in Prisma schema with a migration, `packages/db/admin-action-log.ts` exports `logAdminAction()`, `packages/types` exposes a shared admin actor helper, and `apps/admin/app/orders/_lib/sla.ts` centralizes SLA state derivation |
-| Chargeback webhook + debt recovery (US-06-02) | `Partial` | `DisputeRecord`, `FaultType`, `DisputeOutcome`, `RoasterDebt`, and chargeback diagrams exist; no `charge.dispute.*` webhook handling yet. Normalized decision: keep `DISPUTE_OPENED` / `DISPUTE_CLOSED`, carry outcome/fault in payload, and keep threshold-triggered auto-suspension in Sprint 5 |
+| Chargeback webhook + debt recovery (US-06-02) | `Done` | `apps/web/app/api/webhooks/stripe/route.ts` now handles `charge.dispute.created` / `charge.dispute.closed`, `apps/admin/app/disputes/` supports ops review + evidence export + fault attribution, payout release skips unresolved/lost roaster-fault disputes, and lost roaster-fault cases create debt plus threshold-triggered auto-suspension |
 | Admin order list with SLA flags (US-07-01) | `Done` | `apps/admin/app/orders/` now includes 50/page pagination, status/roaster/org/date filters, row-level SLA state, SLA summary cards, payout/dispute context, and detail-page `Contact Roaster` while keeping actions low-risk |
 | PlatformSettings editor (US-07-02) | `Done` | `apps/admin/app/settings/` now server-loads the singleton, exposes all current-schema fields with helper copy, validates and saves via `_actions/update-platform-settings.ts`, and writes `PLATFORM_SETTINGS_UPDATED` audit rows with before/after snapshots |
-| Basic metrics dashboard (US-07-03) | `Todo` | Admin home route exists but is still the default Next.js starter page. Normalized decision: feed is latest 20 `OrderEvent` rows only |
-| Roaster/org account management (US-07-04) | `Partial` | `Roaster.status` and `Org.status` support `SUSPENDED`, but there are no admin lifecycle routes or actions. Normalized decision: reactivation becomes request-and-review with suspended-portal guidance, explicit readiness checks, and notification emails |
+| Basic metrics dashboard (US-07-03) | `Done` | `apps/admin/app/page.tsx` now renders seven server-side metric cards, links into orders/disputes where available, a manual `router.refresh()` control, and the latest 20 `OrderEvent` rows |
+| Roaster/org account management (US-07-04) | `Done` | Admin `roasters/` + `orgs/` list/detail routes now support suspend/reactivate review with readiness checks and `AdminActionLog`, suspended portal dashboards show remediation guidance plus request forms, and storefront/runtime guards block suspended accounts from new activity |
 
 ---
 
@@ -89,10 +92,10 @@
 
 | Item | Status | Evidence / current state | Next step |
 |------|--------|--------------------------|-----------|
-| Webhook routing | `Todo` | `apps/web/app/api/webhooks/stripe/route.ts` handles payment/account events only | Add `charge.dispute.created` and `charge.dispute.closed` |
-| Dispute data model | `Partial` | `DisputeRecord` exists in Prisma schema | Implement normalized approach: keep current enums and derive row/list state from `DisputeRecord` |
-| Debt recovery | `Partial` | `RoasterDebt` exists and payout job already deducts debts | Add dispute-origin debt creation and apply normalized `DebtReason` mapping |
-| Admin dispute visibility | `Partial` | `apps/admin/app/disputes/page.tsx` scaffold exists | Build real list/detail/countdown UI |
+| Webhook routing | `Done` | `apps/web/app/api/webhooks/stripe/route.ts` now processes `charge.dispute.created` / `charge.dispute.closed` while keeping signature verification and post-success `StripeEvent` idempotency intact | Extend only if automated evidence submission is later reprioritized |
+| Dispute data model | `Done` | `DisputeRecord` is now created/updated from Stripe events; `respondBy`, `outcome`, and admin-set `faultAttribution` drive the admin surface and timeline payloads | Keep `DisputeRecord` as the single source of truth in Sprint 5 |
+| Debt recovery | `Done` | Lost roaster-fault disputes now create `DISPUTE_LOSS` / `CHARGEBACK` debt rows through `packages/db/dispute-loss.ts`, attempt roaster transfer reversal when available, and refresh `Roaster.disputeCount90d` + auto-suspension | Revisit only if product later wants org-transfer reversal or a richer recovery ledger |
+| Admin dispute visibility | `Done` | `apps/admin/app/disputes/page.tsx` now lists open/closed disputes, shows respond-by / order evidence context, supports fault attribution, and links to JSON evidence export via `disputes/[id]/evidence/route.ts` | Add deeper dispute detail/history only if ops asks for it |
 
 ---
 
@@ -100,10 +103,10 @@
 
 | Item | Status | Evidence / current state | Next step |
 |------|--------|--------------------------|-----------|
-| Admin home route | `Done` | `apps/admin/app/page.tsx` exists | Replace starter content |
-| Metric cards | `Todo` | No metrics UI yet | Add server-side aggregate queries and cards |
-| Live event feed | `Todo` | No dashboard activity feed yet | Query latest `OrderEvent`s |
-| Cross-links | `Todo` | No dashboard links into filtered admin routes yet | Wire cards to orders/disputes once routes exist |
+| Admin home route | `Done` | `apps/admin/app/page.tsx` now replaces the starter screen with a dashboard header, operational summary, and refresh affordance | Keep copy aligned if more cards are added later |
+| Metric cards | `Done` | Seven server-rendered cards now show Orders Today, GMV This Month, Platform Revenue This Month, Active Campaigns, Roasters Active, Pending Payouts, and Open Disputes | Add deeper filtered routes later if product wants more drill-down |
+| Live event feed | `Done` | Dashboard queries and renders the latest 20 `OrderEvent` rows in reverse chronological order with links to order detail | Keep feed scoped to `OrderEvent` during Sprint 5 |
+| Cross-links | `Done` | Cards link into `/orders` date slices and `/disputes` where a relevant route exists; dashboard CTA links to orders | Add more targeted routes/filters alongside future dispute/account pages |
 
 ---
 
@@ -113,10 +116,10 @@
 |------|--------|--------------------------|-----------|
 | Lifecycle status fields | `Done` | `Roaster.status` / `Org.status` include `SUSPENDED` | Build admin management UI around them |
 | Suspension-safe onboarding webhook | `Done` | `handleAccountUpdated()` does not re-promote suspended roasters | Preserve this behavior when adding admin actions |
-| Admin account pages | `Todo` | No `roasters/` or `orgs/` admin lifecycle routes | Create list/detail pages |
-| Suspend/reactivate actions | `Todo` | No lifecycle mutation actions, reactivation requests, or audit-note capture | Add request/review workflow plus `AdminActionLog` |
-| Suspended portal UX | `Todo` | No roaster/org blocked-state UI yet | Add status banner/page, remediation checklist, reactivation request flow, and clear blocked-state messaging |
-| Storefront enforcement | `Todo` | Storefront does not currently block orders based on roaster suspension | Add roaster status checks in storefront/query layer |
+| Admin account pages | `Done` | `apps/admin/app/roasters/` and `apps/admin/app/orgs/` now provide lifecycle list/detail routes with profile context, recent orders, and recent audit activity | Extend filters/polish later only if ops asks for it |
+| Suspend/reactivate actions | `Done` | Admin detail views now submit suspend/reactivate actions with required reason/audit note handling, `AdminActionLog`, readiness-aware status outcomes, and notification emails | Keep audit payloads aligned if lifecycle policy expands later |
+| Suspended portal UX | `Done` | Roaster/org authenticated layouts now show suspension banners; dashboards render blocked-state guidance and `Request Reactivation` forms with the latest request timestamp | Extend into broader portal surfaces later only if product wants more self-service detail |
+| Storefront enforcement | `Done` | Buyer storefront lookup now excludes campaigns tied to suspended roasters, checkout hard-stops inactive org/roaster flows, and org campaign mutations reject suspended accounts | Add deeper storefront copy only if product wants a public-facing suspension explanation |
 
 ---
 
@@ -141,6 +144,6 @@
 - [x] Sprint 5 story documents created with current repo evidence and normalized implementation decisions
 - [x] `docs/01-project-structure.mermaid` update when implementation adds new admin routes
 - [x] `docs/06-database-schema.mermaid` update if Sprint 5 changes dispute/account audit schema
-- [ ] `docs/07-stripe-payment-flow.mermaid` update if implemented dispute handling differs from planned flow
+- [x] `docs/07-stripe-payment-flow.mermaid` update if implemented dispute handling differs from planned flow
 
-**Last full sync:** 2026-04-01 (v0.7) — Progress Phase 2 table and checklist prerequisites aligned with shipped US-07-02; sprint README repo-alignment bullets updated; admin story smoke tests and HTTP smoke script referenced in checklist.
+**Last full sync:** 2026-04-01 (v1.0) — `US-07-04` account lifecycle controls landed; progress/checklist/story/README and project structure docs now reflect admin lifecycle routes, request/review reactivation, suspended portal UX, stricter storefront guards, and lifecycle notification emails.

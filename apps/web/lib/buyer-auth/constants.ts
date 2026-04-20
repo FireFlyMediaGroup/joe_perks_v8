@@ -1,0 +1,6 @@
+export const BUYER_AUTH_MAGIC_LINK_TTL_MINUTES = 15;
+export const BUYER_AUTH_MAGIC_LINK_TTL_MS =
+  BUYER_AUTH_MAGIC_LINK_TTL_MINUTES * 60 * 1000;
+
+export const BUYER_SESSION_COOKIE_NAME = "jp_buyer_session";
+export const BUYER_SESSION_MAX_AGE_SECONDS = 30 * 24 * 60 * 60;

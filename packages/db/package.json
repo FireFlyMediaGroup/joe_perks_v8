@@ -18,7 +18,8 @@
     "typecheck": "tsc --noEmit --emitDeclarationOnly false",
     "db:smoke": "bun run ./scripts/smoke-db.ts",
     "db:smoke:us-03-02": "bun run ./scripts/smoke-us-03-02-admin-org-queue.ts",
-    "db:smoke:sprint-3": "bun run ./scripts/smoke-sprint-3.ts"
+    "db:smoke:sprint-3": "bun run ./scripts/smoke-sprint-3.ts",
+    "seed:e2e": "bun run ./scripts/seed-e2e-roaster.ts && bun run ./scripts/seed-e2e-org.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.2",

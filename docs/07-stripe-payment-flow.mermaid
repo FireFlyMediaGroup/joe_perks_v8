@@ -40,14 +40,14 @@ flowchart TD
   %% ── Chargeback path ──────────────────────────────────────────────
   subgraph CHARGEBACK["4. Chargeback — buyer disputes with bank"]
     CB1["charge.dispute.created webhook\nStripe holds funds immediately"]:::stripe
-    CB2["DisputeRecord created\nrespond_by = now + 7 days\nAdmin alerted via Sentry"]:::db
-    CB3["Admin compiles evidence:\nOrder events + tracking + buyer IP\nSubmits to Stripe portal"]:::admin
+    CB2["DisputeRecord created / updated\nrespond_by = Stripe evidence deadline\nOrderEvent DISPUTE_OPENED"]:::db
+    CB3["Admin compiles evidence from disputes UI:\nOrder events + tracking + buyer IP\nExport JSON / submit in Stripe portal"]:::admin
     CB4{Dispute\noutcome}:::decision
-    CB5["WON: funds released\nNormal payout proceeds"]:::ok
+    CB5["WON / WITHDRAWN:\nOrderEvent DISPUTE_CLOSED\nNormal payout may proceed"]:::ok
     CB6["LOST: $15 dispute fee charged\nDetermine fault attribution"]:::bad
     CB7{Fault\nattribution}:::decision
-    CB8["ROASTER fault:\nRoasterDebt created for\nroaster_amount + stripe_fee + $15\nTransfer reversal attempted"]:::bad
-    CB9["PLATFORM/BUYER_FRAUD:\nPlatform absorbs costs\nRoaster payout protected"]:::ok
+    CB8["ROASTER fault:\nDISPUTE_LOSS debt = stripe_fee + $15\nCHARGEBACK debt = unrecovered roaster reversal shortfall\nRoaster transfer reversal attempted\n3+ trailing 90d => auto-suspend + admin alert"]:::bad
+    CB9["PLATFORM/BUYER_FRAUD:\nPlatform absorbs costs\nRoaster payout stays protected"]:::ok
 
     CB1 --> CB2 --> CB3 --> CB4
     CB4 -->|won| CB5

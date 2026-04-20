@@ -14,6 +14,51 @@ export type SaveDraftResult =
   | { success: true; campaignId: string }
   | { success: false; error: string };
 
+function getOrgCampaignAccessError(
+  status: "ACTIVE" | "ONBOARDING" | "SUSPENDED"
+): string | null {
+  if (status === "ACTIVE") {
+    return null;
+  }
+
+  return status === "SUSPENDED"
+    ? "Your account is suspended. Review the status guidance on your dashboard."
+    : "Complete Stripe onboarding before creating a campaign.";
+}
+
+async function validateCampaignVariants(
+  roasterId: string,
+  variantIds: string[]
+): Promise<string | null> {
+  if (variantIds.length === 0) {
+    return null;
+  }
+
+  const variants = await database.productVariant.findMany({
+    where: { id: { in: variantIds } },
+    include: { product: true },
+  });
+  if (variants.length !== variantIds.length) {
+    return "One or more product variants are invalid.";
+  }
+
+  for (const v of variants) {
+    if (
+      v.product.roasterId !== roasterId ||
+      v.product.deletedAt !== null ||
+      v.deletedAt !== null ||
+      !v.isAvailable
+    ) {
+      return "Selected products are not available from your roaster.";
+    }
+    if (v.product.status !== "ACTIVE") {
+      return "Selected products are not active.";
+    }
+  }
+
+  return null;
+}
+
 export async function saveCampaignDraft(
   input: unknown
 ): Promise<SaveDraftResult> {
@@ -34,10 +79,12 @@ export async function saveCampaignDraft(
   if (!org) {
     return { success: false, error: "Organization not found." };
   }
-  if (org.status !== "ACTIVE") {
+
+  const orgAccessError = getOrgCampaignAccessError(org.status);
+  if (orgAccessError) {
     return {
       success: false,
-      error: "Complete Stripe onboarding before creating a campaign.",
+      error: orgAccessError,
     };
   }
 
@@ -58,30 +105,9 @@ export async function saveCampaignDraft(
   }
 
   const variantIds = [...variantIdSet];
-  if (variantIds.length > 0) {
-    const variants = await database.productVariant.findMany({
-      where: { id: { in: variantIds } },
-      include: { product: true },
-    });
-    if (variants.length !== variantIds.length) {
-      return { success: false, error: "One or more product variants are invalid." };
-    }
-    for (const v of variants) {
-      if (
-        v.product.roasterId !== roasterId ||
-        v.product.deletedAt !== null ||
-        v.deletedAt !== null ||
-        !v.isAvailable
-      ) {
-        return {
-          success: false,
-          error: "Selected products are not available from your roaster.",
-        };
-      }
-      if (v.product.status !== "ACTIVE") {
-        return { success: false, error: "Selected products are not active." };
-      }
-    }
+  const variantError = await validateCampaignVariants(roasterId, variantIds);
+  if (variantError) {
+    return { success: false, error: variantError };
   }
 
   const existingActive = await database.campaign.findFirst({
@@ -148,7 +174,10 @@ export async function saveCampaignDraft(
     });
   } catch (e) {
     if (e instanceof Error && e.message === "VARIANT_GONE") {
-      return { success: false, error: "A selected variant is no longer available." };
+      return {
+        success: false,
+        error: "A selected variant is no longer available.",
+      };
     }
     throw e;
   }
@@ -163,6 +192,25 @@ export async function activateCampaign(
   const session = await requireOrgId();
   if (!session.ok) {
     return { success: false, error: "Unauthorized" };
+  }
+
+  const org = await database.org.findUnique({
+    select: { status: true },
+    where: { id: session.orgId },
+  });
+  if (!org) {
+    return { success: false, error: "Organization not found." };
+  }
+
+  const orgAccessError = getOrgCampaignAccessError(org.status);
+  if (orgAccessError) {
+    return {
+      success: false,
+      error:
+        org.status === "SUSPENDED"
+          ? orgAccessError
+          : "Complete Stripe onboarding before activating a campaign.",
+    };
   }
 
   const campaign = await database.campaign.findFirst({

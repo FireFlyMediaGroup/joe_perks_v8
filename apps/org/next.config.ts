@@ -18,6 +18,11 @@ if (process.env.VERCEL) {
 
 nextConfig = {
   ...nextConfig,
+  serverExternalPackages: [
+    "ws",
+    "@neondatabase/serverless",
+    "@prisma/adapter-neon",
+  ],
   turbopack: { ...nextConfig.turbopack, root: monorepoRoot },
 };
 

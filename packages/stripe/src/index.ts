@@ -11,6 +11,11 @@ export {
   createExpressAccountLink,
   createExpressConnectedAccount,
 } from "./connect";
+export {
+  type ReverseTransferIfPossibleInput,
+  type ReverseTransferIfPossibleResult,
+  reverseTransferIfPossible,
+} from "./dispute-reversal";
 export { keys } from "./keys";
 export {
   type RefundChargeParams,
@@ -22,7 +27,9 @@ export {
   checkoutLimiter,
   getCheckoutLimiter,
   isCheckoutRateLimitConfigured,
+  limitBuyerAuth,
   limitCheckout,
+  limitGuestOrderLookup,
   limitOrgApplication,
   limitRoasterApplication,
   limitSlugValidation,

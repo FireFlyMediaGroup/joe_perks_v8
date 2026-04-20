@@ -48,10 +48,22 @@ export default async function OrgCampaignPage() {
       <main className="mx-auto max-w-prose p-8">
         <h1 className="font-semibold text-2xl">Campaign</h1>
         <p className="mt-2 text-muted-foreground">
-          Complete Stripe onboarding first.{" "}
-          <a className="text-primary underline" href="/onboarding">
-            Go to onboarding
-          </a>
+          {org.status === "SUSPENDED" ? (
+            <>
+              Your account is suspended. Review the status guidance on{" "}
+              <a className="text-primary underline" href="/dashboard">
+                your dashboard
+              </a>
+              .
+            </>
+          ) : (
+            <>
+              Complete Stripe onboarding first.{" "}
+              <a className="text-primary underline" href="/onboarding">
+                Go to onboarding
+              </a>
+            </>
+          )}
         </p>
       </main>
     );
@@ -128,6 +140,7 @@ export default async function OrgCampaignPage() {
               name: activeCampaign.name,
             }}
             orgPctPercent={orgPctPercent}
+            orgSlug={org.slug}
             products={products}
             readOnlyLive
           />
@@ -155,6 +168,7 @@ export default async function OrgCampaignPage() {
           initialItems={initialItems}
           initialName={draftCampaign?.name ?? ""}
           orgPctPercent={orgPctPercent}
+          orgSlug={org.slug}
           products={products}
           readOnlyLive={false}
         />

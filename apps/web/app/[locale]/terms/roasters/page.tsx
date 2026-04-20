@@ -70,7 +70,8 @@ const RoasterTermsPage = () => (
       <h2>7. Termination</h2>
       <p>
         Either party may terminate the relationship with 30 days written notice.
-        Joe Perks may immediately suspend roaster accounts for policy violations.
+        Joe Perks may immediately suspend roaster accounts for policy
+        violations.
       </p>
     </div>
   </div>

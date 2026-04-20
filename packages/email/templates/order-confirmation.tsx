@@ -3,8 +3,8 @@ import { BaseEmailLayout } from "./base-layout";
 
 interface OrderItem {
   name: string;
-  quantity: number;
   priceInCents: number;
+  quantity: number;
 }
 
 interface OrderConfirmationEmailProps {
@@ -52,8 +52,7 @@ export const OrderConfirmationEmail = ({
           className="my-1 text-sm text-zinc-600"
           key={`${item.name}-${item.quantity}`}
         >
-          {item.name} × {item.quantity}{" "}
-          <span className="text-zinc-400">—</span>{" "}
+          {item.name} × {item.quantity} <span className="text-zinc-400">—</span>{" "}
           {formatCents(item.priceInCents * item.quantity)}
         </Text>
       ))}

@@ -58,7 +58,9 @@ graph TD
   ADMIN --> A_AR["approvals/roasters/\npage + [id]/"]:::route
   ADMIN --> A_AO["approvals/orgs/\npage + [id]/"]:::route
   ADMIN --> A_ORD["orders/\npage, [id]/, _actions, _components,\n_lib/sla.ts, event-timeline, layout nav"]:::route
-  ADMIN --> A_DISP["disputes/"]:::route
+  ADMIN --> A_DISP["disputes/\npage, [id]/evidence/route.ts,\n_actions, _components"]:::route
+  ADMIN --> A_ROASTERS["roasters/\npage + [id]/\naccount lifecycle review"]:::route
+  ADMIN --> A_ORGS["orgs/\npage + [id]/\naccount lifecycle review"]:::route
   ADMIN --> A_SET["settings/"]:::route
 
   %% ── PACKAGES ───────────────────────────────────────────────────
@@ -72,16 +74,16 @@ graph TD
   DB --> DB1["prisma/schema.prisma\n27 models when migrated"]:::file
   DB --> DB2["seed.ts"]:::file
   DB --> DB3["order-number.ts"]:::file
-  DB --> DB4["index.ts, log-event.ts,\nadmin-action-log.ts\nPrisma client + audit helpers"]:::file
+  DB --> DB4["index.ts, log-event.ts,\nadmin-action-log.ts, account-lifecycle.ts,\ndispute-loss.ts\nPrisma client + audit helpers"]:::file
 
   UI --> UI1["src/store/cart.ts\nZustand + persist"]:::file
   UI --> UI2["Use @repo/design-system\nfor shadcn primitives"]:::file
 
   STRIPE --> ST1["splits.ts\nexport @joe-perks/stripe/splits\n(client-safe)"]:::file
-  STRIPE --> ST2["client.ts"]:::file
+  STRIPE --> ST2["client.ts, dispute-reversal.ts"]:::file
   STRIPE --> ST3["ratelimit.ts"]:::file
 
-  EMAIL --> EM1["templates/\nmagic-link-fulfillment, order-shipped,\norder-delivered, sla, …"]:::file
+  EMAIL --> EM1["templates/\nmagic-link-fulfillment, order-shipped,\norder-delivered, dispute-admin-alert,\naccount-suspended, account-reactivated, sla, …"]:::file
   EMAIL --> EM2["send.ts\nsendEmail()"]:::file
 
   TYPES --> TY1["index.ts, admin-basic-auth.ts"]:::file

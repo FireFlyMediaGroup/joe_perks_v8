@@ -187,6 +187,19 @@ export async function runPayoutRelease(): Promise<void> {
   const orders = await database.order.findMany({
     select: { id: true },
     where: {
+      OR: [
+        { dispute: { is: null } },
+        { dispute: { is: { outcome: "WITHDRAWN" } } },
+        { dispute: { is: { outcome: "WON" } } },
+        {
+          dispute: {
+            is: {
+              faultAttribution: { in: ["BUYER_FRAUD", "PLATFORM"] },
+              outcome: "LOST",
+            },
+          },
+        },
+      ],
       payoutEligibleAt: { lte: now },
       payoutStatus: "HELD",
       status: "DELIVERED",

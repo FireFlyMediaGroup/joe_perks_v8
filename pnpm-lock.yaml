@@ -57,6 +57,9 @@ importers:
       '@joe-perks/email':
         specifier: workspace:*
         version: link:../../packages/email
+      '@joe-perks/stripe':
+        specifier: workspace:*
+        version: link:../../packages/stripe
       '@joe-perks/types':
         specifier: workspace:*
         version: link:../../packages/types
@@ -105,7 +108,7 @@ importers:
         version: 9.39.4(jiti@2.6.1)
       eslint-config-next:
         specifier: 16.2.1
-        version: 16.2.1(@typescript-eslint/parser@8.57.1(eslint@9.39.4(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.4(jiti@2.6.1))(typescript@5.9.3)
+        version: 16.2.1(eslint@9.39.4(jiti@2.6.1))(typescript@5.9.3)
       tailwindcss:
         specifier: ^4
         version: 4.2.2
@@ -182,6 +185,9 @@ importers:
       '@t3-oss/env-nextjs':
         specifier: ^0.13.10
         version: 0.13.11(typescript@5.9.3)(valibot@1.2.0(typescript@5.9.3))(zod@4.3.6)
+      dotenv:
+        specifier: ^17.4.0
+        version: 17.4.0
       import-in-the-middle:
         specifier: ^3.0.0
         version: 3.0.0
@@ -224,7 +230,7 @@ importers:
         version: 9.39.4(jiti@2.6.1)
       eslint-config-next:
         specifier: 16.2.1
-        version: 16.2.1(eslint@9.39.4(jiti@2.6.1))(typescript@5.9.3)
+        version: 16.2.1(@typescript-eslint/parser@8.57.1(eslint@9.39.4(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.4(jiti@2.6.1))(typescript@5.9.3)
       tailwindcss:
         specifier: ^4.2.1
         version: 4.2.2
@@ -451,6 +457,9 @@ importers:
       next:
         specifier: 16.2.1
         version: 16.2.1(@babel/core@7.29.0)(@opentelemetry/api@1.9.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      next-themes:
+        specifier: ^0.4.6
+        version: 0.4.6(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       react:
         specifier: 19.2.4
         version: 19.2.4
@@ -7139,6 +7148,10 @@ packages:
 
   dotenv@16.6.1:
     resolution: {integrity: sha512-uBq4egWHTcTt33a72vpSG0z3HnPuIl6NqYcTrKEg2azoEyl2hpW0zqlxysq2pK9HlDIHyHyakeYaYnSAwd8bow==}
+    engines: {node: '>=12'}
+
+  dotenv@17.4.0:
+    resolution: {integrity: sha512-kCKF62fwtzwYm0IGBNjRUjtJgMfGapII+FslMHIjMR5KTnwEmBmWLDRSnc3XSNP8bNy34tekgQyDT0hr7pERRQ==}
     engines: {node: '>=12'}
 
   dotenv@8.6.0:
@@ -17438,6 +17451,8 @@ snapshots:
       dotenv-expand: 10.0.0
 
   dotenv@16.6.1: {}
+
+  dotenv@17.4.0: {}
 
   dotenv@8.6.0: {}
 
