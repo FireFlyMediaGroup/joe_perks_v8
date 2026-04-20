@@ -1,13 +1,13 @@
-export type SerializedVariant = {
+export interface SerializedVariant {
   id: string;
   label: string;
   retailPriceCents: number;
-};
+}
 
-export type SerializedProduct = {
+export interface SerializedProduct {
   id: string;
-  name: string;
   imageUrl: string | null;
+  name: string;
   roastLevel: string;
   variants: SerializedVariant[];
-};
+}

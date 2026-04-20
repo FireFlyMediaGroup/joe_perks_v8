@@ -207,3 +207,92 @@ export async function limitSlugValidation(identifier: string): Promise<{
   const { success } = await limiter.limit(identifier);
   return { success };
 }
+
+// ── Buyer auth rate limiter (5 req/hr per IP) ────────────────────────
+
+const BUYER_AUTH_PREFIX = "jp:buyer-auth";
+const BUYER_AUTH_LIMIT = 5;
+const BUYER_AUTH_WINDOW = "1 h";
+
+let buyerAuthLimiterSingleton: Ratelimit | undefined;
+let buyerAuthLimiterUnavailable = false;
+
+function getBuyerAuthLimiter(): Ratelimit | null {
+  if (buyerAuthLimiterUnavailable) {
+    return null;
+  }
+  if (buyerAuthLimiterSingleton) {
+    return buyerAuthLimiterSingleton;
+  }
+  if (!hasUpstashEnv()) {
+    buyerAuthLimiterUnavailable = true;
+    return null;
+  }
+  const redis = Redis.fromEnv();
+  buyerAuthLimiterSingleton = new Ratelimit({
+    redis,
+    limiter: Ratelimit.slidingWindow(BUYER_AUTH_LIMIT, BUYER_AUTH_WINDOW),
+    prefix: BUYER_AUTH_PREFIX,
+  });
+  return buyerAuthLimiterSingleton;
+}
+
+/**
+ * Runs buyer-auth rate limit when Redis is configured; otherwise allows the request.
+ */
+export async function limitBuyerAuth(identifier: string): Promise<{
+  success: boolean;
+}> {
+  const limiter = getBuyerAuthLimiter();
+  if (!limiter) {
+    return { success: true };
+  }
+  const { success } = await limiter.limit(identifier);
+  return { success };
+}
+
+// ── Guest order-lookup rate limiter (5 req/hr per IP) ─────────────────
+
+const GUEST_ORDER_LOOKUP_PREFIX = "jp:guest-order-lookup";
+const GUEST_ORDER_LOOKUP_LIMIT = 5;
+const GUEST_ORDER_LOOKUP_WINDOW = "1 h";
+
+let guestOrderLookupLimiterSingleton: Ratelimit | undefined;
+let guestOrderLookupLimiterUnavailable = false;
+
+function getGuestOrderLookupLimiter(): Ratelimit | null {
+  if (guestOrderLookupLimiterUnavailable) {
+    return null;
+  }
+  if (guestOrderLookupLimiterSingleton) {
+    return guestOrderLookupLimiterSingleton;
+  }
+  if (!hasUpstashEnv()) {
+    guestOrderLookupLimiterUnavailable = true;
+    return null;
+  }
+  const redis = Redis.fromEnv();
+  guestOrderLookupLimiterSingleton = new Ratelimit({
+    redis,
+    limiter: Ratelimit.slidingWindow(
+      GUEST_ORDER_LOOKUP_LIMIT,
+      GUEST_ORDER_LOOKUP_WINDOW
+    ),
+    prefix: GUEST_ORDER_LOOKUP_PREFIX,
+  });
+  return guestOrderLookupLimiterSingleton;
+}
+
+/**
+ * Runs guest order-lookup rate limit when Redis is configured; otherwise allows the request.
+ */
+export async function limitGuestOrderLookup(identifier: string): Promise<{
+  success: boolean;
+}> {
+  const limiter = getGuestOrderLookupLimiter();
+  if (!limiter) {
+    return { success: true };
+  }
+  const { success } = await limiter.limit(identifier);
+  return { success };
+}

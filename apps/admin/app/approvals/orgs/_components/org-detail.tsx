@@ -1,4 +1,7 @@
-import type { OrgApplicationStatus, PlatformSettings } from "@joe-perks/db/generated/client";
+import type {
+  OrgApplicationStatus,
+  PlatformSettings,
+} from "@joe-perks/db/generated/client";
 
 import type { OrgApplicationQueueRow } from "./org-queue";
 
@@ -79,7 +82,9 @@ export function OrgApplicationDetailSection({
         </h2>
         <dl className="grid gap-4 sm:grid-cols-2">
           <div>
-            <dt className="font-medium text-xs text-zinc-500">Desired URL slug</dt>
+            <dt className="font-medium text-xs text-zinc-500">
+              Desired URL slug
+            </dt>
             <dd className="mt-1 font-mono text-sm text-zinc-900">
               {application.desiredSlug}
             </dd>
@@ -116,7 +121,9 @@ export function OrgApplicationDetailSection({
           <div>
             <dt className="font-medium text-xs text-zinc-500">Default</dt>
             <dd className="mt-1 text-zinc-900">
-              {platformSettings ? formatPct(platformSettings.orgPctDefault) : "—"}
+              {platformSettings
+                ? formatPct(platformSettings.orgPctDefault)
+                : "—"}
             </dd>
           </div>
           <div>
@@ -145,8 +152,7 @@ export function OrgApplicationDetailSection({
                 <p className="mt-1 text-xs text-zinc-600">
                   Priority {req.priority}{" "}
                   {req.priority === 1 ? "(primary)" : "(backup)"} · Request
-                  status:{" "}
-                  <span className="font-medium">{req.status}</span>
+                  status: <span className="font-medium">{req.status}</span>
                 </p>
               </li>
             ))}

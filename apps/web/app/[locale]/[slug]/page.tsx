@@ -51,8 +51,7 @@ export default async function StorefrontPage({ params, searchParams }: Props) {
 
   const { org, campaign, hasShippingRates, splitPreviewDefaults } = data;
   const purchasesEnabled = hasShippingRates;
-  const showCheckoutBlocked =
-    queryError === "no-shipping" && !purchasesEnabled;
+  const showCheckoutBlocked = queryError === "no-shipping" && !purchasesEnabled;
 
   return (
     <StorefrontLayout locale={locale} orgName={org.orgName} slug={slug}>

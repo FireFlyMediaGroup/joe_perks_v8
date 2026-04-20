@@ -29,8 +29,8 @@ import "../load-env-bootstrap";
 
 import { neonConfig } from "@neondatabase/serverless";
 import { PrismaNeon } from "@prisma/adapter-neon";
-import { z } from "zod";
 import ws from "ws";
+import { z } from "zod";
 import { PrismaClient } from "../generated/client";
 
 neonConfig.webSocketConstructor = ws;
@@ -104,6 +104,7 @@ const inlineOrgApplicationSchema = z
     })
   );
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: smoke script intentionally performs many sequential environment checks
 async function main() {
   console.log("\n--- US-03-01 Smoke Tests (Org Application Form) ---\n");
 
@@ -112,7 +113,10 @@ async function main() {
     const count = await prisma.orgApplication.count();
     pass(`OrgApplication model queryable (${count} row(s))`);
   } catch (e) {
-    fail("OrgApplication model query failed", e instanceof Error ? e.message : "unknown");
+    fail(
+      "OrgApplication model query failed",
+      e instanceof Error ? e.message : "unknown"
+    );
   }
 
   // ── 2. Schema: new contact fields from migration exist ──
@@ -149,18 +153,32 @@ async function main() {
     });
     pass("OrgApplication desiredSlug unique index queryable");
   } catch (e) {
-    fail("OrgApplication desiredSlug unique query failed", e instanceof Error ? e.message : "unknown");
+    fail(
+      "OrgApplication desiredSlug unique query failed",
+      e instanceof Error ? e.message : "unknown"
+    );
   }
 
   // ── 4. Schema: RoasterOrgRequest with priority field ──
   try {
     const count = await prisma.roasterOrgRequest.count();
     await prisma.roasterOrgRequest.findFirst({
-      select: { id: true, applicationId: true, roasterId: true, status: true, priority: true },
+      select: {
+        id: true,
+        applicationId: true,
+        roasterId: true,
+        status: true,
+        priority: true,
+      },
     });
-    pass(`RoasterOrgRequest model queryable (${count} row(s)) with priority field`);
+    pass(
+      `RoasterOrgRequest model queryable (${count} row(s)) with priority field`
+    );
   } catch (e) {
-    fail("RoasterOrgRequest model query failed", e instanceof Error ? e.message : "unknown");
+    fail(
+      "RoasterOrgRequest model query failed",
+      e instanceof Error ? e.message : "unknown"
+    );
   }
 
   // ── 5. Schema: compound filter (applicationId + roasterId) ──
@@ -170,7 +188,10 @@ async function main() {
     });
     pass("RoasterOrgRequest compound filter (applicationId + roasterId) works");
   } catch (e) {
-    fail("RoasterOrgRequest compound filter failed", e instanceof Error ? e.message : "unknown");
+    fail(
+      "RoasterOrgRequest compound filter failed",
+      e instanceof Error ? e.message : "unknown"
+    );
   }
 
   // ── 6. Migration: 20260330210000_add_org_application_fields applied ──
@@ -181,9 +202,13 @@ async function main() {
       ORDER BY "started_at" DESC LIMIT 2
     `;
     if (rows.length > 0) {
-      pass(`Migration applied: ${rows.map((r) => r.migration_name).join(", ")}`);
+      pass(
+        `Migration applied: ${rows.map((r) => r.migration_name).join(", ")}`
+      );
     } else {
-      fail("Migration 20260330210000_add_org_application_fields not found in _prisma_migrations");
+      fail(
+        "Migration 20260330210000_add_org_application_fields not found in _prisma_migrations"
+      );
     }
   } catch (e) {
     fail("Migration check failed", e instanceof Error ? e.message : "unknown");
@@ -202,7 +227,10 @@ async function main() {
       fail(`${count} OrgApplication row(s) have empty orgName or contactName`);
     }
   } catch (e) {
-    fail("OrgApplication empty-field check failed", e instanceof Error ? e.message : "unknown");
+    fail(
+      "OrgApplication empty-field check failed",
+      e instanceof Error ? e.message : "unknown"
+    );
   }
 
   // ── 8. Data: desiredOrgPct within platform bounds ──
@@ -220,10 +248,15 @@ async function main() {
         `All OrgApplication desiredOrgPct values within bounds [${settings.orgPctMin}, ${settings.orgPctMax}]`
       );
     } else {
-      fail(`${count} OrgApplication row(s) have desiredOrgPct outside platform bounds`);
+      fail(
+        `${count} OrgApplication row(s) have desiredOrgPct outside platform bounds`
+      );
     }
   } catch (e) {
-    fail("OrgApplication pct bounds check failed", e instanceof Error ? e.message : "unknown");
+    fail(
+      "OrgApplication pct bounds check failed",
+      e instanceof Error ? e.message : "unknown"
+    );
   }
 
   // ── 9. Data: RoasterOrgRequest priorities are 1 or 2 only ──
@@ -233,36 +266,48 @@ async function main() {
     `;
     const count = Number(bad[0].count);
     if (count === 0) {
-      pass("All RoasterOrgRequest priority values are 1 (primary) or 2 (backup)");
+      pass(
+        "All RoasterOrgRequest priority values are 1 (primary) or 2 (backup)"
+      );
     } else {
       fail(`${count} RoasterOrgRequest row(s) have invalid priority`);
     }
   } catch (e) {
-    fail("RoasterOrgRequest priority check failed", e instanceof Error ? e.message : "unknown");
+    fail(
+      "RoasterOrgRequest priority check failed",
+      e instanceof Error ? e.message : "unknown"
+    );
   }
 
   // ── 10. Data: at most one primary per application ──
   try {
-    const multi = await prisma.$queryRaw<{ applicationId: string; cnt: bigint }[]>`
+    const multi = await prisma.$queryRaw<
+      { applicationId: string; cnt: bigint }[]
+    >`
       SELECT "applicationId", COUNT(*) as cnt FROM "RoasterOrgRequest"
       WHERE "priority" = 1 GROUP BY "applicationId" HAVING COUNT(*) > 1
     `;
     if (multi.length === 0) {
-      pass("No OrgApplication has more than one primary (priority=1) roaster request");
+      pass(
+        "No OrgApplication has more than one primary (priority=1) roaster request"
+      );
     } else {
-      fail(`${multi.length} application(s) have multiple primary roaster requests`);
+      fail(
+        `${multi.length} application(s) have multiple primary roaster requests`
+      );
     }
   } catch (e) {
-    fail("Primary-request uniqueness check failed", e instanceof Error ? e.message : "unknown");
+    fail(
+      "Primary-request uniqueness check failed",
+      e instanceof Error ? e.message : "unknown"
+    );
   }
 
   // ── 11–14. Web routes (port 3000) ──
   const baselineStatus = await checkWebStatus("/en/roasters/apply");
   const webAvailable = baselineStatus !== null;
 
-  if (!webAvailable) {
-    skip("Web route and API tests (4 checks)", "web dev server not running on localhost:3000");
-  } else {
+  if (webAvailable) {
     // Probe slug API — it may return 500 due to unrelated Sentry proxy compilation
     // error; skip content checks gracefully in that case.
     let slugApiHealthy = false;
@@ -272,25 +317,33 @@ async function main() {
         { redirect: "manual" }
       );
       slugApiHealthy = probe.status === 200 || probe.status === 429;
-    } catch { /* unreachable */ }
+    } catch {
+      /* unreachable */
+    }
 
-    if (!slugApiHealthy) {
-      skip(
-        "Slug validation API content tests (3 checks)",
-        "API returning non-200 (pre-existing server compilation error)"
-      );
-    } else {
+    if (slugApiHealthy) {
       // 11. Reserved slug
       try {
-        const res = await fetch("http://localhost:3000/api/slugs/validate?slug=admin", {
-          redirect: "manual",
-        });
+        const res = await fetch(
+          "http://localhost:3000/api/slugs/validate?slug=admin",
+          {
+            redirect: "manual",
+          }
+        );
         if (res.status === 200) {
-          const json = (await res.json()) as { available: boolean; reason?: string };
+          const json = (await res.json()) as {
+            available: boolean;
+            reason?: string;
+          };
           if (!json.available && json.reason === "reserved") {
-            pass("GET /api/slugs/validate?slug=admin → available=false, reason=reserved");
+            pass(
+              "GET /api/slugs/validate?slug=admin → available=false, reason=reserved"
+            );
           } else {
-            fail("Slug validate (reserved) returned unexpected body", JSON.stringify(json));
+            fail(
+              "Slug validate (reserved) returned unexpected body",
+              JSON.stringify(json)
+            );
           }
         } else if (res.status === 429) {
           pass("GET /api/slugs/validate rate-limited (429)");
@@ -298,28 +351,47 @@ async function main() {
           fail(`GET /api/slugs/validate?slug=admin returned ${res.status}`);
         }
       } catch (e) {
-        fail("Slug validation API (reserved) unreachable", e instanceof Error ? e.message : "unknown");
+        fail(
+          "Slug validation API (reserved) unreachable",
+          e instanceof Error ? e.message : "unknown"
+        );
       }
 
       // 12. Invalid format slug
       try {
-        const res = await fetch("http://localhost:3000/api/slugs/validate?slug=INVALID__SLUG", {
-          redirect: "manual",
-        });
+        const res = await fetch(
+          "http://localhost:3000/api/slugs/validate?slug=INVALID__SLUG",
+          {
+            redirect: "manual",
+          }
+        );
         if (res.status === 200) {
-          const json = (await res.json()) as { available: boolean; reason?: string };
+          const json = (await res.json()) as {
+            available: boolean;
+            reason?: string;
+          };
           if (!json.available && json.reason === "invalid_format") {
-            pass("GET /api/slugs/validate?slug=INVALID__SLUG → available=false, reason=invalid_format");
+            pass(
+              "GET /api/slugs/validate?slug=INVALID__SLUG → available=false, reason=invalid_format"
+            );
           } else {
-            fail("Slug validate (invalid) returned unexpected body", JSON.stringify(json));
+            fail(
+              "Slug validate (invalid) returned unexpected body",
+              JSON.stringify(json)
+            );
           }
         } else if (res.status === 429) {
           pass("GET /api/slugs/validate (invalid) rate-limited (429)");
         } else {
-          fail(`GET /api/slugs/validate?slug=INVALID__SLUG returned ${res.status}`);
+          fail(
+            `GET /api/slugs/validate?slug=INVALID__SLUG returned ${res.status}`
+          );
         }
       } catch (e) {
-        fail("Slug validation API (invalid) unreachable", e instanceof Error ? e.message : "unknown");
+        fail(
+          "Slug validation API (invalid) unreachable",
+          e instanceof Error ? e.message : "unknown"
+        );
       }
 
       // 13. Valid slug (unique timestamp; should be available)
@@ -330,23 +402,36 @@ async function main() {
           { redirect: "manual" }
         );
         if (res.status === 200) {
-          const json = (await res.json()) as { available: boolean; reason?: string };
+          const json = (await res.json()) as {
+            available: boolean;
+            reason?: string;
+          };
           if (json.available === true) {
             pass(`GET /api/slugs/validate?slug=${testSlug} → available=true`);
           } else {
             fail(
-              `Slug validate (valid slug) returned available=false (unexpected)`,
+              "Slug validate (valid slug) returned available=false (unexpected)",
               JSON.stringify(json)
             );
           }
         } else if (res.status === 429) {
           pass("GET /api/slugs/validate (valid) rate-limited (429)");
         } else {
-          fail(`GET /api/slugs/validate?slug=${testSlug} returned ${res.status}`);
+          fail(
+            `GET /api/slugs/validate?slug=${testSlug} returned ${res.status}`
+          );
         }
       } catch (e) {
-        fail("Slug validation API (valid) unreachable", e instanceof Error ? e.message : "unknown");
+        fail(
+          "Slug validation API (valid) unreachable",
+          e instanceof Error ? e.message : "unknown"
+        );
       }
+    } else {
+      skip(
+        "Slug validation API content tests (3 checks)",
+        "API returning non-200 (pre-existing server compilation error)"
+      );
     }
 
     // 14. /en/orgs/apply page registered (not a 404)
@@ -354,10 +439,17 @@ async function main() {
     if (applyStatus === null) {
       fail("GET /en/orgs/apply unreachable");
     } else if (applyStatus === 404) {
-      fail(`GET /en/orgs/apply returned 404 — route not registered`);
+      fail("GET /en/orgs/apply returned 404 — route not registered");
     } else {
-      pass(`GET /en/orgs/apply returns ${applyStatus} (route registered — not a 404)`);
+      pass(
+        `GET /en/orgs/apply returns ${applyStatus} (route registered — not a 404)`
+      );
     }
+  } else {
+    skip(
+      "Web route and API tests (4 checks)",
+      "web dev server not running on localhost:3000"
+    );
   }
 
   // ── 15. PlatformSettings singleton with org pct fields ──
@@ -382,7 +474,10 @@ async function main() {
       );
     }
   } catch (e) {
-    fail("PlatformSettings singleton missing or query failed", e instanceof Error ? e.message : "unknown");
+    fail(
+      "PlatformSettings singleton missing or query failed",
+      e instanceof Error ? e.message : "unknown"
+    );
   }
 
   // ── 16. Active roasters with businessName via application include ──
@@ -398,7 +493,9 @@ async function main() {
     if (roasters.length > 0) {
       console.log("  INFO  Active roasters available for org selection:");
       for (const r of roasters) {
-        console.log(`        id=${r.id}  name=${r.application.businessName}  email=${r.email}`);
+        console.log(
+          `        id=${r.id}  name=${r.application.businessName}  email=${r.email}`
+        );
       }
     } else {
       console.log(
@@ -406,7 +503,10 @@ async function main() {
       );
     }
   } catch (e) {
-    fail("Active roasters query with application include failed", e instanceof Error ? e.message : "unknown");
+    fail(
+      "Active roasters query with application include failed",
+      e instanceof Error ? e.message : "unknown"
+    );
   }
 
   // ── 17. Inline Zod schema validation ──
@@ -445,13 +545,15 @@ async function main() {
     };
 
     const invalidResult = inlineOrgApplicationSchema.safeParse(invalidPayload);
-    if (!invalidResult.success) {
-      const fields = invalidResult.error.issues.map((i) => i.path.join(".")).join(", ");
+    if (invalidResult.success) {
+      fail("Zod orgApplicationSchema: invalid payload unexpectedly passed");
+    } else {
+      const fields = invalidResult.error.issues
+        .map((i) => i.path.join("."))
+        .join(", ");
       pass(
         `Zod orgApplicationSchema: invalid payload correctly rejected (fields: ${fields})`
       );
-    } else {
-      fail("Zod orgApplicationSchema: invalid payload unexpectedly passed");
     }
 
     // Edge case: desiredOrgPct = 0 should fail (positive constraint)
@@ -459,13 +561,16 @@ async function main() {
       ...validPayload,
       desiredOrgPct: 0,
     });
-    if (!zeroPctResult.success) {
-      pass("Zod orgApplicationSchema: desiredOrgPct=0 correctly rejected");
-    } else {
+    if (zeroPctResult.success) {
       fail("Zod orgApplicationSchema: desiredOrgPct=0 unexpectedly passed");
+    } else {
+      pass("Zod orgApplicationSchema: desiredOrgPct=0 correctly rejected");
     }
   } catch (e) {
-    fail("Zod schema validation failed", e instanceof Error ? e.message : "unknown");
+    fail(
+      "Zod schema validation failed",
+      e instanceof Error ? e.message : "unknown"
+    );
   }
 
   // ── 18. Summary ──
@@ -492,7 +597,9 @@ async function main() {
 
   // ── Final ──
   console.log(`\n--- Results: ${passed} passed, ${failed} failed ---\n`);
-  if (failed > 0) process.exit(1);
+  if (failed > 0) {
+    process.exit(1);
+  }
 }
 
 main()

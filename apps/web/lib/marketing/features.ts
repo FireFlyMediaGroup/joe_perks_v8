@@ -1,7 +1,7 @@
 export interface Feature {
+  description: string;
   iconVariant: "terra" | "teal" | "charcoal";
   title: string;
-  description: string;
 }
 
 export const features: Feature[] = [

@@ -33,7 +33,10 @@ export default function RootLayout({
       <body className="flex min-h-full flex-col">
         <header className="border-zinc-200 border-b bg-white px-6 py-3 dark:border-zinc-800 dark:bg-zinc-950">
           <nav className="mx-auto flex max-w-6xl flex-wrap gap-4 text-sm">
-            <Link className="font-medium text-zinc-900 dark:text-zinc-50" href="/">
+            <Link
+              className="font-medium text-zinc-900 dark:text-zinc-50"
+              href="/"
+            >
               Admin home
             </Link>
             <Link

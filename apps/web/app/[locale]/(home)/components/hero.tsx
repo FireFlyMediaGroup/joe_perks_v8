@@ -46,11 +46,8 @@ export const Hero = () => (
 
         {/* H1 */}
         <h1 className="reveal reveal-delay-1 mb-5 max-w-3xl font-black font-display text-[clamp(42px,6vw,80px)] text-[var(--jp-text)] leading-[1.05] tracking-[-0.03em]">
-          Coffee your community{" "}
-          <em className="text-jp-terra">
-            already
-          </em>{" "}
-          wants to buy.
+          Coffee your community <em className="text-jp-terra">already</em> wants
+          to buy.
         </h1>
 
         {/* Subtitle */}

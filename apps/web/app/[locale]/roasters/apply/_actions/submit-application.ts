@@ -1,19 +1,19 @@
 "use server";
 
 import { database } from "@joe-perks/db";
+import { Prisma } from "@joe-perks/db/generated/client";
 import { sendEmail } from "@joe-perks/email/send";
 import {
   ROASTER_APPLICATION_RECEIVED_SUBJECT,
   RoasterApplicationReceivedEmail,
 } from "@joe-perks/email/templates/roaster-application-received";
 import { limitRoasterApplication } from "@joe-perks/stripe";
-import { Prisma } from "@joe-perks/db/generated/client";
 import { headers } from "next/headers";
 import { createElement } from "react";
 import {
+  type ApplicationFormData,
   applicationSchema,
   CURRENT_TERMS_VERSION,
-  type ApplicationFormData,
 } from "../_lib/schema";
 
 type ActionResult =

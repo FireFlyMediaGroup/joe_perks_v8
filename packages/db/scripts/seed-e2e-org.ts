@@ -47,10 +47,7 @@ async function main() {
   });
 
   if (!roaster) {
-    console.error(
-      "  ERROR: No ACTIVE roaster found with email",
-      ROASTER_EMAIL
-    );
+    console.error("  ERROR: No ACTIVE roaster found with email", ROASTER_EMAIL);
     console.error(
       "  Run seed-e2e-roaster.ts first: bun run ./scripts/seed-e2e-roaster.ts"
     );
@@ -154,10 +151,7 @@ async function main() {
     orderBy: { name: "asc" },
   });
 
-  const totalVariants = products.reduce(
-    (sum, p) => sum + p.variants.length,
-    0
-  );
+  const totalVariants = products.reduce((sum, p) => sum + p.variants.length, 0);
   if (totalVariants === 0) {
     console.error("  ERROR: No active product variants found for roaster.");
     console.error("  Ensure seed-e2e-roaster.ts created products.");
@@ -216,7 +210,9 @@ async function main() {
         },
       });
 
-      if (!existing) {
+      if (existing) {
+        itemsExisting++;
+      } else {
         await prisma.campaignItem.create({
           data: {
             campaignId: campaign.id,
@@ -228,8 +224,6 @@ async function main() {
           },
         });
         itemsCreated++;
-      } else {
-        itemsExisting++;
       }
     }
   }
@@ -249,7 +243,7 @@ async function main() {
   );
   console.log("  User:        ", orgUser.id, `(${orgUser.role})`);
   console.log("");
-  console.log("  Storefront:   http://localhost:3000/en/" + ORG_SLUG);
+  console.log(`  Storefront:   http://localhost:3000/en/${ORG_SLUG}`);
   console.log("  Org portal:   http://localhost:3002 (needs Clerk auth)");
   console.log("");
   console.log("  To connect Clerk, update the User's externalAuthId:");

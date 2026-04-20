@@ -26,9 +26,7 @@ export const AudienceSection = () => (
     <div className="mx-auto max-w-[1200px] px-6 md:px-10 lg:px-16">
       <div className="reveal grid grid-cols-1 gap-5 md:grid-cols-2">
         {/* Orgs card */}
-        <div
-          className="flex flex-col justify-between rounded-[var(--jp-radius-xl)] bg-jp-terra p-8 text-white md:p-10"
-        >
+        <div className="flex flex-col justify-between rounded-[var(--jp-radius-xl)] bg-jp-terra p-8 text-white md:p-10">
           <div>
             <span className="mb-3 inline-block font-jp-mono font-medium text-[10px] text-white/60 uppercase tracking-[0.14em]">
               For organizations
