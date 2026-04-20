@@ -11,7 +11,11 @@ export const checkoutSchema = z.object({
     )
     .min(1)
     .max(50),
-  buyerEmail: z.string().trim().email(),
+  buyerEmail: z
+    .string()
+    .trim()
+    .email()
+    .transform((value) => value.toLowerCase()),
   buyerName: z.string().trim().min(1).max(200),
   street: z.string().trim().min(1).max(200),
   street2: z.string().trim().max(200).optional(),

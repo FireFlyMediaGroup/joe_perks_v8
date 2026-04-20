@@ -118,7 +118,7 @@ export function OrderLookupForm({ locale }: OrderLookupFormProps) {
   );
   const hydratedOrder = result ? hydrateGuestOrderLookupOrder(result) : null;
   const trackingState = hydratedOrder
-    ? getBuyerOrderTrackingStateCopy(hydratedOrder)
+    ? getBuyerOrderTrackingStateCopy(hydratedOrder, { locale })
     : null;
 
   return (
@@ -271,13 +271,14 @@ export function OrderLookupForm({ locale }: OrderLookupFormProps) {
 
           <OrderDetailHeader
             fundraiserName={hydratedOrder.fundraiserName}
+            locale={locale}
             orderNumber={hydratedOrder.orderNumber}
             placedAt={hydratedOrder.placedAt}
             trackingState={trackingState}
           />
 
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,0.9fr)]">
-            <OrderDeliveryCard order={hydratedOrder} />
+            <OrderDeliveryCard locale={locale} order={hydratedOrder} />
             <ShippingCard
               buyerEmail={hydratedOrder.buyerEmail}
               shipToAddress1={hydratedOrder.shipToAddress1}

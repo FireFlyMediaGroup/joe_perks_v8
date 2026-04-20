@@ -1,4 +1,5 @@
 import { database } from "@joe-perks/db";
+import { limitGuestOrderLookup } from "@joe-perks/stripe";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import {
@@ -38,6 +39,15 @@ export async function POST(request: Request) {
     );
   }
 
+  const requestIp = getBuyerAuthRequestIp(request);
+  const { success } = await limitGuestOrderLookup(requestIp);
+  if (!success) {
+    return NextResponse.json(
+      { error: "Too many sign-in attempts. Please try again later." },
+      { status: 429 }
+    );
+  }
+
   const order = await database.order.findUnique({
     where: { stripePiId: parsed.data.paymentIntentId },
     select: {
@@ -57,7 +67,7 @@ export async function POST(request: Request) {
     locale: parsed.data.locale,
     origin: getBuyerAuthRequestOrigin(request),
     redirect: parsed.data.redirect,
-    requestIp: getBuyerAuthRequestIp(request),
+    requestIp,
   });
 
   if (!result.ok && result.reason === "rate_limited") {

@@ -36,7 +36,7 @@ export default async function BuyerOrderDetailPage({
     notFound();
   }
 
-  const trackingState = getBuyerOrderTrackingStateCopy(order);
+  const trackingState = getBuyerOrderTrackingStateCopy(order, { locale });
 
   return (
     <main className="min-h-screen bg-background px-4 py-10 md:py-14">
@@ -44,13 +44,14 @@ export default async function BuyerOrderDetailPage({
         <BackToOrdersLink locale={locale} />
         <OrderDetailHeader
           fundraiserName={order.fundraiserName}
+          locale={locale}
           orderNumber={order.orderNumber}
           placedAt={order.placedAt}
           trackingState={trackingState}
         />
 
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,0.9fr)]">
-          <OrderDeliveryCard order={order} />
+          <OrderDeliveryCard locale={locale} order={order} />
           <ShippingCard
             buyerEmail={order.buyerEmail}
             shipToAddress1={order.shipToAddress1}

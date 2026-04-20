@@ -19,16 +19,21 @@ export interface BuyerOrderTrackingStateCopy {
   readonly toneClassName: string;
 }
 
-export function formatBuyerOrderDate(date: Date): string {
-  return new Intl.DateTimeFormat("en-US", {
+interface BuyerOrderTrackingStateOptions {
+  readonly locale?: string;
+  readonly now?: Date;
+}
+
+export function formatBuyerOrderDate(date: Date, locale = "en-US"): string {
+  return new Intl.DateTimeFormat(locale, {
     day: "numeric",
     month: "short",
     year: "numeric",
   }).format(date);
 }
 
-export function formatBuyerOrderDateTime(date: Date): string {
-  return new Intl.DateTimeFormat("en-US", {
+export function formatBuyerOrderDateTime(date: Date, locale = "en-US"): string {
+  return new Intl.DateTimeFormat(locale, {
     day: "numeric",
     hour: "numeric",
     minute: "2-digit",
@@ -96,8 +101,12 @@ export function getCarrierTrackingHref(
 
 export function getBuyerOrderTrackingStateCopy(
   input: BuyerOrderTrackingStateInput,
-  now = new Date()
+  options: BuyerOrderTrackingStateOptions | Date = {}
 ): BuyerOrderTrackingStateCopy {
+  const locale =
+    options instanceof Date ? "en-US" : (options.locale ?? "en-US");
+  const now = options instanceof Date ? options : (options.now ?? new Date());
+
   if (input.status === "REFUNDED") {
     return {
       description:
@@ -123,7 +132,7 @@ export function getBuyerOrderTrackingStateCopy(
   if (input.status === "DELIVERED") {
     return {
       description: input.deliveredAt
-        ? `Delivered ${formatBuyerOrderDate(input.deliveredAt)}.`
+        ? `Delivered ${formatBuyerOrderDate(input.deliveredAt, locale)}.`
         : "We marked this order as delivered.",
       headline: "Your order was delivered.",
       label: "Delivered",
@@ -160,7 +169,7 @@ export function getBuyerOrderTrackingStateCopy(
 
   if (input.status === "CONFIRMED") {
     return {
-      description: `The roaster is preparing your order now. It should ship by ${formatBuyerOrderDate(input.fulfillBy)}.`,
+      description: `The roaster is preparing your order now. It should ship by ${formatBuyerOrderDate(input.fulfillBy, locale)}.`,
       headline: "Your order is confirmed.",
       label: "Confirmed",
       toneClassName:

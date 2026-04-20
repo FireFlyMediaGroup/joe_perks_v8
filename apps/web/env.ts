@@ -26,10 +26,7 @@ export const env = createEnv({
     stripe(),
   ],
   server: {
-    SESSION_SECRET: z.preprocess(
-      emptyToUndefined,
-      z.string().min(32).optional()
-    ),
+    SESSION_SECRET: z.preprocess(emptyToUndefined, z.string().min(32)),
   },
   client: {
     NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z.preprocess(

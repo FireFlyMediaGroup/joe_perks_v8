@@ -17,6 +17,8 @@ export function OrderSummaryCard({
   productSubtotal,
   shippingAmount,
 }: OrderSummaryCardProps) {
+  const fundraiserPercent = orgPctSnapshot * 100;
+
   return (
     <section className="rounded-3xl border bg-card p-5 shadow-sm sm:p-6">
       <div className="space-y-2">
@@ -25,7 +27,7 @@ export function OrderSummaryCard({
         </h2>
         <p className="text-muted-foreground text-sm leading-6">
           This order raised {formatCentsAsDollars(orgAmount)} for{" "}
-          {fundraiserName} at {orgPctSnapshot}% of the product subtotal.
+          {fundraiserName} at {fundraiserPercent}% of the product subtotal.
         </p>
       </div>
 

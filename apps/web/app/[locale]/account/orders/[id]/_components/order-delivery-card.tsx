@@ -7,6 +7,7 @@ import {
 } from "../_lib/order-detail";
 
 interface OrderDeliveryCardProps {
+  readonly locale: string;
   readonly order: OrderDetailView;
 }
 
@@ -14,8 +15,8 @@ function renderValue(value: string | null): string {
   return value?.trim() ? value : "Not available yet";
 }
 
-export function OrderDeliveryCard({ order }: OrderDeliveryCardProps) {
-  const trackingState = getBuyerOrderTrackingStateCopy(order);
+export function OrderDeliveryCard({ locale, order }: OrderDeliveryCardProps) {
+  const trackingState = getBuyerOrderTrackingStateCopy(order, { locale });
   const trackingHref = getCarrierTrackingHref(
     order.carrier,
     order.trackingNumber
@@ -63,14 +64,14 @@ export function OrderDeliveryCard({ order }: OrderDeliveryCardProps) {
           <div className="rounded-2xl bg-muted/60 p-4">
             <dt className="font-medium text-foreground">Ship-by target</dt>
             <dd className="mt-1 text-muted-foreground leading-6">
-              {formatBuyerOrderDate(order.fulfillBy)}
+              {formatBuyerOrderDate(order.fulfillBy, locale)}
             </dd>
           </div>
           <div className="rounded-2xl bg-muted/60 p-4">
             <dt className="font-medium text-foreground">Delivered</dt>
             <dd className="mt-1 text-muted-foreground leading-6">
               {order.deliveredAt
-                ? formatBuyerOrderDateTime(order.deliveredAt)
+                ? formatBuyerOrderDateTime(order.deliveredAt, locale)
                 : "Not delivered yet"}
             </dd>
           </div>
@@ -79,7 +80,7 @@ export function OrderDeliveryCard({ order }: OrderDeliveryCardProps) {
 
       <p className="mt-4 text-muted-foreground text-sm leading-6">
         {order.shippedAt
-          ? `Shipped ${formatBuyerOrderDateTime(order.shippedAt)}.`
+          ? `Shipped ${formatBuyerOrderDateTime(order.shippedAt, locale)}.`
           : "We will show shipment details here as soon as the roaster sends them."}
       </p>
     </section>

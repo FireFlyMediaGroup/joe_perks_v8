@@ -33,7 +33,8 @@ function maskEmailAddress(email: string): string {
       ? `${localPart[0] ?? ""}*`
       : `${localPart.slice(0, 2)}${"*".repeat(Math.max(localPart.length - 2, 1))}`;
 
-  const [domainName, tld = ""] = domainPart.split(".");
+  const [domainName, ...tldParts] = domainPart.split(".");
+  const tld = tldParts.join(".");
   const maskedDomainName =
     domainName.length <= 1
       ? "*"
