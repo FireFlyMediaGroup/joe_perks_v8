@@ -37,7 +37,8 @@ export async function getBuyerDashboardOrders(
   });
 
   return orders.map((order) => ({
-    fundraiserName: order.campaign.org.application.orgName ?? order.campaign.org.slug,
+    fundraiserName:
+      order.campaign.org.application.orgName ?? order.campaign.org.slug,
     id: order.id,
     impactCents: order.orgAmount,
     orderNumber: order.orderNumber,

@@ -16,7 +16,9 @@ function decodeBase64Url(input: string): string {
 }
 
 function signPayload(encodedPayload: string, secret: string): string {
-  return createHmac("sha256", secret).update(encodedPayload).digest("base64url");
+  return createHmac("sha256", secret)
+    .update(encodedPayload)
+    .digest("base64url");
 }
 
 function safeCompare(a: string, b: string): boolean {
@@ -67,7 +69,9 @@ export function verifyBuyerSessionToken(input: {
   }
 
   try {
-    const parsed = JSON.parse(decodeBase64Url(encodedPayload)) as Partial<BuyerSessionPayload>;
+    const parsed = JSON.parse(
+      decodeBase64Url(encodedPayload)
+    ) as Partial<BuyerSessionPayload>;
     if (
       typeof parsed.buyerId !== "string" ||
       typeof parsed.exp !== "number" ||

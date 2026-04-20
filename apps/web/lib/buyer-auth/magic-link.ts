@@ -20,25 +20,24 @@ interface RequestBuyerMagicLinkInput {
   requestIp: string;
 }
 
-type ParsedBuyerAuthPayload = {
+interface ParsedBuyerAuthPayload {
   buyerId: string;
   redirect: string;
-};
+}
 
 export type RedeemBuyerMagicLinkResult =
   | { ok: true; buyerId: string; redirect: string }
   | { ok: false; reason: "expired" | "invalid" | "used" };
 
-function parseBuyerAuthPayload(payload: unknown): ParsedBuyerAuthPayload | null {
+function parseBuyerAuthPayload(
+  payload: unknown
+): ParsedBuyerAuthPayload | null {
   if (!payload || typeof payload !== "object") {
     return null;
   }
 
   const raw = payload as Record<string, unknown>;
-  if (
-    typeof raw.buyerId !== "string" ||
-    typeof raw.redirect !== "string"
-  ) {
+  if (typeof raw.buyerId !== "string" || typeof raw.redirect !== "string") {
     return null;
   }
 
@@ -72,7 +71,9 @@ export function getBuyerAuthRequestOrigin(request: Request): string {
 
 export async function requestBuyerMagicLink(
   input: RequestBuyerMagicLinkInput
-): Promise<{ ok: true } | { ok: false; reason: "rate_limited" | "send_failed" }> {
+): Promise<
+  { ok: true } | { ok: false; reason: "rate_limited" | "send_failed" }
+> {
   const { success } = await limitBuyerAuth(input.requestIp);
   if (!success) {
     return { ok: false, reason: "rate_limited" };
@@ -146,7 +147,7 @@ export async function requestBuyerMagicLink(
   return { ok: true };
 }
 
-export async function redeemBuyerMagicLink(
+export function redeemBuyerMagicLink(
   token: string
 ): Promise<RedeemBuyerMagicLinkResult> {
   return database.$transaction(async (tx) => {

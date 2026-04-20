@@ -7,8 +7,8 @@ import {
   BUYER_SESSION_MAX_AGE_SECONDS,
 } from "./constants";
 import {
-  createBuyerSessionToken,
   type BuyerSessionPayload,
+  createBuyerSessionToken,
   verifyBuyerSessionToken,
 } from "./session-token";
 

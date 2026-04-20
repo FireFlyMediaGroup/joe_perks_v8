@@ -1,12 +1,12 @@
 import { createMetadata } from "@repo/seo/metadata";
 import type { Metadata } from "next";
+import { requireCurrentBuyer } from "@/lib/buyer-auth/current-buyer";
 import { DashboardHeading } from "./_components/dashboard-heading";
 import { EmptyOrdersState } from "./_components/empty-orders-state";
 import { BuyerImpactSummary } from "./_components/impact-summary";
 import { OrderHistoryList } from "./_components/order-history-list";
 import { buildBuyerDashboardSummary } from "./_lib/dashboard";
 import { getBuyerDashboardOrders } from "./_lib/queries";
-import { requireCurrentBuyer } from "@/lib/buyer-auth/current-buyer";
 
 interface BuyerAccountPageProps {
   readonly params: Promise<{ locale: string }>;

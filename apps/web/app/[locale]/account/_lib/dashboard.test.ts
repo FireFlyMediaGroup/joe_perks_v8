@@ -1,8 +1,8 @@
 import { describe, expect, test } from "vitest";
 import {
+  type BuyerDashboardOrder,
   buildBuyerDashboardSummary,
   getBuyerOrderStatusCopy,
-  type BuyerDashboardOrder,
 } from "./dashboard";
 
 const ORDERS: BuyerDashboardOrder[] = [

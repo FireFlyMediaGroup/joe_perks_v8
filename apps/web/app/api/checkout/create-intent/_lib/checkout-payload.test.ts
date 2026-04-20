@@ -1,9 +1,6 @@
 import { expect, test } from "vitest";
 
-import {
-  buildOrderSnapshotData,
-  checkoutSchema,
-} from "./checkout-payload";
+import { buildOrderSnapshotData, checkoutSchema } from "./checkout-payload";
 
 test("US-09-00: checkout payload parses snapshot fields with US default country", () => {
   const parsed = checkoutSchema.parse({

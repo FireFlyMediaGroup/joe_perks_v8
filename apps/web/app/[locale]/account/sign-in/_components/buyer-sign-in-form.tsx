@@ -18,10 +18,7 @@ function isValidEmail(value: string): boolean {
   return EMAIL_PATTERN.test(value);
 }
 
-export function BuyerSignInForm({
-  locale,
-  redirect,
-}: BuyerSignInFormProps) {
+export function BuyerSignInForm({ locale, redirect }: BuyerSignInFormProps) {
   const [email, setEmail] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isPending, setIsPending] = useState(false);
@@ -67,9 +64,9 @@ export function BuyerSignInForm({
         }),
       });
 
-      const data = (await response.json().catch(() => null)) as
-        | { error?: string }
-        | null;
+      const data = (await response.json().catch(() => null)) as {
+        error?: string;
+      } | null;
 
       if (!response.ok) {
         setError(data?.error ?? "We couldn't send a sign-in link right now.");
@@ -135,8 +132,8 @@ export function BuyerSignInForm({
           Buyer sign-in
         </h1>
         <p className="text-muted-foreground text-sm leading-6">
-          Sign in with the email from your order to view order history, tracking,
-          and faster future access.
+          Sign in with the email from your order to view order history,
+          tracking, and faster future access.
         </p>
       </div>
 
@@ -173,7 +170,11 @@ export function BuyerSignInForm({
         </div>
       ) : null}
 
-      <Button className="mt-6 min-h-[44px] w-full" disabled={isPending} type="submit">
+      <Button
+        className="mt-6 min-h-[44px] w-full"
+        disabled={isPending}
+        type="submit"
+      >
         {isPending ? (
           <>
             <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none" />

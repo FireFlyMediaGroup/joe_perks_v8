@@ -88,9 +88,10 @@ export function BuyerAuthRedeemer({
         body: JSON.stringify({ token }),
       });
 
-      const data = (await response.json().catch(() => null)) as
-        | { code?: string; redirect?: string }
-        | null;
+      const data = (await response.json().catch(() => null)) as {
+        code?: string;
+        redirect?: string;
+      } | null;
 
       if (response.ok) {
         if (isMountedRef.current) {

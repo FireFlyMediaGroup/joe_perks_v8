@@ -10,7 +10,10 @@ export const runtime = "nodejs";
 
 const buyerSignInRequestSchema = z.object({
   email: z.string().trim().email().max(320),
-  locale: z.string().trim().regex(/^[a-z]{2}(?:-[A-Z]{2})?$/),
+  locale: z
+    .string()
+    .trim()
+    .regex(/^[a-z]{2}(?:-[A-Z]{2})?$/),
   redirect: z.string().trim().max(2048).optional(),
 });
 

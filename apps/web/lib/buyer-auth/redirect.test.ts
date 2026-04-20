@@ -1,12 +1,11 @@
 import { describe, expect, test } from "vitest";
-import {
-  buildBuyerSignInPath,
-  sanitizeBuyerRedirect,
-} from "./redirect";
+import { buildBuyerSignInPath, sanitizeBuyerRedirect } from "./redirect";
 
 describe("buyer auth redirect helpers", () => {
   test("defaults to the buyer dashboard when no redirect is provided", () => {
-    expect(sanitizeBuyerRedirect("en")).toBe("/en/account?focus=orders-heading");
+    expect(sanitizeBuyerRedirect("en")).toBe(
+      "/en/account?focus=orders-heading"
+    );
   });
 
   test("keeps same-locale redirects", () => {

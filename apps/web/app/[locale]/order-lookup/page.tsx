@@ -5,7 +5,8 @@ import { OrderLookupForm } from "./_components/order-lookup-form";
 export async function generateMetadata(): Promise<Metadata> {
   return createMetadata({
     title: "Look up an order",
-    description: "Find your Joe Perks order with the email from checkout and your order number.",
+    description:
+      "Find your Joe Perks order with the email from checkout and your order number.",
   });
 }
 

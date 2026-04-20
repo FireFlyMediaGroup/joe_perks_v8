@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
-import { BuyerSignInForm } from "./_components/buyer-sign-in-form";
 import { getCurrentBuyer } from "@/lib/buyer-auth/current-buyer";
 import { sanitizeBuyerRedirect } from "@/lib/buyer-auth/redirect";
+import { BuyerSignInForm } from "./_components/buyer-sign-in-form";
 
 interface BuyerSignInPageProps {
   readonly params: Promise<{ locale: string }>;

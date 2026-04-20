@@ -8,17 +8,17 @@ import Link from "next/link";
 import { type FormEvent, useEffect, useRef, useState } from "react";
 import { buildBuyerSignInPath } from "@/lib/buyer-auth/redirect";
 import {
+  type GuestOrderLookupOrderPayload,
   hydrateGuestOrderLookupOrder,
   normalizeGuestOrderLookupEmail,
   normalizeGuestOrderLookupOrderNumber,
-  type GuestOrderLookupOrderPayload,
 } from "@/lib/orders/guest-order-lookup";
-import { getBuyerOrderTrackingStateCopy } from "../../account/orders/[id]/_lib/order-detail";
 import { OrderDeliveryCard } from "../../account/orders/[id]/_components/order-delivery-card";
 import { OrderDetailHeader } from "../../account/orders/[id]/_components/order-detail-header";
 import { OrderItemsCard } from "../../account/orders/[id]/_components/order-items-card";
 import { OrderSummaryCard } from "../../account/orders/[id]/_components/order-summary-card";
 import { ShippingCard } from "../../account/orders/[id]/_components/shipping-card";
+import { getBuyerOrderTrackingStateCopy } from "../../account/orders/[id]/_lib/order-detail";
 
 interface OrderLookupFormProps {
   readonly locale: string;
@@ -42,7 +42,9 @@ export function OrderLookupForm({ locale }: OrderLookupFormProps) {
   const [orderNumber, setOrderNumber] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isPending, setIsPending] = useState(false);
-  const [result, setResult] = useState<GuestOrderLookupOrderPayload | null>(null);
+  const [result, setResult] = useState<GuestOrderLookupOrderPayload | null>(
+    null
+  );
 
   const emailInputRef = useRef<HTMLInputElement>(null);
   const errorRef = useRef<HTMLDivElement>(null);
@@ -64,7 +66,8 @@ export function OrderLookupForm({ locale }: OrderLookupFormProps) {
     event.preventDefault();
 
     const normalizedEmail = normalizeGuestOrderLookupEmail(email);
-    const normalizedOrderNumber = normalizeGuestOrderLookupOrderNumber(orderNumber);
+    const normalizedOrderNumber =
+      normalizeGuestOrderLookupOrderNumber(orderNumber);
 
     if (!(isValidEmail(normalizedEmail) && normalizedOrderNumber)) {
       setResult(null);
@@ -87,14 +90,15 @@ export function OrderLookupForm({ locale }: OrderLookupFormProps) {
         }),
       });
 
-      const data = (await response.json().catch(() => null)) as
-        | OrderLookupResponseBody
-        | null;
+      const data = (await response
+        .json()
+        .catch(() => null)) as OrderLookupResponseBody | null;
 
-      if (!response.ok || !data?.order) {
+      if (!(response.ok && data?.order)) {
         setResult(null);
         setError(
-          data?.error ?? "We couldn't look up that order right now. Please try again."
+          data?.error ??
+            "We couldn't look up that order right now. Please try again."
         );
         return;
       }
@@ -124,7 +128,7 @@ export function OrderLookupForm({ locale }: OrderLookupFormProps) {
           <p className="font-medium text-muted-foreground text-sm uppercase tracking-[0.18em]">
             Guest order lookup
           </p>
-          <h1 className="font-semibold text-foreground text-3xl tracking-tight sm:text-4xl">
+          <h1 className="font-semibold text-3xl text-foreground tracking-tight sm:text-4xl">
             Find your order without creating an account.
           </h1>
           <p className="text-muted-foreground text-sm leading-6 sm:text-base">
@@ -141,7 +145,11 @@ export function OrderLookupForm({ locale }: OrderLookupFormProps) {
           <div className="space-y-2">
             <Label htmlFor="order-lookup-email">Email address</Label>
             <Input
-              aria-describedby={error ? "order-lookup-hint order-lookup-error" : "order-lookup-hint"}
+              aria-describedby={
+                error
+                  ? "order-lookup-hint order-lookup-error"
+                  : "order-lookup-hint"
+              }
               aria-invalid={Boolean(error)}
               autoCapitalize="none"
               autoComplete="email"
@@ -161,7 +169,9 @@ export function OrderLookupForm({ locale }: OrderLookupFormProps) {
             <Label htmlFor="order-lookup-number">Order number</Label>
             <Input
               aria-describedby={
-                error ? "order-lookup-hint order-lookup-error" : "order-lookup-hint"
+                error
+                  ? "order-lookup-hint order-lookup-error"
+                  : "order-lookup-hint"
               }
               aria-invalid={Boolean(error)}
               autoCapitalize="characters"
@@ -177,7 +187,11 @@ export function OrderLookupForm({ locale }: OrderLookupFormProps) {
           </div>
 
           <div className="flex items-end">
-            <Button className="min-h-[44px] w-full md:w-auto" disabled={isPending} type="submit">
+            <Button
+              className="min-h-[44px] w-full md:w-auto"
+              disabled={isPending}
+              type="submit"
+            >
               {isPending ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none" />
@@ -193,7 +207,10 @@ export function OrderLookupForm({ locale }: OrderLookupFormProps) {
           </div>
         </form>
 
-        <p className="mt-3 text-muted-foreground text-xs" id="order-lookup-hint">
+        <p
+          className="mt-3 text-muted-foreground text-xs"
+          id="order-lookup-hint"
+        >
           No account required. We keep the lookup inside this page so your email
           and order number do not end up in the URL.
         </p>
@@ -212,7 +229,10 @@ export function OrderLookupForm({ locale }: OrderLookupFormProps) {
       </section>
 
       {hydratedOrder && trackingState ? (
-        <section aria-labelledby="guest-order-result-heading" className="space-y-6">
+        <section
+          aria-labelledby="guest-order-result-heading"
+          className="space-y-6"
+        >
           <div className="rounded-3xl border bg-card p-6 shadow-sm sm:p-8">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div className="space-y-2">
@@ -220,7 +240,7 @@ export function OrderLookupForm({ locale }: OrderLookupFormProps) {
                   Lookup result
                 </p>
                 <h2
-                  className="font-semibold text-foreground text-2xl outline-none"
+                  className="font-semibold text-2xl text-foreground outline-none"
                   id="guest-order-result-heading"
                   ref={resultHeadingRef}
                   tabIndex={-1}
@@ -288,8 +308,8 @@ export function OrderLookupForm({ locale }: OrderLookupFormProps) {
                 Want faster access next time?
               </h3>
               <p className="max-w-2xl text-muted-foreground text-sm leading-6">
-                Buyer sign-in stays optional, but it gives you one place to check
-                every order and future tracking update.
+                Buyer sign-in stays optional, but it gives you one place to
+                check every order and future tracking update.
               </p>
             </div>
 

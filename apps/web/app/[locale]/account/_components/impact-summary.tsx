@@ -11,7 +11,8 @@ const SUMMARY_ITEMS: Array<{
   readonly label: string;
 }> = [
   {
-    description: "Completed and in-progress purchases tied to your buyer account.",
+    description:
+      "Completed and in-progress purchases tied to your buyer account.",
     key: "orderCount",
     label: "Orders placed",
   },
@@ -40,7 +41,10 @@ function formatSummaryValue(
 
 export function BuyerImpactSummary({ summary }: BuyerImpactSummaryProps) {
   return (
-    <section aria-labelledby="buyer-impact-summary-heading" className="space-y-4">
+    <section
+      aria-labelledby="buyer-impact-summary-heading"
+      className="space-y-4"
+    >
       <div className="space-y-2">
         <h2
           className="font-semibold text-foreground text-xl tracking-tight"
@@ -49,8 +53,9 @@ export function BuyerImpactSummary({ summary }: BuyerImpactSummaryProps) {
           Your impact so far
         </h2>
         <p className="max-w-2xl text-muted-foreground text-sm leading-6">
-          Across {summary.orderCount} order{summary.orderCount === 1 ? "" : "s"},
-          you&apos;ve helped raise {formatCentsAsDollars(summary.totalImpactCents)}
+          Across {summary.orderCount} order{summary.orderCount === 1 ? "" : "s"}
+          , you&apos;ve helped raise{" "}
+          {formatCentsAsDollars(summary.totalImpactCents)}
           for the organizations you support.
         </p>
       </div>
@@ -61,7 +66,9 @@ export function BuyerImpactSummary({ summary }: BuyerImpactSummaryProps) {
             className="rounded-2xl border bg-card p-5 shadow-sm"
             key={item.key}
           >
-            <p className="font-medium text-muted-foreground text-sm">{item.label}</p>
+            <p className="font-medium text-muted-foreground text-sm">
+              {item.label}
+            </p>
             <p className="mt-3 font-semibold text-2xl text-foreground tracking-tight">
               {formatSummaryValue(item.key, summary[item.key])}
             </p>

@@ -80,7 +80,8 @@ export async function getGuestOrderLookupDetail({
     carrier: order.carrier,
     deliveredAt: order.deliveredAt,
     fulfillBy: order.fulfillBy,
-    fundraiserName: order.campaign.org.application.orgName ?? order.campaign.org.slug,
+    fundraiserName:
+      order.campaign.org.application.orgName ?? order.campaign.org.slug,
     grossAmount: order.grossAmount,
     id: order.id,
     items: order.items,

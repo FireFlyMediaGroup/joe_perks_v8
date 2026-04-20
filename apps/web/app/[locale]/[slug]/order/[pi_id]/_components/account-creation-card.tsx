@@ -56,9 +56,9 @@ export function AccountCreationCard({
         }),
       });
 
-      const data = (await response.json().catch(() => null)) as
-        | { error?: string }
-        | null;
+      const data = (await response.json().catch(() => null)) as {
+        error?: string;
+      } | null;
 
       if (!response.ok) {
         setError(data?.error ?? "We couldn't send a sign-in link right now.");
@@ -86,9 +86,9 @@ export function AccountCreationCard({
               Your buyer sign-in is ready
             </h2>
             <p className="mt-2 text-muted-foreground text-sm leading-6">
-              You&apos;re already signed in with the email used for this order, so
-              future buyer account features can recognize you without changing
-              today&apos;s checkout flow.
+              You&apos;re already signed in with the email used for this order,
+              so future buyer account features can recognize you without
+              changing today&apos;s checkout flow.
             </p>
           </div>
         </div>
@@ -150,7 +150,11 @@ export function AccountCreationCard({
       ) : null}
 
       <form aria-busy={isPending} className="mt-4" onSubmit={onSubmit}>
-        <Button className="min-h-[44px] w-full" disabled={isPending} type="submit">
+        <Button
+          className="min-h-[44px] w-full"
+          disabled={isPending}
+          type="submit"
+        >
           {isPending ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none" />

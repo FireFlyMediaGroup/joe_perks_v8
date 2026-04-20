@@ -24,7 +24,11 @@ export function sanitizeBuyerRedirect(
   }
 
   const trimmed = redirect.trim();
-  if (!trimmed || ABSOLUTE_URL_PATTERN.test(trimmed) || trimmed.startsWith("//")) {
+  if (
+    !trimmed ||
+    ABSOLUTE_URL_PATTERN.test(trimmed) ||
+    trimmed.startsWith("//")
+  ) {
     return fallback;
   }
 
@@ -37,7 +41,9 @@ export function sanitizeBuyerRedirect(
 
   if (pathname === "/") {
     pathname = `/${locale}`;
-  } else if (!(pathname === `/${locale}` || pathname.startsWith(`/${locale}/`))) {
+  } else if (
+    !(pathname === `/${locale}` || pathname.startsWith(`/${locale}/`))
+  ) {
     const segments = pathname.split("/").filter(Boolean);
     const firstSegment = segments[0];
     if (firstSegment && LOCALE_SEGMENT_PATTERN.test(firstSegment)) {

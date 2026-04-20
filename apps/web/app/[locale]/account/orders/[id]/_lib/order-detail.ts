@@ -38,7 +38,10 @@ export function formatBuyerOrderDateTime(date: Date): string {
 }
 
 export function isBuyerOrderDelayed(
-  input: Pick<BuyerOrderTrackingStateInput, "fulfillBy" | "shippedAt" | "status">,
+  input: Pick<
+    BuyerOrderTrackingStateInput,
+    "fulfillBy" | "shippedAt" | "status"
+  >,
   now = new Date()
 ): boolean {
   return (
@@ -49,7 +52,10 @@ export function isBuyerOrderDelayed(
 }
 
 function normalizeCarrierForTrackingLink(carrier: string): string {
-  return carrier.trim().toUpperCase().replaceAll(/[\s_-]+/g, "");
+  return carrier
+    .trim()
+    .toUpperCase()
+    .replaceAll(/[\s_-]+/g, "");
 }
 
 export function getCarrierTrackingHref(
@@ -66,7 +72,10 @@ export function getCarrierTrackingHref(
   const encodedTracking = encodeURIComponent(trimmedTracking);
   const normalizedCarrier = normalizeCarrierForTrackingLink(trimmedCarrier);
 
-  if (normalizedCarrier === "USPS" || normalizedCarrier === "UNITEDSTATESPOSTALSERVICE") {
+  if (
+    normalizedCarrier === "USPS" ||
+    normalizedCarrier === "UNITEDSTATESPOSTALSERVICE"
+  ) {
     return `https://tools.usps.com/go/TrackConfirmAction?tLabels=${encodedTracking}`;
   }
 

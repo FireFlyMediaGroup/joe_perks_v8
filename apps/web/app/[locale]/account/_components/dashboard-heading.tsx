@@ -34,9 +34,9 @@ export function DashboardHeading({
       </h1>
       <p className="max-w-2xl text-muted-foreground text-sm leading-6 sm:text-base">
         Signed in as{" "}
-        <span className="font-medium text-foreground">{buyerEmail}</span>. Review
-        past orders, see fundraiser impact, and keep track of what you&apos;ve
-        supported.
+        <span className="font-medium text-foreground">{buyerEmail}</span>.
+        Review past orders, see fundraiser impact, and keep track of what
+        you&apos;ve supported.
       </p>
     </header>
   );

@@ -17,7 +17,7 @@ export function OrderDetailHeader({
   return (
     <header className="space-y-3">
       <div className="flex flex-wrap items-center gap-3">
-        <h1 className="font-semibold text-foreground text-3xl tracking-tight">
+        <h1 className="font-semibold text-3xl text-foreground tracking-tight">
           {orderNumber}
         </h1>
         <span

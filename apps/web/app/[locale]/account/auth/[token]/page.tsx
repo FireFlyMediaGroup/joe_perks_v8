@@ -1,5 +1,5 @@
-import { BuyerAuthRedeemer } from "./_components/buyer-auth-redeemer";
 import { sanitizeBuyerRedirect } from "@/lib/buyer-auth/redirect";
+import { BuyerAuthRedeemer } from "./_components/buyer-auth-redeemer";
 
 interface BuyerAuthPageProps {
   readonly params: Promise<{ locale: string; token: string }>;

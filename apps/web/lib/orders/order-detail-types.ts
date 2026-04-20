@@ -21,6 +21,8 @@ export interface OrderDetailView {
   readonly orgPctSnapshot: number;
   readonly placedAt: Date;
   readonly productSubtotal: number;
+  readonly shippedAt: Date | null;
+  readonly shippingAmount: number;
   readonly shipToAddress1: string;
   readonly shipToAddress2: string | null;
   readonly shipToCity: string;
@@ -28,8 +30,6 @@ export interface OrderDetailView {
   readonly shipToName: string;
   readonly shipToPostalCode: string;
   readonly shipToState: string;
-  readonly shippedAt: Date | null;
-  readonly shippingAmount: number;
   readonly status: import("@joe-perks/db").OrderStatus;
   readonly trackingNumber: string | null;
 }

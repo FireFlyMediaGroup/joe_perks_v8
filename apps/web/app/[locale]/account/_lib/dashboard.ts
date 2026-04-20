@@ -3,12 +3,12 @@ import type { OrderStatus } from "@joe-perks/db";
 export interface BuyerDashboardOrder {
   readonly fundraiserName: string;
   readonly id: string;
+  readonly impactCents: number;
   readonly orderNumber: string;
   readonly placedAt: Date;
   readonly status: OrderStatus;
   readonly totalCents: number;
   readonly unitsCount: number;
-  readonly impactCents: number;
 }
 
 export interface BuyerDashboardSummary {

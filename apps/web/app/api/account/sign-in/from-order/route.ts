@@ -10,7 +10,10 @@ import {
 export const runtime = "nodejs";
 
 const signInFromOrderSchema = z.object({
-  locale: z.string().trim().regex(/^[a-z]{2}(?:-[A-Z]{2})?$/),
+  locale: z
+    .string()
+    .trim()
+    .regex(/^[a-z]{2}(?:-[A-Z]{2})?$/),
   paymentIntentId: z.string().trim().min(1).max(200),
   redirect: z.string().trim().max(2048).optional(),
 });

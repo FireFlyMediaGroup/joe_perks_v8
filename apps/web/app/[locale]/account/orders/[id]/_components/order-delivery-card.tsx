@@ -16,12 +16,17 @@ function renderValue(value: string | null): string {
 
 export function OrderDeliveryCard({ order }: OrderDeliveryCardProps) {
   const trackingState = getBuyerOrderTrackingStateCopy(order);
-  const trackingHref = getCarrierTrackingHref(order.carrier, order.trackingNumber);
+  const trackingHref = getCarrierTrackingHref(
+    order.carrier,
+    order.trackingNumber
+  );
 
   return (
     <section className="rounded-3xl border bg-card p-5 shadow-sm sm:p-6">
       <div className="space-y-2">
-        <p className="font-medium text-muted-foreground text-sm">Where is it?</p>
+        <p className="font-medium text-muted-foreground text-sm">
+          Where is it?
+        </p>
         <h2 className="font-semibold text-foreground text-xl tracking-tight">
           {trackingState.headline}
         </h2>

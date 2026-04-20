@@ -1,11 +1,11 @@
 import type { OrderDetailView } from "./order-detail-types";
 
-type SerializedOrderDetailDates = {
+interface SerializedOrderDetailDates {
   readonly deliveredAt: string | null;
   readonly fulfillBy: string;
   readonly placedAt: string;
   readonly shippedAt: string | null;
-};
+}
 
 export type GuestOrderLookupOrderPayload = Omit<
   OrderDetailView,
@@ -17,7 +17,9 @@ export function normalizeGuestOrderLookupEmail(email: string): string {
   return email.trim().toLowerCase();
 }
 
-export function normalizeGuestOrderLookupOrderNumber(orderNumber: string): string {
+export function normalizeGuestOrderLookupOrderNumber(
+  orderNumber: string
+): string {
   return orderNumber.trim().toUpperCase();
 }
 

@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { formatCentsAsDollars } from "../../[slug]/_lib/format";
 import {
+  type BuyerDashboardOrder,
   formatBuyerDashboardDate,
   getBuyerOrderStatusCopy,
-  type BuyerDashboardOrder,
 } from "../_lib/dashboard";
 
 interface OrderHistoryListProps {
@@ -13,7 +13,10 @@ interface OrderHistoryListProps {
 
 export function OrderHistoryList({ locale, orders }: OrderHistoryListProps) {
   return (
-    <section aria-labelledby="buyer-order-history-heading" className="space-y-4">
+    <section
+      aria-labelledby="buyer-order-history-heading"
+      className="space-y-4"
+    >
       <div className="space-y-2">
         <h2
           className="font-semibold text-foreground text-xl tracking-tight"
@@ -22,8 +25,8 @@ export function OrderHistoryList({ locale, orders }: OrderHistoryListProps) {
           Order history
         </h2>
         <p className="max-w-2xl text-muted-foreground text-sm leading-6">
-          Orders are sorted with your newest purchase first, so the latest update
-          is always closest to the top.
+          Orders are sorted with your newest purchase first, so the latest
+          update is always closest to the top.
         </p>
       </div>
 
@@ -56,8 +59,8 @@ export function OrderHistoryList({ locale, orders }: OrderHistoryListProps) {
                     .
                   </p>
                   <p className="text-muted-foreground text-sm leading-6">
-                    {order.unitsCount} item{order.unitsCount === 1 ? "" : "s"} in
-                    this order.
+                    {order.unitsCount} item{order.unitsCount === 1 ? "" : "s"}{" "}
+                    in this order.
                   </p>
                 </div>
 

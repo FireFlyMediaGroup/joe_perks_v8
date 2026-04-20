@@ -1,8 +1,7 @@
 import { Button, Hr, Text } from "@react-email/components";
 import { BaseEmailLayout } from "./base-layout";
 
-export const BUYER_AUTH_MAGIC_LINK_SUBJECT =
-  "Your Joe Perks sign-in link";
+export const BUYER_AUTH_MAGIC_LINK_SUBJECT = "Your Joe Perks sign-in link";
 
 interface BuyerAuthMagicLinkEmailProps {
   readonly authUrl: string;
@@ -44,7 +43,8 @@ export const BuyerAuthMagicLinkEmail = ({
 );
 
 BuyerAuthMagicLinkEmail.PreviewProps = {
-  authUrl: "http://localhost:3000/en/account/auth/abc123?redirect=%2Fen%2Faccount",
+  authUrl:
+    "http://localhost:3000/en/account/auth/abc123?redirect=%2Fen%2Faccount",
   buyerName: "Pat Buyer",
   expiresInMinutes: 15,
 };

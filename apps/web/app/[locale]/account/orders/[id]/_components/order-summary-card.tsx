@@ -24,8 +24,8 @@ export function OrderSummaryCard({
           Order totals
         </h2>
         <p className="text-muted-foreground text-sm leading-6">
-          This order raised {formatCentsAsDollars(orgAmount)} for {fundraiserName}
-          {" "}at {orgPctSnapshot}% of the product subtotal.
+          This order raised {formatCentsAsDollars(orgAmount)} for{" "}
+          {fundraiserName} at {orgPctSnapshot}% of the product subtotal.
         </p>
       </div>
 
@@ -50,7 +50,7 @@ export function OrderSummaryCard({
         </div>
         <div className="flex items-center justify-between gap-4 rounded-2xl border px-4 py-3">
           <dt className="font-semibold text-foreground">Total paid</dt>
-          <dd className="font-semibold text-foreground text-base tabular-nums">
+          <dd className="font-semibold text-base text-foreground tabular-nums">
             {formatCentsAsDollars(grossAmount)}
           </dd>
         </div>
