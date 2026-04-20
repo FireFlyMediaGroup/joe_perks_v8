@@ -38,6 +38,7 @@
     "db:smoke:us-04-01": "cd packages/db && bun run ./scripts/smoke-us-04-01-storefront.ts",
     "db:smoke:us-06-01": "cd packages/db && bun run ./scripts/smoke-us-06-01-payout.ts",
     "admin:smoke:us-07": "bun run ./apps/admin/scripts/smoke-us-07.ts",
+    "smoke:prod": "node ./scripts/smoke-production-http.mjs",
     "db:smoke:prod": "cd packages/db && PRISMA_DATABASE_PROFILE=production bun run ./scripts/smoke-db.ts",
     "db:seed:prod": "cd packages/db && PRISMA_DATABASE_PROFILE=production bunx prisma db seed",
     "db:push": "cd packages/db && bunx prisma format && bunx prisma generate && bunx prisma db push",
