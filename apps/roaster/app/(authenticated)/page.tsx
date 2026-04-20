@@ -1,5 +1,4 @@
 import { auth } from "@repo/auth/server";
-import { database } from "@joe-perks/db";
 import type { Metadata } from "next";
 import dynamic from "next/dynamic";
 import { notFound } from "next/navigation";
@@ -23,7 +22,7 @@ export const metadata: Metadata = {
 };
 
 const App = async () => {
-  const pages = await database.page.findMany();
+  const pages: { id: string; name: string }[] = [];
   const { orgId } = await auth();
 
   if (!orgId) {

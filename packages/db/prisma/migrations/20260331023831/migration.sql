@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE "OrgApplication" ALTER COLUMN "orgName" DROP DEFAULT,
+ALTER COLUMN "contactName" DROP DEFAULT,
+ALTER COLUMN "termsVersion" DROP DEFAULT;

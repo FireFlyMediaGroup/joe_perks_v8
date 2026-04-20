@@ -24,37 +24,43 @@ graph TD
   WEB --> WEB_MKT["[locale]/(home)/\nlanding"]:::route
   WEB --> WEB_RA["[locale]/roasters/apply/"]:::route
   WEB --> WEB_OA["[locale]/orgs/apply/"]:::route
-  WEB --> WEB_SF["[locale]/[slug]/\nstorefront"]:::route
-  WEB --> WEB_CO["[locale]/[slug]/checkout/"]:::route
-  WEB --> WEB_OR["[locale]/[slug]/order/[pi_id]/"]:::route
+  WEB --> WEB_SF["[locale]/[slug]/\npage, shipping-guard, cart-drawer,\nadd-to-cart, product-grid, campaign-header"]:::route
+  WEB --> WEB_CO["[locale]/[slug]/checkout/\ncheckout-form, step-cart-review,\nstep-shipping, step-payment, _lib/schema"]:::route
+  WEB --> WEB_OR["[locale]/[slug]/order/[pi_id]/\norder-summary, order-status-poller,\norder-processing"]:::route
   WEB --> WEB_TM["[locale]/legal/\nterms, privacy"]:::route
   WEB --> WEB_WH["app/api/webhooks/stripe"]:::api
   WEB --> WEB_CI["app/api/checkout/create-intent"]:::api
   WEB --> WEB_OS["app/api/order-status"]:::api
+  WEB --> WEB_OE["app/api/orders/[id]/events\nGET — admin Basic auth"]:::api
   WEB --> WEB_INN["app/api/inngest"]:::api
+  WEB --> WEB_SV["app/api/slugs/validate/\nslug uniqueness check"]:::api
 
   %% apps/roaster routes
   ROASTER --> R_DASH["(authenticated)/dashboard/"]:::route
-  ROASTER --> R_FULFILL["fulfill/[token]/"]:::route
+  ROASTER --> R_FULFILL["fulfill/[token]/\npage, _actions, _components, _lib"]:::route
   ROASTER --> R_ORG_REQ["org-requests/[token]/"]:::route
-  ROASTER --> R_PROD["(authenticated)/products/"]:::route
-  ROASTER --> R_SHIP["(authenticated)/settings/shipping/"]:::route
+  ROASTER --> R_PROD["(authenticated)/products/\npage, new/, [id]/, [id]/edit/\n_actions, _components, _lib"]:::route
+  ROASTER --> R_UT["app/api/uploadthing/\nUploadThing + Clerk"]:::api
+  ROASTER --> R_SHIP["(authenticated)/settings/shipping/\npage + _actions, _components, _lib"]:::route
   ROASTER --> R_PAY["(authenticated)/payouts/"]:::route
-  ROASTER --> R_ONBOARD["(authenticated)/onboarding/"]:::route
+  ROASTER --> R_ONBOARD["(authenticated)/onboarding/\npage + _components/"]:::route
 
   %% apps/org routes
-  ORG --> O_DASH["dashboard/"]:::route
-  ORG --> O_CAMP["campaign/"]:::route
+  ORG --> O_DASH["(authenticated)/dashboard/"]:::route
+  ORG --> O_ONBOARD["(authenticated)/onboarding/\npage + _components/"]:::route
+  ORG --> O_CAMP["(authenticated)/campaign/\npage + _actions + _components/"]:::route
+  ORG --> O_STRIPE["api/stripe/connect/"]:::route
   ORG --> O_EARN["earnings/"]:::route
   ORG --> O_STORE["storefront/"]:::route
-  ORG --> O_ONBOARD["onboarding/"]:::route
 
   %% apps/admin routes
   ADMIN --> A_HOME["app/page.tsx\nhome / metrics"]:::route
-  ADMIN --> A_AR["approvals/roasters/"]:::route
-  ADMIN --> A_AO["approvals/orgs/"]:::route
-  ADMIN --> A_ORD["orders/"]:::route
-  ADMIN --> A_DISP["disputes/"]:::route
+  ADMIN --> A_AR["approvals/roasters/\npage + [id]/"]:::route
+  ADMIN --> A_AO["approvals/orgs/\npage + [id]/"]:::route
+  ADMIN --> A_ORD["orders/\npage, [id]/, _actions, _components,\n_lib/sla.ts, event-timeline, layout nav"]:::route
+  ADMIN --> A_DISP["disputes/\npage, [id]/evidence/route.ts,\n_actions, _components"]:::route
+  ADMIN --> A_ROASTERS["roasters/\npage + [id]/\naccount lifecycle review"]:::route
+  ADMIN --> A_ORGS["orgs/\npage + [id]/\naccount lifecycle review"]:::route
   ADMIN --> A_SET["settings/"]:::route
 
   %% ── PACKAGES ───────────────────────────────────────────────────
@@ -65,22 +71,22 @@ graph TD
   PKGS --> TYPES["packages/types\n@joe-perks/types"]:::pkg
   PKGS --> NF["+ next-forge packages\n@repo/design-system, auth, cms, …"]:::pkg
 
-  DB --> DB1["prisma/schema.prisma\n26 models when migrated"]:::file
+  DB --> DB1["prisma/schema.prisma\n27 models when migrated"]:::file
   DB --> DB2["seed.ts"]:::file
   DB --> DB3["order-number.ts"]:::file
-  DB --> DB4["index.ts\nPrisma client"]:::file
+  DB --> DB4["index.ts, log-event.ts,\nadmin-action-log.ts, account-lifecycle.ts,\ndispute-loss.ts\nPrisma client + audit helpers"]:::file
 
   UI --> UI1["src/store/cart.ts\nZustand + persist"]:::file
   UI --> UI2["Use @repo/design-system\nfor shadcn primitives"]:::file
 
-  STRIPE --> ST1["splits.ts"]:::file
-  STRIPE --> ST2["client.ts"]:::file
+  STRIPE --> ST1["splits.ts\nexport @joe-perks/stripe/splits\n(client-safe)"]:::file
+  STRIPE --> ST2["client.ts, dispute-reversal.ts"]:::file
   STRIPE --> ST3["ratelimit.ts"]:::file
 
-  EMAIL --> EM1["templates/\nReact Email"]:::file
+  EMAIL --> EM1["templates/\nmagic-link-fulfillment, order-shipped,\norder-delivered, dispute-admin-alert,\naccount-suspended, account-reactivated, sla, …"]:::file
   EMAIL --> EM2["send.ts\nsendEmail()"]:::file
 
-  TYPES --> TY1["index.ts"]:::file
+  TYPES --> TY1["index.ts, admin-basic-auth.ts"]:::file
   TYPES --> TY2["slugs.ts\nRESERVED_SLUGS"]:::file
 
   classDef root    fill:#2E5A3E,stroke:#1D4A2E,color:#ffffff,font-weight:bold
