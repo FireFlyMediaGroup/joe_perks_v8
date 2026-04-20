@@ -1,12 +1,25 @@
+import "./load-env-bootstrap";
+
+import { database } from "./database";
+
 /**
- * Prisma seed — PlatformSettings + OrderSequence singletons.
- * Wire real creates after the 26-model Joe Perks schema is applied.
- *
- * Run: `cd packages/db && bunx prisma db seed`
+ * Foundational singleton rows. Run: `cd packages/db && bunx prisma db seed`
  */
 async function main(): Promise<void> {
+  await database.platformSettings.upsert({
+    where: { id: "singleton" },
+    create: { id: "singleton" },
+    update: {},
+  });
+
+  await database.orderSequence.upsert({
+    where: { id: "singleton" },
+    create: { id: "singleton", nextVal: 0 },
+    update: {},
+  });
+
   console.info(
-    "[@joe-perks/db seed] Stub — add PlatformSettings + OrderSequence after schema migration."
+    "[@joe-perks/db seed] PlatformSettings and OrderSequence singletons are ready."
   );
 }
 

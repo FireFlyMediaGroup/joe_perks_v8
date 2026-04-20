@@ -4,23 +4,46 @@
   "private": true,
   "scripts": {
     "clean": "git clean -xdf .cache .turbo dist node_modules",
+    "smoke": "bun run ./scripts/smoke-email.ts",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
+    "@joe-perks/db": "workspace:*",
     "@react-email/components": "1.0.8",
     "@t3-oss/env-nextjs": "^0.13.10",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "resend": "^6.9.3",
+    "server-only": "^0.0.1",
     "zod": "^4.3.6"
   },
   "exports": {
     ".": "./index.ts",
     "./keys": "./keys.ts",
     "./send": "./send.ts",
-    "./templates/contact": "./templates/contact.tsx"
+    "./templates/account-reactivated": "./templates/account-reactivated.tsx",
+    "./templates/account-suspended": "./templates/account-suspended.tsx",
+    "./templates/base-layout": "./templates/base-layout.tsx",
+    "./templates/contact": "./templates/contact.tsx",
+    "./templates/buyer-auth-magic-link": "./templates/buyer-auth-magic-link.tsx",
+    "./templates/dispute-admin-alert": "./templates/dispute-admin-alert.tsx",
+    "./templates/magic-link-fulfillment": "./templates/magic-link-fulfillment.tsx",
+    "./templates/order-confirmation": "./templates/order-confirmation.tsx",
+    "./templates/order-delivered": "./templates/order-delivered.tsx",
+    "./templates/order-shipped": "./templates/order-shipped.tsx",
+    "./templates/sla": "./templates/sla.tsx",
+    "./templates/welcome": "./templates/welcome.tsx",
+    "./templates/roaster-application-received": "./templates/roaster-application-received.tsx",
+    "./templates/roaster-approved": "./templates/roaster-approved.tsx",
+    "./templates/roaster-rejected": "./templates/roaster-rejected.tsx",
+    "./templates/org-application-received": "./templates/org-application-received.tsx",
+    "./templates/org-roaster-review": "./templates/org-roaster-review.tsx",
+    "./templates/org-rejected": "./templates/org-rejected.tsx",
+    "./templates/org-approved": "./templates/org-approved.tsx",
+    "./templates/org-declined": "./templates/org-declined.tsx"
   },
   "devDependencies": {
+    "dotenv": "^16.5.0",
     "@repo/typescript-config": "workspace:*",
     "@types/node": "25.3.5",
     "@types/react": "19.2.14",

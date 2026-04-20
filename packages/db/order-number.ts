@@ -1,11 +1,17 @@
 import "server-only";
 
+import { database } from "./database";
+
 /**
- * Atomic `JP-XXXXX` order numbers via `OrderSequence` singleton.
- * Implement with `$queryRaw` against Postgres when the Joe Perks schema lands (AGENTS.md).
+ * Atomic `JP-XXXXX` order numbers via `OrderSequence` singleton (see docs/AGENTS.md).
  */
 export async function generateOrderNumber(): Promise<string> {
-  throw new Error(
-    "generateOrderNumber: implement after OrderSequence model exists in schema.prisma"
-  );
+  const result = await database.$queryRaw<[{ nextVal: number }]>`
+    UPDATE "OrderSequence"
+    SET "nextVal" = "nextVal" + 1
+    WHERE id = 'singleton'
+    RETURNING "nextVal"
+  `;
+  const n = result[0].nextVal;
+  return `JP-${String(n).padStart(5, "0")}`;
 }

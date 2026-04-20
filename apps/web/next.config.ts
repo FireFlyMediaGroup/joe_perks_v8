@@ -1,3 +1,4 @@
+import "./load-root-env";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { withCMS } from "@repo/cms/next-config";
@@ -41,6 +42,11 @@ if (env.ANALYZE === "true") {
 
 nextConfig = {
   ...nextConfig,
+  serverExternalPackages: [
+    "ws",
+    "@neondatabase/serverless",
+    "@prisma/adapter-neon",
+  ],
   turbopack: { ...nextConfig.turbopack, root: monorepoRoot },
 };
 

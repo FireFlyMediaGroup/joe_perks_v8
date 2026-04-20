@@ -1,72 +1,68 @@
-import type { Dictionary } from "@repo/internationalization";
-import { User } from "lucide-react";
+import { Clock, DollarSign, LineChart, Link2, Lock, Store } from "lucide-react";
+import { features } from "@/lib/marketing/features";
 
-interface FeaturesProps {
-  dictionary: Dictionary;
-}
+const featureIcons = [
+  <Store key="store" size={20} />,
+  <DollarSign key="dollar" size={20} />,
+  <Link2 key="link" size={20} />,
+  <LineChart key="chart" size={20} />,
+  <Lock key="lock" size={20} />,
+  <Clock key="clock" size={20} />,
+];
 
-export const Features = ({ dictionary }: FeaturesProps) => (
-  <div className="w-full py-20 lg:py-40">
-    <div className="container mx-auto">
-      <div className="flex flex-col gap-10">
-        <div className="flex flex-col items-start gap-4">
-          <div className="flex flex-col gap-2">
-            <h2 className="max-w-xl text-left font-regular text-3xl tracking-tighter md:text-5xl">
-              {dictionary.web.home.features.title}
-            </h2>
-            <p className="max-w-xl text-left text-lg text-muted-foreground leading-relaxed tracking-tight lg:max-w-lg">
-              {dictionary.web.home.features.description}
+const iconColors: Record<string, string> = {
+  terra: "bg-jp-terra/10 text-jp-terra",
+  teal: "bg-jp-teal/10 text-jp-teal",
+  charcoal: "bg-jp-charcoal/10 text-[var(--jp-text)]",
+};
+
+export const Features = () => (
+  <section
+    className="py-[72px] md:py-[100px]"
+    id="features"
+    style={{ backgroundColor: "var(--jp-bg-alt)" }}
+  >
+    <div className="mx-auto max-w-[1200px] px-6 md:px-10 lg:px-16">
+      {/* Header */}
+      <div className="reveal mb-12 text-center">
+        <span className="mb-3 inline-block font-jp-mono font-medium text-[10px] text-[var(--jp-muted)] uppercase tracking-[0.14em]">
+          Platform features
+        </span>
+        <h2 className="mx-auto max-w-xl font-black font-display text-[clamp(32px,4vw,52px)] text-[var(--jp-text)] leading-[1.1] tracking-[-0.025em]">
+          Built for both sides of the table.
+        </h2>
+      </div>
+
+      {/* Feature grid */}
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        {features.map((feature, i) => (
+          <div
+            className="group relative overflow-hidden rounded-[var(--jp-radius-lg)] border p-6 transition-all hover:-translate-y-1 hover:shadow-[var(--jp-shadow-md)]"
+            key={feature.title}
+            style={{
+              backgroundColor: "var(--jp-bg-card)",
+              borderColor: "var(--jp-border)",
+            }}
+          >
+            {/* Hover gradient bar */}
+            <div className="absolute inset-x-0 top-0 h-[3px] bg-gradient-to-r from-jp-terra to-jp-teal opacity-0 transition-opacity group-hover:opacity-100" />
+
+            {/* Icon */}
+            <div
+              className={`mb-4 inline-flex h-10 w-10 items-center justify-center rounded-[var(--jp-radius-sm)] ${iconColors[feature.iconVariant]}`}
+            >
+              {featureIcons[i]}
+            </div>
+
+            <h3 className="mb-2 font-bold font-display text-[19px] text-[var(--jp-text)]">
+              {feature.title}
+            </h3>
+            <p className="font-body text-[var(--jp-muted)] text-sm leading-[1.7]">
+              {feature.description}
             </p>
           </div>
-        </div>
-        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-          <div className="flex aspect-square h-full flex-col justify-between rounded-md bg-muted p-6 lg:col-span-2 lg:aspect-auto">
-            <User className="h-8 w-8 stroke-1" />
-            <div className="flex flex-col">
-              <h3 className="text-xl tracking-tight">
-                {dictionary.web.home.features.items[0].title}
-              </h3>
-              <p className="max-w-xs text-base text-muted-foreground">
-                {dictionary.web.home.features.items[0].description}
-              </p>
-            </div>
-          </div>
-          <div className="flex aspect-square flex-col justify-between rounded-md bg-muted p-6">
-            <User className="h-8 w-8 stroke-1" />
-            <div className="flex flex-col">
-              <h3 className="text-xl tracking-tight">
-                {dictionary.web.home.features.items[1].title}
-              </h3>
-              <p className="max-w-xs text-base text-muted-foreground">
-                {dictionary.web.home.features.items[1].description}
-              </p>
-            </div>
-          </div>
-
-          <div className="flex aspect-square flex-col justify-between rounded-md bg-muted p-6">
-            <User className="h-8 w-8 stroke-1" />
-            <div className="flex flex-col">
-              <h3 className="text-xl tracking-tight">
-                {dictionary.web.home.features.items[2].title}
-              </h3>
-              <p className="max-w-xs text-base text-muted-foreground">
-                {dictionary.web.home.features.items[2].description}
-              </p>
-            </div>
-          </div>
-          <div className="flex aspect-square h-full flex-col justify-between rounded-md bg-muted p-6 lg:col-span-2 lg:aspect-auto">
-            <User className="h-8 w-8 stroke-1" />
-            <div className="flex flex-col">
-              <h3 className="text-xl tracking-tight">
-                {dictionary.web.home.features.items[3].title}
-              </h3>
-              <p className="max-w-xs text-base text-muted-foreground">
-                {dictionary.web.home.features.items[3].description}
-              </p>
-            </div>
-          </div>
-        </div>
+        ))}
       </div>
     </div>
-  </div>
+  </section>
 );
