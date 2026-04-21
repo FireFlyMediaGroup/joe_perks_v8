@@ -1,4 +1,5 @@
 import { database } from "@joe-perks/db";
+import Link from "next/link";
 
 import { PortalTrackingForm } from "./portal-tracking-form";
 
@@ -115,9 +116,12 @@ export async function DashboardOrders({ roasterId }: Props) {
               <li className="space-y-3 p-4" key={o.id}>
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
                   <div>
-                    <span className="font-mono font-semibold">
+                    <Link
+                      className="font-mono font-semibold underline underline-offset-2"
+                      href={`/orders/${o.id}`}
+                    >
                       {o.orderNumber}
-                    </span>
+                    </Link>
                     <span className="text-muted-foreground text-sm">
                       {" "}
                       · {o.buyerEmail}
@@ -150,7 +154,12 @@ export async function DashboardOrders({ roasterId }: Props) {
             {pendingPayment.map((o) => (
               <li className="flex flex-wrap items-center justify-between gap-2 p-4" key={o.id}>
                 <div>
-                  <span className="font-mono font-semibold">{o.orderNumber}</span>
+                  <Link
+                    className="font-mono font-semibold underline underline-offset-2"
+                    href={`/orders/${o.id}`}
+                  >
+                    {o.orderNumber}
+                  </Link>
                   <span className="text-muted-foreground text-sm">
                     {" "}
                     · {o.buyerEmail}
@@ -176,7 +185,12 @@ export async function DashboardOrders({ roasterId }: Props) {
             {recentShipped.map((o) => (
               <li className="p-4" key={o.id}>
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
-                  <span className="font-mono font-semibold">{o.orderNumber}</span>
+                  <Link
+                    className="font-mono font-semibold underline underline-offset-2"
+                    href={`/orders/${o.id}`}
+                  >
+                    {o.orderNumber}
+                  </Link>
                   <span className="text-sm tabular-nums">{formatUsd(o.grossAmount)}</span>
                 </div>
                 <p className="text-muted-foreground text-sm">
