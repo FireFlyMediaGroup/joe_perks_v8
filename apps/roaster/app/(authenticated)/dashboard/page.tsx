@@ -3,31 +3,43 @@ import {
   getSuspensionReasonCategoryFromAction,
   getSuspensionReasonLabel,
 } from "@joe-perks/db";
-import { auth } from "@repo/auth/server";
 
+import { NoRoasterProfile } from "../products/_components/no-roaster-profile";
+import { requireRoasterId } from "../products/_lib/require-roaster";
+import { DashboardOrders } from "./_components/dashboard-orders";
 import { ReactivationRequestForm } from "./_components/reactivation-request-form";
 
 export default async function RoasterDashboardPage() {
-  const { userId } = await auth();
-  const dbUser = userId
-    ? await database.user.findUnique({
-        where: { externalAuthId: userId },
-        select: {
-          email: true,
-          role: true,
-          roaster: {
-            include: {
-              application: {
-                select: { businessName: true },
-              },
-            },
-          },
-          roasterId: true,
-        },
-      })
-    : null;
+  const session = await requireRoasterId();
+  if (!session.ok) {
+    if (session.error === "unauthorized") {
+      return null;
+    }
+    return <NoRoasterProfile />;
+  }
 
-  const roaster = dbUser?.roaster ?? null;
+  const [roaster, dbUser] = await Promise.all([
+    database.roaster.findUnique({
+      where: { id: session.roasterId },
+      include: {
+        application: {
+          select: { businessName: true },
+        },
+      },
+    }),
+    database.user.findFirst({
+      where: { roasterId: session.roasterId },
+      select: {
+        email: true,
+        role: true,
+        roasterId: true,
+      },
+    }),
+  ]);
+
+  if (!roaster) {
+    return <NoRoasterProfile />;
+  }
 
   const [latestSuspension, latestRequest] = roaster
     ? await Promise.all([
@@ -128,28 +140,31 @@ export default async function RoasterDashboardPage() {
     <div className="p-6">
       <h1 className="font-semibold text-2xl">Dashboard</h1>
       <p className="mt-2 text-muted-foreground">
-        Order queue + metrics — portal queries must scope by{" "}
-        <code className="font-mono text-xs">roaster_id</code> from the linked{" "}
-        <code className="font-mono text-xs">User</code> row.
+        Orders for{" "}
+        <span className="font-medium text-foreground">
+          {roaster?.application.businessName || roaster?.email || "your roaster"}
+        </span>
       </p>
-      <dl className="mt-6 space-y-2 text-sm">
+      <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
         <div>
-          <dt className="text-muted-foreground">Linked roaster_id</dt>
-          <dd className="font-mono">{dbUser?.roasterId ?? "—"}</dd>
+          <dt className="text-muted-foreground">Roaster ID</dt>
+          <dd className="font-mono text-xs">{dbUser?.roasterId ?? "—"}</dd>
         </div>
         <div>
           <dt className="text-muted-foreground">Role</dt>
-          <dd className="font-mono">{dbUser?.role ?? "—"}</dd>
+          <dd className="font-mono text-xs">{dbUser?.role ?? "—"}</dd>
         </div>
         <div>
-          <dt className="text-muted-foreground">User email (DB)</dt>
-          <dd className="font-mono">{dbUser?.email ?? "—"}</dd>
+          <dt className="text-muted-foreground">User email</dt>
+          <dd className="font-mono text-xs">{dbUser?.email ?? "—"}</dd>
         </div>
         <div>
           <dt className="text-muted-foreground">Account status</dt>
-          <dd className="font-mono">{roaster?.status ?? "—"}</dd>
+          <dd className="font-mono text-xs">{roaster?.status ?? "—"}</dd>
         </div>
       </dl>
+
+      <DashboardOrders roasterId={session.roasterId} />
     </div>
   );
 }

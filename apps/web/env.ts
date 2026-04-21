@@ -13,6 +13,10 @@ import { z } from "zod";
 const emptyToUndefined = (v: unknown) =>
   v === "" || v === undefined ? undefined : v;
 
+/** Local `pnpm dev` / tests: allows startup when root `.env` has no SESSION_SECRET yet. Never rely on this in production. */
+const DEV_SESSION_SECRET_PLACEHOLDER =
+  "development-only-session-secret-min-32-chars";
+
 export const env = createEnv({
   extends: [
     cms(),
@@ -26,7 +30,13 @@ export const env = createEnv({
     stripe(),
   ],
   server: {
-    SESSION_SECRET: z.preprocess(emptyToUndefined, z.string().min(32)),
+    SESSION_SECRET: z.preprocess((v: unknown) => {
+      const cleared = emptyToUndefined(v);
+      if (cleared === undefined && process.env.NODE_ENV !== "production") {
+        return DEV_SESSION_SECRET_PLACEHOLDER;
+      }
+      return cleared;
+    }, z.string().min(32)),
   },
   client: {
     NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z.preprocess(

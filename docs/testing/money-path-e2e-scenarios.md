@@ -26,7 +26,7 @@
 | Stripe harness | **Stripe CLI `stripe listen`** in CI, or **`stripe.events.constructEvent`** with a fixture webhook body signed with `STRIPE_WEBHOOK_SECRET` | Deterministic webhook delivery without flake. |
 | Email assertion | **Resend test mode** or a mock `sendEmail()` inbox | Assert transactional emails fire at every state transition. |
 
-Run locally: `pnpm test:e2e` (to be added to root `package.json`). Run in CI: separate GH Actions workflow gated on `main` and PR merges.
+Run locally: `pnpm test:e2e` (to be added to root `package.json`). Until then, use the launch execution guide [`v1-launch-money-path-e2e-execution.md`](./v1-launch-money-path-e2e-execution.md) (`pnpm test`, `pnpm e2e:sprint3`, `pnpm test:e2e:frontend`, Stripe listen). That guide also records the currently passing sandbox results and the pre-production secret-rotation checklist. Run in CI: separate GH Actions workflow gated on `main` and PR merges.
 
 ---
 

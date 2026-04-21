@@ -15,9 +15,14 @@
  *   cd packages/db && bun run ./scripts/e2e-sprint-3.ts
  *
  * Prerequisites:
- *   - pnpm dev running (apps on 3000, 3003)
- *   - stripe listen forwarding to localhost:3000
- *   - seed-e2e-roaster.ts already executed
+ *   - pnpm dev running (web :3000; admin :3003 only if you extend HTTP admin flows)
+ *   - In another terminal: stripe listen --forward-to http://localhost:3000/api/webhooks/stripe
+ *     Copy the webhook signing secret into STRIPE_WEBHOOK_SECRET (root .env) so the web app
+ *     accepts forwarded events — see docs/testing/v1-launch-money-path-e2e-execution.md §1.2.
+ *   - seed-e2e-roaster.ts already executed (pnpm --filter @joe-perks/db seed:e2e)
+ *
+ * Storefront HTTP: apps/web uses next-international urlMappingStrategy "rewriteDefault", so
+ * public URLs for the default locale (en) omit /en — this script uses /{slug} not /en/{slug}.
  */
 import { randomBytes, randomUUID } from "node:crypto";
 
@@ -40,7 +45,35 @@ const prisma = new PrismaClient({
   adapter: new PrismaNeon({ connectionString: url }),
 });
 
-const WEB_URL = "http://localhost:3000";
+/** Prefer 127.0.0.1 so Node/Bun fetch does not stall on IPv6 ::1 when the dev server only answers IPv4. */
+const WEB_URL = process.env.E2E_WEB_URL ?? "http://127.0.0.1:3000";
+
+const E2E_FETCH_TIMEOUT_MS = Number(process.env.E2E_FETCH_TIMEOUT_MS ?? 60_000);
+
+/** Mimic a browser so middleware (e.g. Arcjet) does not treat the client as a bare bot. */
+const BROWSER_LIKE_HEADERS = {
+  Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+  "Accept-Language": "en-US,en;q=0.9",
+  "User-Agent":
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 JoePerks-E2E/1",
+} as const;
+
+/** Default locale (en) omits /en in public URLs — see packages/internationalization `rewriteDefault`. */
+function buyerFetch(path: string, init?: RequestInit): Promise<Response> {
+  const p = path.startsWith("/") ? path : `/${path}`;
+  const { headers: userHeaders, ...rest } = init ?? {};
+  const headers = new Headers(BROWSER_LIKE_HEADERS);
+  if (userHeaders) {
+    for (const [k, v] of new Headers(userHeaders).entries()) {
+      headers.set(k, v);
+    }
+  }
+  return fetch(`${WEB_URL}${p}`, {
+    ...rest,
+    headers,
+    signal: AbortSignal.timeout(E2E_FETCH_TIMEOUT_MS),
+  });
+}
 
 let passed = 0;
 let failed = 0;
@@ -385,7 +418,10 @@ async function flow4_magicLinkApprove(
 
 // ── Flow 5: Org Stripe Connect + Campaign ───────────────────────────────
 
-async function flow5_orgConnectAndCampaign(orgId: string, roasterId: string) {
+async function flow5_orgConnectAndCampaign(
+  orgId: string,
+  roasterId: string
+): Promise<{ campaignId: string } | null> {
   console.log("\n--- Flow 5: Org Stripe Connect + Campaign (US-03-04) ---\n");
 
   // Simulate Stripe Connect completion (we can't do real Stripe onboarding in a script)
@@ -484,11 +520,14 @@ async function flow5_orgConnectAndCampaign(orgId: string, roasterId: string) {
   const shippingRates = await prisma.roasterShippingRate.findMany({
     where: { roasterId },
   });
-  assert(
-    shippingRates.length > 0,
-    "Activation guard: roaster has shipping rates",
-    "no shipping rates"
-  );
+  if (shippingRates.length === 0) {
+    fail(
+      "Activation guard: roaster has shipping rates",
+      "no shipping rates — run `pnpm --filter @joe-perks/db seed:e2e`"
+    );
+    return null;
+  }
+  pass("Activation guard: roaster has shipping rates");
   assert(items.length > 0, "Activation guard: at least one item", "no items");
 
   await prisma.campaign.update({
@@ -515,9 +554,10 @@ async function flow6_storefront(slug: string) {
 
   let ok = false;
   try {
-    const res = await fetch(`${WEB_URL}/en/${slug}`, { redirect: "follow" });
+    const path = `/${slug}`;
+    const res = await buyerFetch(slug, { redirect: "follow" });
     ok = res.ok;
-    assert(ok, `GET /en/${slug} → ${res.status}`, `status ${res.status}`);
+    assert(ok, `GET ${path} → ${res.status}`, `status ${res.status}`);
 
     if (ok) {
       const html = await res.text();
@@ -533,21 +573,26 @@ async function flow6_storefront(slug: string) {
       );
     }
   } catch (e) {
-    fail(
-      "Storefront HTTP request",
-      e instanceof Error ? e.message : "unknown error"
-    );
+    const msg = e instanceof Error ? e.message : "unknown error";
+    const timedOut =
+      (e instanceof Error && e.name === "TimeoutError") ||
+      msg.includes("timed out") ||
+      msg.includes("Timeout");
+    const hint = timedOut
+      ? ` — no response within ${E2E_FETCH_TIMEOUT_MS}ms; start \`pnpm dev\` (web on ${WEB_URL})`
+      : "";
+    fail("Storefront HTTP request", `${msg}${hint}`);
     return;
   }
 
   // Test 404 for non-existent slug
   try {
-    const res404 = await fetch(`${WEB_URL}/en/nonexistent-slug-xyz-999`, {
+    const res404 = await buyerFetch("nonexistent-slug-xyz-999", {
       redirect: "follow",
     });
     assert(
       res404.status === 404,
-      "GET /en/nonexistent-slug → 404",
+      "GET /nonexistent-slug → 404",
       `got ${res404.status}`
     );
   } catch (e) {
@@ -559,13 +604,11 @@ async function flow6_storefront(slug: string) {
 
   // Test reserved slug
   try {
-    const resReserved = await fetch(`${WEB_URL}/en/roasters`, {
-      redirect: "follow",
-    });
-    // Reserved slugs should not load a storefront — either 404 or route to different page
+    const resReserved = await buyerFetch("roasters", { redirect: "follow" });
+    // RESERVED_SLUGS (e.g. roasters) → notFound() on buyer storefront
     assert(
-      resReserved.status === 404 || !resReserved.url.includes("/en/roasters"),
-      "Reserved slug /en/roasters does not render storefront",
+      resReserved.status === 404,
+      "Reserved slug /roasters → 404",
       `status ${resReserved.status}`
     );
   } catch (e) {
@@ -585,11 +628,15 @@ async function flow7_shippingGuard(slug: string, roasterId: string) {
   const rates = await prisma.roasterShippingRate.findMany({
     where: { roasterId },
   });
-  assert(
-    rates.length > 0,
-    "Roaster has shipping rates for normal operation",
-    "no rates"
-  );
+  if (rates.length === 0) {
+    fail(
+      "Roaster has shipping rates for normal operation",
+      "no rates — run `pnpm --filter @joe-perks/db seed:e2e`"
+    );
+    skip("Shipping guard redirect", "no baseline rates");
+    return;
+  }
+  pass("Roaster has shipping rates for normal operation");
 
   // Temporarily remove shipping rates to test the guard
   const savedRates = rates.map((r) => ({
@@ -604,7 +651,7 @@ async function flow7_shippingGuard(slug: string, roasterId: string) {
 
   // Verify checkout redirect when no shipping rates
   try {
-    const checkoutRes = await fetch(`${WEB_URL}/en/${slug}/checkout`, {
+    const checkoutRes = await buyerFetch(`${slug}/checkout`, {
       redirect: "manual",
     });
     // Should redirect with ?error=no-shipping or return the page with guard
@@ -659,6 +706,7 @@ interface CheckoutResponse {
   paymentIntentId: string;
 }
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: end-to-end verification script intentionally checks many sequential assertions
 async function flow8_checkout(campaignId: string, roasterId: string) {
   console.log("\n--- Flow 8: Three-Step Checkout (US-04-03) ---\n");
 
@@ -687,6 +735,12 @@ async function flow8_checkout(campaignId: string, roasterId: string) {
     items: items.map((item) => ({ campaignItemId: item.id, quantity: 2 })),
     buyerEmail: "buyer-e2e@joeperks.test",
     buyerName: "E2E Buyer",
+    street: "123 Brew St",
+    street2: "Suite 4",
+    city: "Austin",
+    state: "TX",
+    zip: "78701",
+    country: "US",
     shippingRateId: shippingRate.id,
   };
 
@@ -702,6 +756,11 @@ async function flow8_checkout(campaignId: string, roasterId: string) {
       `POST /api/checkout/create-intent → ${res.status}`,
       `status ${res.status}`
     );
+    if (!res.ok) {
+      const errorBody = await res.text();
+      fail("Checkout API response body", errorBody || "empty response body");
+      return null;
+    }
     checkoutResponse = (await res.json()) as CheckoutResponse;
   } catch (e) {
     fail(
@@ -1058,10 +1117,9 @@ async function flow9_orderConfirmation(
 
   // Check the confirmation page renders
   try {
-    const pageRes = await fetch(
-      `${WEB_URL}/en/${slug}/order/${paymentIntentId}`,
-      { redirect: "follow" }
-    );
+    const pageRes = await buyerFetch(`${slug}/order/${paymentIntentId}`, {
+      redirect: "follow",
+    });
     assert(
       pageRes.ok,
       `GET order confirmation page → ${pageRes.status}`,
@@ -1127,6 +1185,11 @@ async function main() {
     flow4Result.orgId,
     flow2Result.roasterId
   );
+  if (!flow5Result) {
+    console.log(
+      "\n  ABORT: Flow 5 did not activate a campaign (see shipping-rate error above).\n"
+    );
+  }
 
   // Flow 6: Public Storefront
   await flow6_storefront(flow2Result.slug);
@@ -1135,10 +1198,12 @@ async function main() {
   await flow7_shippingGuard(flow2Result.slug, flow2Result.roasterId);
 
   // Flow 8: Three-Step Checkout
-  const flow8Result = await flow8_checkout(
-    flow5Result.campaignId,
-    flow2Result.roasterId
-  );
+  const flow8Result = flow5Result
+    ? await flow8_checkout(flow5Result.campaignId, flow2Result.roasterId)
+    : null;
+  if (!flow5Result) {
+    skip("Flow 8: Checkout", "Flow 5 did not return a campaignId");
+  }
 
   // Flow 9: Order Confirmation
   if (flow8Result) {

@@ -2,12 +2,15 @@
 
 **Status**: Living doc until v1 ships. Freeze and snapshot on go-live day.
 **Owner**: Eng lead (primary) + Chris (business decisions)
-**Last updated**: 2026-04-19
+**Last updated**: 2026-04-20
 
 **Related**
 - [`../pre-mortems/2026-04-19-v1-launch.md`](../pre-mortems/2026-04-19-v1-launch.md) — risk analysis that produced this runbook
 - [`../../SCAFFOLD_CHECKLIST.md`](../../SCAFFOLD_CHECKLIST.md) — execution tracker (Phase 10 is the gate for this runbook)
 - [`../testing/money-path-e2e-scenarios.md`](../testing/money-path-e2e-scenarios.md) — E2E test coverage
+- [`../testing/v1-launch-money-path-e2e-execution.md`](../testing/v1-launch-money-path-e2e-execution.md) — current sandbox results, runnable commands, and pre-production rotation checklist
+- [`./v1-production-bootstrap-checklist.md`](./v1-production-bootstrap-checklist.md) — production-safe first-data bootstrap process for true beta
+- [`./v1-production-beta-tester-worksheet.md`](./v1-production-beta-tester-worksheet.md) — fillable worksheet for each live production beta tester
 - [`./2026-04-database-schema-reconciliation.md`](./2026-04-database-schema-reconciliation.md) — DB drift findings from launch-readiness debugging
 - [`../VERCEL_DEPLOYMENT_GAP_CHECKLIST.md`](../VERCEL_DEPLOYMENT_GAP_CHECKLIST.md) — original Vercel-specific gaps
 - [`../VERCEL_PRODUCTION_PREVIEW_SETUP.md`](../VERCEL_PRODUCTION_PREVIEW_SETUP.md) — Vercel project setup
@@ -46,6 +49,8 @@ Abort criteria at the end of each phase.
 - [ ] `requireOrgId()` and `requireRoasterId()` helpers audited — each throws on missing session; no fall-through.
 
 ### A.3 Money path (engineering)
+- [ ] **Today’s commands** (until `pnpm test:e2e` ships): [`../testing/v1-launch-money-path-e2e-execution.md`](../testing/v1-launch-money-path-e2e-execution.md) — `pnpm test`, `pnpm e2e:sprint3`, Stripe listen + webhook secret.
+- [x] **Sandbox-local executable suite completed on 2026-04-20**: `pnpm test`, `pnpm e2e:stripe-listen`, `pnpm e2e:stripe-trigger`, `pnpm e2e:sprint3`, and `pnpm test:e2e:frontend` all passed in the sandbox/test-key environment. See the execution log in [`../testing/v1-launch-money-path-e2e-execution.md`](../testing/v1-launch-money-path-e2e-execution.md).
 - [ ] E2E scenarios MP-01 through EC-24 implemented per [`../testing/money-path-e2e-scenarios.md`](../testing/money-path-e2e-scenarios.md).
 - [ ] `.github/workflows/e2e.yml` runs on every PR and nightly on `main`; green for 3 consecutive runs before go-live.
 - [ ] Invariant helper `assertSplitInvariants()` added to `packages/stripe/src/splits.ts`; unit-tested.
@@ -76,11 +81,28 @@ Abort criteria at the end of each phase.
 - [ ] DNS A / CNAME records for `joeperks.com`, `www.joeperks.com`, `roasters.joeperks.com`, `orgs.joeperks.com`, `admin.joeperks.com` pointed at Vercel. Verified in Vercel dashboard.
 - [ ] Email: SPF, DKIM, DMARC records for Resend sending domain. Deliverability tested to Gmail, Outlook, Yahoo.
 
+### A.6b Sandbox -> production secret rotation checklist
+
+Do **not** rotate Stripe / Clerk / Resend / Inngest / Upstash / Sentry values to production until every item below is complete. This is the gate before a **true frontend beta** with real users and production values.
+
+- [ ] Sandbox evidence captured: current PASS results from [`../testing/v1-launch-money-path-e2e-execution.md`](../testing/v1-launch-money-path-e2e-execution.md) reviewed and still representative of the branch to be promoted.
+- [ ] Preview dress rehearsal (Phase B.1) passes with **sandbox/test-mode** integrations on Vercel preview, including signed webhook delivery and buyer-facing checkout.
+- [ ] Production data bootstrap plan approved: first real roasters, orgs, users, products, shipping rates, and campaigns are defined. Use [`./v1-production-bootstrap-checklist.md`](./v1-production-bootstrap-checklist.md). **Do not** use local E2E fixture seeds in production.
+- [ ] Production Neon snapshot taken and latest committed migrations applied successfully.
+- [ ] Production env values staged in password manager / secure notes and copied into Vercel **production** only (not local `.env`, not preview unless intentionally mirrored).
+- [ ] Live Stripe endpoints created and their **production** webhook secrets captured; `STRIPE_WEBHOOK_SECRET` updated after endpoint creation.
+- [ ] Live Clerk production apps/redirects/webhooks verified for `web`, `roaster`, and `org`.
+- [ ] Resend production sending domain verified and tested; sender address updated away from any temporary sandbox/project values.
+- [ ] Rollback owner and rollback path confirmed: previous Vercel deployment, Neon snapshot ID, and who can execute each step.
+- [ ] Pilot beta script agreed: smallest-possible live smoke transaction, immediate refund path, named pilot roaster/org, and support/on-call coverage.
+- [ ] Pilot worksheet ready for each tester: use [`./v1-production-beta-tester-worksheet.md`](./v1-production-beta-tester-worksheet.md).
+
 ### A.7 Webhooks
 - [ ] Stripe webhooks registered for **preview** and **production**: `payment_intent.succeeded`, `charge.refunded`, `charge.dispute.*`, `account.updated` (for Connect), `transfer.paid`, `transfer.failed`.
 - [ ] Clerk webhooks registered for **roaster** and **org** apps (preview + prod): `user.created`, `user.updated`, `session.*` as needed.
 - [ ] Inngest app synced with production env; jobs visible in dashboard.
 - [ ] Stripe CLI smoke test: `stripe trigger payment_intent.succeeded --api-key sk_test_...` → preview webhook returns 200, `OrderEvent` created.
+- [ ] **Local dev**: forwarding + signing secret sync for `web` is documented in [`../testing/v1-launch-money-path-e2e-execution.md`](../testing/v1-launch-money-path-e2e-execution.md) (Stripe listen, `STRIPE_WEBHOOK_SECRET`, `pnpm e2e:stripe-listen` / `pnpm e2e:sprint3`).
 
 ### A.8 Abort criteria for Phase A
 If any of these are true at T-3, **do not proceed** to dress rehearsal:
@@ -115,9 +137,11 @@ If any step fails → **stop, fix, restart the script from step 1.**
 
 ### B.2 Production cutover (T-1, afternoon)
 - [ ] Code freeze on `main`. Tag `v1.0.0-rc.1`.
+- [ ] Re-read **Phase A.6b** and confirm every secret-rotation / production-bootstrap item is checked before touching Vercel production envs.
 - [ ] Run `prisma migrate deploy` against production Neon branch. Verify `_prisma_migrations` up to latest.
 - [ ] Take a Neon snapshot. Note snapshot ID here: `__________________`.
 - [ ] Flip DNS TTL to 300s (in case of rollback).
+- [ ] Create/bootstrap the first production data set (real roaster/org/user/product/campaign records) using [`./v1-production-bootstrap-checklist.md`](./v1-production-bootstrap-checklist.md). Do **not** run local E2E seed helpers against production.
 - [ ] Deploy tagged build to Vercel production for all 4 apps. Monitor build logs.
 - [ ] Run the Phase B.1 dress-rehearsal script again on **production** domains but with a **test-card-in-live-mode** if possible, or the smallest real charge ($5) against Chris's own card with a designated pilot roaster who has agreed to be the zeroth customer.
 - [ ] Immediately refund the $5 test charge. Verify refund flows through.

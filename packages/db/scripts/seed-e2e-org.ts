@@ -21,6 +21,12 @@ import { PrismaNeon } from "@prisma/adapter-neon";
 import ws from "ws";
 import { PrismaClient } from "../generated/client";
 
+import {
+  E2E_ORG_EMAIL,
+  E2E_ORG_SLUG,
+  E2E_ROASTER_EMAIL,
+} from "./e2e-seed-constants";
+
 neonConfig.webSocketConstructor = ws;
 
 const url = process.env.DATABASE_URL;
@@ -33,9 +39,9 @@ const prisma = new PrismaClient({
   adapter: new PrismaNeon({ connectionString: url }),
 });
 
-const ORG_EMAIL = "wearefireflymedia@gmail.com";
-const ORG_SLUG = "e2e-test-org";
-const ROASTER_EMAIL = "e2e-roaster@joeperks.test";
+const ORG_EMAIL = E2E_ORG_EMAIL;
+const ORG_SLUG = E2E_ORG_SLUG;
+const ROASTER_EMAIL = E2E_ROASTER_EMAIL;
 
 async function main() {
   console.log("\n--- Seeding E2E Org ---\n");

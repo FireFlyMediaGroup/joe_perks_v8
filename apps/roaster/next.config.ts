@@ -1,3 +1,4 @@
+import "./load-root-env";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { withToolbar } from "@repo/feature-flags/lib/toolbar";

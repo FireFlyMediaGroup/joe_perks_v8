@@ -12,6 +12,8 @@ import { PrismaNeon } from "@prisma/adapter-neon";
 import ws from "ws";
 import { PrismaClient } from "../generated/client";
 
+import { E2E_ROASTER_EMAIL } from "./e2e-seed-constants";
+
 neonConfig.webSocketConstructor = ws;
 
 const url = process.env.DATABASE_URL;
@@ -25,7 +27,7 @@ const prisma = new PrismaClient({
 });
 
 async function main() {
-  const email = "e2e-roaster@joeperks.test";
+  const email = E2E_ROASTER_EMAIL;
 
   console.log("\n--- Seeding E2E Roaster ---\n");
 
@@ -45,6 +47,8 @@ async function main() {
   });
   console.log("  RoasterApplication:", app.id, "status:", app.status);
 
+  const stripeAccountId = `acct_e2e_roaster_${app.id.slice(0, 8)}`;
+
   const roaster = await prisma.roaster.upsert({
     where: { applicationId: app.id },
     create: {
@@ -55,13 +59,14 @@ async function main() {
       chargesEnabled: true,
       payoutsEnabled: true,
       fulfillerType: "ROASTER",
-      stripeAccountId: "acct_e2e_test_placeholder",
+      stripeAccountId,
     },
     update: {
       status: "ACTIVE",
       stripeOnboarding: "COMPLETE",
       chargesEnabled: true,
       payoutsEnabled: true,
+      stripeAccountId,
     },
   });
   console.log("  Roaster:", roaster.id, "status:", roaster.status);

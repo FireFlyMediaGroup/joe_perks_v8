@@ -3,6 +3,12 @@ import { persist } from "zustand/middleware";
 
 const MAX_QTY = 99;
 
+declare global {
+  interface Window {
+    __JOE_PERKS_CART_STORE__?: typeof useCartStore;
+  }
+}
+
 /** Display + checkout identity — prices are cents (`CampaignItem.retailPrice`). */
 export interface CartLine {
   campaignItemId: string;
@@ -120,3 +126,11 @@ export const useCartStore = create<CartState>()(
     }
   )
 );
+
+if (
+  typeof window !== "undefined" &&
+  (process.env.NODE_ENV !== "production" ||
+    process.env.NEXT_PUBLIC_E2E_TEST_MODE === "1")
+) {
+  window.__JOE_PERKS_CART_STORE__ = useCartStore;
+}

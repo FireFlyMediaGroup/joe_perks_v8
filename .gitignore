@@ -278,3 +278,7 @@ packages/database/generated
 .contentlayer
 .content-collections
 .source
+
+# Playwright
+test-results/
+tests/e2e/frontend/.generated/
