@@ -1,10 +1,33 @@
 import { database } from "@joe-perks/db";
+import { getCarrierTrackingHref } from "@joe-perks/types";
 import Link from "next/link";
 
 import { PortalTrackingForm } from "./portal-tracking-form";
 
 function formatUsd(cents: number): string {
   return `$${(cents / 100).toFixed(2)}`;
+}
+
+function renderTrackingNumber(
+  carrier: string | null,
+  trackingNumber: string | null
+) {
+  const trackingHref = getCarrierTrackingHref(carrier, trackingNumber);
+
+  if (!(trackingHref && trackingNumber?.trim())) {
+    return trackingNumber ?? "—";
+  }
+
+  return (
+    <a
+      className="underline underline-offset-2"
+      href={trackingHref}
+      rel="noreferrer"
+      target="_blank"
+    >
+      {trackingNumber}
+    </a>
+  );
 }
 
 const orderListSelect = {
@@ -195,7 +218,9 @@ export async function DashboardOrders({ roasterId }: Props) {
                 </div>
                 <p className="text-muted-foreground text-sm">
                   {o.carrier ?? "—"} ·{" "}
-                  <span className="font-mono">{o.trackingNumber ?? "—"}</span>
+                  <span className="font-mono">
+                    {renderTrackingNumber(o.carrier, o.trackingNumber)}
+                  </span>
                 </p>
                 <p className="text-muted-foreground text-xs">
                   Shipped {o.shippedAt?.toLocaleString() ?? "—"}

@@ -1,4 +1,5 @@
 import type { Order, OrderItem, OrderStatus } from "@joe-perks/db";
+import { getCarrierTrackingHref } from "@joe-perks/types";
 
 const formatUsd = (cents: number) => `$${(cents / 100).toFixed(2)}`;
 
@@ -35,6 +36,28 @@ const statusLabels: Record<OrderStatus, string> = {
   REFUNDED: "Refunded",
   SHIPPED: "Shipped",
 };
+
+function renderTrackingNumber(
+  carrier: string | null,
+  trackingNumber: string | null
+) {
+  const trackingHref = getCarrierTrackingHref(carrier, trackingNumber);
+
+  if (!(trackingHref && trackingNumber?.trim())) {
+    return trackingNumber ?? "—";
+  }
+
+  return (
+    <a
+      className="underline underline-offset-2"
+      href={trackingHref}
+      rel="noreferrer"
+      target="_blank"
+    >
+      {trackingNumber}
+    </a>
+  );
+}
 
 export function OrderDetail({ order }: { readonly order: OrderDetailModel }) {
   const orgName =
@@ -207,7 +230,7 @@ export function OrderDetail({ order }: { readonly order: OrderDetailModel }) {
           <p className="text-sm text-zinc-600">
             Tracking:{" "}
             <span className="font-mono text-zinc-900 dark:text-zinc-100">
-              {order.trackingNumber ?? "—"}
+              {renderTrackingNumber(order.carrier, order.trackingNumber)}
             </span>
           </p>
           <p className="mt-2 text-sm text-zinc-600">

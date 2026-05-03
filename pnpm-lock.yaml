@@ -252,6 +252,9 @@ importers:
       '@joe-perks/stripe':
         specifier: workspace:*
         version: link:../../packages/stripe
+      '@joe-perks/types':
+        specifier: workspace:*
+        version: link:../../packages/types
       '@repo/analytics':
         specifier: workspace:*
         version: link:../../packages/analytics
@@ -870,6 +873,9 @@ importers:
       '@joe-perks/db':
         specifier: workspace:*
         version: link:../db
+      '@joe-perks/types':
+        specifier: workspace:*
+        version: link:../types
       '@react-email/components':
         specifier: 1.0.8
         version: 1.0.8(react-dom@19.2.4(react@19.2.4))(react@19.2.4)

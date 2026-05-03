@@ -10,7 +10,15 @@ describe("buyer order detail helpers", () => {
     expect(getCarrierTrackingHref("USPS", "9400111202555012345678")).toBe(
       "https://tools.usps.com/go/TrackConfirmAction?tLabels=9400111202555012345678"
     );
+    expect(
+      getCarrierTrackingHref("United States Postal Service", "9400111202555012345678")
+    ).toBe(
+      "https://tools.usps.com/go/TrackConfirmAction?tLabels=9400111202555012345678"
+    );
     expect(getCarrierTrackingHref("FedEx", "123456789012")).toBe(
+      "https://www.fedex.com/fedextrack/?trknbr=123456789012"
+    );
+    expect(getCarrierTrackingHref("Federal Express", "123456789012")).toBe(
       "https://www.fedex.com/fedextrack/?trknbr=123456789012"
     );
     expect(getCarrierTrackingHref("Local courier", "ABC123")).toBeNull();

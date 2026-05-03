@@ -1,4 +1,5 @@
 import type { OrderStatus, PayoutStatus } from "@joe-perks/db";
+import { getCarrierTrackingHref } from "@joe-perks/types";
 import Link from "next/link";
 
 import type { OrderSlaState } from "../_lib/sla";
@@ -6,6 +7,7 @@ import type { OrderSlaState } from "../_lib/sla";
 interface Row {
   buyerName: string | null;
   campaignName: string;
+  carrier: string | null;
   disputeRespondBy: Date | null;
   hasOpenDispute: boolean;
   id: string;
@@ -68,6 +70,28 @@ function getSlaDetailText(order: Row): string {
   }
 
   return order.sla.description;
+}
+
+function renderTrackingNumber(
+  carrier: string | null,
+  trackingNumber: string | null
+) {
+  const trackingHref = getCarrierTrackingHref(carrier, trackingNumber);
+
+  if (!(trackingHref && trackingNumber?.trim())) {
+    return trackingNumber ?? "—";
+  }
+
+  return (
+    <a
+      className="underline underline-offset-2"
+      href={trackingHref}
+      rel="noreferrer"
+      target="_blank"
+    >
+      {trackingNumber}
+    </a>
+  );
 }
 
 export function OrderList({
@@ -321,7 +345,7 @@ export function OrderList({
                     </span>
                   </td>
                   <td className="px-3 py-2 font-mono text-xs">
-                    {o.trackingNumber ?? "—"}
+                    {renderTrackingNumber(o.carrier, o.trackingNumber)}
                   </td>
                   <td className="px-3 py-2">
                     <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs dark:bg-zinc-900">

@@ -44,16 +44,8 @@ export async function shipConfirmedOrder(input: {
         }
       }
 
-      const current = await tx.order.findFirst({
+      const shipped = await tx.order.updateMany({
         where: { id: orderId, roasterId, status: "CONFIRMED" },
-        select: { id: true, roasterId: true },
-      });
-      if (!current) {
-        throw new Error("ORDER_STATE");
-      }
-
-      await tx.order.update({
-        where: { id: orderId },
         data: {
           status: "SHIPPED",
           trackingNumber: trimmedTracking,
@@ -62,12 +54,16 @@ export async function shipConfirmedOrder(input: {
         },
       });
 
+      if (shipped.count !== 1) {
+        throw new Error("ORDER_STATE");
+      }
+
       await tx.orderEvent.create({
         data: {
           orderId,
           eventType: "SHIPPED",
           actorType: "ROASTER",
-          actorId: current.roasterId,
+          actorId: roasterId,
           payload: {
             carrier: trimmedCarrier,
             tracking_number: trimmedTracking,

@@ -1,4 +1,5 @@
 import type { Order, OrderEvent, OrderItem, OrderStatus, PayoutStatus } from "@joe-perks/db";
+import { getCarrierTrackingHref } from "@joe-perks/types";
 
 import { PortalTrackingForm } from "@/app/(authenticated)/dashboard/_components/portal-tracking-form";
 
@@ -36,6 +37,28 @@ const payoutLabels: Record<PayoutStatus, string> = {
   PENDING: "Pending",
   TRANSFERRED: "Transferred",
 };
+
+function renderTrackingNumber(
+  carrier: string | null,
+  trackingNumber: string | null
+) {
+  const trackingHref = getCarrierTrackingHref(carrier, trackingNumber);
+
+  if (!(trackingHref && trackingNumber?.trim())) {
+    return trackingNumber ?? "—";
+  }
+
+  return (
+    <a
+      className="underline underline-offset-2"
+      href={trackingHref}
+      rel="noreferrer"
+      target="_blank"
+    >
+      {trackingNumber}
+    </a>
+  );
+}
 
 export function OrderDetail({ order }: { readonly order: OrderDetailModel }) {
   const orgName =
@@ -116,7 +139,9 @@ export function OrderDetail({ order }: { readonly order: OrderDetailModel }) {
             </div>
             <div>
               <dt className="text-muted-foreground">Tracking</dt>
-              <dd className="font-mono">{order.trackingNumber ?? "—"}</dd>
+              <dd className="font-mono">
+                {renderTrackingNumber(order.carrier, order.trackingNumber)}
+              </dd>
             </div>
             <div>
               <dt className="text-muted-foreground">Carrier</dt>

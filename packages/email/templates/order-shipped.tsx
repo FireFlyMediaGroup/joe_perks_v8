@@ -1,4 +1,5 @@
 import { Hr, Link, Text } from "@react-email/components";
+import { getCarrierTrackingHref } from "@joe-perks/types";
 
 import { BaseEmailLayout } from "./base-layout";
 
@@ -10,24 +11,6 @@ interface OrderShippedEmailProps {
   readonly trackingNumber: string;
 }
 
-function trackingUrl(carrier: string, trackingNumber: string): string | null {
-  const c = carrier.toUpperCase();
-  const enc = encodeURIComponent(trackingNumber);
-  if (c.includes("USPS")) {
-    return `https://tools.usps.com/go/TrackConfirmAction?tLabels=${enc}`;
-  }
-  if (c.includes("UPS")) {
-    return `https://www.ups.com/track?tracknum=${enc}`;
-  }
-  if (c.includes("FEDEX") || c === "FEDEX") {
-    return `https://www.fedex.com/fedextrack/?trknbr=${enc}`;
-  }
-  if (c.includes("DHL")) {
-    return `https://www.dhl.com/en/express/tracking.html?AWB=${enc}`;
-  }
-  return null;
-}
-
 function OrderShippedEmail({
   buyerName,
   carrier,
@@ -35,7 +18,7 @@ function OrderShippedEmail({
   orgName,
   trackingNumber,
 }: OrderShippedEmailProps) {
-  const url = trackingUrl(carrier, trackingNumber);
+  const url = getCarrierTrackingHref(carrier, trackingNumber);
 
   return (
     <BaseEmailLayout preview={`Your order ${orderNumber} has shipped`}>

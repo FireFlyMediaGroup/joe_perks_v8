@@ -14,6 +14,7 @@
     "@joe-perks/db": "workspace:*",
     "@joe-perks/email": "workspace:*",
     "@joe-perks/stripe": "workspace:*",
+    "@joe-perks/types": "workspace:*",
     "@repo/analytics": "workspace:*",
     "@repo/auth": "workspace:*",
     "@repo/collaboration": "workspace:*",

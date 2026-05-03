@@ -15,6 +15,28 @@ function renderValue(value: string | null): string {
   return value?.trim() ? value : "Not available yet";
 }
 
+function renderTrackingNumber(
+  trackingNumber: string | null,
+  trackingHref: string | null
+) {
+  const value = renderValue(trackingNumber);
+
+  if (!(trackingHref && trackingNumber?.trim())) {
+    return value;
+  }
+
+  return (
+    <a
+      className="font-medium text-foreground underline underline-offset-2"
+      href={trackingHref}
+      rel="noreferrer"
+      target="_blank"
+    >
+      {trackingNumber}
+    </a>
+  );
+}
+
 export function OrderDeliveryCard({ locale, order }: OrderDeliveryCardProps) {
   const trackingState = getBuyerOrderTrackingStateCopy(order, { locale });
   const trackingHref = getCarrierTrackingHref(
@@ -58,7 +80,7 @@ export function OrderDeliveryCard({ locale, order }: OrderDeliveryCardProps) {
           <div className="rounded-2xl bg-muted/60 p-4">
             <dt className="font-medium text-foreground">Tracking number</dt>
             <dd className="mt-1 break-all text-muted-foreground leading-6">
-              {renderValue(order.trackingNumber)}
+              {renderTrackingNumber(order.trackingNumber, trackingHref)}
             </dd>
           </div>
           <div className="rounded-2xl bg-muted/60 p-4">

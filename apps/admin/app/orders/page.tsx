@@ -188,6 +188,7 @@ export default async function AdminOrdersPage({
         },
       },
       createdAt: true,
+      carrier: true,
       dispute: {
         select: {
           outcome: true,
@@ -216,6 +217,7 @@ export default async function AdminOrdersPage({
   const orders = rows.map((o) => ({
     buyerName: o.buyer?.name ?? null,
     campaignName: o.campaign.name,
+    carrier: o.carrier,
     disputeRespondBy: o.dispute?.respondBy ?? null,
     hasOpenDispute: o.dispute != null && o.dispute.outcome == null,
     id: o.id,

@@ -1,10 +1,33 @@
 import { database } from "@joe-perks/db";
+import { getCarrierTrackingHref } from "@joe-perks/types";
 import Link from "next/link";
 
 import { FaultAttributionForm } from "./_components/fault-attribution-form";
 
 function formatUsd(cents: number): string {
   return `$${(cents / 100).toFixed(2)}`;
+}
+
+function renderTrackingNumber(
+  carrier: string | null,
+  trackingNumber: string | null
+) {
+  const trackingHref = getCarrierTrackingHref(carrier, trackingNumber);
+
+  if (!(trackingHref && trackingNumber?.trim())) {
+    return trackingNumber ?? "—";
+  }
+
+  return (
+    <a
+      className="font-mono underline underline-offset-2"
+      href={trackingHref}
+      rel="noreferrer"
+      target="_blank"
+    >
+      {trackingNumber}
+    </a>
+  );
 }
 
 function parseStatusFilter(raw: string | undefined): "ALL" | "CLOSED" | "OPEN" {
@@ -79,6 +102,7 @@ export default async function AdminDisputesPage({
             id: true,
             orderNumber: true,
             payoutStatus: true,
+            carrier: true,
             roaster: {
               select: {
                 application: { select: { businessName: true } },
@@ -261,7 +285,11 @@ export default async function AdminDisputesPage({
                         Payment intent: {dispute.order.stripePiId}
                       </p>
                       <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-                        Tracking: {dispute.order.trackingNumber ?? "—"}
+                        Tracking:{" "}
+                        {renderTrackingNumber(
+                          dispute.order.carrier,
+                          dispute.order.trackingNumber
+                        )}
                       </p>
                     </div>
                     <div className="rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">

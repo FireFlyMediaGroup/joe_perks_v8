@@ -1,4 +1,7 @@
 import type { OrderStatus } from "@joe-perks/db";
+import { getCarrierTrackingHref as getSharedCarrierTrackingHref } from "@joe-perks/types";
+
+export { getCarrierTrackingHref } from "@joe-perks/types";
 
 const BASE_TONE_CLASS_NAME =
   "border-border bg-muted text-foreground dark:bg-muted/40 dark:text-foreground";
@@ -56,49 +59,6 @@ export function isBuyerOrderDelayed(
   );
 }
 
-function normalizeCarrierForTrackingLink(carrier: string): string {
-  return carrier
-    .trim()
-    .toUpperCase()
-    .replaceAll(/[\s_-]+/g, "");
-}
-
-export function getCarrierTrackingHref(
-  carrier: string | null,
-  trackingNumber: string | null
-): string | null {
-  const trimmedCarrier = carrier?.trim();
-  const trimmedTracking = trackingNumber?.trim();
-
-  if (!(trimmedCarrier && trimmedTracking)) {
-    return null;
-  }
-
-  const encodedTracking = encodeURIComponent(trimmedTracking);
-  const normalizedCarrier = normalizeCarrierForTrackingLink(trimmedCarrier);
-
-  if (
-    normalizedCarrier === "USPS" ||
-    normalizedCarrier === "UNITEDSTATESPOSTALSERVICE"
-  ) {
-    return `https://tools.usps.com/go/TrackConfirmAction?tLabels=${encodedTracking}`;
-  }
-
-  if (normalizedCarrier === "UPS") {
-    return `https://www.ups.com/track?tracknum=${encodedTracking}`;
-  }
-
-  if (normalizedCarrier === "FEDEX" || normalizedCarrier === "FEDERALXPRESS") {
-    return `https://www.fedex.com/fedextrack/?trknbr=${encodedTracking}`;
-  }
-
-  if (normalizedCarrier === "DHL" || normalizedCarrier === "DHLEXPRESS") {
-    return `https://www.dhl.com/us-en/home/tracking/tracking-express.html?submit=1&tracking-id=${encodedTracking}`;
-  }
-
-  return null;
-}
-
 export function getBuyerOrderTrackingStateCopy(
   input: BuyerOrderTrackingStateInput,
   options: BuyerOrderTrackingStateOptions | Date = {}
@@ -143,7 +103,7 @@ export function getBuyerOrderTrackingStateCopy(
 
   if (input.status === "SHIPPED") {
     const hasTrackingLink =
-      getCarrierTrackingHref(input.carrier, input.trackingNumber) !== null;
+      getSharedCarrierTrackingHref(input.carrier, input.trackingNumber) !== null;
 
     return {
       description: hasTrackingLink
