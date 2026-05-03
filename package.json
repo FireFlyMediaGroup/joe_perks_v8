@@ -79,5 +79,20 @@
     "parse5": "^7.2.1",
     "next": "16.2.1"
   },
-  "type": "module"
+  "type": "module",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@clerk/shared",
+      "@prisma/engines",
+      "@sentry/cli",
+      "bufferutil",
+      "core-js",
+      "esbuild",
+      "msgpackr-extract",
+      "prisma",
+      "protobufjs",
+      "sharp",
+      "unrs-resolver"
+    ]
+  }
 }
