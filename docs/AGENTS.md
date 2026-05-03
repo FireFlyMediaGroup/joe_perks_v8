@@ -470,3 +470,38 @@ Added in April 2026 after the v1 pre-mortem. These are the live docs for shippin
 
 When writing Phase 2/3 features, check whether the schema field already exists
 (it likely does — the schema was designed to be forward-compatible).
+
+---
+
+## Cursor Cloud specific instructions
+
+### Toolchain
+
+The VM update script installs **fnm** (Node.js version manager), **Node.js 20**, **pnpm 10.31.0** (via corepack), and **Bun**. After the update script runs, source the environment:
+
+```bash
+export PATH="$HOME/.local/share/fnm:$HOME/.bun/bin:$PATH"
+eval "$(fnm env)"
+```
+
+### Running dev servers
+
+`pnpm dev` starts **web** (3000), **roaster** (3001), **org** (3002), **admin** (3003), and **email** (3004) via Turbo TUI. All apps gracefully degrade without external service credentials — the buyer storefront (`web`) and email preview (`email`) work fully without any secrets.
+
+**Required env vars for all Next.js apps:** `NEXT_PUBLIC_APP_URL` and `NEXT_PUBLIC_WEB_URL` in each app's `.env.local` (validated by `packages/next-config/keys.ts` as `z.url()` — not optional). Without these, `next.config.ts` fails to load.
+
+### Build scripts (pnpm.onlyBuiltDependencies)
+
+The repo's `package.json` includes `pnpm.onlyBuiltDependencies` to allow native postinstall scripts (esbuild, prisma, sharp, etc.) to run during `pnpm install`. Without this, Next.js and Prisma fail at runtime.
+
+### Running tests
+
+- `pnpm test` — runs Vitest unit tests across `@joe-perks/stripe`, `apps/admin`, `apps/roaster`
+- `pnpm check` — runs Ultracite (Biome-based lint/format)
+- `pnpm typecheck` — runs TypeScript type checking across all packages
+
+### Notes
+
+- The `org` and `roaster` apps return 500/redirect without valid Clerk keys — this is expected in environments without Clerk credentials.
+- The `admin` app uses HTTP Basic Auth: `ADMIN_EMAIL` / `ADMIN_PASSWORD` in `apps/admin/.env.local`.
+- Prisma Client must be generated before DB-backed routes work: `cd packages/db && npx prisma generate`.
