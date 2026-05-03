@@ -27,7 +27,8 @@ export async function submitTracking(
   if (!order) {
     return {
       ok: false,
-      error: "This order was already shipped or is no longer awaiting fulfillment.",
+      error:
+        "This order was already shipped or is no longer awaiting fulfillment.",
     };
   }
 

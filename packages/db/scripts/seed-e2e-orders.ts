@@ -63,10 +63,10 @@ async function allocateOrderNumber(): Promise<string> {
 }
 
 interface SeedOrderSpec {
-  readonly stripePiId: string;
-  readonly status: "CONFIRMED" | "SHIPPED";
-  readonly trackingNumber?: string;
   readonly carrier?: string;
+  readonly status: "CONFIRMED" | "SHIPPED";
+  readonly stripePiId: string;
+  readonly trackingNumber?: string;
 }
 
 async function seedOneOrder(
@@ -275,7 +275,9 @@ async function main() {
   });
   const shippingFlat = shipping?.flatRate ?? shippingFallback?.flatRate;
   if (shippingFlat === undefined) {
-    console.error("  ERROR: No shipping rate for roaster — run seed-e2e-roaster.");
+    console.error(
+      "  ERROR: No shipping rate for roaster — run seed-e2e-roaster."
+    );
     process.exit(1);
   }
 

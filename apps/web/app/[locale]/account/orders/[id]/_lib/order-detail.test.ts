@@ -11,7 +11,10 @@ describe("buyer order detail helpers", () => {
       "https://tools.usps.com/go/TrackConfirmAction?tLabels=9400111202555012345678"
     );
     expect(
-      getCarrierTrackingHref("United States Postal Service", "9400111202555012345678")
+      getCarrierTrackingHref(
+        "United States Postal Service",
+        "9400111202555012345678"
+      )
     ).toBe(
       "https://tools.usps.com/go/TrackConfirmAction?tLabels=9400111202555012345678"
     );

@@ -158,7 +158,10 @@ export async function DashboardOrders({ roasterId }: Props) {
                   {o.campaign.org.application.orgName ?? o.campaign.org.slug} ·{" "}
                   {o.createdAt.toLocaleString()}
                 </p>
-                <PortalTrackingForm orderId={o.id} orderNumber={o.orderNumber} />
+                <PortalTrackingForm
+                  orderId={o.id}
+                  orderNumber={o.orderNumber}
+                />
               </li>
             ))}
           </ul>
@@ -175,7 +178,10 @@ export async function DashboardOrders({ roasterId }: Props) {
         ) : (
           <ul className="mt-4 divide-y rounded-lg border">
             {pendingPayment.map((o) => (
-              <li className="flex flex-wrap items-center justify-between gap-2 p-4" key={o.id}>
+              <li
+                className="flex flex-wrap items-center justify-between gap-2 p-4"
+                key={o.id}
+              >
                 <div>
                   <Link
                     className="font-mono font-semibold underline underline-offset-2"
@@ -188,11 +194,13 @@ export async function DashboardOrders({ roasterId }: Props) {
                     · {o.buyerEmail}
                   </span>
                   <p className="text-muted-foreground text-xs">
-                    {o.campaign.org.application.orgName ?? o.campaign.org.slug} ·{" "}
-                    {o.createdAt.toLocaleString()}
+                    {o.campaign.org.application.orgName ?? o.campaign.org.slug}{" "}
+                    · {o.createdAt.toLocaleString()}
                   </p>
                 </div>
-                <span className="text-sm tabular-nums">{formatUsd(o.grossAmount)}</span>
+                <span className="text-sm tabular-nums">
+                  {formatUsd(o.grossAmount)}
+                </span>
               </li>
             ))}
           </ul>
@@ -214,7 +222,9 @@ export async function DashboardOrders({ roasterId }: Props) {
                   >
                     {o.orderNumber}
                   </Link>
-                  <span className="text-sm tabular-nums">{formatUsd(o.grossAmount)}</span>
+                  <span className="text-sm tabular-nums">
+                    {formatUsd(o.grossAmount)}
+                  </span>
                 </div>
                 <p className="text-muted-foreground text-sm">
                   {o.carrier ?? "—"} ·{" "}

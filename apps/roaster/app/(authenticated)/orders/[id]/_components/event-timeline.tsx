@@ -23,7 +23,9 @@ const labels: Record<string, string> = {
 
 export function EventTimeline({ events }: { readonly events: OrderEvent[] }) {
   if (events.length === 0) {
-    return <p className="text-muted-foreground text-sm">No events recorded yet.</p>;
+    return (
+      <p className="text-muted-foreground text-sm">No events recorded yet.</p>
+    );
   }
 
   return (

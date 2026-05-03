@@ -1,5 +1,5 @@
-import { Hr, Link, Text } from "@react-email/components";
 import { getCarrierTrackingHref } from "@joe-perks/types";
+import { Hr, Link, Text } from "@react-email/components";
 
 import { BaseEmailLayout } from "./base-layout";
 

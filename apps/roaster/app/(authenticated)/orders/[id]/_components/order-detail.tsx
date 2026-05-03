@@ -1,4 +1,10 @@
-import type { Order, OrderEvent, OrderItem, OrderStatus, PayoutStatus } from "@joe-perks/db";
+import type {
+  Order,
+  OrderEvent,
+  OrderItem,
+  OrderStatus,
+  PayoutStatus,
+} from "@joe-perks/db";
 import { getCarrierTrackingHref } from "@joe-perks/types";
 
 import { PortalTrackingForm } from "@/app/(authenticated)/dashboard/_components/portal-tracking-form";
@@ -69,7 +75,9 @@ export function OrderDetail({ order }: { readonly order: OrderDetailModel }) {
   return (
     <div className="space-y-8">
       <header className="space-y-1">
-        <p className="text-muted-foreground text-sm">Order {order.orderNumber}</p>
+        <p className="text-muted-foreground text-sm">
+          Order {order.orderNumber}
+        </p>
         <div className="flex flex-wrap items-center gap-2">
           <h1 className="font-semibold text-2xl">Order details</h1>
           <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs dark:bg-zinc-900">
@@ -93,7 +101,10 @@ export function OrderDetail({ order }: { readonly order: OrderDetailModel }) {
             link.
           </p>
           <div className="mt-4">
-            <PortalTrackingForm orderId={order.id} orderNumber={order.orderNumber} />
+            <PortalTrackingForm
+              orderId={order.id}
+              orderNumber={order.orderNumber}
+            />
           </div>
         </section>
       ) : null}
@@ -108,7 +119,9 @@ export function OrderDetail({ order }: { readonly order: OrderDetailModel }) {
             </div>
             <div>
               <dt className="text-muted-foreground">Email</dt>
-              <dd className="break-all">{order.buyer?.email ?? order.buyerEmail}</dd>
+              <dd className="break-all">
+                {order.buyer?.email ?? order.buyerEmail}
+              </dd>
             </div>
             <div>
               <dt className="text-muted-foreground">Created</dt>
@@ -149,7 +162,9 @@ export function OrderDetail({ order }: { readonly order: OrderDetailModel }) {
             </div>
             <div>
               <dt className="text-muted-foreground">Shipped</dt>
-              <dd>{order.shippedAt ? order.shippedAt.toLocaleString() : "—"}</dd>
+              <dd>
+                {order.shippedAt ? order.shippedAt.toLocaleString() : "—"}
+              </dd>
             </div>
           </dl>
         </div>

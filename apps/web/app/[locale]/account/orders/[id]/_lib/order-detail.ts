@@ -103,7 +103,8 @@ export function getBuyerOrderTrackingStateCopy(
 
   if (input.status === "SHIPPED") {
     const hasTrackingLink =
-      getSharedCarrierTrackingHref(input.carrier, input.trackingNumber) !== null;
+      getSharedCarrierTrackingHref(input.carrier, input.trackingNumber) !==
+      null;
 
     return {
       description: hasTrackingLink

@@ -52,7 +52,10 @@ export default async function RoasterOrderDetailPage({ params }: Props) {
   return (
     <div className="mx-auto max-w-5xl p-6 md:p-8">
       <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
-        <Link className="text-muted-foreground text-sm underline" href="/dashboard">
+        <Link
+          className="text-muted-foreground text-sm underline"
+          href="/dashboard"
+        >
           ← Dashboard
         </Link>
       </div>

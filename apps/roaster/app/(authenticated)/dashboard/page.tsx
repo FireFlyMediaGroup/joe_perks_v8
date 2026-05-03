@@ -142,7 +142,9 @@ export default async function RoasterDashboardPage() {
       <p className="mt-2 text-muted-foreground">
         Orders for{" "}
         <span className="font-medium text-foreground">
-          {roaster?.application.businessName || roaster?.email || "your roaster"}
+          {roaster?.application.businessName ||
+            roaster?.email ||
+            "your roaster"}
         </span>
       </p>
       <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4">

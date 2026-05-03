@@ -23,10 +23,9 @@ const webBaseUrl = (process.env.WEB_BASE_URL ?? "https://joeperks.com").replace(
 const roasterBaseUrl = (
   process.env.ROASTER_BASE_URL ?? "https://roasters.joeperks.com"
 ).replace(/\/$/, "");
-const orgBaseUrl = (process.env.ORG_BASE_URL ?? "https://orgs.joeperks.com").replace(
-  /\/$/,
-  ""
-);
+const orgBaseUrl = (
+  process.env.ORG_BASE_URL ?? "https://orgs.joeperks.com"
+).replace(/\/$/, "");
 const adminBaseUrl = (
   process.env.ADMIN_BASE_URL ?? "https://admin.joeperks.com"
 ).replace(/\/$/, "");
@@ -84,7 +83,10 @@ async function expectHtmlPage({
 
     for (const needle of titleIncludes) {
       if (!title.includes(needle)) {
-        fail(label, `missing title marker ${JSON.stringify(needle)} (${title})`);
+        fail(
+          label,
+          `missing title marker ${JSON.stringify(needle)} (${title})`
+        );
         return;
       }
     }
