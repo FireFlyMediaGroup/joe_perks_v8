@@ -18,8 +18,10 @@ AI coding agents must follow these when generating or modifying code.
   git switch -c <branch-name>
   ```
 - Open pull requests **to `main`** unless a user explicitly asks for a different branch strategy.
-- Merge through PRs instead of pushing directly to `main`.
-- After a merge, return to `main`, fast-forward from `origin/main`, and confirm `git status` is clean.
+- Merge through PRs instead of pushing directly to `main` unless the repository owner explicitly approves a direct `main` push.
+- After tests/review pass, merge short-lived branches back to `main`; do not leave completed work stranded on feature branches.
+- After a merge or approved direct push, return to `main`, fast-forward from `origin/main`, and confirm `git status` is clean.
+- GitHub Actions CI runs for PRs targeting `main`/`develop` and pushes to `main`/`develop`; Vercel preview deploys run for branch/PR pushes and production deploys run from `main`.
 - Treat `develop` as optional. Use it only when the team intentionally wants a shared staging branch before promotion to `main`.
 
 ### Worktree hygiene

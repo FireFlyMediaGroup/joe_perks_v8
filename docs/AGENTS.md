@@ -96,7 +96,9 @@ Optional env vars that are **empty strings** in `.env` are treated as **unset** 
 | `email` (React Email preview) | 3004 |
 | `studio` (Prisma Studio)      | 3005 |
 
-**CI** (`.github/workflows/ci.yml`) uses **`pnpm install --frozen-lockfile`**, then `pnpm check` and `pnpm turbo build`.
+**CI** (`.github/workflows/ci.yml`) uses **`pnpm install --frozen-lockfile`**, then `pnpm check` and `pnpm turbo build`. The workflow runs for pull requests targeting `main`/`develop` and pushes to `main`/`develop`; pushing a feature branch alone does not trigger GitHub Actions CI. Vercel still creates preview deployments for branch/PR pushes and production deployments for `main`.
+
+**Biome / Ultracite scope:** `pnpm check` runs `ultracite check`. Generated Prisma client output in `packages/db/generated` is excluded in `biome.jsonc`; do not hand-format generated Prisma files to satisfy lint.
 
 ### Bun (secondary — runtime & CLI)
 

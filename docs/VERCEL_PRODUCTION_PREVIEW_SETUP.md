@@ -33,15 +33,19 @@ If you want a stable stage URL instead of using Vercel's generated preview URLs,
 GitHub Actions remains CI only.
 
 - CI file: `.github/workflows/ci.yml`
-- Runs on `main` and `develop` (so optional shared-stage teams still get CI)
+- Runs on:
+  - `pull_request` targeting `main` or `develop`
+  - `push` to `main` or `develop`
+- A feature branch push by itself does not run this CI workflow unless it opens or updates a PR targeting `main`/`develop`.
 - Executes:
   - `pnpm install --frozen-lockfile`
   - `pnpm check`
   - `pnpm turbo build`
+- `pnpm check` is `ultracite check`; generated Prisma output under `packages/db/generated` is excluded from Biome in `biome.jsonc` and should not be hand-formatted.
 
 Vercel Git integration handles deployments.
 
-- Open or update a PR -> branch preview deploys
+- Push to a feature branch or open/update a PR -> preview deploys
 - Push or merge to `main` -> production deploys
 - Push or merge to `develop` -> optional shared-stage preview deploys
 
@@ -420,22 +424,57 @@ git merge develop
 git push origin main
 ```
 
+For a short-lived feature branch that has already passed local validation and is approved to ship, fast-forward `main` and push:
+
+```bash
+git switch main
+git pull --ff-only origin main
+git merge --ff-only <branch-name>
+git push origin main
+```
+
 Then:
 
-1. Verify the production deploys complete in Vercel.
-2. Run production database migration and smoke checks if needed.
-3. Confirm production domains resolve correctly.
-4. Confirm live Stripe webhook delivery is healthy.
-5. Confirm Inngest is synced to the production `web` route.
+1. Verify GitHub Actions CI is green for the pushed commit.
+2. Verify the production deploys complete in Vercel.
+3. Run production database migration and smoke checks if needed.
+4. Confirm production domains resolve correctly.
+5. Confirm live Stripe webhook delivery is healthy.
+6. Confirm Inngest is synced to the production `web` route.
+
+Useful verification commands:
+
+```bash
+# Latest CI runs on main
+gh run list --workflow CI --branch main --limit 3
+
+# Watch a specific CI run until it completes
+gh run watch <run-id> --exit-status
+
+# Recent GitHub deployment records reported by Vercel
+gh api repos/FireFlyMediaGroup/joe_perks_v8/deployments \
+  --jq '.[:8][] | {sha, environment, created_at, statuses_url}'
+```
+
+Validated example: on 2026-05-03, commit `64e469f` passed GitHub Actions CI on `main` and GitHub reported successful Vercel production deployments for `web`, `roaster`, `org`, and `admin`.
 
 ## Step 10: Ongoing Workflow
 Use this operating model going forward:
 
 1. Branch from `main`
-2. Open PRs into `main`
-3. Review feature previews in Vercel
-4. Merge into `main` for production
-5. If you need a long-lived shared stage, treat `develop` as optional and promote `develop` into `main` intentionally
+2. Run local validation before shipping:
+   ```bash
+   pnpm check
+   SESSION_SECRET=ci-session-secret-0123456789abcdef0123456789abcdef \
+     NEXT_PUBLIC_APP_URL=http://localhost:3000 \
+     NEXT_PUBLIC_WEB_URL=http://localhost:3001 \
+     SKIP_ENV_VALIDATION=true \
+     pnpm turbo build
+   ```
+3. Open PRs into `main` when review is needed; the PR triggers GitHub Actions CI and Vercel preview deployments.
+4. After tests/review pass, merge the branch back to `main` for production.
+5. Verify the resulting `main` CI run and Vercel production deployments are green.
+6. If you need a long-lived shared stage, treat `develop` as optional and promote `develop` into `main` intentionally.
 
 ## Repo State
 App-level Vercel config is now present across all four deployable apps:
