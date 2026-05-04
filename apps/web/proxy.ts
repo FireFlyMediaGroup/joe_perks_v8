@@ -7,7 +7,7 @@ import {
   noseconeOptionsWithToolbar,
   securityMiddleware,
 } from "@repo/security/proxy";
-import { createNEMO } from "@rescale/nemo";
+import { createNEMO, type NextMiddleware as NemoMiddleware } from "@rescale/nemo";
 import {
   type NextFetchEvent,
   type NextProxy,
@@ -50,11 +50,16 @@ const arcjetMiddleware = async (request: NextRequest) => {
   }
 };
 
+const beforeMiddleware = [
+  internationalizationMiddleware,
+  arcjetMiddleware,
+] as unknown as NemoMiddleware[];
+
 // Compose non-Clerk middleware with Nemo
 const composedMiddleware = createNEMO(
   {},
   {
-    before: [internationalizationMiddleware, arcjetMiddleware],
+    before: beforeMiddleware,
   }
 );
 
