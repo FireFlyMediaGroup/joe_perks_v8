@@ -1,13 +1,12 @@
 import { type ApiData, verifyAccess } from "flags";
-import { type NextRequest, NextResponse } from "next/server";
 // biome-ignore lint/performance/noNamespaceImport: flags SDK convention
 import * as flags from "./index";
 
-export const getFlags = async (request: NextRequest) => {
+export const getFlags = async (request: Request): Promise<Response> => {
   const access = await verifyAccess(request.headers.get("Authorization"));
 
   if (!access) {
-    return NextResponse.json(null, { status: 401 });
+    return Response.json(null, { status: 401 });
   }
 
   const definitions = Object.fromEntries(
@@ -21,7 +20,7 @@ export const getFlags = async (request: NextRequest) => {
     ])
   );
 
-  return NextResponse.json<ApiData>({
+  return Response.json({
     definitions,
-  });
+  } satisfies ApiData);
 };
