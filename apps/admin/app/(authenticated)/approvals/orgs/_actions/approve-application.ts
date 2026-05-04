@@ -12,6 +12,7 @@ import {
 import { revalidatePath } from "next/cache";
 import { createElement } from "react";
 
+import { requirePlatformAdmin } from "../../../_lib/require-platform-admin";
 import { getRoasterOrgReviewUrl } from "../_lib/roaster-org-review-url";
 
 export type ApproveOrgApplicationResult =
@@ -21,6 +22,15 @@ export type ApproveOrgApplicationResult =
 export async function approveOrgApplication(
   applicationId: string
 ): Promise<ApproveOrgApplicationResult> {
+  const admin = await requirePlatformAdmin();
+  if (!admin.ok) {
+    return {
+      success: false,
+      error: "You are not authorized to approve organization applications.",
+      code: "UNAUTHORIZED",
+    };
+  }
+
   if (!applicationId) {
     return {
       success: false,

@@ -10,6 +10,7 @@ import {
 import { revalidatePath } from "next/cache";
 import { createElement } from "react";
 
+import { requirePlatformAdmin } from "../../../_lib/require-platform-admin";
 import { getRoasterPortalSignInUrl } from "../_lib/roaster-portal-sign-in-url";
 
 export type ApproveApplicationResult =
@@ -19,6 +20,15 @@ export type ApproveApplicationResult =
 export async function approveApplication(
   applicationId: string
 ): Promise<ApproveApplicationResult> {
+  const admin = await requirePlatformAdmin();
+  if (!admin.ok) {
+    return {
+      success: false,
+      error: "You are not authorized to approve roaster applications.",
+      code: "UNAUTHORIZED",
+    };
+  }
+
   if (!applicationId) {
     return {
       success: false,

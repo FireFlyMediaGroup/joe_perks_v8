@@ -152,8 +152,10 @@ Already present:
 
 Still missing:
 
-- [x] `ADMIN_EMAIL`
-- [x] `ADMIN_PASSWORD`
+- [x] `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
+- [x] `CLERK_SECRET_KEY`
+- [x] `NEXT_PUBLIC_CLERK_SIGN_IN_URL`
+- [x] `NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL`
 - [x] `NEXT_PUBLIC_SENTRY_DSN`
 
 ## Production Deploy Checklist
@@ -227,8 +229,11 @@ Current state: production envs are empty for all four projects.
 - [ ] `RESEND_FROM`
 - [ ] `SENTRY_AUTH_TOKEN`
 - [ ] `NEXT_PUBLIC_SENTRY_DSN`
-- [ ] `ADMIN_EMAIL`
-- [ ] `ADMIN_PASSWORD`
+- [ ] `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
+- [ ] `CLERK_SECRET_KEY`
+- [ ] `CLERK_WEBHOOK_SECRET`
+- [ ] `NEXT_PUBLIC_CLERK_SIGN_IN_URL`
+- [ ] `NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL`
 - [ ] `ROASTER_APP_ORIGIN`
 - [ ] `ORG_APP_ORIGIN`
 

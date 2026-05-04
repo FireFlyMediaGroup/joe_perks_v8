@@ -3,16 +3,25 @@
 import { database } from "@joe-perks/db";
 import { sendEmail } from "@joe-perks/email/send";
 import OrderDeliveredEmail from "@joe-perks/email/templates/order-delivered";
-import { getAdminActorLabel } from "@joe-perks/types";
 import { revalidatePath } from "next/cache";
 import { createElement } from "react";
+
+import { requirePlatformAdmin } from "../../_lib/require-platform-admin";
 
 export type ConfirmDeliveryResult = { ok: true } | { ok: false; error: string };
 
 export async function confirmDelivery(
   orderId: string
 ): Promise<ConfirmDeliveryResult> {
-  const adminActorId = getAdminActorLabel();
+  const admin = await requirePlatformAdmin();
+  if (!admin.ok) {
+    return {
+      ok: false,
+      error: "You are not authorized to confirm delivery.",
+    };
+  }
+
+  const adminActorId = admin.admin.actorLabel;
   const settings = await database.platformSettings.findUniqueOrThrow({
     where: { id: "singleton" },
   });

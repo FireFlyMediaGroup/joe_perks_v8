@@ -256,15 +256,18 @@ STRIPE_SECRET_KEY=
 RESEND_TOKEN=
 RESEND_FROM=
 SENTRY_AUTH_TOKEN=
-ADMIN_EMAIL=
-ADMIN_PASSWORD=
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=
+CLERK_SECRET_KEY=
+CLERK_WEBHOOK_SECRET=
+NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/
 ROASTER_APP_ORIGIN=
 ORG_APP_ORIGIN=
 ```
 
 Notes:
 
-- `ADMIN_EMAIL` and `ADMIN_PASSWORD` power the HTTP Basic Auth gate.
+- Admin uses a dedicated Clerk app. Platform admins must be explicitly promoted in the database with `role = PLATFORM_ADMIN` or `isPlatformAdmin = true`.
 - `ROASTER_APP_ORIGIN` and `ORG_APP_ORIGIN` are used for approval and account lifecycle links.
 
 ## Step 4: Configure Domains
@@ -405,8 +408,9 @@ Run this smoke pass against the stage environment before shipping to production.
 - Campaign routes load for an authenticated org user
 
 ### `apps/admin`
-- Basic Auth prompt appears
-- Admin dashboard loads after valid credentials
+- Clerk sign-in page renders
+- Admin dashboard loads for a platform admin user
+- Signed-in non-admin users are denied access
 
 ### Shared verification
 - Sentry receives a test event from the deployed environment

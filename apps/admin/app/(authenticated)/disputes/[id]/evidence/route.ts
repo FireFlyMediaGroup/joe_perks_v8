@@ -1,11 +1,21 @@
 import { database } from "@joe-perks/db";
 
+import { requirePlatformAdmin } from "../../../_lib/require-platform-admin";
+
 export const runtime = "nodejs";
 
 export async function GET(
   _request: Request,
   context: { params: Promise<{ id: string }> }
 ) {
+  const admin = await requirePlatformAdmin();
+  if (!admin.ok) {
+    return Response.json(
+      { error: "Unauthorized." },
+      { status: admin.error === "unauthorized" ? 401 : 403 }
+    );
+  }
+
   const { id } = await context.params;
 
   const dispute = await database.disputeRecord.findUnique({

@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 
-import { getAccountReactivationReadiness } from "../app/_lib/account-reactivation";
+import { getAccountReactivationReadiness } from "../app/(authenticated)/_lib/account-reactivation";
 
 test("US-07-04: reactivation returns ACTIVE when no blockers remain", () => {
   const readiness = getAccountReactivationReadiness({

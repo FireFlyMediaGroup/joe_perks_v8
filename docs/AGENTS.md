@@ -42,7 +42,7 @@ joe-perks/
 
 See `docs/01-project-structure.mermaid` for routes, API paths, and file-level detail. `apps/web` uses **`app/[locale]/…`** for pages and **`app/api/…`** for route handlers (next-forge i18n).
 
-**Middleware (proxy.ts):** `apps/web/proxy.ts` composes i18n, Clerk auth, Arcjet, and security headers via `@rescale/nemo`. The matcher **must** exclude `api` paths — `/((?!api|_next/static|…)…)` — so route handlers in `app/api/` are not intercepted by the i18n rewrite or auth middleware. **Important:** Next.js 16 does not allow both `middleware.ts` and `proxy.ts` in the same app. `middleware.ts` was removed from `apps/web`, `apps/roaster`, and `apps/org`; `proxy.ts` is the sole middleware entry point. `apps/admin` still uses `middleware.ts` (no `proxy.ts`).
+**Middleware (proxy.ts):** `apps/web/proxy.ts` composes i18n, Clerk auth, Arcjet, and security headers via `@rescale/nemo`. The matcher **must** exclude `api` paths — `/((?!api|_next/static|…)…)` — so route handlers in `app/api/` are not intercepted by the i18n rewrite or auth middleware. **Important:** Next.js 16 does not allow both `middleware.ts` and `proxy.ts` in the same app. `middleware.ts` was removed from `apps/web`, `apps/roaster`, `apps/org`, and `apps/admin`; `proxy.ts` is the sole middleware entry point.
 
 ---
 
@@ -287,8 +287,11 @@ ORG_APP_ORIGIN=                    # optional — public base URL for Stripe Con
 
 ### apps/admin `.env.local`
 ```
-ADMIN_EMAIL=         # HTTP Basic Auth for MVP (platform admin login — e.g. joe@joeperks.com)
-ADMIN_PASSWORD=      # HTTP Basic Auth for MVP
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=   # Admin Clerk app
+CLERK_SECRET_KEY=                    # Admin Clerk app
+CLERK_WEBHOOK_SECRET=                # optional — only if admin Clerk webhooks are enabled
+NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/
 ROASTER_APP_ORIGIN=  # optional — public **roaster portal** base URL for approval emails (login CTA in `roaster-approved`), e.g. https://roasters.joeperks.com — **not** the admin user’s email. Default http://localhost:3001. May be set in root `.env` instead (admin loads root `.env` via `load-root-env.ts`).
 ```
 
@@ -307,11 +310,11 @@ ROASTER_APP_ORIGIN=  # optional — public **roaster portal** base URL for appro
 | --------------------------- | --------------------- | ------------------- |
 | `apps/roaster`              | Clerk                 | `ROASTER_ADMIN`     |
 | `apps/org`                  | Clerk                 | `ORG_ADMIN`         |
-| `apps/admin`                | HTTP Basic Auth (MVP) | `PLATFORM_ADMIN`    |
+| `apps/admin`                | Clerk                 | `PLATFORM_ADMIN`    |
 | `apps/web` buyer storefront | No auth               | Public              |
 | Magic link pages            | Token validation      | No session required |
 
-**Clerk user sync:** On `user.created` webhook from Clerk, create a `User` record in DB with `external_auth_id = event.data.id`. Link `roaster_id` or `org_id` from Clerk public metadata.
+**Clerk user sync:** On `user.created` webhook from Clerk, create a `User` record in DB with `external_auth_id = event.data.id`. Link `roaster_id` or `org_id` from Clerk public metadata. Admin users use a dedicated Clerk app and must be explicitly promoted in the database with `role = PLATFORM_ADMIN` or `isPlatformAdmin = true`; do not expose public admin sign-up.
 
 ---
 

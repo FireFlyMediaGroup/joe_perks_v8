@@ -6,9 +6,9 @@ import {
   processLostRoasterFaultDispute,
 } from "@joe-perks/db";
 import { reverseTransferIfPossible } from "@joe-perks/stripe";
-import { getAdminActorLabel } from "@joe-perks/types";
 import { revalidatePath } from "next/cache";
 
+import { requirePlatformAdmin } from "../../_lib/require-platform-admin";
 import type { UpdateDisputeFaultState } from "./update-dispute-fault-state";
 
 const VALID_FAULTS = new Set([
@@ -36,6 +36,14 @@ export async function updateDisputeFault(
   _prevState: UpdateDisputeFaultState,
   formData: FormData
 ): Promise<UpdateDisputeFaultState> {
+  const admin = await requirePlatformAdmin();
+  if (!admin.ok) {
+    return {
+      error: "You are not authorized to update disputes.",
+      ok: false,
+    };
+  }
+
   const disputeId = String(formData.get("disputeId") ?? "").trim();
   const nextFault = parseFaultAttribution(formData.get("faultAttribution"));
   const noteRaw = String(formData.get("note") ?? "").trim();
@@ -93,7 +101,7 @@ export async function updateDisputeFault(
     };
   }
 
-  const actorLabel = getAdminActorLabel();
+  const actorLabel = admin.admin.actorLabel;
 
   await database.disputeRecord.update({
     data: { faultAttribution: nextFault },

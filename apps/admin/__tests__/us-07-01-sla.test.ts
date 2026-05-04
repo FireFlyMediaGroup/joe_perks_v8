@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 
-import { getOrderSlaState } from "../app/orders/_lib/sla";
+import { getOrderSlaState } from "../app/(authenticated)/orders/_lib/sla";
 
 const HOUR_MS = 60 * 60 * 1000;
 

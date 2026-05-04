@@ -1,9 +1,13 @@
 @import "tailwindcss";
+@import "@repo/design-system/styles/globals.css";
+@import "@repo/design-system/styles/brand.css";
 
 :root {
   --background: #ffffff;
   --foreground: #171717;
 }
+
+@source "../../../packages/auth/**/*.{ts,tsx}";
 
 @theme inline {
   --color-background: var(--background);

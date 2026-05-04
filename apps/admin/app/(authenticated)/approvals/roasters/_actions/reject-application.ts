@@ -9,6 +9,8 @@ import {
 import { revalidatePath } from "next/cache";
 import { createElement } from "react";
 
+import { requirePlatformAdmin } from "../../../_lib/require-platform-admin";
+
 export type RejectApplicationResult =
   | { success: true }
   | { success: false; error: string; code: string };
@@ -16,6 +18,15 @@ export type RejectApplicationResult =
 export async function rejectApplication(
   applicationId: string
 ): Promise<RejectApplicationResult> {
+  const admin = await requirePlatformAdmin();
+  if (!admin.ok) {
+    return {
+      success: false,
+      error: "You are not authorized to reject roaster applications.",
+      code: "UNAUTHORIZED",
+    };
+  }
+
   if (!applicationId) {
     return {
       success: false,

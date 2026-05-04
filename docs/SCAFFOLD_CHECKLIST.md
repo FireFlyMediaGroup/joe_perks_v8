@@ -355,8 +355,10 @@ NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...  # Org Clerk app
 CLERK_SECRET_KEY=sk_test_...
 
 # apps/admin/.env.local
-ADMIN_EMAIL=admin@joeperks.com
-ADMIN_PASSWORD=use-a-strong-password-here
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...  # Admin Clerk app
+CLERK_SECRET_KEY=sk_test_...
+NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/
 ```
 
 ### 5.6 Database migrations and seed
@@ -487,9 +489,11 @@ CLERK_SECRET_KEY                     # Org Clerk app
 
 Variables for **apps/admin** only:
 ```
-ADMIN_EMAIL                          # Production: real admin email
-                                     # Preview: test@joeperks.com
-ADMIN_PASSWORD                       # Use a strong password for production
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY    # Admin Clerk app
+CLERK_SECRET_KEY                     # Admin Clerk app
+CLERK_WEBHOOK_SECRET                 # optional if admin Clerk webhooks are enabled
+NEXT_PUBLIC_CLERK_SIGN_IN_URL        # /sign-in
+NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL  # /
 ```
 
 > ⚠ **Critical:** DATABASE_URL and STRIPE_SECRET_KEY must have DIFFERENT values for Production vs Preview. Double-check this before deploying.
@@ -582,7 +586,7 @@ After first deploy, verify each surface:
 - [ ] `https://joeperks.com` → loads without errors (or preview URL equivalent)
 - [ ] `https://roasters.joeperks.com/sign-in` → Clerk sign-in renders
 - [ ] `https://orgs.joeperks.com/sign-in` → Clerk sign-in renders
-- [ ] `https://admin.joeperks.com` → HTTP Basic Auth prompt appears
+- [ ] `https://admin.joeperks.com/sign-in` → Clerk sign-in renders
 - [ ] `https://joeperks.com/api/webhooks/stripe` → POST with invalid signature returns 400
 - [ ] `https://joeperks.com/terms/roasters` → loads with PENDING LEGAL REVIEW banner
 - [ ] `https://joeperks.com/privacy-policy` → loads with PENDING LEGAL REVIEW banner
@@ -734,7 +738,7 @@ stripe listen --forward-to localhost:3000/api/webhooks/stripe  # local Stripe we
 | Uploadthing | `UPLOADTHING_SECRET`, `UPLOADTHING_APP_ID` | `apps/web/.env.local` |
 | Clerk (roaster) | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`, `CLERK_WEBHOOK_SECRET` | `apps/roaster/.env.local` |
 | Clerk (org) | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`, `CLERK_WEBHOOK_SECRET` | `apps/org/.env.local` |
-| Admin auth | `ADMIN_EMAIL`, `ADMIN_PASSWORD` | `apps/admin/.env.local` |
+| Clerk (admin) | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`, `CLERK_WEBHOOK_SECRET` | `apps/admin/.env.local` |
 | Basehub (CMS) | `BASEHUB_TOKEN` | `packages/cms/.env.local` (for `pnpm dev:all`) |
 
 ---

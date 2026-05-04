@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 
-import { validatePlatformSettingsForm } from "../app/settings/_lib/validate-platform-settings";
+import { validatePlatformSettingsForm } from "../app/(authenticated)/settings/_lib/validate-platform-settings";
 
 function formWithAck(entries: Record<string, string>): FormData {
   const fd = new FormData();

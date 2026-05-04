@@ -1,9 +1,9 @@
 "use server";
 
 import { database, type PlatformSettings, type Prisma } from "@joe-perks/db";
-import { getAdminActorLabel } from "@joe-perks/types";
 import { revalidatePath } from "next/cache";
 
+import { requirePlatformAdmin } from "../../_lib/require-platform-admin";
 import {
   PLATFORM_SETTINGS_SINGLETON_ID,
   type ValidatedPlatformSettings,
@@ -49,6 +49,14 @@ export async function updatePlatformSettings(
   _prevState: UpdatePlatformSettingsState,
   formData: FormData
 ): Promise<UpdatePlatformSettingsState> {
+  const admin = await requirePlatformAdmin();
+  if (!admin.ok) {
+    return {
+      errors: ["You are not authorized to update platform settings."],
+      ok: false,
+    };
+  }
+
   const parsed = validatePlatformSettingsForm(formData);
   if (!parsed.ok) {
     return { errors: parsed.errors, ok: false };
@@ -57,7 +65,7 @@ export async function updatePlatformSettings(
   const noteRaw = String(formData.get("changeNote") ?? "").trim();
   const note = noteRaw.length > 0 ? noteRaw.slice(0, 2000) : null;
 
-  const actorLabel = getAdminActorLabel();
+  const actorLabel = admin.admin.actorLabel;
 
   const before = await database.platformSettings.findUnique({
     where: { id: PLATFORM_SETTINGS_SINGLETON_ID },

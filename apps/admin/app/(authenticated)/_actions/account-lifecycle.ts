@@ -16,10 +16,10 @@ import {
   ACCOUNT_SUSPENDED_SUBJECT,
   AccountSuspendedEmail,
 } from "@joe-perks/email/templates/account-suspended";
-import { getAdminActorLabel } from "@joe-perks/types";
 import { revalidatePath } from "next/cache";
 import { createElement } from "react";
 
+import { requirePlatformAdmin } from "../_lib/require-platform-admin";
 import { getAccountReactivationReadiness } from "../_lib/account-reactivation";
 
 import type { AccountLifecycleState } from "./account-lifecycle-state";
@@ -183,6 +183,15 @@ export async function suspendAccount(
   _prevState: AccountLifecycleState,
   formData: FormData
 ): Promise<AccountLifecycleState> {
+  const admin = await requirePlatformAdmin();
+  if (!admin.ok) {
+    return {
+      error: "You are not authorized to suspend accounts.",
+      message: null,
+      ok: false,
+    };
+  }
+
   const targetId = String(formData.get("targetId") ?? "").trim();
   const targetType = parseTargetType(formData.get("targetType"));
   const note = String(formData.get("note") ?? "")
@@ -229,7 +238,7 @@ export async function suspendAccount(
     };
   }
 
-  const actorLabel = getAdminActorLabel();
+  const actorLabel = admin.admin.actorLabel;
   const actionType =
     targetType === "ROASTER" ? "ROASTER_SUSPENDED" : "ORG_SUSPENDED";
 
@@ -301,6 +310,15 @@ export async function reactivateAccount(
   _prevState: AccountLifecycleState,
   formData: FormData
 ): Promise<AccountLifecycleState> {
+  const admin = await requirePlatformAdmin();
+  if (!admin.ok) {
+    return {
+      error: "You are not authorized to reactivate accounts.",
+      message: null,
+      ok: false,
+    };
+  }
+
   const targetId = String(formData.get("targetId") ?? "").trim();
   const targetType = parseTargetType(formData.get("targetType"));
   const note = String(formData.get("note") ?? "")
@@ -364,7 +382,7 @@ export async function reactivateAccount(
     };
   }
 
-  const actorLabel = getAdminActorLabel();
+  const actorLabel = admin.admin.actorLabel;
   const actionType =
     targetType === "ROASTER" ? "ROASTER_REACTIVATED" : "ORG_REACTIVATED";
 
