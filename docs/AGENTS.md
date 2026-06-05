@@ -13,10 +13,19 @@ A multi-tenant B2B2C marketplace connecting specialty coffee roasters with local
 through an org-branded storefront; a percentage of every sale flows automatically to the org.
 
 **Three-way revenue split on every order:**
-- Roaster receives product earnings (retail minus org% minus platform% minus Stripe fee)
+- Roaster receives product earnings (retail minus org% minus platform% minus its share of the Stripe fee)
 - Organization receives their fundraiser percentage (5–25% of product subtotal)
 - Platform retains a fee (5% of product subtotal, min $1.00)
 - Shipping is 100% passthrough to roaster — never included in split math
+- The Stripe fee is shared between roaster and org per [ADR 0003](./adr/0003-stripe-fee-shared-org-roaster.md) (this supersedes the older "roaster bears the full Stripe fee" behavior still in `splits.ts`).
+
+## Domain language & recorded decisions
+
+- **Glossary:** [`/CONTEXT.md`](../CONTEXT.md) — canonical domain terms (Roaster, Org, Buyer, Campaign,
+  Split, Payout, Dispute, Fault attribution, SLA, …). Use these words; honor the `_Avoid_` lists.
+- **Decisions:** [`docs/adr/`](./adr/) — architecture decision records. Read the relevant ADR before
+  touching the money path, onboarding/approval, the storefront/campaign model, or SLA/refunds. ADRs
+  0001, 0003, and 0005 also document **deliberate gaps** where the agreed design outruns current code.
 
 ---
 
