@@ -24,6 +24,7 @@
     "typecheck": "turbo typecheck",
     "fix": "ultracite fix",
     "test": "turbo test",
+    "test:e2e": "playwright test tests/e2e/frontend",
     "test:e2e:frontend": "playwright test tests/e2e/frontend",
     "test:e2e:frontend:headed": "playwright test tests/e2e/frontend --headed",
     "analyze": "turbo analyze",
