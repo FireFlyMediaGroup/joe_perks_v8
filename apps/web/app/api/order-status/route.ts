@@ -1,4 +1,5 @@
 import { database } from "@joe-perks/db";
+import { limitOrderStatus } from "@joe-perks/stripe";
 import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
@@ -17,6 +18,12 @@ export async function GET(request: Request) {
       { error: "Missing pi or id parameter" },
       { status: 400 }
     );
+  }
+
+  // Cap polling per order (generous; the confirmation poller stays well under it).
+  const { success } = await limitOrderStatus(piId ?? (orderId as string));
+  if (!success) {
+    return NextResponse.json({ error: "Too many requests" }, { status: 429 });
   }
 
   const where = piId ? { stripePiId: piId } : { id: orderId as string };

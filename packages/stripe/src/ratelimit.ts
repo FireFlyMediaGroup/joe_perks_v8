@@ -296,3 +296,47 @@ export async function limitGuestOrderLookup(identifier: string): Promise<{
   const { success } = await limiter.limit(identifier);
   return { success };
 }
+
+// Public order-status polling. Keyed by the order identifier (PI/order id), not IP,
+// so legitimate post-checkout polling by many buyers is unaffected while hammering a
+// single order's status is capped. Generous to accommodate the confirmation poller.
+const ORDER_STATUS_PREFIX = "jp:order-status";
+const ORDER_STATUS_LIMIT = 120;
+const ORDER_STATUS_WINDOW = "1 m";
+
+let orderStatusLimiterSingleton: Ratelimit | undefined;
+let orderStatusLimiterUnavailable = false;
+
+function getOrderStatusLimiter(): Ratelimit | null {
+  if (orderStatusLimiterUnavailable) {
+    return null;
+  }
+  if (orderStatusLimiterSingleton) {
+    return orderStatusLimiterSingleton;
+  }
+  if (!hasUpstashEnv()) {
+    orderStatusLimiterUnavailable = true;
+    return null;
+  }
+  const redis = Redis.fromEnv();
+  orderStatusLimiterSingleton = new Ratelimit({
+    limiter: Ratelimit.slidingWindow(ORDER_STATUS_LIMIT, ORDER_STATUS_WINDOW),
+    prefix: ORDER_STATUS_PREFIX,
+    redis,
+  });
+  return orderStatusLimiterSingleton;
+}
+
+/**
+ * Runs order-status rate limit when Redis is configured; otherwise allows the request.
+ */
+export async function limitOrderStatus(identifier: string): Promise<{
+  success: boolean;
+}> {
+  const limiter = getOrderStatusLimiter();
+  if (!limiter) {
+    return { success: true };
+  }
+  const { success } = await limiter.limit(identifier);
+  return { success };
+}

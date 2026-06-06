@@ -32,6 +32,11 @@ export async function submitTracking(
     };
   }
 
+  // Defense-in-depth: the link's roaster must own the order it points at.
+  if (order.roasterId !== validated.roasterId) {
+    return { ok: false, error: "This link is no longer valid." };
+  }
+
   return shipConfirmedOrder({
     roasterId: order.roasterId,
     orderId,

@@ -35,10 +35,16 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: INVALID_INPUT_ERROR }, { status: 400 });
   }
 
-  const { success } = await limitGuestOrderLookup(
-    getBuyerAuthRequestIp(request)
-  );
-  if (!success) {
+  const normalizedEmail = normalizeGuestOrderLookupEmail(parsed.data.email);
+
+  // Limit by IP *and* by email — the lookup returns full PII (name/address) on a
+  // match, so a per-email cap stops rotating-IP brute force over guessable order
+  // numbers against a known email.
+  const [byIp, byEmail] = await Promise.all([
+    limitGuestOrderLookup(getBuyerAuthRequestIp(request)),
+    limitGuestOrderLookup(`email:${normalizedEmail}`),
+  ]);
+  if (!(byIp.success && byEmail.success)) {
     return NextResponse.json(
       { error: "Too many lookup attempts. Please try again later." },
       { status: 429 }
@@ -46,7 +52,7 @@ export async function POST(request: Request) {
   }
 
   const order = await getGuestOrderLookupDetail({
-    buyerEmail: normalizeGuestOrderLookupEmail(parsed.data.email),
+    buyerEmail: normalizedEmail,
     orderNumber: normalizeGuestOrderLookupOrderNumber(parsed.data.orderNumber),
   });
 

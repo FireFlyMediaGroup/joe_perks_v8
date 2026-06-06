@@ -1,7 +1,7 @@
 import { database } from "@joe-perks/db";
 
 export type FulfillmentTokenResult =
-  | { ok: true; orderId: string }
+  | { ok: true; orderId: string; roasterId: string }
   | {
       ok: false;
       reason: "expired" | "invalid_payload" | "not_found" | "used";
@@ -32,5 +32,7 @@ export async function validateFulfillmentToken(
     return { ok: false, reason: "invalid_payload" };
   }
 
-  return { ok: true, orderId };
+  // `actorId` is the roaster the link was minted for; the caller verifies it
+  // matches the order's roaster (defense-in-depth, mirroring org-request links).
+  return { ok: true, orderId, roasterId: link.actorId };
 }

@@ -30,6 +30,7 @@ export {
   limitBuyerAuth,
   limitCheckout,
   limitGuestOrderLookup,
+  limitOrderStatus,
   limitOrgApplication,
   limitRoasterApplication,
   limitSlugValidation,
