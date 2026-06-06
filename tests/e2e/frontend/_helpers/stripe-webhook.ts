@@ -43,6 +43,9 @@ export function chargeIdFor(paymentIntentId: string): string {
 }
 
 export function paymentIntentSucceededEvent(input: {
+  // Override the event id to simulate a *distinct* delivery (e.g. an out-of-order
+  // retry, EC-08). Defaults to a stable id derived from the PI.
+  eventId?: string;
   // Real Stripe charge id (from confirming the PI) — MP-02 needs this so the
   // payout job's `source_transaction` references a real charge. Defaults to the
   // synthetic id for scenarios that don't transfer (MP-01, EC-*).
@@ -59,7 +62,7 @@ export function paymentIntentSucceededEvent(input: {
         object: "payment_intent",
       },
     },
-    id: `evt_e2e_pi_${input.paymentIntentId}`,
+    id: input.eventId ?? `evt_e2e_pi_${input.paymentIntentId}`,
     object: "event",
     type: "payment_intent.succeeded",
   };
@@ -107,17 +110,21 @@ export async function confirmPaymentIntent(
 export function chargeRefundedEvent(input: {
   amountRefunded: number;
   chargeId: string;
+  // `false` = partial refund (charge not fully refunded) — order should stay
+  // CONFIRMED (EC-13). Defaults to a full refund (EC-12).
+  fullyRefunded?: boolean;
 }) {
+  const fullyRefunded = input.fullyRefunded ?? true;
   return {
     data: {
       object: {
         amount_refunded: input.amountRefunded,
         id: input.chargeId,
         object: "charge",
-        refunded: true,
+        refunded: fullyRefunded,
       },
     },
-    id: `evt_e2e_refund_${input.chargeId}`,
+    id: `evt_e2e_refund_${fullyRefunded ? "full" : "partial"}_${input.chargeId}`,
     object: "event",
     type: "charge.refunded",
   };
