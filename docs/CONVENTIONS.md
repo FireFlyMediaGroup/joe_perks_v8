@@ -375,6 +375,24 @@ console.log('Webhook event', event)          // contains card fingerprints
 console.log('Buyer', { email, address })    // PII
 ```
 
+### Payment / webhook log lines — use `createPaymentLog`
+
+Lines in the Stripe webhook route, checkout, and the payout/SLA jobs log through `createPaymentLog` so every line carries the canonical `order_id` / `order_number` / `roaster_id` / `org_id` keys (null when unknown) and an order's full lifecycle is queryable in the log backend.
+
+```typescript
+import { createPaymentLog } from '@repo/observability/payment-log'
+
+const plog = createPaymentLog({
+  orderId: order.id,
+  orderNumber: order.order_number,
+  roasterId: order.roaster_id,
+  orgId: order.campaign.org_id,
+})
+plog.error('payout transfer failed', { stage: 'roaster_transfer' }) // extras merge over the canonical keys
+```
+
+Plain structured `console.*` (above) is still fine for non-payment logs. PII scrubbing for Sentry lives in `packages/observability/scrub.ts` (`beforeSend`) — don't disable it. When testing log output, mock the logger module (`@repo/observability`'s `log` is `console` in dev/test but Logtail under `NODE_ENV=production`) — see the Testing section.
+
 ---
 
 ## Order event logging
@@ -403,6 +421,21 @@ await logOrderEvent(
 **Admin delivery:** `apps/admin/app/orders/` — list + detail + `confirm-delivery` server action (`DELIVERED`, `payoutEligibleAt` from `PlatformSettings.payoutHoldDays`, stable admin `actorId` from the configured Basic Auth email).
 
 **Shared admin Basic Auth:** normalize parsing and trimmed credentials through `@joe-perks/types` so `apps/admin` middleware and `apps/web` admin-only APIs accept the same credentials.
+
+---
+
+## Testing
+
+- **Runner:** Vitest. Each package/app that has tests defines a `"test"` script and a `vitest.config.{ts,mts}`. App tests run as `NODE_ENV=test vitest run`; package tests as `vitest run`.
+- **CI gates on tests.** `.github/workflows/ci.yml` runs `pnpm check` → `pnpm turbo test` → `pnpm turbo build`. Also note `turbo.json`'s `build` task `dependsOn: ["^build", "test"]`, so **a failing test blocks `turbo build` — and therefore Vercel deploys.** Keep tests green or the deploy is red.
+- **Co-locate** tests as `*.test.ts(x)` next to the code (or under `__tests__/`).
+- **No real database in tests.** Mock `@joe-perks/db` with `vi.mock('@joe-perks/db', () => ({ database: mockDb }))` and assert on the query args / return mocked rows. There is no test-DB harness yet.
+- **Mock the logger, not `console`.** `@repo/observability`'s `log` is `console` in dev/test but **Logtail when `NODE_ENV=production`** (e.g. Vercel builds). A test that spies on `console.*` passes locally and fails in CI. Mock the module instead:
+  ```typescript
+  vi.mock('./log', () => ({ log: { error: vi.fn(), info: vi.fn(), warn: vi.fn() } }))
+  ```
+- **Tenant-isolation tests** (`apps/org/app/(authenticated)/__tests__/org-tenant-isolation.test.ts`): drive an importable server action as org A against org B's id and assert the org-scoped `where` filters the cross-tenant row out (returns "not found"), with a positive control proving own-org access still works. Add the equivalent for new cross-tenant surfaces.
+- **Money invariants** are unit-tested in `packages/stripe/src/splits.test.ts` (`assertSplitInvariants`). Extend these when split rules change.
 
 ---
 
