@@ -171,11 +171,15 @@ test("MP-02: a delivered order pays out to the roaster + org (TRANSFERRED)", asy
   });
   expect(release.ok).toBeTruthy();
   const result = (await release.json()) as {
+    failure: unknown;
     payoutStatus: string;
     roasterTransferId: string | null;
   };
 
   // Transfers to the roaster + org connected accounts succeeded.
-  expect(result.payoutStatus).toBe("TRANSFERRED");
+  expect(
+    result.payoutStatus,
+    `payout did not transfer; failure=${JSON.stringify(result.failure)}`
+  ).toBe("TRANSFERRED");
   expect(result.roasterTransferId).toBeTruthy();
 });

@@ -52,7 +52,19 @@ export async function POST(request: Request) {
     where: { id: body.orderId },
   });
 
+  // Surface the failure reason (the payout logger goes to Logtail, not stdout, in
+  // production builds, so this is how the e2e sees why a payout failed).
+  const failure =
+    order?.payoutStatus === "FAILED"
+      ? await database.orderEvent.findFirst({
+          orderBy: { createdAt: "desc" },
+          select: { payload: true },
+          where: { eventType: "PAYOUT_FAILED", orderId: body.orderId },
+        })
+      : null;
+
   return NextResponse.json({
+    failure: failure?.payload ?? null,
     orgTransferId: order?.stripeOrgTransfer ?? null,
     payoutStatus: order?.payoutStatus ?? null,
     roasterTransferId: order?.stripeTransferId ?? null,
