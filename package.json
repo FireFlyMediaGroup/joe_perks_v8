@@ -57,7 +57,6 @@
   "devDependencies": {
     "@auto-it/first-time-contributor": "^11.3.6",
     "@biomejs/biome": "2.4.6",
-    "@joe-perks/db": "workspace:*",
     "@playwright/test": "^1.59.1",
     "@repo/typescript-config": "workspace:*",
     "@turbo/gen": "^2.8.14",
