@@ -12,16 +12,19 @@
  * fields, so a regression that drops `orgId` from a scoped `where` clause fails
  * this test (org A would suddenly match org B's row).
  *
- * Coverage note: order/payout READS live inline in React Server Components
- * (dashboard/earnings pages) and follow the same `where: { campaign: { orgId } }`
- * pattern; a seeded real-DB test for those is tracked as a launch-runbook A.2
- * follow-up (needs a test-DB harness).
+ * Covers two surfaces:
+ *   1. Campaign mutations (server actions) — an org cannot activate/modify
+ *      another org's campaign; roaster-partnership lookups are app-scoped.
+ *   2. Order/payout READS (`_lib/org-orders.ts`, used by the dashboard/earnings
+ *      RSCs) — earnings, order count, and recent orders return only the acting
+ *      org's data via `where: { campaign: { orgId } }`.
  */
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   database: {
     campaign: { findFirst: vi.fn(), update: vi.fn() },
+    order: { aggregate: vi.fn(), count: vi.fn(), findMany: vi.fn() },
     org: { findUnique: vi.fn() },
     product: { findMany: vi.fn() },
     roasterOrgRequest: { findFirst: vi.fn() },
@@ -35,6 +38,11 @@ vi.mock("@joe-perks/db", () => ({ database: mocks.database }));
 vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath }));
 vi.mock("../_lib/require-org", () => ({ requireOrgId: mocks.requireOrgId }));
 
+import {
+  getOrgEarningsCents,
+  getOrgOrderCount,
+  getOrgRecentOrders,
+} from "../_lib/org-orders";
 import {
   activateCampaign,
   saveCampaignDraft,
@@ -152,5 +160,120 @@ describe("org tenant isolation", () => {
     });
     const reqCall = mocks.database.roasterOrgRequest.findFirst.mock.calls[0][0];
     expect(reqCall.where.applicationId).toBe("app-a");
+  });
+});
+
+// In-memory order table emulating Prisma `where` filtering for org-scoped order
+// READS. Orders isolate via `where: { campaign: { orgId } }` (no direct orgId).
+interface OrderRow {
+  createdAt: Date;
+  grossAmount: number;
+  id: string;
+  orderNumber: string;
+  orgAmount: number;
+  orgId: string;
+  payoutStatus: string;
+  status: string;
+}
+
+let orderRows: OrderRow[] = [];
+
+function matchOrder(
+  row: OrderRow,
+  where: { campaign?: { orgId?: string }; payoutStatus?: string } | undefined
+): boolean {
+  if (
+    where?.campaign?.orgId !== undefined &&
+    row.orgId !== where.campaign.orgId
+  ) {
+    return false;
+  }
+  if (
+    where?.payoutStatus !== undefined &&
+    row.payoutStatus !== where.payoutStatus
+  ) {
+    return false;
+  }
+  return true;
+}
+
+describe("org order reads — tenant isolation", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+
+    orderRows = [
+      {
+        createdAt: new Date("2026-06-01T00:00:00Z"),
+        grossAmount: 11_000,
+        id: "ord-a",
+        orderNumber: "JP-00001",
+        orgAmount: 1500,
+        orgId: ORG_A,
+        payoutStatus: "TRANSFERRED",
+        status: "DELIVERED",
+      },
+      {
+        createdAt: new Date("2026-06-02T00:00:00Z"),
+        grossAmount: 99_999,
+        id: "ord-b",
+        orderNumber: "JP-09999",
+        orgAmount: 9999,
+        orgId: ORG_B,
+        payoutStatus: "TRANSFERRED",
+        status: "DELIVERED",
+      },
+    ];
+
+    mocks.database.order.aggregate.mockImplementation(
+      (args: { where?: Parameters<typeof matchOrder>[1] }) => {
+        const sum = orderRows
+          .filter((r) => matchOrder(r, args.where))
+          .reduce((acc, r) => acc + r.orgAmount, 0);
+        return { _sum: { orgAmount: sum === 0 ? null : sum } };
+      }
+    );
+    mocks.database.order.count.mockImplementation(
+      (args: { where?: Parameters<typeof matchOrder>[1] }) =>
+        orderRows.filter((r) => matchOrder(r, args.where)).length
+    );
+    mocks.database.order.findMany.mockImplementation(
+      (args: { where?: Parameters<typeof matchOrder>[1] }) =>
+        orderRows
+          .filter((r) => matchOrder(r, args.where))
+          .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+    );
+  });
+
+  test("getOrgEarningsCents sums only the acting org's transferred payouts", async () => {
+    const cents = await getOrgEarningsCents(ORG_A);
+
+    // Org A's 1500 only — never org B's 9999.
+    expect(cents).toBe(1500);
+    const call = mocks.database.order.aggregate.mock.calls[0][0];
+    expect(call.where.campaign.orgId).toBe(ORG_A);
+    expect(call.where.payoutStatus).toBe("TRANSFERRED");
+  });
+
+  test("getOrgOrderCount counts only the acting org's orders", async () => {
+    expect(await getOrgOrderCount(ORG_A)).toBe(1);
+    const call = mocks.database.order.count.mock.calls[0][0];
+    expect(call.where.campaign.orgId).toBe(ORG_A);
+  });
+
+  test("getOrgRecentOrders returns only the acting org's orders", async () => {
+    const rows = await getOrgRecentOrders(ORG_A);
+
+    // Only org A's order — org B's "ord-b" / JP-09999 must not appear.
+    expect(rows).toHaveLength(1);
+    expect(rows[0].id).toBe("ord-a");
+    expect(rows[0].orderNumber).toBe("JP-00001");
+    const call = mocks.database.order.findMany.mock.calls[0][0];
+    expect(call.where.campaign.orgId).toBe(ORG_A);
+  });
+
+  test("an org with no orders earns 0 and sees nothing (no cross-tenant bleed)", async () => {
+    expect(await getOrgEarningsCents("org-empty")).toBe(0);
+    expect(await getOrgOrderCount("org-empty")).toBe(0);
+    expect(await getOrgRecentOrders("org-empty")).toHaveLength(0);
   });
 });

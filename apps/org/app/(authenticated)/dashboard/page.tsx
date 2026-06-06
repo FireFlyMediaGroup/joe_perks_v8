@@ -5,6 +5,11 @@ import {
 } from "@joe-perks/db";
 import { auth } from "@repo/auth/server";
 
+import {
+  getOrgEarningsCents,
+  getOrgOrderCount,
+  getOrgRecentOrders,
+} from "../_lib/org-orders";
 import { ActiveDashboard } from "./_components/active-dashboard";
 import { SuspendedDashboard } from "./_components/suspended-dashboard";
 
@@ -71,7 +76,7 @@ export default async function OrgDashboardPage() {
 
   const orgId = dbUser?.orgId;
 
-  const [campaigns, orderCount, orgEarnings, recentOrders] = orgId
+  const [campaigns, orderCount, orgEarningsCents, recentOrders] = orgId
     ? await Promise.all([
         database.campaign.findMany({
           where: { orgId },
@@ -81,32 +86,11 @@ export default async function OrgDashboardPage() {
           },
           orderBy: { updatedAt: "desc" },
         }),
-        database.order.count({
-          where: { campaign: { orgId } },
-        }),
-        database.order.aggregate({
-          _sum: { orgAmount: true },
-          where: {
-            campaign: { orgId },
-            payoutStatus: "TRANSFERRED",
-          },
-        }),
-        database.order.findMany({
-          where: { campaign: { orgId } },
-          orderBy: { createdAt: "desc" },
-          take: 15,
-          select: {
-            id: true,
-            orderNumber: true,
-            status: true,
-            grossAmount: true,
-            orgAmount: true,
-            createdAt: true,
-            campaign: { select: { name: true } },
-          },
-        }),
+        getOrgOrderCount(orgId),
+        getOrgEarningsCents(orgId),
+        getOrgRecentOrders(orgId),
       ])
-    : [[], 0, { _sum: { orgAmount: null } }, []];
+    : [[], 0, 0, []];
 
   const activeCampaign = campaigns.find((c) => c.status === "ACTIVE") ?? null;
 
@@ -127,7 +111,7 @@ export default async function OrgDashboardPage() {
       chargesEnabled={org?.chargesEnabled ?? false}
       hasCampaign={campaigns.length > 0}
       orderCount={orderCount}
-      orgEarningsCents={orgEarnings._sum.orgAmount ?? 0}
+      orgEarningsCents={orgEarningsCents}
       orgName={org?.application.orgName ?? org?.slug ?? "Your organization"}
       orgPct={(org?.application.desiredOrgPct ?? 0) * 100}
       orgSlug={org?.slug ?? null}

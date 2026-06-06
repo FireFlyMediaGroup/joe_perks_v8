@@ -2,6 +2,7 @@ import { database } from "@joe-perks/db";
 import { DollarSignIcon } from "lucide-react";
 import Link from "next/link";
 
+import { getOrgEarningsCents, getOrgOrderCount } from "../_lib/org-orders";
 import { requireOrgId } from "../_lib/require-org";
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
@@ -26,17 +27,9 @@ export default async function OrgEarningsPage() {
     );
   }
 
-  const [orgEarnings, totalOrders, campaigns] = await Promise.all([
-    database.order.aggregate({
-      _sum: { orgAmount: true },
-      where: {
-        campaign: { orgId: session.orgId },
-        payoutStatus: "TRANSFERRED",
-      },
-    }),
-    database.order.count({
-      where: { campaign: { orgId: session.orgId } },
-    }),
+  const [totalEarningsCents, totalOrders, campaigns] = await Promise.all([
+    getOrgEarningsCents(session.orgId),
+    getOrgOrderCount(session.orgId),
     database.campaign.findMany({
       where: { orgId: session.orgId },
       select: {
@@ -50,8 +43,6 @@ export default async function OrgEarningsPage() {
       orderBy: { updatedAt: "desc" },
     }),
   ]);
-
-  const totalEarningsCents = orgEarnings._sum.orgAmount ?? 0;
 
   return (
     <main className="mx-auto max-w-5xl p-6 md:p-8">
