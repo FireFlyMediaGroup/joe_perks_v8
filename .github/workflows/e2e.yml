@@ -27,6 +27,7 @@ concurrency:
 jobs:
   e2e:
     runs-on: ubuntu-latest
+    timeout-minutes: 30 # never hang forever (a no-timeout run stalled at browser install)
     env:
       SKIP_ENV_VALIDATION: "true"
       SESSION_SECRET: ci-session-secret-0123456789abcdef0123456789abcdef
@@ -98,6 +99,11 @@ jobs:
         run: pnpm exec prisma migrate deploy
 
       - name: Install Playwright (chromium)
+        # Bounded so an apt/runner stall fails fast instead of hanging the job.
+        # DEBIAN_FRONTEND prevents any interactive apt prompt during --with-deps.
+        timeout-minutes: 12
+        env:
+          DEBIAN_FRONTEND: noninteractive
         run: pnpm exec playwright install --with-deps chromium
 
       - name: Run money-path e2e
