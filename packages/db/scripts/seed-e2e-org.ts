@@ -26,6 +26,7 @@ import {
   E2E_ORG_SLUG,
   E2E_ROASTER_EMAIL,
 } from "./e2e-seed-constants";
+import { createTestConnectAccount } from "./e2e-stripe-connect";
 
 neonConfig.webSocketConstructor = ws;
 
@@ -110,7 +111,10 @@ async function main() {
   }
   console.log("  RoasterOrgRequest:", orgRequest.id, "status: APPROVED");
 
-  // 4. Org (active with simulated Stripe Connect)
+  // 4. Org (active; real test Connect account when a Stripe test key is present)
+  const orgStripeAccountId =
+    (await createTestConnectAccount({ email: ORG_EMAIL, label: "org" })) ??
+    `acct_e2e_org_${orgApp.id.slice(0, 8)}`;
   const org = await prisma.org.upsert({
     where: { applicationId: orgApp.id },
     create: {
@@ -118,13 +122,14 @@ async function main() {
       status: "ACTIVE",
       email: ORG_EMAIL,
       slug: ORG_SLUG,
-      stripeAccountId: `acct_e2e_org_${orgApp.id.slice(0, 8)}`,
+      stripeAccountId: orgStripeAccountId,
       stripeOnboarding: "COMPLETE",
       chargesEnabled: true,
       payoutsEnabled: true,
     },
     update: {
       status: "ACTIVE",
+      stripeAccountId: orgStripeAccountId,
       stripeOnboarding: "COMPLETE",
       chargesEnabled: true,
       payoutsEnabled: true,

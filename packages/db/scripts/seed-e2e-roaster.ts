@@ -11,8 +11,8 @@ import { neonConfig } from "@neondatabase/serverless";
 import { PrismaNeon } from "@prisma/adapter-neon";
 import ws from "ws";
 import { PrismaClient } from "../generated/client";
-
 import { E2E_ROASTER_EMAIL } from "./e2e-seed-constants";
+import { createTestConnectAccount } from "./e2e-stripe-connect";
 
 neonConfig.webSocketConstructor = ws;
 
@@ -47,7 +47,9 @@ async function main() {
   });
   console.log("  RoasterApplication:", app.id, "status:", app.status);
 
-  const stripeAccountId = `acct_e2e_roaster_${app.id.slice(0, 8)}`;
+  const stripeAccountId =
+    (await createTestConnectAccount({ email, label: "roaster" })) ??
+    `acct_e2e_roaster_${app.id.slice(0, 8)}`;
 
   const roaster = await prisma.roaster.upsert({
     where: { applicationId: app.id },
