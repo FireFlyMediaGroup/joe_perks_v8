@@ -108,7 +108,17 @@ jobs:
         working-directory: packages/db
         env:
           DATABASE_URL: ${{ steps.neon.outputs.db_url }}
-        run: pnpm exec prisma migrate deploy
+        # A freshly-created Neon branch's compute can cold-start, so the first
+        # direct connection may hit P1001. Retry until the endpoint wakes (this
+        # also warms it for the subsequent seed + test steps).
+        run: |
+          for attempt in 1 2 3 4 5 6; do
+            if pnpm exec prisma migrate deploy; then exit 0; fi
+            echo "migrate attempt ${attempt} failed (Neon endpoint warming?); retrying in 5s..."
+            sleep 5
+          done
+          echo "::error::prisma migrate deploy failed after retries"
+          exit 1
 
       - name: Run money-path e2e
         # The Playwright config seeds the branch (globalSetup) and builds+starts
