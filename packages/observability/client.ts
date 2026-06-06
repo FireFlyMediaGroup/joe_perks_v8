@@ -9,6 +9,7 @@
  */
 
 import { keys } from "./keys";
+import { scrubEvent } from "./scrub";
 
 type SentryModule = typeof import("@sentry/nextjs");
 
@@ -27,6 +28,12 @@ export function initializeSentry(): void {
       sentry = Sentry;
       Sentry.init({
         dsn,
+
+        // Never attach default PII (IP, headers) — Joe Perks is a payments app.
+        sendDefaultPii: false,
+
+        // Strip buyer PII from every event before it leaves the browser (runbook B.4).
+        beforeSend: scrubEvent,
 
         // Enable logging
         enableLogs: true,

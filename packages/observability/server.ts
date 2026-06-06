@@ -7,10 +7,17 @@
 // biome-ignore lint/performance/noNamespaceImport: Sentry SDK convention
 import * as Sentry from "@sentry/nextjs";
 import { keys } from "./keys";
+import { scrubEvent } from "./scrub";
 
 export const initializeSentry = (): ReturnType<typeof Sentry.init> =>
   Sentry.init({
     dsn: keys().NEXT_PUBLIC_SENTRY_DSN,
+
+    // Never attach default PII (IP, headers, cookies) — Joe Perks is a payments app.
+    sendDefaultPii: false,
+
+    // Strip buyer PII from every event before it leaves the process (runbook B.4).
+    beforeSend: scrubEvent,
 
     // Enable logging
     enableLogs: true,

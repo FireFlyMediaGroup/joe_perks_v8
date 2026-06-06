@@ -2,7 +2,13 @@
 
 **Status**: Living doc until v1 ships. Freeze and snapshot on go-live day.
 **Owner**: Eng lead (primary) + Chris (business decisions)
-**Last updated**: 2026-04-20
+**Last updated**: 2026-06-05 (code-verification pass — see ⚠️ notes)
+
+> ⚠️ **2026-06-05 code-verification pass.** Rows were checked against the actual codebase; inline notes mark reality (`⚠️ Code:` = gap, `✅ Code:` = landed in this pass).
+>
+> **Resolved this pass** (the three abort-criteria mechanisms that were missing): `assertSplitInvariants()` implemented + unit-tested (A.3); Sentry `beforeSend` PII scrubbing implemented + unit-tested across all 4 apps (A.4); `FEATURE_CHECKOUT_ENABLED` checkout kill-switch now honored (Rollback). The PII row still needs a seeded-preview-error verification to fully close.
+>
+> **Still open** (flagged but not yet coded): `org-tenant-isolation.test.ts` missing (A.2); `charge.refunded` / `transfer.paid` / `transfer.failed` webhook handlers missing (A.7) — note the `transfer.failed` gap leaves a B.4 abort criterion partly unenforceable; `e2e.yml` + scenario coverage (A.3); `migrate:deploy:prod` not wired into release (A.5); `@repo/observability` context-on-every-log-line not implemented (A.4); incident-comms templates absent (A.4).
 
 **Related**
 - [`../pre-mortems/2026-04-19-v1-launch.md`](../pre-mortems/2026-04-19-v1-launch.md) — risk analysis that produced this runbook
@@ -43,35 +49,37 @@ Abort criteria at the end of each phase.
 
 ### A.2 Auth & tenancy (engineering)
 - [ ] Clerk wired in `apps/org`; sign-in/sign-up routes live.
-- [ ] Integration test `org-tenant-isolation.test.ts`: Org A tries to read Org B's campaign, order, payout, roaster contacts — every read returns 403/empty. Committed + gated in CI.
+- [ ] Integration test `org-tenant-isolation.test.ts`: Org A tries to read Org B's campaign, order, payout, roaster contacts — every read returns 403/empty. Committed + gated in CI. ⚠️ Code: this test **does not exist** and CI does not gate on it. Cross-tenant read isolation is currently unverified by any automated test — highest-risk open security item.
 - [ ] `apps/admin` protected by real auth (Clerk admin role claim *or* HTTP Basic Auth with bcrypt + constant-time compare). No env-var truthy checks.
 - [ ] Vercel deployment protection enabled on `joe-perks-admin` preview + production.
-- [ ] `requireOrgId()` and `requireRoasterId()` helpers audited — each throws on missing session; no fall-through.
+- [ ] `requireOrgId()` and `requireRoasterId()` helpers audited — each returns a typed failure (`{ ok: false, error }`) on missing/invalid session; no silent fall-through; **every caller must gate on `.ok` before using the id**. ⚠️ Code: helpers return a discriminated union (they do *not* throw — earlier wording was wrong); observed callers redirect on `!ok`. Audit = confirm *all* callers gate, since a missed `.ok` check fails open.
 
 ### A.3 Money path (engineering)
 - [ ] **Today’s commands** (until `pnpm test:e2e` ships): [`../testing/v1-launch-money-path-e2e-execution.md`](../testing/v1-launch-money-path-e2e-execution.md) — `pnpm test`, `pnpm e2e:sprint3`, Stripe listen + webhook secret.
 - [x] **Sandbox-local executable suite completed on 2026-04-20**: `pnpm test`, `pnpm e2e:stripe-listen`, `pnpm e2e:stripe-trigger`, `pnpm e2e:sprint3`, and `pnpm test:e2e:frontend` all passed in the sandbox/test-key environment. See the execution log in [`../testing/v1-launch-money-path-e2e-execution.md`](../testing/v1-launch-money-path-e2e-execution.md).
-- [ ] E2E scenarios MP-01 through EC-24 implemented per [`../testing/money-path-e2e-scenarios.md`](../testing/money-path-e2e-scenarios.md).
-- [ ] `.github/workflows/e2e.yml` runs on every PR and nightly on `main`; green for 3 consecutive runs before go-live.
-- [ ] Invariant helper `assertSplitInvariants()` added to `packages/stripe/src/splits.ts`; unit-tested.
+- [ ] E2E scenarios MP-01 through EC-24 implemented per [`../testing/money-path-e2e-scenarios.md`](../testing/money-path-e2e-scenarios.md). ⚠️ Code: only **2 of 27** scenarios exist today (`tests/e2e/frontend/storefront.spec.ts` — storefront render + reach-payment-step). The money-path settlement scenarios are not yet written.
+- [ ] `.github/workflows/e2e.yml` runs on every PR and nightly on `main`; green for 3 consecutive runs before go-live. ⚠️ Code: `e2e.yml` does not exist. `ci.yml` runs only `pnpm check` + `turbo build` — no e2e in CI.
+- [x] Invariant helper `assertSplitInvariants()` added to `packages/stripe/src/splits.ts`; unit-tested. ✅ Code (2026-06-05): implemented (invariants 1–6, throws `SplitInvariantError`), called inside `calculateSplits()` as defense-in-depth, and unit-tested (`splits.test.ts`, 18 passing). The B.4 abort criterion now has a real mechanism behind it.
 - [ ] Stripe test-mode PaymentIntent → webhook → `Order` → payout transfer path runs end-to-end on preview.
 
 ### A.4 Observability & ops
-- [ ] Sentry (4 projects: web, roaster, org, admin) receiving events from preview. PII scrubbing verified on a seeded error.
+- [ ] Sentry (4 projects: web, roaster, org, admin) receiving events from preview. PII scrubbing verified on a seeded error. ⚠️ Code (2026-06-05): PII scrubbing is now **implemented** — `packages/observability/scrub.ts` (`beforeSend: scrubEvent` + `sendDefaultPii: false`) is wired into `server.ts`, `client.ts`, and `edge.ts`, and unit-tested (`scrub.test.ts`, 6 passing). Strips user identity, sensitive headers/cookies/body, captured stack-frame locals, breadcrumbs, and inline emails. **Still required to close this row:** seed a real error on preview and confirm scrubbing end-to-end (the "verified on a seeded error" half).
 - [ ] BetterStack (or equivalent) uptime checks on all 5 domains at 1-min interval.
 - [ ] Public status page live (`status.joeperks.com` recommended subdomain).
-- [ ] PagerDuty / on-call schedule defined. If N=1, document explicit "out of office" coverage plan.
-- [ ] Three incident-comms templates committed in `docs/runbooks/` — `degraded.md`, `outage.md`, `payments-down.md`.
-- [ ] `@repo/observability` logs include `orderNumber`, `roasterId`, `orgId` context on every payment/webhook log line.
+- [ ] On-call schedule defined. **Plan: consolidate on-call onto BetterStack (email/push on free tier) — closes this PagerDuty TBD.** See [`./observability-setup.md`](./observability-setup.md). If N=1, document explicit "out of office" coverage plan.
+- [ ] Three incident-comms templates committed in `docs/runbooks/` — `degraded.md`, `outage.md`, `payments-down.md`. ⚠️ Code: none of the three files exist yet.
+- [ ] `@repo/observability` logs include `orderNumber`, `roasterId`, `orgId` context on every payment/webhook log line. ⚠️ Code: not yet true. `@repo/observability` exposes a bare `log` (Logtail/console); payment + webhook code uses raw `console.*` with ad-hoc objects, not a context-carrying logger.
+- [ ] 🔭 **Observability (BetterStack)** — go-live-strategy item: monitors, **cron heartbeats**, status page, `<Status>` pill, webhook-failure alert. Scaffolded; full setup in [`./observability-setup.md`](./observability-setup.md).
+- [ ] 🔭 **Feedback / help center (Featurebase)** — go-live-strategy item, not fully specced. `@repo/feedback` is scaffolded + env-wired; mount the widget everywhere (storefront + portals) and stand up boards/help center per [`../feedback/README.md`](../feedback/README.md). Add Featurebase to the §A.1 vendor DPA list when enabled.
 
 ### A.5 Data & deploy pipeline
-- [ ] `prisma migrate deploy` wired into release flow (Vercel build step, or a GH Action that runs `pnpm migrate:deploy:prod` *before* promoting a Vercel deployment).
+- [ ] `prisma migrate deploy` wired into release flow (Vercel build step, or a GH Action that runs `pnpm migrate:deploy:prod` *before* promoting a Vercel deployment). ⚠️ Code: the `migrate:deploy:prod` script exists in root `package.json`, but it is **not** wired into `ci.yml` or any Vercel build step — today it is a manual pre-promote step. Either automate it or assign a named owner who runs it by hand and confirms `_prisma_migrations` before promotion.
 - [ ] Neon production snapshot retention ≥ 7 days; restore tested at least once on a staging branch.
 - [ ] Rollback procedure section below tested end-to-end on preview.
 
 **April 2026 schema note**
 - Production Neon was verified against the current repo and matched committed Prisma state: `packages/db/prisma/schema.prisma` plus the checked-in migrations under `packages/db/prisma/migrations`.
-- The older dev Neon branch had two additional applied migrations in `_prisma_migrations` that were **not** present in the current checkout: `20260405134350_buyer_account_foundation` and `20260406032052_sprint8_fulfillment_schema_event_alignment` (historical commits `03943f3` and `472749d`).
+- The older dev Neon branch had additional applied migrations in `_prisma_migrations`. ⚠️ 2026-06-05 update: `20260405134350_buyer_account_foundation` is now **present** in the current checkout under `packages/db/prisma/migrations`; only `20260406032052_sprint8_fulfillment_schema_event_alignment` (historical commit `472749d`) remains **absent**. Treat just that one as the outstanding drift item.
 - Result: dev may have extra columns, enum values, and seed data that do not reflect the current source of truth. For launch, deploy, and frontend E2E, treat the current repo schema + committed migrations as canonical unless those missing migrations are intentionally restored to the repo first.
 - Before seeding, restoring, or copying data between Neon branches, compare `_prisma_migrations` on both sides. Do not assume the more-populated branch is the correct schema.
 
@@ -98,7 +106,7 @@ Do **not** rotate Stripe / Clerk / Resend / Inngest / Upstash / Sentry values to
 - [ ] Pilot worksheet ready for each tester: use [`./v1-production-beta-tester-worksheet.md`](./v1-production-beta-tester-worksheet.md).
 
 ### A.7 Webhooks
-- [ ] Stripe webhooks registered for **preview** and **production**: `payment_intent.succeeded`, `charge.refunded`, `charge.dispute.*`, `account.updated` (for Connect), `transfer.paid`, `transfer.failed`.
+- [ ] Stripe webhooks registered for **preview** and **production**: `payment_intent.succeeded`, `charge.refunded`, `charge.dispute.*`, `account.updated` (for Connect), `transfer.paid`, `transfer.failed`. ⚠️ Code: the handler (`apps/web/app/api/webhooks/stripe/route.ts`) currently handles `account.updated`, `payment_intent.succeeded`, `payment_intent.payment_failed`, `charge.dispute.created`, `charge.dispute.closed`. **Missing handlers:** `charge.refunded`, `transfer.paid`, `transfer.failed` — registering these events in Stripe without a code branch will just no-op. Needed for B.1 step 13 (refund), B.4 (transfer-fail abort), and C.1 (refund reconciliation).
 - [ ] Clerk webhooks registered for **roaster** and **org** apps (preview + prod): `user.created`, `user.updated`, `session.*` as needed.
 - [ ] Inngest app synced with production env; jobs visible in dashboard.
 - [ ] Stripe CLI smoke test: `stripe trigger payment_intent.succeeded --api-key sk_test_...` → preview webhook returns 200, `OrderEvent` created.
@@ -155,11 +163,11 @@ If any step fails → **stop, fix, restart the script from step 1.**
 
 ### B.4 Abort criteria for Phase B
 If any of these happen during dress rehearsal or cutover, **abort the launch** and restart after fix:
-- Any invariant in `assertSplitInvariants()` fires.
+- Any invariant in `assertSplitInvariants()` fires. ✅ Mechanism now exists (see A.3) — this criterion is live.
 - Webhook signature failures > 0 in a 10-minute window.
-- Stripe transfer to roaster fails or is delayed > 10 min.
+- Stripe transfer to roaster fails or is delayed > 10 min. ⚠️ Still depends on a `transfer.failed` handler that does not exist yet (see A.7) — a silent failure would not surface. (Not yet addressed in the 2026-06-05 code pass.)
 - Any admin action occurs without a corresponding `AdminActionLog` row.
-- Buyer PII appears unscrubbed in any Sentry event.
+- Buyer PII appears unscrubbed in any Sentry event. ✅ PII scrubbing now implemented (see A.4); this criterion is meaningful rather than guaranteed-to-trip. Still confirm with a seeded preview error before relying on it.
 
 ---
 
@@ -179,6 +187,8 @@ Each has a named owner in [`../../SCAFFOLD_CHECKLIST.md`](../../SCAFFOLD_CHECKLI
 - **W1–2**: FF-2 (buyer accounts).
 - **W2**: FF-4 (admin audit UI).
 - **W2–3**: FF-6 (centralized order state transitions).
+- **W2–3**: FF-7 (observability — BetterStack monitors/heartbeats/status page, [`./observability-setup.md`](./observability-setup.md)).
+- **W3+**: FF-8 (feedback + help center — Featurebase, full spec + rollout, [`../feedback/README.md`](../feedback/README.md)).
 
 ### C.3 Track-Tiger monitoring
 - **T-1 (magic-link expiry)**: alert if any `MagicLink.consumedAt - MagicLink.createdAt > 24h`.
@@ -200,7 +210,7 @@ Keep this section one page. If the runbook has too many pages, rollback will fai
   1. Re-promote previous Vercel deployment (app rolls back).
   2. If migrations are backwards-compatible (additive columns, no drops): leave DB alone.
   3. If migrations are breaking: `pnpm prisma migrate resolve --rolled-back <migration_name>` against prod DB, then re-run `prisma migrate deploy` for the last-good migration set. Last resort: restore from pre-deploy Neon snapshot (from Phase B.2). Data loss window = time since snapshot.
-- **Stripe-side problem (webhook broken, Connect disabled)**: freeze new checkouts by flipping a feature flag (`FEATURE_CHECKOUT_ENABLED=false` in Vercel env) — `apps/web/app/api/checkout/create-intent/route.ts` must honor this flag. Buyers see a maintenance page.
+- **Stripe-side problem (webhook broken, Connect disabled)**: freeze new checkouts by flipping a feature flag (`FEATURE_CHECKOUT_ENABLED=false` in Vercel env) — `apps/web/app/api/checkout/create-intent/route.ts` honors this flag. Buyers get a 503 "temporarily unavailable". ✅ Code (2026-06-05): the route now returns 503 early when `FEATURE_CHECKOUT_ENABLED=false`; default (unset) = enabled, so normal operation never depends on the var. Key added to the `web` allowlist in `scripts/vercel-sync-envs.mjs`. (Buyers currently see a JSON 503, not a styled maintenance page — the API-level freeze works; a friendly storefront page is a nice-to-have follow-up.)
 - **Dataloss suspected**: stop writes, call Neon support, snapshot current state, compare to last known-good snapshot.
 
 ### After any rollback

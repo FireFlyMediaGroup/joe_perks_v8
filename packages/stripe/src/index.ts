@@ -35,6 +35,7 @@ export {
   limitSlugValidation,
 } from "./ratelimit";
 export {
+  assertSplitInvariants,
   type CalculateSplitsInput,
   type CalculateSplitsResult,
   calculateSplits,
@@ -43,6 +44,7 @@ export {
   DEFAULT_ORG_PCT_MIN,
   DEFAULT_PLATFORM_FEE_FLOOR_CENTS,
   DEFAULT_PLATFORM_FEE_PCT,
+  SplitInvariantError,
   STRIPE_FEE_FIXED_CENTS,
   STRIPE_FEE_PERCENT_DENOMINATOR,
   STRIPE_FEE_PERCENT_NUMERATOR,

@@ -25,6 +25,16 @@ interface CheckoutOrderItemData {
   variantId: string;
 }
 
+/**
+ * Rollback kill-switch (see launch runbook → Rollback procedure). Setting
+ * `FEATURE_CHECKOUT_ENABLED=false` in the Vercel env freezes new checkouts during a
+ * Stripe/Connect incident. Default (unset or any non-"false" value) = enabled, so
+ * normal operation never depends on the var being present.
+ */
+function isCheckoutEnabled(): boolean {
+  return process.env.FEATURE_CHECKOUT_ENABLED !== "false";
+}
+
 function getClientIp(request: Request): string {
   const forwarded = request.headers.get("x-forwarded-for");
   if (forwarded) {
@@ -196,6 +206,13 @@ async function loadCheckoutContext(body: CheckoutRequestBody): Promise<
 }
 
 export async function POST(request: Request) {
+  if (!isCheckoutEnabled()) {
+    return NextResponse.json(
+      { error: "Checkout is temporarily unavailable. Please try again later." },
+      { status: 503 }
+    );
+  }
+
   let body: CheckoutRequestBody;
   try {
     body = checkoutSchema.parse(await request.json());
