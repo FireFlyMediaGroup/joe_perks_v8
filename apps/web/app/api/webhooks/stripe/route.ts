@@ -582,6 +582,66 @@ async function handleChargeDisputeClosed(
   }
 }
 
+async function handleChargeRefunded(charge: Stripe.Charge): Promise<void> {
+  const order = await database.order.findUnique({
+    select: { id: true, payoutStatus: true, status: true },
+    where: { stripeChargeId: charge.id },
+  });
+  if (!order) {
+    console.error("refund webhook: order not found", {
+      stripe_charge_id: charge.id,
+    });
+    return;
+  }
+
+  const fullyRefunded = charge.refunded === true;
+
+  // The SLA auto-refund job (run-sla-check) already flips status to REFUNDED and
+  // logs REFUND_COMPLETED for refunds it initiates; the resulting webhook arrives
+  // as a confirmation — don't double-log or re-flip.
+  if (fullyRefunded && order.status === "REFUNDED") {
+    return;
+  }
+
+  // Refund after a payout already transferred needs a clawback — surface it for
+  // manual reconciliation (C.1) rather than silently marking the payout failed.
+  const payoutAlreadyTransferred = order.payoutStatus === "TRANSFERRED";
+  if (fullyRefunded && payoutAlreadyTransferred) {
+    console.error("refund webhook: full refund on already-paid-out order", {
+      order_id: order.id,
+      stripe_charge_id: charge.id,
+    });
+  }
+
+  await database.$transaction(async (tx) => {
+    if (fullyRefunded) {
+      await tx.order.update({
+        data: {
+          status: "REFUNDED",
+          // Stop any pending payout; leave a completed transfer's status intact.
+          ...(payoutAlreadyTransferred ? {} : { payoutStatus: "FAILED" }),
+        },
+        where: { id: order.id },
+      });
+    }
+
+    // OrderEvent stays in the transaction with the status update (atomic refund close-out).
+    await tx.orderEvent.create({
+      data: {
+        actorType: "SYSTEM",
+        eventType: "REFUND_COMPLETED",
+        orderId: order.id,
+        payload: {
+          amount_refunded_cents: charge.amount_refunded,
+          fully_refunded: fullyRefunded,
+          payout_was_transferred: payoutAlreadyTransferred,
+          stripe_charge_id: charge.id,
+        },
+      },
+    });
+  });
+}
+
 export async function POST(request: Request) {
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET?.trim();
   if (!webhookSecret) {
@@ -638,6 +698,9 @@ export async function POST(request: Request) {
         break;
       case "charge.dispute.created":
         await handleChargeDisputeCreated(event.data.object as Stripe.Dispute);
+        break;
+      case "charge.refunded":
+        await handleChargeRefunded(event.data.object as Stripe.Charge);
         break;
       default:
         break;
