@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 
 import { checkoutToPaymentStep } from "./_helpers/checkout-flow";
 import {
+  chargeDisputeCreatedEvent,
   chargeIdFor,
   chargeRefundedEvent,
   confirmPaymentIntent,
@@ -227,6 +228,52 @@ test("EC-13: a partial refund leaves the order CONFIRMED", async ({
   expect(await fetchOrderStatus(base, intent.paymentIntentId)).toBe(
     "CONFIRMED"
   );
+});
+
+test("EC-14: charge.dispute.created records a dispute on the order", async ({
+  page,
+  baseURL,
+}) => {
+  const base = baseURL ?? FALLBACK_BASE_URL;
+  const intent = await checkoutToPaymentStep(page);
+
+  expect(
+    (
+      await deliverPaymentIntentSucceeded({
+        baseURL: base,
+        orderId: intent.orderId,
+        paymentIntentId: intent.paymentIntentId,
+      })
+    ).status
+  ).toBe(200);
+  await expect
+    .poll(() => fetchOrderStatus(base, intent.paymentIntentId), {
+      timeout: SETTLE_TIMEOUT,
+    })
+    .toBe("CONFIRMED");
+
+  const dispute = await deliverEvent(
+    base,
+    chargeDisputeCreatedEvent({
+      amount: intent.grossAmount,
+      chargeId: chargeIdFor(intent.paymentIntentId),
+    })
+  );
+  expect(dispute.status).toBe(200);
+
+  // The dispute handler records a DisputeRecord (surfaced as hasDispute).
+  await expect
+    .poll(
+      async () => {
+        const res = await fetch(
+          `${base}/api/order-status?pi=${encodeURIComponent(intent.paymentIntentId)}`
+        );
+        const body = (await res.json()) as { hasDispute: boolean };
+        return body.hasDispute;
+      },
+      { timeout: SETTLE_TIMEOUT }
+    )
+    .toBe(true);
 });
 
 test("MP-02: a delivered order pays out to the roaster + org (TRANSFERRED)", async ({
