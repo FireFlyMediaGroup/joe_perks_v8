@@ -17,6 +17,7 @@ jobs:
           cache: "pnpm"
       - run: pnpm install --frozen-lockfile
       - run: pnpm check
+      - run: pnpm turbo test
       - run: pnpm turbo build
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL_DEV }}
