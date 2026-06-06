@@ -26,7 +26,7 @@ export async function createTestConnectAccount(input: {
   const form = new URLSearchParams({
     "business_profile[mcc]": "5499",
     "business_profile[product_description]": "Coffee fundraiser payouts",
-    "business_profile[url]": "https://example.com",
+    "business_profile[url]": "https://joeperks.com",
     business_type: "individual",
     "capabilities[transfers][requested]": "true",
     country: "US",
