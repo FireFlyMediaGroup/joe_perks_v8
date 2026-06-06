@@ -20,7 +20,9 @@
 >
 > **Also resolved (2026-06-06):** order/payout cross-tenant **read** isolation (A.2) — order reads extracted to `_lib/org-orders.ts` and unit-tested; no real-DB harness needed.
 >
-> **Still open** (flagged but not yet coded): browser `e2e.yml` + money-path scenario coverage (A.3) — the one remaining item, needs an ephemeral test DB + Stripe test keys in CI.
+> **Also resolved (2026-06-06):** browser e2e harness (A.3) — `e2e.yml` stands up an ephemeral Neon branch per run + Playwright + signed-webhook settlement; MP-01 money-path scenario implemented. Needs the e2e CI secrets added once; remaining MP/EC scenarios are incremental follow-ups.
+>
+> **Open work is now incremental, not structural:** remaining MP-02..EC-24 e2e scenarios (on the new harness) and the launch-day manual/business checklist items (legal copy, DPAs, DNS, pilots).
 
 **Related**
 - [`../pre-mortems/2026-04-19-v1-launch.md`](../pre-mortems/2026-04-19-v1-launch.md) — risk analysis that produced this runbook
@@ -69,8 +71,8 @@ Abort criteria at the end of each phase.
 ### A.3 Money path (engineering)
 - [ ] **Today’s commands** (until `pnpm test:e2e` ships): [`../testing/v1-launch-money-path-e2e-execution.md`](../testing/v1-launch-money-path-e2e-execution.md) — `pnpm test`, `pnpm e2e:sprint3`, Stripe listen + webhook secret.
 - [x] **Sandbox-local executable suite completed on 2026-04-20**: `pnpm test`, `pnpm e2e:stripe-listen`, `pnpm e2e:stripe-trigger`, `pnpm e2e:sprint3`, and `pnpm test:e2e:frontend` all passed in the sandbox/test-key environment. See the execution log in [`../testing/v1-launch-money-path-e2e-execution.md`](../testing/v1-launch-money-path-e2e-execution.md).
-- [ ] E2E scenarios MP-01 through EC-24 implemented per [`../testing/money-path-e2e-scenarios.md`](../testing/money-path-e2e-scenarios.md). ⚠️ Code: only **2 of 27** scenarios exist today (`tests/e2e/frontend/storefront.spec.ts` — storefront render + reach-payment-step). The money-path settlement scenarios are not yet written.
-- [ ] `.github/workflows/e2e.yml` runs on every PR and nightly on `main`; green for 3 consecutive runs before go-live. ⚠️ Code: `e2e.yml` (browser/money-path) still does not exist. As of 2026-06-05 `ci.yml` now runs `pnpm turbo test` (unit/integration across stripe, observability, roaster, admin, org, **and web** — web's 8 test files / 24 tests are now wired). The remaining gap is the **browser** money-path e2e job (needs a test-DB harness + Stripe test secrets in CI).
+- [ ] E2E scenarios MP-01 through EC-24 implemented per [`../testing/money-path-e2e-scenarios.md`](../testing/money-path-e2e-scenarios.md). ⚠️ Code (2026-06-06): **MP-01 (settlement) now implemented** in `tests/e2e/frontend/money-path.spec.ts` — checkout → PENDING order → signed `payment_intent.succeeded` webhook → asserts CONFIRMED + payout HELD + `PAYMENT_SUCCEEDED` event (plus the prior storefront render + reach-payment-step). **Still open:** MP-02 fulfillment→payout and the EC-* edge cases — incremental follow-ups on this harness.
+- [ ] `.github/workflows/e2e.yml` runs on every PR and nightly on `main`; green for 3 consecutive runs before go-live. ✅ Code (2026-06-06): `e2e.yml` added — runs on PR + nightly (07:00 UTC) + manual. Provisions an **ephemeral Neon branch per run** (created/deleted via the Neon API), `prisma migrate deploy` + seed, then Playwright money-path specs against `web` on :3100; settlement driven by **signed Stripe test webhooks** (no live tunnel). **One-time prereq:** add repo secrets `NEON_API_KEY`, `NEON_PROJECT_ID`, `STRIPE_TEST_SECRET_KEY`, `STRIPE_TEST_WEBHOOK_SECRET`, `NEXT_PUBLIC_STRIPE_TEST_PUBLISHABLE_KEY`. The "3 consecutive green runs" gate starts once secrets are in and MP-01 is green.
 - [x] Invariant helper `assertSplitInvariants()` added to `packages/stripe/src/splits.ts`; unit-tested. ✅ Code (2026-06-05): implemented (invariants 1–6, throws `SplitInvariantError`), called inside `calculateSplits()` as defense-in-depth, and unit-tested (`splits.test.ts`, 18 passing). The B.4 abort criterion now has a real mechanism behind it.
 - [ ] Stripe test-mode PaymentIntent → webhook → `Order` → payout transfer path runs end-to-end on preview.
 
