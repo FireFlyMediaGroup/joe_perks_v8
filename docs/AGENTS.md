@@ -202,6 +202,7 @@ Use a **main-first** workflow by default. A long-lived `develop` branch is **opt
 - Splits are calculated on `product_subtotal` only — shipping is excluded.
 - Splits are **frozen on the Order row at PaymentIntent creation time** — never recalculate.
 - `org_pct_snapshot` on the Order stores the org percentage used — use this for historical display.
+- `calculateSplits()` calls **`assertSplitInvariants()`** internally (invariants 1–6 — split/gross integrity, non-negativity, shipping passthrough, platform floor, org bounds) and throws `SplitInvariantError` on violation. Keep that call; it is the runtime guard behind the launch runbook's B.4 abort criterion. Both are exported from `@joe-perks/stripe` / `@joe-perks/stripe/splits`.
 
 ### Tenant isolation
 - Every roaster portal query **must** include `WHERE roaster_id = session.roasterId`.
@@ -224,11 +225,15 @@ Use a **main-first** workflow by default. A long-lived `develop` branch is **opt
 - Webhook handlers must call `stripe.webhooks.constructEvent()` before any processing.
 - Every webhook handler must check `StripeEvent` table for idempotency before processing.
 - `transfer_group` must be set to `order.id` on every Stripe transfer — required for reconciliation.
+- **Handled webhook events** (`apps/web/app/api/webhooks/stripe/route.ts`): `account.updated`, `payment_intent.succeeded`, `payment_intent.payment_failed`, `charge.dispute.created`, `charge.dispute.closed`, `charge.refunded`. `charge.refunded` flips the order to `REFUNDED`, halts a pending payout (leaves an already-transferred payout intact + logs a clawback alert), and is idempotent with the SLA auto-refund job.
+- **`transfer.paid` / `transfer.failed` are NOT valid events in the current Stripe API** — do not add cases for them (TypeScript will reject the literals). Transfer-creation failures are handled synchronously in the payout-release job (`payoutStatus=FAILED` + `PAYOUT_FAILED`); dispute clawbacks go through `reverseTransferIfPossible`. The modern post-hoc signals, if ever needed, are `transfer.reversed` and connected-account `payout.failed`.
+- **Checkout kill-switch:** `apps/web/.../checkout/create-intent` returns 503 when `FEATURE_CHECKOUT_ENABLED=false` (default/unset = enabled). This is the launch-runbook rollback lever to freeze new orders during a Stripe incident — keep it honored.
 
 ### Logging and PII
 - **Never log `req.body` in checkout or webhook routes** — it contains buyer addresses and card data.
 - Only log: `order_id`, `stripe_pi_id`, `event_type`, `campaign_id` — never buyer fields.
-- Sentry `beforeSend` scrubs email, name, address fields — verify this is active before adding new Sentry captures.
+- **Payment/webhook log lines use `createPaymentLog()`** from **`@repo/observability/payment-log`** — it stamps canonical `order_id` / `order_number` / `roaster_id` / `org_id` keys (null when unknown) on every line so an order's lifecycle is queryable. Use it (not raw `console.*`) in the Stripe webhook route, checkout, and payout/SLA jobs.
+- Sentry PII scrubbing is implemented in **`packages/observability/scrub.ts`** (`beforeSend: scrubEvent` + `sendDefaultPii: false`, wired into server/client/edge configs). It strips user identity, sensitive headers/cookies/body, captured stack-frame locals, breadcrumbs, and inline emails. **Do not remove `beforeSend`/`sendDefaultPii` or add Sentry init without it** — this backs the B.4 "no unscrubbed PII" abort criterion.
 
 ### Database
 - **Soft deletes on Product and ProductVariant** — use `deleted_at DateTime?`. Never hard delete.
@@ -237,7 +242,7 @@ Use a **main-first** workflow by default. A long-lived `develop` branch is **opt
 - `logOrderEvent()` from `@joe-perks/db` is the preferred helper for non-transactional inserts (swallows errors). For events that must be atomic with other writes, use `database.orderEvent.create` inside `$transaction` (e.g. checkout, webhook confirmation, SLA auto-refund).
 - `Order.org_pct_snapshot`, `Order.org_amount`, `Order.platform_amount`, `Order.roaster_amount` are immutable after creation.
 - `CampaignItem.retail_price` and `CampaignItem.wholesale_price` are snapshots — read these for pricing, not `ProductVariant`.
-- **Schema source of truth** — treat `packages/db/prisma/schema.prisma` plus committed files in `packages/db/prisma/migrations` as canonical. In April 2026, prod Neon matched the repo, while an older dev Neon branch had two extra applied historical migrations (`20260405134350_buyer_account_foundation`, `20260406032052_sprint8_fulfillment_schema_event_alignment`) from commits `03943f3` and `472749d` that were not present in the current checkout. If databases disagree, inspect `_prisma_migrations` before assuming prod is wrong or copying rows between databases.
+- **Schema source of truth** — treat `packages/db/prisma/schema.prisma` plus committed files in `packages/db/prisma/migrations` as canonical. As of June 2026, `20260405134350_buyer_account_foundation` **is** present in the checkout; `20260406032052_sprint8_fulfillment_schema_event_alignment` (commit `472749d`) remains the one historical migration applied on an older dev Neon branch but absent from the repo. If databases disagree, inspect `_prisma_migrations` before assuming prod is wrong or copying rows between databases.
 
 ### Magic links
 - Tokens are generated with `crypto.randomBytes(32).toString('hex')` — 256 bits of entropy.
