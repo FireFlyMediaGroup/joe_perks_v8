@@ -1,4 +1,4 @@
-import { database } from "@joe-perks/db";
+import { database } from "@joe-perks/db/database";
 import { expect, test } from "@playwright/test";
 
 import { checkoutToPaymentStep } from "./_helpers/checkout-flow";

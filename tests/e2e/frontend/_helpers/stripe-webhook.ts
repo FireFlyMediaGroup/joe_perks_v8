@@ -1,12 +1,14 @@
-import { getStripe } from "@joe-perks/stripe";
+import crypto from "node:crypto";
 
 const WEBHOOK_PATH = "/api/webhooks/stripe";
 
 /**
  * Build, sign, and POST a `payment_intent.succeeded` event to the webhook route
- * exactly as Stripe would — the signature is generated with the same
- * `STRIPE_WEBHOOK_SECRET` the app verifies against. This settles the money path
- * deterministically in CI without a live `stripe listen` tunnel.
+ * exactly as Stripe would. The signature uses Stripe's documented scheme —
+ * `t=<unix>,v1=HMAC_SHA256("<t>.<payload>", STRIPE_WEBHOOK_SECRET)` — so the
+ * app's `constructEvent` verifies it. Computed with node:crypto (no Stripe SDK
+ * import) to keep the test free of `server-only`-guarded package barrels. This
+ * settles the money path deterministically in CI without a live tunnel.
  */
 export async function deliverPaymentIntentSucceeded(input: {
   baseURL: string;
@@ -33,16 +35,17 @@ export async function deliverPaymentIntentSucceeded(input: {
   };
 
   const payload = JSON.stringify(event);
-  const signature = getStripe().webhooks.generateTestHeaderString({
-    payload,
-    secret,
-  });
+  const timestamp = Math.floor(Date.now() / 1000);
+  const signature = crypto
+    .createHmac("sha256", secret)
+    .update(`${timestamp}.${payload}`)
+    .digest("hex");
 
   return await fetch(`${input.baseURL}${WEBHOOK_PATH}`, {
     body: payload,
     headers: {
       "content-type": "application/json",
-      "stripe-signature": signature,
+      "stripe-signature": `t=${timestamp},v1=${signature}`,
     },
     method: "POST",
   });
