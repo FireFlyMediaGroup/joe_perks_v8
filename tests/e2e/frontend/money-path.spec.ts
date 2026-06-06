@@ -4,6 +4,7 @@ import { checkoutToPaymentStep } from "./_helpers/checkout-flow";
 import {
   chargeIdFor,
   chargeRefundedEvent,
+  confirmPaymentIntent,
   deliverEvent,
   deliverEventWithBadSignature,
   deliverPaymentIntentSucceeded,
@@ -135,4 +136,46 @@ test("EC-12: charge.refunded flips a confirmed order to REFUNDED", async ({
       timeout: SETTLE_TIMEOUT,
     })
     .toBe("REFUNDED");
+});
+
+test("MP-02: a delivered order pays out to the roaster + org (TRANSFERRED)", async ({
+  page,
+  baseURL,
+}) => {
+  const base = baseURL ?? FALLBACK_BASE_URL;
+  const intent = await checkoutToPaymentStep(page);
+
+  // Real test-mode charge so the payout job's source_transaction is valid.
+  const chargeId = await confirmPaymentIntent(intent.paymentIntentId);
+
+  const settle = await deliverEvent(
+    base,
+    paymentIntentSucceededEvent({
+      latestCharge: chargeId,
+      orderId: intent.orderId,
+      paymentIntentId: intent.paymentIntentId,
+    })
+  );
+  expect(settle.status).toBe(200);
+  await expect
+    .poll(() => fetchOrderStatus(base, intent.paymentIntentId), {
+      timeout: SETTLE_TIMEOUT,
+    })
+    .toBe("CONFIRMED");
+
+  // Drive to DELIVERED + past hold, then run the payout-release job (gated route).
+  const release = await fetch(`${base}/api/e2e/release-payout`, {
+    body: JSON.stringify({ orderId: intent.orderId }),
+    headers: { "content-type": "application/json" },
+    method: "POST",
+  });
+  expect(release.ok).toBeTruthy();
+  const result = (await release.json()) as {
+    payoutStatus: string;
+    roasterTransferId: string | null;
+  };
+
+  // Transfers to the roaster + org connected accounts succeeded.
+  expect(result.payoutStatus).toBe("TRANSFERRED");
+  expect(result.roasterTransferId).toBeTruthy();
 });

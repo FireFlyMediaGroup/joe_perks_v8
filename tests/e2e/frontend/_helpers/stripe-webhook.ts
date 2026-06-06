@@ -43,6 +43,10 @@ export function chargeIdFor(paymentIntentId: string): string {
 }
 
 export function paymentIntentSucceededEvent(input: {
+  // Real Stripe charge id (from confirming the PI) — MP-02 needs this so the
+  // payout job's `source_transaction` references a real charge. Defaults to the
+  // synthetic id for scenarios that don't transfer (MP-01, EC-*).
+  latestCharge?: string;
   orderId: string;
   paymentIntentId: string;
 }) {
@@ -50,7 +54,7 @@ export function paymentIntentSucceededEvent(input: {
     data: {
       object: {
         id: input.paymentIntentId,
-        latest_charge: chargeIdFor(input.paymentIntentId),
+        latest_charge: input.latestCharge ?? chargeIdFor(input.paymentIntentId),
         metadata: { order_id: input.orderId },
         object: "payment_intent",
       },
@@ -59,6 +63,45 @@ export function paymentIntentSucceededEvent(input: {
     object: "event",
     type: "payment_intent.succeeded",
   };
+}
+
+/**
+ * Confirm a real (test-mode) PaymentIntent with the standard test card so a real
+ * charge exists — required for MP-02's payout `source_transaction`. Returns the
+ * charge id. Uses the Stripe REST API directly (test secret key from env).
+ */
+export async function confirmPaymentIntent(
+  paymentIntentId: string
+): Promise<string> {
+  const key = process.env.STRIPE_SECRET_KEY;
+  if (!key) {
+    throw new Error("STRIPE_SECRET_KEY is required to confirm a PaymentIntent");
+  }
+  const res = await fetch(
+    `https://api.stripe.com/v1/payment_intents/${paymentIntentId}/confirm`,
+    {
+      body: new URLSearchParams({
+        payment_method: "pm_card_visa",
+        return_url: "https://joeperks.com",
+      }).toString(),
+      headers: {
+        Authorization: `Bearer ${key}`,
+        "content-type": "application/x-www-form-urlencoded",
+      },
+      method: "POST",
+    }
+  );
+  const pi = (await res.json()) as {
+    error?: { message?: string };
+    latest_charge?: string;
+    status?: string;
+  };
+  if (!(res.ok && pi.status === "succeeded" && pi.latest_charge)) {
+    throw new Error(
+      `PaymentIntent confirm failed: ${pi.error?.message ?? pi.status ?? res.status}`
+    );
+  }
+  return pi.latest_charge;
 }
 
 export function chargeRefundedEvent(input: {
