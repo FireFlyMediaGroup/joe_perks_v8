@@ -22,7 +22,10 @@ export const keys = () =>
         emptyToUndefined,
         z.string().optional()
       ),
-      FEATUREBASE_API_KEY: z.preprocess(emptyToUndefined, z.string().optional()),
+      FEATUREBASE_API_KEY: z.preprocess(
+        emptyToUndefined,
+        z.string().optional()
+      ),
     },
     client: {
       NEXT_PUBLIC_FEATUREBASE_ORG: z.preprocess(

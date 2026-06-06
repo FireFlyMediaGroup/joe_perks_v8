@@ -18,9 +18,8 @@ import {
 } from "@joe-perks/email/templates/account-suspended";
 import { revalidatePath } from "next/cache";
 import { createElement } from "react";
-
-import { requirePlatformAdmin } from "../_lib/require-platform-admin";
 import { getAccountReactivationReadiness } from "../_lib/account-reactivation";
+import { requirePlatformAdmin } from "../_lib/require-platform-admin";
 
 import type { AccountLifecycleState } from "./account-lifecycle-state";
 

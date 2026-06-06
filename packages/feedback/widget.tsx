@@ -8,22 +8,22 @@ import { keys } from "./keys";
  * signed-in portal user. Build it from the Clerk session — see `identify.ts`.
  * When omitted, the widget runs anonymously.
  */
-export type FeedbackIdentity = {
-  /** Stable user id (e.g. Clerk user id). */
-  userId: string;
+export interface FeedbackIdentity {
+  /** Optional: the org/company this user belongs to (Roaster/Org name). */
+  companyName?: string;
   email: string;
   name?: string;
   /** For SSO identity verification — a JWT signed server-side with FEATUREBASE_SSO_SECRET. */
   userHash?: string;
-  /** Optional: the org/company this user belongs to (Roaster/Org name). */
-  companyName?: string;
-};
+  /** Stable user id (e.g. Clerk user id). */
+  userId: string;
+}
 
-type FeedbackWidgetProps = {
+interface FeedbackWidgetProps {
   identity?: FeedbackIdentity;
-  theme?: "light" | "dark";
   placement?: "left" | "right";
-};
+  theme?: "light" | "dark";
+}
 
 type FeaturebaseFn = ((...args: unknown[]) => void) & { q?: unknown[] };
 
@@ -55,9 +55,10 @@ export const FeedbackWidget = ({
     const win = window as unknown as { Featurebase?: FeaturebaseFn };
 
     if (typeof win.Featurebase !== "function") {
-      const queue: FeaturebaseFn = function (...args: unknown[]) {
-        (queue.q = queue.q || []).push(args);
-      } as FeaturebaseFn;
+      const queue: FeaturebaseFn = ((...args: unknown[]) => {
+        queue.q ??= [];
+        queue.q.push(args);
+      }) as FeaturebaseFn;
       win.Featurebase = queue;
     }
 
