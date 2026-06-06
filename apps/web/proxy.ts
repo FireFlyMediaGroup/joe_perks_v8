@@ -7,7 +7,10 @@ import {
   noseconeOptionsWithToolbar,
   securityMiddleware,
 } from "@repo/security/proxy";
-import { createNEMO, type NextMiddleware as NemoMiddleware } from "@rescale/nemo";
+import {
+  createNEMO,
+  type NextMiddleware as NemoMiddleware,
+} from "@rescale/nemo";
 import {
   type NextFetchEvent,
   type NextProxy,

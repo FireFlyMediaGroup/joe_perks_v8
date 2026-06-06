@@ -1,5 +1,6 @@
 import { database, generateOrderNumber } from "@joe-perks/db";
 import { calculateSplits, getStripe, limitCheckout } from "@joe-perks/stripe";
+import { createPaymentLog } from "@repo/observability/payment-log";
 import { NextResponse } from "next/server";
 import {
   buildOrderSnapshotData,
@@ -23,6 +24,16 @@ interface CheckoutOrderItemData {
   unitPrice: number;
   variantDesc: string;
   variantId: string;
+}
+
+/**
+ * Rollback kill-switch (see launch runbook → Rollback procedure). Setting
+ * `FEATURE_CHECKOUT_ENABLED=false` in the Vercel env freezes new checkouts during a
+ * Stripe/Connect incident. Default (unset or any non-"false" value) = enabled, so
+ * normal operation never depends on the var being present.
+ */
+function isCheckoutEnabled(): boolean {
+  return process.env.FEATURE_CHECKOUT_ENABLED !== "false";
 }
 
 function getClientIp(request: Request): string {
@@ -196,6 +207,13 @@ async function loadCheckoutContext(body: CheckoutRequestBody): Promise<
 }
 
 export async function POST(request: Request) {
+  if (!isCheckoutEnabled()) {
+    return NextResponse.json(
+      { error: "Checkout is temporarily unavailable. Please try again later." },
+      { status: 503 }
+    );
+  }
+
   let body: CheckoutRequestBody;
   try {
     body = checkoutSchema.parse(await request.json());
@@ -329,10 +347,14 @@ export async function POST(request: Request) {
     });
   } catch (err) {
     await stripe.paymentIntents.cancel(pi.id).catch(() => undefined);
-    console.error("checkout db transaction failed", {
-      order_id: orderId,
-      stripe_pi_id: pi.id,
+    createPaymentLog({
+      orderId,
+      orderNumber,
+      orgId: campaign.orgId,
+      roasterId,
+    }).error("checkout db transaction failed", {
       error: err instanceof Error ? err.message : "unknown",
+      stripe_pi_id: pi.id,
     });
     return NextResponse.json(
       { error: "Order creation failed" },

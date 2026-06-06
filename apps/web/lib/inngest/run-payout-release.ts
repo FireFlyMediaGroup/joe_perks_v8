@@ -3,6 +3,7 @@ import {
   isStripeConfigured,
   transferToConnectedAccount,
 } from "@joe-perks/stripe";
+import { createPaymentLog } from "@repo/observability/payment-log";
 
 /**
  * Payout job: `Campaign.totalRaised` is incremented when the order is paid (webhook);
@@ -19,11 +20,14 @@ async function payoutSingleOrder(orderId: string): Promise<void> {
   });
 
   const roaster = order.roaster;
+  const plog = createPaymentLog({
+    orderId: order.id,
+    orderNumber: order.orderNumber,
+    orgId: order.campaign.org.id,
+    roasterId: roaster.id,
+  });
   if (!(roaster.stripeAccountId && roaster.payoutsEnabled)) {
-    console.error("payout-release: roaster Connect not ready", {
-      order_id: order.id,
-      roaster_id: roaster.id,
-    });
+    plog.error("payout-release: roaster Connect not ready");
     await database.order.update({
       where: { id: order.id },
       data: { payoutStatus: "FAILED" },
@@ -36,7 +40,7 @@ async function payoutSingleOrder(orderId: string): Promise<void> {
 
   const chargeId = order.stripeChargeId;
   if (!chargeId) {
-    console.error("payout-release: missing charge", { order_id: order.id });
+    plog.error("payout-release: missing charge");
     return;
   }
 
@@ -47,8 +51,7 @@ async function payoutSingleOrder(orderId: string): Promise<void> {
   const netRoasterAmount = Math.max(0, order.roasterTotal - totalDebt);
 
   if (totalDebt > 0 && netRoasterAmount <= 0) {
-    console.error("payout-release: manual debt resolution required", {
-      order_id: order.id,
+    plog.error("payout-release: manual debt resolution required", {
       roaster_total: order.roasterTotal,
       total_debt: totalDebt,
     });
@@ -85,8 +88,7 @@ async function payoutSingleOrder(orderId: string): Promise<void> {
         });
       }
     } else {
-      console.log("payout-release: roaster transfer skipped (net <= 0)", {
-        order_id: order.id,
+      plog.info("payout-release: roaster transfer skipped (net <= 0)", {
         roaster_total: order.roasterTotal,
         total_debt: totalDebt,
       });
@@ -106,9 +108,8 @@ async function payoutSingleOrder(orderId: string): Promise<void> {
         });
         orgTransferId = orgTransfer.id;
       } catch (e) {
-        console.error("payout-release: org transfer failed after roaster", {
+        plog.error("payout-release: org transfer failed after roaster", {
           error: e instanceof Error ? e.message : "unknown",
-          order_id: order.id,
           roaster_transfer_id: roasterTransferId,
         });
         await database.order.update({
@@ -126,13 +127,7 @@ async function payoutSingleOrder(orderId: string): Promise<void> {
         return;
       }
     } else if (order.orgAmount > 0 && !org.stripeAccountId) {
-      console.error(
-        "payout-release: org share unpaid — missing Stripe account",
-        {
-          order_id: order.id,
-          org_id: org.id,
-        }
-      );
+      plog.error("payout-release: org share unpaid — missing Stripe account");
     }
 
     await database.order.update({
@@ -151,15 +146,13 @@ async function payoutSingleOrder(orderId: string): Promise<void> {
       total_debt: totalDebt,
     });
 
-    console.log("payout-release: transfers recorded", {
-      order_id: order.id,
+    plog.info("payout-release: transfers recorded", {
       org_transfer_id: orgTransferId,
       roaster_transfer_id: roasterTransferId,
     });
   } catch (e) {
-    console.error("payout-release: roaster transfer failed", {
+    plog.error("payout-release: roaster transfer failed", {
       error: e instanceof Error ? e.message : "unknown",
-      order_id: order.id,
     });
     await database.order.update({
       data: { payoutStatus: "FAILED" },
@@ -178,7 +171,10 @@ async function payoutSingleOrder(orderId: string): Promise<void> {
  */
 export async function runPayoutRelease(): Promise<void> {
   if (!isStripeConfigured()) {
-    console.error("payout-release: skipped — Stripe not configured");
+    // Job-level (no order in scope); canonical context keys are null.
+    createPaymentLog({}).error(
+      "payout-release: skipped — Stripe not configured"
+    );
     return;
   }
 

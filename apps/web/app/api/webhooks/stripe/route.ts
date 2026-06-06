@@ -19,6 +19,7 @@ import {
   mapStripeAccountToOnboardingStatus,
   reverseTransferIfPossible,
 } from "@joe-perks/stripe";
+import { createPaymentLog } from "@repo/observability/payment-log";
 import { NextResponse } from "next/server";
 import { createElement } from "react";
 import type Stripe from "stripe";
@@ -76,10 +77,10 @@ async function sendDisputeAutoSuspensionAlert(input: {
       to: adminEmail,
     });
   } catch {
-    console.error("dispute auto-suspension email failed", {
-      roaster_id: input.roasterId,
-      stripe_dispute_id: input.stripeDisputeId,
-    });
+    createPaymentLog({ roasterId: input.roasterId }).error(
+      "dispute auto-suspension email failed",
+      { stripe_dispute_id: input.stripeDisputeId }
+    );
   }
 }
 
@@ -115,10 +116,10 @@ async function sendRoasterAutoSuspensionEmail(input: {
       to: roaster.email,
     });
   } catch {
-    console.error("roaster auto-suspension email failed", {
-      roaster_id: input.roasterId,
-      stripe_dispute_id: input.stripeDisputeId,
-    });
+    createPaymentLog({ roasterId: input.roasterId }).error(
+      "roaster auto-suspension email failed",
+      { stripe_dispute_id: input.stripeDisputeId }
+    );
   }
 }
 
@@ -144,10 +145,10 @@ async function createFulfillmentMagicLink(
     },
   });
 
-  console.log("fulfillment magic link created", {
-    order_id: orderId,
-    magic_link_id: created.id,
-  });
+  createPaymentLog({ orderId, roasterId }).info(
+    "fulfillment magic link created",
+    { magic_link_id: created.id }
+  );
 
   return { id: created.id, token: created.token };
 }
@@ -191,7 +192,11 @@ async function sendRoasterFulfillmentEmail(
       to: order.roaster.email,
     });
   } catch {
-    console.error("roaster fulfillment email failed", { order_id: orderId });
+    createPaymentLog({
+      orderId,
+      orderNumber: order.orderNumber,
+      roasterId: order.roasterId,
+    }).error("roaster fulfillment email failed");
   }
 }
 
@@ -291,7 +296,12 @@ async function sendBuyerOrderConfirmationEmail(orderId: string): Promise<void> {
       to: order.buyer.email,
     });
   } catch {
-    console.error("order confirmation email failed", { order_id: orderId });
+    createPaymentLog({
+      orderId,
+      orderNumber: order.orderNumber,
+      orgId: order.campaign.orgId,
+      roasterId: order.roasterId,
+    }).error("order confirmation email failed");
   }
 }
 
@@ -306,7 +316,9 @@ async function handlePaymentIntentSucceeded(
   const order = await database.order.findUnique({
     where: { id: orderId },
     select: {
+      campaign: { select: { orgId: true } },
       campaignId: true,
+      orderNumber: true,
       orgAmount: true,
       roasterId: true,
     },
@@ -370,8 +382,12 @@ async function handlePaymentIntentSucceeded(
     const link = await createFulfillmentMagicLink(orderId, order.roasterId);
     await sendRoasterFulfillmentEmail(orderId, link.token);
   } catch (e) {
-    console.error("fulfillment magic link / email failed", {
-      order_id: orderId,
+    createPaymentLog({
+      orderId,
+      orderNumber: order.orderNumber,
+      orgId: order.campaign.orgId,
+      roasterId: order.roasterId,
+    }).error("fulfillment magic link / email failed", {
       error: e instanceof Error ? e.message : "unknown",
     });
   }
@@ -411,7 +427,7 @@ async function handleChargeDisputeCreated(
     where: { stripeChargeId: chargeId },
   });
   if (!order) {
-    console.error("dispute webhook: order not found", {
+    createPaymentLog({}).error("dispute webhook: order not found", {
       stripe_charge_id: chargeId,
       stripe_dispute_id: dispute.id,
     });
@@ -484,7 +500,7 @@ async function handleChargeDisputeClosed(
     where: { stripeChargeId: chargeId },
   });
   if (!order) {
-    console.error("dispute webhook: order not found", {
+    createPaymentLog({}).error("dispute webhook: order not found", {
       stripe_charge_id: chargeId,
       stripe_dispute_id: dispute.id,
     });
@@ -582,6 +598,66 @@ async function handleChargeDisputeClosed(
   }
 }
 
+async function handleChargeRefunded(charge: Stripe.Charge): Promise<void> {
+  const order = await database.order.findUnique({
+    select: { id: true, payoutStatus: true, status: true },
+    where: { stripeChargeId: charge.id },
+  });
+  if (!order) {
+    createPaymentLog({}).error("refund webhook: order not found", {
+      stripe_charge_id: charge.id,
+    });
+    return;
+  }
+
+  const fullyRefunded = charge.refunded === true;
+
+  // The SLA auto-refund job (run-sla-check) already flips status to REFUNDED and
+  // logs REFUND_COMPLETED for refunds it initiates; the resulting webhook arrives
+  // as a confirmation — don't double-log or re-flip.
+  if (fullyRefunded && order.status === "REFUNDED") {
+    return;
+  }
+
+  // Refund after a payout already transferred needs a clawback — surface it for
+  // manual reconciliation (C.1) rather than silently marking the payout failed.
+  const payoutAlreadyTransferred = order.payoutStatus === "TRANSFERRED";
+  if (fullyRefunded && payoutAlreadyTransferred) {
+    createPaymentLog({ orderId: order.id }).error(
+      "refund webhook: full refund on already-paid-out order",
+      { stripe_charge_id: charge.id }
+    );
+  }
+
+  await database.$transaction(async (tx) => {
+    if (fullyRefunded) {
+      await tx.order.update({
+        data: {
+          status: "REFUNDED",
+          // Stop any pending payout; leave a completed transfer's status intact.
+          ...(payoutAlreadyTransferred ? {} : { payoutStatus: "FAILED" }),
+        },
+        where: { id: order.id },
+      });
+    }
+
+    // OrderEvent stays in the transaction with the status update (atomic refund close-out).
+    await tx.orderEvent.create({
+      data: {
+        actorType: "SYSTEM",
+        eventType: "REFUND_COMPLETED",
+        orderId: order.id,
+        payload: {
+          amount_refunded_cents: charge.amount_refunded,
+          fully_refunded: fullyRefunded,
+          payout_was_transferred: payoutAlreadyTransferred,
+          stripe_charge_id: charge.id,
+        },
+      },
+    });
+  });
+}
+
 export async function POST(request: Request) {
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET?.trim();
   if (!webhookSecret) {
@@ -639,14 +715,17 @@ export async function POST(request: Request) {
       case "charge.dispute.created":
         await handleChargeDisputeCreated(event.data.object as Stripe.Dispute);
         break;
+      case "charge.refunded":
+        await handleChargeRefunded(event.data.object as Stripe.Charge);
+        break;
       default:
         break;
     }
   } catch (e) {
-    console.error("stripe webhook processing failed", {
-      stripe_event_id: event.id,
-      event_type: event.type,
+    createPaymentLog({}).error("stripe webhook processing failed", {
       error: e instanceof Error ? e.message : "unknown",
+      event_type: event.type,
+      stripe_event_id: event.id,
     });
     return NextResponse.json({ error: "Processing failed" }, { status: 500 });
   }

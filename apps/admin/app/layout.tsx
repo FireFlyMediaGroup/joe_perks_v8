@@ -1,6 +1,6 @@
-import type { Metadata } from "next";
 import { DesignSystemProvider } from "@repo/design-system";
 import { fonts } from "@repo/design-system/lib/fonts";
+import type { Metadata } from "next";
 import "./globals.css";
 
 export const dynamic = "force-dynamic";

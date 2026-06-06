@@ -9,9 +9,9 @@ test("admin auth accepts platform admin role", () => {
 });
 
 test("admin auth accepts explicit platform admin flag", () => {
-  expect(isPlatformAdminUser({ isPlatformAdmin: true, role: "ORG_ADMIN" })).toBe(
-    true
-  );
+  expect(
+    isPlatformAdminUser({ isPlatformAdmin: true, role: "ORG_ADMIN" })
+  ).toBe(true);
 });
 
 test("admin auth rejects missing or non-admin users", () => {

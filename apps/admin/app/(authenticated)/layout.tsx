@@ -36,8 +36,8 @@ export default async function AuthenticatedLayout({
           <p className="font-medium text-sm text-zinc-500">Admin portal</p>
           <h1 className="mt-2 font-semibold text-2xl">Access denied</h1>
           <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-400">
-            Your Clerk account is signed in, but it has not been granted the
-            Joe Perks platform admin role.
+            Your Clerk account is signed in, but it has not been granted the Joe
+            Perks platform admin role.
           </p>
         </div>
       </main>

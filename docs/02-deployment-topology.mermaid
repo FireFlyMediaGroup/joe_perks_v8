@@ -24,7 +24,7 @@ graph LR
   subgraph SVC["Third-party services"]
     direction TB
     NEON[("Neon\nPostgres\nShared DB\n2 branches:\nmain + dev")]:::db
-    CLERK["Clerk\n2 apps:\nRoaster app\nOrg app"]:::svc
+    CLERK["Clerk\n3 apps:\nRoaster app\nOrg app\nAdmin app"]:::svc
     STRIPE["Stripe\nConnect platform\nExpress accounts\nfor roasters + orgs"]:::svc
     RESEND["Resend\nTransactional email\n11 templates\nvia packages/email"]:::svc
     INNGEST["Inngest\n3 jobs:\nsla-check hourly\npayout-release daily\ncart-cleanup daily"]:::svc
