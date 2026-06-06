@@ -1,17 +1,21 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+// `payment-log` resolves the backing logger from `./log`, which is `console` in
+// dev/test but Logtail when NODE_ENV=production (e.g. on Vercel builds). Mock it
+// so the assertions are independent of the environment the suite runs in.
+const mockLog = vi.hoisted(() => ({
+  error: vi.fn(),
+  info: vi.fn(),
+  warn: vi.fn(),
+}));
+
+vi.mock("./log", () => ({ log: mockLog }));
 
 import { createPaymentLog } from "./payment-log";
 
-// NODE_ENV !== "production" in tests, so `log` resolves to `console`.
 describe("createPaymentLog", () => {
   beforeEach(() => {
-    vi.spyOn(console, "error").mockImplementation(() => undefined);
-    vi.spyOn(console, "info").mockImplementation(() => undefined);
-    vi.spyOn(console, "warn").mockImplementation(() => undefined);
-  });
-
-  afterEach(() => {
-    vi.restoreAllMocks();
+    vi.clearAllMocks();
   });
 
   it("always emits the four canonical context keys", () => {
@@ -24,7 +28,7 @@ describe("createPaymentLog", () => {
 
     plog.error("payout failed");
 
-    expect(console.error).toHaveBeenCalledWith("payout failed", {
+    expect(mockLog.error).toHaveBeenCalledWith("payout failed", {
       order_id: "ord_1",
       order_number: "JP-00001",
       org_id: "org_1",
@@ -37,7 +41,7 @@ describe("createPaymentLog", () => {
 
     plog.info("payment succeeded");
 
-    expect(console.info).toHaveBeenCalledWith("payment succeeded", {
+    expect(mockLog.info).toHaveBeenCalledWith("payment succeeded", {
       order_id: "ord_1",
       order_number: null,
       org_id: null,
@@ -50,7 +54,7 @@ describe("createPaymentLog", () => {
 
     plog.warn("transfer retry", { attempt: 2, stage: "roaster_transfer" });
 
-    expect(console.warn).toHaveBeenCalledWith("transfer retry", {
+    expect(mockLog.warn).toHaveBeenCalledWith("transfer retry", {
       attempt: 2,
       order_id: "ord_1",
       order_number: null,
