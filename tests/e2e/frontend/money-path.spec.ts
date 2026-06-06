@@ -1,10 +1,18 @@
 import { expect, test } from "@playwright/test";
 
 import { checkoutToPaymentStep } from "./_helpers/checkout-flow";
-import { deliverPaymentIntentSucceeded } from "./_helpers/stripe-webhook";
+import {
+  chargeIdFor,
+  chargeRefundedEvent,
+  deliverEvent,
+  deliverEventWithBadSignature,
+  deliverPaymentIntentSucceeded,
+  paymentIntentSucceededEvent,
+} from "./_helpers/stripe-webhook";
 
 const PAYMENT_INTENT_ID = /^pi_/;
 const FALLBACK_BASE_URL = "http://127.0.0.1:3100";
+const SETTLE_TIMEOUT = 15_000;
 
 async function fetchOrderStatus(
   baseURL: string,
@@ -19,13 +27,11 @@ async function fetchOrderStatus(
 }
 
 /**
- * MP-01 — money-path happy path through settlement.
- *
- * Buyer checks out (creating a PENDING order + PaymentIntent), then a signed
- * `payment_intent.succeeded` webhook settles it. Asserts the order flips
- * PENDING → CONFIRMED via the app's own order-status API (black-box; no DB import
- * in the test) — the core order-creation → webhook → settlement path.
- * Fulfillment → payout release is the next scenario (MP-02) on this harness.
+ * Money-path e2e against the app's own APIs (black-box; no DB or workspace
+ * imports). Order state is asserted via GET /api/order-status?pi=…; settlement,
+ * refund, and signature events are driven by signed webhooks (no live tunnel).
+ * Fulfillment → payout release (MP-02) needs real Stripe test Connect accounts
+ * and is tracked separately.
  */
 test("MP-01: a paid order settles to CONFIRMED via the Stripe webhook", async ({
   page,
@@ -37,10 +43,8 @@ test("MP-01: a paid order settles to CONFIRMED via the Stripe webhook", async ({
   expect(intent.orderId).toBeTruthy();
   expect(intent.paymentIntentId).toMatch(PAYMENT_INTENT_ID);
 
-  // The order is PENDING until the webhook settles it.
   expect(await fetchOrderStatus(base, intent.paymentIntentId)).toBe("PENDING");
 
-  // Drive settlement with a signed webhook (no live tunnel needed).
   const response = await deliverPaymentIntentSucceeded({
     baseURL: base,
     orderId: intent.orderId,
@@ -48,10 +52,87 @@ test("MP-01: a paid order settles to CONFIRMED via the Stripe webhook", async ({
   });
   expect(response.status).toBe(200);
 
-  // Settled: the order flips to CONFIRMED.
   await expect
     .poll(() => fetchOrderStatus(base, intent.paymentIntentId), {
-      timeout: 15_000,
+      timeout: SETTLE_TIMEOUT,
     })
     .toBe("CONFIRMED");
+});
+
+test("EC-09: a webhook with an invalid signature is rejected and does not settle", async ({
+  page,
+  baseURL,
+}) => {
+  const base = baseURL ?? FALLBACK_BASE_URL;
+  const intent = await checkoutToPaymentStep(page);
+
+  const response = await deliverEventWithBadSignature(
+    base,
+    paymentIntentSucceededEvent(intent)
+  );
+
+  // Signature verification fails → 400, and the order is untouched.
+  expect(response.status).toBe(400);
+  expect(await fetchOrderStatus(base, intent.paymentIntentId)).toBe("PENDING");
+});
+
+test("EC-07: a duplicate webhook is a no-op (order stays CONFIRMED)", async ({
+  page,
+  baseURL,
+}) => {
+  const base = baseURL ?? FALLBACK_BASE_URL;
+  const intent = await checkoutToPaymentStep(page);
+  const event = paymentIntentSucceededEvent(intent);
+
+  expect((await deliverEvent(base, event)).status).toBe(200);
+  await expect
+    .poll(() => fetchOrderStatus(base, intent.paymentIntentId), {
+      timeout: SETTLE_TIMEOUT,
+    })
+    .toBe("CONFIRMED");
+
+  // Same event.id again — deduped by the StripeEvent unique constraint.
+  const duplicate = await deliverEvent(base, event);
+  expect(duplicate.status).toBe(200);
+  expect(await fetchOrderStatus(base, intent.paymentIntentId)).toBe(
+    "CONFIRMED"
+  );
+});
+
+test("EC-12: charge.refunded flips a confirmed order to REFUNDED", async ({
+  page,
+  baseURL,
+}) => {
+  const base = baseURL ?? FALLBACK_BASE_URL;
+  const intent = await checkoutToPaymentStep(page);
+
+  expect(
+    (
+      await deliverPaymentIntentSucceeded({
+        baseURL: base,
+        orderId: intent.orderId,
+        paymentIntentId: intent.paymentIntentId,
+      })
+    ).status
+  ).toBe(200);
+  await expect
+    .poll(() => fetchOrderStatus(base, intent.paymentIntentId), {
+      timeout: SETTLE_TIMEOUT,
+    })
+    .toBe("CONFIRMED");
+
+  const refund = await deliverEvent(
+    base,
+    chargeRefundedEvent({
+      amountRefunded: intent.grossAmount,
+      chargeId: chargeIdFor(intent.paymentIntentId),
+    })
+  );
+  expect(refund.status).toBe(200);
+
+  await expect
+    .poll(() => fetchOrderStatus(base, intent.paymentIntentId), {
+      timeout: SETTLE_TIMEOUT,
+    })
+    .toBe("REFUNDED");
 });
