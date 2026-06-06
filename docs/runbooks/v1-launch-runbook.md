@@ -18,7 +18,9 @@
 >
 > **Also resolved (2026-06-06):** production migrations wired as a manual, gated GitHub Action — `.github/workflows/migrate-prod.yml` (`workflow_dispatch` + `DEPLOY` confirm + `production` Environment); see A.5. Needs the `DATABASE_URL_PROD` repo secret (direct Neon URL) added once.
 >
-> **Still open** (flagged but not yet coded): order/payout cross-tenant **read** test needs a seeded test DB (A.2); browser `e2e.yml` + money-path scenario coverage (A.3).
+> **Also resolved (2026-06-06):** order/payout cross-tenant **read** isolation (A.2) — order reads extracted to `_lib/org-orders.ts` and unit-tested; no real-DB harness needed.
+>
+> **Still open** (flagged but not yet coded): browser `e2e.yml` + money-path scenario coverage (A.3) — the one remaining item, needs an ephemeral test DB + Stripe test keys in CI.
 
 **Related**
 - [`../pre-mortems/2026-04-19-v1-launch.md`](../pre-mortems/2026-04-19-v1-launch.md) — risk analysis that produced this runbook
@@ -59,7 +61,7 @@ Abort criteria at the end of each phase.
 
 ### A.2 Auth & tenancy (engineering)
 - [ ] Clerk wired in `apps/org`; sign-in/sign-up routes live.
-- [ ] Integration test `org-tenant-isolation.test.ts`: Org A tries to read Org B's campaign, order, payout, roaster contacts — every read returns 403/empty. Committed + gated in CI. ⚠️ Code (2026-06-05): **partially done.** Test added (`apps/org/app/(authenticated)/__tests__/org-tenant-isolation.test.ts`) and now **gated in CI** (`pnpm turbo test` added to `ci.yml` — previously CI ran no tests). It proves an org cannot activate/modify another org's **campaign** (orgId-scoped `where` filters the cross-org row out, positive control confirms own-org access) and that **roaster-partnership** access is scoped to the acting org's application. **Still open:** order/payout **reads** are inlined in React Server Components (dashboard/earnings) and follow the same `where: { campaign: { orgId } }` pattern but aren't yet covered by a seeded cross-tenant DB test — needs the test-DB harness (shares the e2e A.3 follow-up).
+- [ ] Integration test `org-tenant-isolation.test.ts`: Org A tries to read Org B's campaign, order, payout, roaster contacts — every read returns 403/empty. Committed + gated in CI. ⚠️ Code (2026-06-05): **partially done.** Test added (`apps/org/app/(authenticated)/__tests__/org-tenant-isolation.test.ts`) and now **gated in CI** (`pnpm turbo test` added to `ci.yml` — previously CI ran no tests). It proves an org cannot activate/modify another org's **campaign** (orgId-scoped `where` filters the cross-org row out, positive control confirms own-org access) and that **roaster-partnership** access is scoped to the acting org's application. ✅ 2026-06-06: now also covers order/payout **reads** — the dashboard/earnings order queries were extracted into `_lib/org-orders.ts` (`getOrgEarningsCents` / `getOrgOrderCount` / `getOrgRecentOrders`, all scoped `where: { campaign: { orgId } }`) and unit-tested for cross-tenant isolation (org A's earnings/count/recent-orders exclude org B's). 7 tests in `org-tenant-isolation.test.ts`.
 - [ ] `apps/admin` protected by real auth (Clerk admin role claim *or* HTTP Basic Auth with bcrypt + constant-time compare). No env-var truthy checks.
 - [ ] Vercel deployment protection enabled on `joe-perks-admin` preview + production.
 - [ ] `requireOrgId()` and `requireRoasterId()` helpers audited — each returns a typed failure (`{ ok: false, error }`) on missing/invalid session; no silent fall-through; **every caller must gate on `.ok` before using the id**. ⚠️ Code: helpers return a discriminated union (they do *not* throw — earlier wording was wrong); observed callers redirect on `!ok`. Audit = confirm *all* callers gate, since a missed `.ok` check fails open.
