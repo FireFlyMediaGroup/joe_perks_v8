@@ -62,6 +62,10 @@ jobs:
         with:
           node-version: "24"
           cache: "pnpm"
+      # setup-bun needs `unzip`, which the Playwright image lacks. Safe in a fresh
+      # container (no apt-lock daemon, unlike the host runner that stalled earlier).
+      - name: Install unzip (for setup-bun)
+        run: apt-get update && apt-get install -y --no-install-recommends unzip
       - uses: oven-sh/setup-bun@v2 # seed scripts run via `bun run`
       - run: pnpm install --frozen-lockfile
 
