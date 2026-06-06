@@ -16,7 +16,9 @@
 >
 > **Also resolved (2026-06-05, fourth pass):** payment logger rollout completed — all webhook-route handlers and the checkout create-intent failure path now use `createPaymentLog`, closing the A.4 logging row.
 >
-> **Still open** (flagged but not yet coded): order/payout cross-tenant **read** test needs a seeded test DB (A.2); browser `e2e.yml` + money-path scenario coverage (A.3); `migrate:deploy:prod` not wired into release (A.5).
+> **Also resolved (2026-06-06):** production migrations wired as a manual, gated GitHub Action — `.github/workflows/migrate-prod.yml` (`workflow_dispatch` + `DEPLOY` confirm + `production` Environment); see A.5. Needs the `DATABASE_URL_PROD` repo secret (direct Neon URL) added once.
+>
+> **Still open** (flagged but not yet coded): order/payout cross-tenant **read** test needs a seeded test DB (A.2); browser `e2e.yml` + money-path scenario coverage (A.3).
 
 **Related**
 - [`../pre-mortems/2026-04-19-v1-launch.md`](../pre-mortems/2026-04-19-v1-launch.md) — risk analysis that produced this runbook
@@ -81,7 +83,7 @@ Abort criteria at the end of each phase.
 - [ ] 🔭 **Feedback / help center (Featurebase)** — go-live-strategy item, not fully specced. `@repo/feedback` is scaffolded + env-wired; mount the widget everywhere (storefront + portals) and stand up boards/help center per [`../feedback/README.md`](../feedback/README.md). Add Featurebase to the §A.1 vendor DPA list when enabled.
 
 ### A.5 Data & deploy pipeline
-- [ ] `prisma migrate deploy` wired into release flow (Vercel build step, or a GH Action that runs `pnpm migrate:deploy:prod` *before* promoting a Vercel deployment). ⚠️ Code: the `migrate:deploy:prod` script exists in root `package.json`, but it is **not** wired into `ci.yml` or any Vercel build step — today it is a manual pre-promote step. Either automate it or assign a named owner who runs it by hand and confirms `_prisma_migrations` before promotion.
+- [ ] `prisma migrate deploy` wired into release flow (Vercel build step, or a GH Action that runs `pnpm migrate:deploy:prod` *before* promoting a Vercel deployment). ✅ Code (2026-06-06): wired as a **manual, gated GitHub Action** — `.github/workflows/migrate-prod.yml` (`workflow_dispatch`, requires typing `DEPLOY`, bound to the `production` Environment, concurrency-locked). It runs `prisma migrate status` → `migrate deploy` → `migrate status` against prod using `DATABASE_URL`. Deliberately **not** automatic on merge (preserves the snapshot-first discipline) and replaces running `migrate:deploy:prod` from a laptop. **One-time prerequisite:** add repo secret `DATABASE_URL_PROD` = the production Neon **direct/unpooled** connection string (migrations must not use the pooled endpoint). Owner triggers it after the Neon snapshot (§B.2), before promoting.
 - [ ] Neon production snapshot retention ≥ 7 days; restore tested at least once on a staging branch.
 - [ ] Rollback procedure section below tested end-to-end on preview.
 
@@ -155,7 +157,7 @@ If any step fails → **stop, fix, restart the script from step 1.**
 ### B.2 Production cutover (T-1, afternoon)
 - [ ] Code freeze on `main`. Tag `v1.0.0-rc.1`.
 - [ ] Re-read **Phase A.6b** and confirm every secret-rotation / production-bootstrap item is checked before touching Vercel production envs.
-- [ ] Run `prisma migrate deploy` against production Neon branch. Verify `_prisma_migrations` up to latest.
+- [ ] Run production migrations: trigger the **Migrate (production)** GitHub Action (Actions tab → Run workflow → type `DEPLOY`). It runs `prisma migrate deploy` against the prod Neon branch and verifies `_prisma_migrations` is up to latest. (Do this *after* the snapshot below, *before* promoting the deploy.)
 - [ ] Take a Neon snapshot. Note snapshot ID here: `__________________`.
 - [ ] Flip DNS TTL to 300s (in case of rollback).
 - [ ] Create/bootstrap the first production data set (real roaster/org/user/product/campaign records) using [`./v1-production-bootstrap-checklist.md`](./v1-production-bootstrap-checklist.md). Do **not** run local E2E seed helpers against production.
