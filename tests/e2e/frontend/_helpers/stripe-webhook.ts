@@ -130,6 +130,31 @@ export function chargeRefundedEvent(input: {
   };
 }
 
+export function chargeDisputeCreatedEvent(input: {
+  amount: number;
+  chargeId: string;
+}) {
+  return {
+    data: {
+      object: {
+        amount: input.amount,
+        charge: input.chargeId,
+        currency: "usd",
+        evidence_details: {
+          due_by: Math.floor(Date.now() / 1000) + 14 * 24 * 60 * 60,
+        },
+        id: `dp_e2e_${input.chargeId}`,
+        object: "dispute",
+        reason: "fraudulent",
+        status: "warning_needs_response",
+      },
+    },
+    id: `evt_e2e_dispute_${input.chargeId}`,
+    object: "event",
+    type: "charge.dispute.created",
+  };
+}
+
 /** Sign an event with the real webhook secret and POST it to the route. */
 export function deliverEvent(
   baseURL: string,

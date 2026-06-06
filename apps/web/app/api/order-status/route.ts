@@ -55,6 +55,7 @@ export async function GET(request: Request) {
           lineTotal: true,
         },
       },
+      dispute: { select: { stripeDisputeId: true } },
     },
   });
 
@@ -70,6 +71,7 @@ export async function GET(request: Request) {
     orderNumber: order.orderNumber,
     status: order.status,
     payoutStatus: order.payoutStatus,
+    hasDispute: order.dispute !== null,
     grossAmount: order.grossAmount,
     productSubtotal: order.productSubtotal,
     shippingAmount: order.shippingAmount,
