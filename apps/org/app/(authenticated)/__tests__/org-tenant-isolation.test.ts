@@ -27,6 +27,7 @@ const mocks = vi.hoisted(() => ({
     order: { aggregate: vi.fn(), count: vi.fn(), findMany: vi.fn() },
     org: { findUnique: vi.fn() },
     product: { findMany: vi.fn() },
+    roaster: { findUnique: vi.fn() },
     roasterOrgRequest: { findFirst: vi.fn() },
     roasterShippingRate: { count: vi.fn() },
   },
@@ -91,6 +92,10 @@ describe("org tenant isolation", () => {
     mocks.database.product.findMany.mockResolvedValue([
       { id: "prod-a", roasterId: "roaster-a" },
     ]);
+    mocks.database.roaster.findUnique.mockResolvedValue({
+      payoutsEnabled: true,
+      status: "ACTIVE",
+    });
     mocks.database.roasterShippingRate.count.mockResolvedValue(1);
 
     campaignRows = [
@@ -132,6 +137,18 @@ describe("org tenant isolation", () => {
       data: { status: "ACTIVE" },
       where: { id: "camp-a" },
     });
+  });
+
+  test("activateCampaign refuses to go live for a not-yet-onboarded roaster", async () => {
+    mocks.database.roaster.findUnique.mockResolvedValue({
+      payoutsEnabled: false,
+      status: "ONBOARDING",
+    });
+
+    const result = await activateCampaign("camp-a");
+
+    expect(result.success).toBe(false);
+    expect(mocks.database.campaign.update).not.toHaveBeenCalled();
   });
 
   test("saveCampaignDraft scopes roaster-partnership lookup to the acting org's application", async () => {

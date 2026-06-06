@@ -127,7 +127,20 @@ async function payoutSingleOrder(orderId: string): Promise<void> {
         return;
       }
     } else if (order.orgAmount > 0 && !org.stripeAccountId) {
+      // Defense-in-depth: should be unreachable (an ACTIVE org always has a
+      // Connect account), but never silently drop the org's share — fail the
+      // payout so it surfaces for manual reconciliation instead of marking the
+      // order TRANSFERRED with the org unpaid.
       plog.error("payout-release: org share unpaid — missing Stripe account");
+      await database.order.update({
+        data: { payoutStatus: "FAILED", stripeTransferId: roasterTransferId },
+        where: { id: order.id },
+      });
+      await logOrderEvent(order.id, "PAYOUT_FAILED", "SYSTEM", null, {
+        reason: "org_missing_stripe_account",
+        roaster_transfer_id: roasterTransferId,
+      });
+      return;
     }
 
     await database.order.update({

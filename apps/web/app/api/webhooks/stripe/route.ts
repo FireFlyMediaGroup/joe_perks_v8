@@ -200,31 +200,74 @@ async function sendRoasterFulfillmentEmail(
   }
 }
 
+/**
+ * Promote ONBOARDING → ACTIVE when fully onboarded; demote ACTIVE → ONBOARDING on
+ * capability loss (Stripe disabled charges/payouts or restricted the account).
+ * Returns the new status, or null to leave it unchanged (notably SUSPENDED, an
+ * admin-only state).
+ */
+function nextConnectStatus(
+  current: string,
+  fullyOnboarded: boolean
+): "ACTIVE" | "ONBOARDING" | null {
+  if (fullyOnboarded && current === "ONBOARDING") {
+    return "ACTIVE";
+  }
+  if (!fullyOnboarded && current === "ACTIVE") {
+    return "ONBOARDING";
+  }
+  return null;
+}
+
+function logConnectDemotion(
+  kind: "org" | "roaster",
+  ctx: {
+    accountId: string;
+    charges: boolean;
+    entityId: string;
+    onboarding: string;
+    payouts: boolean;
+  }
+): void {
+  console.error(`connect: ${kind} demoted — Stripe capability lost`, {
+    charges_enabled: ctx.charges,
+    entity_id: ctx.entityId,
+    payouts_enabled: ctx.payouts,
+    stripe_account_id: ctx.accountId,
+    stripe_onboarding: ctx.onboarding,
+  });
+}
+
 async function handleAccountUpdated(account: Stripe.Account): Promise<void> {
   const id = account.id;
   const onboarding = mapStripeAccountToOnboardingStatus(account);
+  const charges = account.charges_enabled ?? false;
+  const payouts = account.payouts_enabled ?? false;
+  const fullyOnboarded = onboarding === "COMPLETE" && charges && payouts;
 
   const roaster = await database.roaster.findFirst({
     where: { stripeAccountId: id },
   });
   if (roaster) {
-    const charges = account.charges_enabled ?? false;
-    const payouts = account.payouts_enabled ?? false;
-    const fullyOnboarded = onboarding === "COMPLETE" && charges && payouts;
-
-    // Promote ONBOARDING → ACTIVE per RA8 in 05-approval-chain.mermaid.
-    // Never override SUSPENDED — that's an admin action.
-    const promoteToActive = fullyOnboarded && roaster.status === "ONBOARDING";
-
+    const status = nextConnectStatus(roaster.status, fullyOnboarded);
     await database.roaster.update({
-      where: { id: roaster.id },
       data: {
         chargesEnabled: charges,
         payoutsEnabled: payouts,
         stripeOnboarding: onboarding,
-        ...(promoteToActive && { status: "ACTIVE" }),
+        ...(status && { status }),
       },
+      where: { id: roaster.id },
     });
+    if (status === "ONBOARDING") {
+      logConnectDemotion("roaster", {
+        accountId: id,
+        charges,
+        entityId: roaster.id,
+        onboarding,
+        payouts,
+      });
+    }
     return;
   }
 
@@ -232,22 +275,25 @@ async function handleAccountUpdated(account: Stripe.Account): Promise<void> {
     where: { stripeAccountId: id },
   });
   if (org) {
-    const charges = account.charges_enabled ?? false;
-    const payouts = account.payouts_enabled ?? false;
-    const fullyOnboarded = onboarding === "COMPLETE" && charges && payouts;
-
-    // Promote ONBOARDING → ACTIVE per OA11–OA13 in 05-approval-chain.mermaid.
-    const promoteToActive = fullyOnboarded && org.status === "ONBOARDING";
-
+    const status = nextConnectStatus(org.status, fullyOnboarded);
     await database.org.update({
-      where: { id: org.id },
       data: {
         chargesEnabled: charges,
         payoutsEnabled: payouts,
         stripeOnboarding: onboarding,
-        ...(promoteToActive && { status: "ACTIVE" }),
+        ...(status && { status }),
       },
+      where: { id: org.id },
     });
+    if (status === "ONBOARDING") {
+      logConnectDemotion("org", {
+        accountId: id,
+        charges,
+        entityId: org.id,
+        onboarding,
+        payouts,
+      });
+    }
   }
 }
 

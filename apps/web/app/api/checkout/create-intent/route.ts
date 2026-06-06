@@ -54,7 +54,14 @@ async function loadActiveCampaign(campaignId: string) {
     return null;
   }
 
-  if (campaign.status !== "ACTIVE" || campaign.org.status !== "ACTIVE") {
+  // Org must be ACTIVE *and* currently payable — a Connect account restricted
+  // after launch (status may lag the capability flag) must not take orders whose
+  // org share can't be transferred.
+  if (
+    campaign.status !== "ACTIVE" ||
+    campaign.org.status !== "ACTIVE" ||
+    !campaign.org.payoutsEnabled
+  ) {
     return null;
   }
 
@@ -175,7 +182,9 @@ async function loadCheckoutContext(body: CheckoutRequestBody): Promise<
   const roaster = await database.roaster.findUnique({
     where: { id: roasterId },
   });
-  if (!roaster || roaster.status !== "ACTIVE") {
+  // ACTIVE *and* payable — same reason as the org check above (a restricted
+  // roaster whose status hasn't been demoted yet must not take uncollectable orders).
+  if (!roaster || roaster.status !== "ACTIVE" || !roaster.payoutsEnabled) {
     return { error: "Roaster is unavailable", status: 400 };
   }
 
