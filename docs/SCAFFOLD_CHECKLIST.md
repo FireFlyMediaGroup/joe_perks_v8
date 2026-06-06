@@ -692,6 +692,7 @@ When using AI coding agents (Cursor, Claude Code, etc.):
 - [ ] All four subdomains have valid SSL certificates (green lock in browser)
 - [ ] Inngest jobs visible and synced in production dashboard
 - [ ] Sentry receiving production errors (test with `/api/test-sentry` on production URL)
+- [ ] Observability go-live review completed: [`observability/launch-observability-gap-analysis.md`](./observability/launch-observability-gap-analysis.md) confirms dashboards/alerts can answer checkout health, webhook retry/dedupe, Inngest heartbeat, SLA backlog, deployment/env profile, and rollback-decision questions
 
 ---
 

@@ -29,6 +29,7 @@
 - [`../../SCAFFOLD_CHECKLIST.md`](../../SCAFFOLD_CHECKLIST.md) — execution tracker (Phase 10 is the gate for this runbook)
 - [`../testing/money-path-e2e-scenarios.md`](../testing/money-path-e2e-scenarios.md) — E2E test coverage
 - [`../testing/v1-launch-money-path-e2e-execution.md`](../testing/v1-launch-money-path-e2e-execution.md) — current sandbox results, runnable commands, and pre-production rotation checklist
+- [`../observability/launch-observability-gap-analysis.md`](../observability/launch-observability-gap-analysis.md) — observability findings, recommendations, and go-live review checklist
 - [`./v1-production-bootstrap-checklist.md`](./v1-production-bootstrap-checklist.md) — production-safe first-data bootstrap process for true beta
 - [`./v1-production-beta-tester-worksheet.md`](./v1-production-beta-tester-worksheet.md) — fillable worksheet for each live production beta tester
 - [`./2026-04-database-schema-reconciliation.md`](./2026-04-database-schema-reconciliation.md) — DB drift findings from launch-readiness debugging
@@ -84,6 +85,7 @@ Abort criteria at the end of each phase.
 - [x] Three incident-comms templates committed in `docs/runbooks/` — `degraded.md`, `outage.md`, `payments-down.md`. ✅ Code (2026-06-05): all three written — decision checklist, public status-page copy, pilot/buyer/roaster notes, internal note, and resolve checklist each. `payments-down.md` leads with the checkout freeze and ties into the B.4 abort criteria.
 - [x] `@repo/observability` logs include `orderNumber`, `roasterId`, `orgId` context on every payment/webhook log line. ✅ Code (2026-06-05): `@repo/observability/payment-log` (`createPaymentLog`) emits the four canonical keys (`order_id`, `order_number`, `roaster_id`, `org_id` — null when unknown) plus per-call extras; unit-tested. **Adopted on every payment/webhook log line:** the payout-release job, all Stripe webhook handlers (`apps/web/.../webhooks/stripe/route.ts`), and the checkout create-intent failure path. Handlers that load the order populate all four keys (selects expanded where cheap); order-not-found / job-level lines emit the keys as `null` for consistent querying.
 - [ ] 🔭 **Observability (BetterStack)** — go-live-strategy item: monitors, **cron heartbeats**, status page, `<Status>` pill, webhook-failure alert. Scaffolded; full setup in [`./observability-setup.md`](./observability-setup.md).
+- [ ] 🔭 **Observability workload review** — before go-live, review [`../observability/launch-observability-gap-analysis.md`](../observability/launch-observability-gap-analysis.md) and confirm the Go-Live Review Checklist can answer checkout health, webhook retry/dedupe, Inngest heartbeat, SLA backlog, PII scrubbing, deployment/env profile, and rollback-decision questions.
 - [ ] 🔭 **Feedback / help center (Featurebase)** — go-live-strategy item, not fully specced. `@repo/feedback` is scaffolded + env-wired; mount the widget everywhere (storefront + portals) and stand up boards/help center per [`../feedback/README.md`](../feedback/README.md). Add Featurebase to the §A.1 vendor DPA list when enabled.
 
 ### A.5 Data & deploy pipeline

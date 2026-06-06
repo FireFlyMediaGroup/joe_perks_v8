@@ -16,6 +16,7 @@ critical alert, and email/push on-call. This consolidates on-call onto BetterSta
 
 - [`./sandbox-to-production-cutover.md`](./sandbox-to-production-cutover.md) §13 — the BetterStack **env-var** rows
 - [`./v1-launch-runbook.md`](./v1-launch-runbook.md) §A.4 (observability) + §B.4 (abort: webhook signature failures > 0 in 10 min)
+- [`../observability/launch-observability-gap-analysis.md`](../observability/launch-observability-gap-analysis.md) — findings, recommendations, and go-live review checklist for the broader workload/control-plane/recovery-loop layer
 
 ## What already exists in the repo
 
@@ -86,6 +87,7 @@ The scaffolding conflates these — they are different BetterStack products:
 - [ ] Killing one monitor target flips the pill + fires an email/push alert
 - [ ] A deliberately missed heartbeat alerts within its grace period
 - [ ] Status page resolves at `status.joeperks.com`
+- [ ] The launch owner reviews the go-live checklist in [`../observability/launch-observability-gap-analysis.md`](../observability/launch-observability-gap-analysis.md) and confirms the current dashboards can answer the checkout, webhook, job, SLA, deployment-profile, and rollback-decision questions.
 
 ## Upgrade-to-paid triggers (post-beta)
 - SMS/phone escalation needed → paid on-call
