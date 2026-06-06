@@ -537,8 +537,10 @@ async function handleChargeDisputeClosed(
 
   const order = await database.order.findFirst({
     select: {
+      campaignId: true,
       id: true,
       orderNumber: true,
+      orgAmount: true,
       roasterId: true,
       roasterTotal: true,
       stripeTransferId: true,
@@ -594,6 +596,15 @@ async function handleChargeDisputeClosed(
       });
     }
 
+    // A lost dispute is a chargeback — the buyer's money is gone, so cancel the
+    // org's pledged share from the fundraiser total (once, on the LOST transition).
+    if (existing?.outcome !== "LOST" && outcome === "LOST") {
+      await tx.campaign.update({
+        data: { totalRaised: { decrement: order.orgAmount } },
+        where: { id: order.campaignId },
+      });
+    }
+
     return {
       faultAttribution: updated.faultAttribution,
       shouldApplyRoasterRecovery:
@@ -644,9 +655,63 @@ async function handleChargeDisputeClosed(
   }
 }
 
+/**
+ * Claw back a refunded order's already-transferred payouts by reversing the
+ * roaster + org transfers (best-effort — funds come back only if the connected
+ * account still has balance). Any shortfall is logged for manual reconciliation.
+ * Runs outside the DB transaction since these are Stripe API calls.
+ */
+async function reverseOrderTransfers(order: {
+  id: string;
+  orgAmount: number;
+  roasterTotal: number;
+  stripeOrgTransfer: string | null;
+  stripeTransferId: string | null;
+}): Promise<void> {
+  const roaster = await reverseTransferIfPossible({
+    amountCents: order.roasterTotal,
+    metadata: { order_id: order.id, type: "refund_reversal_roaster" },
+    transferId: order.stripeTransferId,
+  });
+  const org = order.stripeOrgTransfer
+    ? await reverseTransferIfPossible({
+        amountCents: order.orgAmount,
+        metadata: { order_id: order.id, type: "refund_reversal_org" },
+        transferId: order.stripeOrgTransfer,
+      })
+    : { error: null, recoveredCents: 0 };
+
+  const shortfall =
+    order.roasterTotal -
+    roaster.recoveredCents +
+    (order.orgAmount - org.recoveredCents);
+  if (shortfall > 0) {
+    console.error(
+      "refund: payout clawback shortfall — manual reconciliation needed",
+      {
+        order_id: order.id,
+        org_recovered_cents: org.recoveredCents,
+        org_reversal_error: org.error,
+        roaster_recovered_cents: roaster.recoveredCents,
+        roaster_reversal_error: roaster.error,
+        shortfall_cents: shortfall,
+      }
+    );
+  }
+}
+
 async function handleChargeRefunded(charge: Stripe.Charge): Promise<void> {
   const order = await database.order.findUnique({
-    select: { id: true, payoutStatus: true, status: true },
+    select: {
+      campaignId: true,
+      id: true,
+      orgAmount: true,
+      payoutStatus: true,
+      roasterTotal: true,
+      status: true,
+      stripeOrgTransfer: true,
+      stripeTransferId: true,
+    },
     where: { stripeChargeId: charge.id },
   });
   if (!order) {
@@ -658,32 +723,28 @@ async function handleChargeRefunded(charge: Stripe.Charge): Promise<void> {
 
   const fullyRefunded = charge.refunded === true;
 
-  // The SLA auto-refund job (run-sla-check) already flips status to REFUNDED and
-  // logs REFUND_COMPLETED for refunds it initiates; the resulting webhook arrives
-  // as a confirmation — don't double-log or re-flip.
+  // SLA auto-refund already closed this out; the resulting webhook is a confirmation.
   if (fullyRefunded && order.status === "REFUNDED") {
     return;
   }
 
-  // Refund after a payout already transferred needs a clawback — surface it for
-  // manual reconciliation (C.1) rather than silently marking the payout failed.
+  // Claw back funds already paid out to the roaster/org (Stripe calls — before the tx).
   const payoutAlreadyTransferred = order.payoutStatus === "TRANSFERRED";
   if (fullyRefunded && payoutAlreadyTransferred) {
-    createPaymentLog({ orderId: order.id }).error(
-      "refund webhook: full refund on already-paid-out order",
-      { stripe_charge_id: charge.id }
-    );
+    await reverseOrderTransfers(order);
   }
 
   await database.$transaction(async (tx) => {
     if (fullyRefunded) {
       await tx.order.update({
-        data: {
-          status: "REFUNDED",
-          // Stop any pending payout; leave a completed transfer's status intact.
-          ...(payoutAlreadyTransferred ? {} : { payoutStatus: "FAILED" }),
-        },
+        // FAILED whether the payout was pending (stop it) or transferred (clawed back).
+        data: { payoutStatus: "FAILED", status: "REFUNDED" },
         where: { id: order.id },
+      });
+      // Cancel the org's pledged share so the fundraiser total stays accurate.
+      await tx.campaign.update({
+        data: { totalRaised: { decrement: order.orgAmount } },
+        where: { id: order.campaignId },
       });
     }
 
@@ -695,8 +756,8 @@ async function handleChargeRefunded(charge: Stripe.Charge): Promise<void> {
         orderId: order.id,
         payload: {
           amount_refunded_cents: charge.amount_refunded,
+          clawback_attempted: fullyRefunded && payoutAlreadyTransferred,
           fully_refunded: fullyRefunded,
-          payout_was_transferred: payoutAlreadyTransferred,
           stripe_charge_id: charge.id,
         },
       },
