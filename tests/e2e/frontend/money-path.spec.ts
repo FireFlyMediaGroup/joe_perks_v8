@@ -138,6 +138,97 @@ test("EC-12: charge.refunded flips a confirmed order to REFUNDED", async ({
     .toBe("REFUNDED");
 });
 
+test("EC-08: a payment_intent.succeeded after a refund does not un-refund the order", async ({
+  page,
+  baseURL,
+}) => {
+  const base = baseURL ?? FALLBACK_BASE_URL;
+  const intent = await checkoutToPaymentStep(page);
+
+  // Settle, then fully refund.
+  expect(
+    (
+      await deliverPaymentIntentSucceeded({
+        baseURL: base,
+        orderId: intent.orderId,
+        paymentIntentId: intent.paymentIntentId,
+      })
+    ).status
+  ).toBe(200);
+  await expect
+    .poll(() => fetchOrderStatus(base, intent.paymentIntentId), {
+      timeout: SETTLE_TIMEOUT,
+    })
+    .toBe("CONFIRMED");
+
+  expect(
+    (
+      await deliverEvent(
+        base,
+        chargeRefundedEvent({
+          amountRefunded: intent.grossAmount,
+          chargeId: chargeIdFor(intent.paymentIntentId),
+        })
+      )
+    ).status
+  ).toBe(200);
+  await expect
+    .poll(() => fetchOrderStatus(base, intent.paymentIntentId), {
+      timeout: SETTLE_TIMEOUT,
+    })
+    .toBe("REFUNDED");
+
+  // A late/retried succeeded (distinct event id, so not just deduped) must not
+  // resurrect the order — the confirm only applies to PENDING orders.
+  const late = await deliverEvent(
+    base,
+    paymentIntentSucceededEvent({
+      eventId: `evt_e2e_pi_reorder_${intent.paymentIntentId}`,
+      orderId: intent.orderId,
+      paymentIntentId: intent.paymentIntentId,
+    })
+  );
+  expect(late.status).toBe(200);
+  expect(await fetchOrderStatus(base, intent.paymentIntentId)).toBe("REFUNDED");
+});
+
+test("EC-13: a partial refund leaves the order CONFIRMED", async ({
+  page,
+  baseURL,
+}) => {
+  const base = baseURL ?? FALLBACK_BASE_URL;
+  const intent = await checkoutToPaymentStep(page);
+
+  expect(
+    (
+      await deliverPaymentIntentSucceeded({
+        baseURL: base,
+        orderId: intent.orderId,
+        paymentIntentId: intent.paymentIntentId,
+      })
+    ).status
+  ).toBe(200);
+  await expect
+    .poll(() => fetchOrderStatus(base, intent.paymentIntentId), {
+      timeout: SETTLE_TIMEOUT,
+    })
+    .toBe("CONFIRMED");
+
+  // Partial (shipping-only) refund: charge not fully refunded → status unchanged.
+  const partial = await deliverEvent(
+    base,
+    chargeRefundedEvent({
+      amountRefunded: 595,
+      chargeId: chargeIdFor(intent.paymentIntentId),
+      fullyRefunded: false,
+    })
+  );
+  expect(partial.status).toBe(200);
+  expect(await fetchOrderStatus(base, intent.paymentIntentId)).toBe(
+    "CONFIRMED"
+  );
+});
+
 test("MP-02: a delivered order pays out to the roaster + org (TRANSFERRED)", async ({
   page,
   baseURL,
