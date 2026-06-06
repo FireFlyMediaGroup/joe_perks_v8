@@ -4,6 +4,10 @@ name: E2E (money path)
 # run, deleted at the end — never touches dev/prod data). Settlement is driven by
 # signed Stripe test webhooks, so no live `stripe listen` tunnel is needed.
 #
+# Runs inside the official Playwright container image (browsers + all system libs
+# prebaked) — so there is no `apt-get`/`--with-deps` step to stall on. The image
+# tag must match the installed @playwright/test version.
+#
 # Required repository secrets:
 #   NEON_API_KEY                          Neon API key with branch create/delete
 #   NEON_PROJECT_ID                       Neon project id to branch from
@@ -27,7 +31,9 @@ concurrency:
 jobs:
   e2e:
     runs-on: ubuntu-latest
-    timeout-minutes: 30 # never hang forever (a no-timeout run stalled at browser install)
+    timeout-minutes: 30 # never hang forever
+    container:
+      image: mcr.microsoft.com/playwright:v1.59.1-jammy
     env:
       SKIP_ENV_VALIDATION: "true"
       SESSION_SECRET: ci-session-secret-0123456789abcdef0123456789abcdef
@@ -67,13 +73,12 @@ jobs:
         run: |
           set -euo pipefail
           # Fork from `main` (matches the repo's committed migrations), never from
-          # `dev` (which carries extra migrations not in the repo). Fall back to the
-          # project's default branch only if there is no branch literally named main.
+          # `dev` (extra migrations not in the repo). Parse with node (no jq in image).
           branches=$(curl -sf \
             "https://console.neon.tech/api/v2/projects/${NEON_PROJECT_ID}/branches" \
             -H "Authorization: Bearer ${NEON_API_KEY}")
-          parent_id=$(echo "$branches" | jq -r 'first(.branches[] | select(.name=="main") | .id) // first(.branches[] | select(.default==true) | .id) // empty')
-          if [ -z "$parent_id" ] || [ "$parent_id" = "null" ]; then
+          parent_id=$(node -e 'const d=JSON.parse(require("node:fs").readFileSync(0,"utf8"));const b=d.branches||[];const m=b.find(x=>x.name==="main")||b.find(x=>x.default);process.stdout.write(m&&m.id?m.id:"")' <<< "$branches")
+          if [ -z "$parent_id" ]; then
             echo "Could not resolve a 'main'/default parent branch:"; echo "$branches"; exit 1
           fi
           resp=$(curl -sf -X POST \
@@ -81,9 +86,9 @@ jobs:
             -H "Authorization: Bearer ${NEON_API_KEY}" \
             -H "Content-Type: application/json" \
             -d "{\"branch\":{\"name\":\"ci-e2e-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}\",\"parent_id\":\"${parent_id}\"},\"endpoints\":[{\"type\":\"read_write\"}]}")
-          branch_id=$(echo "$resp" | jq -r '.branch.id')
-          db_url=$(echo "$resp" | jq -r '.connection_uris[0].connection_uri')
-          if [ -z "$db_url" ] || [ "$db_url" = "null" ]; then
+          branch_id=$(node -e 'const d=JSON.parse(require("node:fs").readFileSync(0,"utf8"));process.stdout.write((d.branch&&d.branch.id)||"")' <<< "$resp")
+          db_url=$(node -e 'const d=JSON.parse(require("node:fs").readFileSync(0,"utf8"));const c=d.connection_uris||[];process.stdout.write((c[0]&&c[0].connection_uri)||"")' <<< "$resp")
+          if [ -z "$db_url" ]; then
             echo "Failed to obtain a Neon connection URI from the branch response:"
             echo "$resp"
             exit 1
@@ -98,17 +103,10 @@ jobs:
           DATABASE_URL: ${{ steps.neon.outputs.db_url }}
         run: pnpm exec prisma migrate deploy
 
-      - name: Install Playwright (chromium)
-        # Bounded so an apt/runner stall fails fast instead of hanging the job.
-        # DEBIAN_FRONTEND prevents any interactive apt prompt during --with-deps.
-        timeout-minutes: 12
-        env:
-          DEBIAN_FRONTEND: noninteractive
-        run: pnpm exec playwright install --with-deps chromium
-
       - name: Run money-path e2e
         # The Playwright config seeds the branch (globalSetup) and builds+starts
-        # `web` on :3100 (webServer); both inherit this env.
+        # `web` on :3100 (webServer); both inherit this env. Browsers are prebaked
+        # in the container image, so no install step is needed.
         env:
           DATABASE_URL: ${{ steps.neon.outputs.db_url }}
         run: pnpm test:e2e
