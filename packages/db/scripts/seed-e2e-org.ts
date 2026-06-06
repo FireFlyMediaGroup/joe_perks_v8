@@ -129,6 +129,7 @@ async function main() {
     },
     update: {
       status: "ACTIVE",
+      stripeAccountId: orgStripeAccountId,
       stripeOnboarding: "COMPLETE",
       chargesEnabled: true,
       payoutsEnabled: true,
