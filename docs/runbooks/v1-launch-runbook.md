@@ -14,7 +14,9 @@
 >
 > **Also resolved (2026-06-05, third pass):** three incident-comms templates written (A.4); `web`'s existing unit tests wired into CI (A.3) — `turbo test` now also covers web (24 tests); structured payment logger (`@repo/observability/payment-log`) built + adopted in the payout-release job (A.4).
 >
-> **Still open** (flagged but not yet coded): order/payout cross-tenant **read** test needs a seeded test DB (A.2); browser `e2e.yml` + money-path scenario coverage (A.3); `migrate:deploy:prod` not wired into release (A.5); migrate the remaining webhook/checkout log lines onto `createPaymentLog` (A.4).
+> **Also resolved (2026-06-05, fourth pass):** payment logger rollout completed — all webhook-route handlers and the checkout create-intent failure path now use `createPaymentLog`, closing the A.4 logging row.
+>
+> **Still open** (flagged but not yet coded): order/payout cross-tenant **read** test needs a seeded test DB (A.2); browser `e2e.yml` + money-path scenario coverage (A.3); `migrate:deploy:prod` not wired into release (A.5).
 
 **Related**
 - [`../pre-mortems/2026-04-19-v1-launch.md`](../pre-mortems/2026-04-19-v1-launch.md) — risk analysis that produced this runbook
@@ -74,7 +76,7 @@ Abort criteria at the end of each phase.
 - [ ] Public status page live (`status.joeperks.com` recommended subdomain).
 - [ ] On-call schedule defined. **Plan: consolidate on-call onto BetterStack (email/push on free tier) — closes this PagerDuty TBD.** See [`./observability-setup.md`](./observability-setup.md). If N=1, document explicit "out of office" coverage plan.
 - [x] Three incident-comms templates committed in `docs/runbooks/` — `degraded.md`, `outage.md`, `payments-down.md`. ✅ Code (2026-06-05): all three written — decision checklist, public status-page copy, pilot/buyer/roaster notes, internal note, and resolve checklist each. `payments-down.md` leads with the checkout freeze and ties into the B.4 abort criteria.
-- [ ] `@repo/observability` logs include `orderNumber`, `roasterId`, `orgId` context on every payment/webhook log line. ⚠️ Code (2026-06-05): **helper built + first adoption done.** `@repo/observability/payment-log` (`createPaymentLog`) emits the four canonical keys (`order_id`, `order_number`, `roaster_id`, `org_id` — null when unknown) on every line; unit-tested. Adopted across the **payout-release job** (`run-payout-release.ts`). **Still open:** migrate the remaining call sites to it — the Stripe **webhook route** handlers and the checkout **create-intent** failure log still use raw `console.*` (mechanical follow-up, behavior-only).
+- [x] `@repo/observability` logs include `orderNumber`, `roasterId`, `orgId` context on every payment/webhook log line. ✅ Code (2026-06-05): `@repo/observability/payment-log` (`createPaymentLog`) emits the four canonical keys (`order_id`, `order_number`, `roaster_id`, `org_id` — null when unknown) plus per-call extras; unit-tested. **Adopted on every payment/webhook log line:** the payout-release job, all Stripe webhook handlers (`apps/web/.../webhooks/stripe/route.ts`), and the checkout create-intent failure path. Handlers that load the order populate all four keys (selects expanded where cheap); order-not-found / job-level lines emit the keys as `null` for consistent querying.
 - [ ] 🔭 **Observability (BetterStack)** — go-live-strategy item: monitors, **cron heartbeats**, status page, `<Status>` pill, webhook-failure alert. Scaffolded; full setup in [`./observability-setup.md`](./observability-setup.md).
 - [ ] 🔭 **Feedback / help center (Featurebase)** — go-live-strategy item, not fully specced. `@repo/feedback` is scaffolded + env-wired; mount the widget everywhere (storefront + portals) and stand up boards/help center per [`../feedback/README.md`](../feedback/README.md). Add Featurebase to the §A.1 vendor DPA list when enabled.
 

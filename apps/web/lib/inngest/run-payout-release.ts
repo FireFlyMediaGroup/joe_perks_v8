@@ -171,7 +171,10 @@ async function payoutSingleOrder(orderId: string): Promise<void> {
  */
 export async function runPayoutRelease(): Promise<void> {
   if (!isStripeConfigured()) {
-    console.error("payout-release: skipped — Stripe not configured");
+    // Job-level (no order in scope); canonical context keys are null.
+    createPaymentLog({}).error(
+      "payout-release: skipped — Stripe not configured"
+    );
     return;
   }
 

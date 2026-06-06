@@ -1,5 +1,6 @@
 import { database, generateOrderNumber } from "@joe-perks/db";
 import { calculateSplits, getStripe, limitCheckout } from "@joe-perks/stripe";
+import { createPaymentLog } from "@repo/observability/payment-log";
 import { NextResponse } from "next/server";
 import {
   buildOrderSnapshotData,
@@ -346,10 +347,14 @@ export async function POST(request: Request) {
     });
   } catch (err) {
     await stripe.paymentIntents.cancel(pi.id).catch(() => undefined);
-    console.error("checkout db transaction failed", {
-      order_id: orderId,
-      stripe_pi_id: pi.id,
+    createPaymentLog({
+      orderId,
+      orderNumber,
+      orgId: campaign.orgId,
+      roasterId,
+    }).error("checkout db transaction failed", {
       error: err instanceof Error ? err.message : "unknown",
+      stripe_pi_id: pi.id,
     });
     return NextResponse.json(
       { error: "Order creation failed" },
