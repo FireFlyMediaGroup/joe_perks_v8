@@ -245,6 +245,21 @@ export async function activateCampaign(
   }
   const roasterId = [...roasters][0];
 
+  // The roaster must be fully onboarded (ACTIVE + payable) before the campaign
+  // goes live — otherwise the storefront would be up but every checkout would be
+  // rejected ("Roaster is unavailable").
+  const roaster = await database.roaster.findUnique({
+    select: { payoutsEnabled: true, status: true },
+    where: { id: roasterId },
+  });
+  if (!roaster || roaster.status !== "ACTIVE" || !roaster.payoutsEnabled) {
+    return {
+      success: false,
+      error:
+        "Your roaster hasn't finished Stripe onboarding yet. They must complete it before this campaign can go live.",
+    };
+  }
+
   const rateCount = await database.roasterShippingRate.count({
     where: { roasterId },
   });
