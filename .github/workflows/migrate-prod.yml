@@ -1,0 +1,69 @@
+name: Migrate (production)
+
+# Manual, gated production database migration.
+#
+# Run this DELIBERATELY as part of a release:
+#   1. Take a Neon snapshot first (docs/runbooks/v1-launch-runbook.md §B.2).
+#   2. Trigger this workflow (Actions tab → "Migrate (production)" → Run workflow),
+#      typing DEPLOY in the confirm box.
+#   3. Then promote / deploy the matching app build.
+# Nothing here runs automatically on push or merge — applying prod migrations is
+# always an intentional, audited step. This replaces running
+# `pnpm migrate:deploy:prod` from a laptop with a local .env.production.
+#
+# Prerequisite (one-time): add a repository secret DATABASE_URL_PROD = the
+# production Neon **direct / unpooled** connection string. Migrations must not run
+# over the pooled (pgbouncer) endpoint. `prisma.config.ts` reads DATABASE_URL.
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: "Type DEPLOY to confirm running migrations against PRODUCTION"
+        required: true
+        default: ""
+
+# Never let two production migrations run at once.
+concurrency:
+  group: migrate-prod
+  cancel-in-progress: false
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    # Bind to a GitHub Environment so you can attach required-reviewer protection
+    # in repo settings for an extra approval gate (optional but recommended).
+    environment: production
+    steps:
+      - name: Confirm intent
+        if: ${{ inputs.confirm != 'DEPLOY' }}
+        run: |
+          echo "::error::Refusing to run — type DEPLOY in the confirm input to proceed."
+          exit 1
+
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "20"
+          cache: "pnpm"
+      - run: pnpm install --frozen-lockfile
+
+      - name: Show pending migrations (informational)
+        working-directory: packages/db
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL_PROD }}
+        # `migrate status` exits non-zero when migrations are pending — expected here.
+        run: pnpm exec prisma migrate status || true
+
+      - name: Apply migrations
+        working-directory: packages/db
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL_PROD }}
+        run: pnpm exec prisma migrate deploy
+
+      - name: Verify database is up to date
+        working-directory: packages/db
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL_PROD }}
+        run: pnpm exec prisma migrate status
