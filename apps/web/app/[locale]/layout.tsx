@@ -1,4 +1,5 @@
 import "./styles.css";
+import { Analytics } from "@vercel/analytics/next";
 import { AnalyticsProvider } from "@repo/analytics/provider";
 import { Toolbar as CMSToolbar } from "@repo/cms/components/toolbar";
 import { DesignSystemProvider } from "@repo/design-system";
@@ -38,6 +39,7 @@ const RootLayout = async ({ children, params }: RootLayoutProperties) => {
           <Toolbar />
           <CMSToolbar />
         </AnalyticsProvider>
+        <Analytics />
       </body>
     </html>
   );
