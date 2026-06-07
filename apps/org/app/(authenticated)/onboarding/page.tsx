@@ -74,7 +74,8 @@ export default async function OrgOnboardingPage({
     const stripeStatus = await retrieveRecipientAccountStatus(
       org.stripeAccountId
     );
-    stripeOnboarding = mapRecipientAccountStatusToOnboardingStatus(stripeStatus);
+    stripeOnboarding =
+      mapRecipientAccountStatusToOnboardingStatus(stripeStatus);
     onboardingComplete = stripeStatus.onboardingComplete;
     readyToReceivePayments = stripeStatus.readyToReceivePayments;
 

@@ -8,13 +8,13 @@ export {
 export {
   type CreateRecipientAccountLinkParams,
   type CreateRecipientAccountParams,
+  createRecipientAccountLink,
+  createRecipientConnectedAccount,
+  normalizeRecipientAccountStatus,
   type RecipientAccount,
   type RecipientAccountStatus,
   type RecipientRequirementsStatus,
   type RecipientTransferStatus,
-  createRecipientAccountLink,
-  createRecipientConnectedAccount,
-  normalizeRecipientAccountStatus,
   retrieveRecipientAccountStatus,
 } from "./connect";
 export {
@@ -59,6 +59,6 @@ export {
 export {
   type LegacyStripeAccountStatusInput,
   type MappedStripeOnboardingStatus,
-  mapStripeAccountToOnboardingStatus,
   mapRecipientAccountStatusToOnboardingStatus,
+  mapStripeAccountToOnboardingStatus,
 } from "./stripe-account-status";

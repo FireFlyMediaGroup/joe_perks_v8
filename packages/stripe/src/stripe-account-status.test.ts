@@ -51,7 +51,9 @@ describe("mapRecipientAccountStatusToOnboardingStatus", () => {
       transferStatus: "active",
     } as const;
 
-    expect(mapRecipientAccountStatusToOnboardingStatus(status)).toBe("COMPLETE");
+    expect(mapRecipientAccountStatusToOnboardingStatus(status)).toBe(
+      "COMPLETE"
+    );
   });
 
   it("returns NOT_STARTED while current requirements are due", () => {

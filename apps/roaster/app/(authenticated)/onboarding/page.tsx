@@ -74,7 +74,8 @@ export default async function RoasterOnboardingPage({
     const stripeStatus = await retrieveRecipientAccountStatus(
       roaster.stripeAccountId
     );
-    stripeOnboarding = mapRecipientAccountStatusToOnboardingStatus(stripeStatus);
+    stripeOnboarding =
+      mapRecipientAccountStatusToOnboardingStatus(stripeStatus);
     onboardingComplete = stripeStatus.onboardingComplete;
     readyToReceivePayments = stripeStatus.readyToReceivePayments;
 

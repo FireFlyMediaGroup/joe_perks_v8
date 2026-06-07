@@ -32,7 +32,9 @@ describe("POST /api/stripe/connect (roaster)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.auth.mockResolvedValue({ userId: "user_1" });
-    mocks.database.user.findUnique.mockResolvedValue({ roasterId: "roaster_1" });
+    mocks.database.user.findUnique.mockResolvedValue({
+      roasterId: "roaster_1",
+    });
     mocks.database.roaster.findUnique.mockResolvedValue({
       application: { businessName: "Demo Roaster" },
       email: "owner@example.com",

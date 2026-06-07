@@ -16,10 +16,10 @@ import MagicLinkFulfillmentEmail from "@joe-perks/email/templates/magic-link-ful
 import OrderConfirmationEmail from "@joe-perks/email/templates/order-confirmation";
 import {
   getStripe,
-  mapStripeAccountToOnboardingStatus,
   mapRecipientAccountStatusToOnboardingStatus,
-  reverseTransferIfPossible,
+  mapStripeAccountToOnboardingStatus,
   retrieveRecipientAccountStatus,
+  reverseTransferIfPossible,
   type Stripe,
 } from "@joe-perks/stripe";
 import { createPaymentLog } from "@repo/observability/payment-log";
@@ -369,7 +369,10 @@ async function handleRecipientAccountStatusUpdated(
 }
 
 function getV2EventAccountId(event: StripeV2Event): string | null {
-  if ("related_object" in event && event.related_object?.type === "v2.core.account") {
+  if (
+    "related_object" in event &&
+    event.related_object?.type === "v2.core.account"
+  ) {
     return event.related_object.id;
   }
 
@@ -887,7 +890,8 @@ export async function POST(request: Request) {
   let eventType: string;
   const stripe = getStripe();
   const maybeV2Event =
-    rawBody.includes('"v2.core.') || rawBody.includes('"object":"v2.core.event"');
+    rawBody.includes('"v2.core.') ||
+    rawBody.includes('"object":"v2.core.event"');
 
   try {
     if (maybeV2Event) {
