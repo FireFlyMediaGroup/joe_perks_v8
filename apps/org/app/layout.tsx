@@ -2,6 +2,7 @@ import { env } from "@/env";
 import "./styles.css";
 import { DesignSystemProvider } from "@repo/design-system";
 import { fonts } from "@repo/design-system/lib/fonts";
+import { Analytics } from "@vercel/analytics/next";
 import type { ReactNode } from "react";
 
 interface RootLayoutProperties {
@@ -21,6 +22,7 @@ const RootLayout = ({ children }: RootLayoutProperties) => (
       >
         {children}
       </DesignSystemProvider>
+      <Analytics />
     </body>
   </html>
 );
