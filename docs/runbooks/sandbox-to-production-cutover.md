@@ -2,7 +2,7 @@
 
 **Status**: Living doc until v1 ships. Freeze and snapshot on go-live day.
 **Owner**: Eng lead (technical rows) + Chris (business/Stripe/legal/DNS/email rows).
-**Last updated**: 2026-06-05
+**Last updated**: 2026-06-07
 
 ## What this doc is (and is not)
 
@@ -143,26 +143,29 @@ publishable keys differ (confirms three distinct apps).
 
 ## 4. Resend (email) — Owner: Chris (domain/Workspace) / Eng (key)
 
-⚠️ **Today the repo borrows the Locuvi project's Resend key + domain** (see root `.env`).
-This **must** be replaced — it is another product's credential.
+✅ **DONE (2026-06-07): migrated off the borrowed Locuvi key + domain to a dedicated Joe Perks
+Resend account.** The Locuvi credential is no longer present in root `.env` or
+`.vercel/.env.preview.local`. Remaining follow-up: revoke the old Locuvi `re_…` key in the
+**Locuvi** Resend account, and run an external Gmail/Outlook/Yahoo deliverability check.
 
-| Item | Test/sandbox | Live/prod |
+| Item | Test/sandbox (old) | Live/prod (now) |
 |---|---|---|
-| API key | Locuvi `re_…` | **new Joe Perks** `RESEND_TOKEN=re_…` |
-| Sender | Locuvi verified domain | `RESEND_FROM=orders@joeperks.com` (root) |
+| API key | Locuvi `re_…` (decommissioned) | **Joe Perks** `RESEND_TOKEN=re_…` ✅ |
+| Sender | Locuvi verified domain | `RESEND_FROM=orders@joeperks.com` ✅ |
 
-**Switchover steps**
-1. Create the Joe Perks Resend account; verify **root `joeperks.com`** (best buyer
-   recognition). Add Resend DKIM CNAMEs + merge SPF + `_dmarc` per §1. *(Alternative for max
-   reputation isolation: verify a `send.joeperks.com` subdomain instead — From becomes
-   `@send.joeperks.com`.)*
-2. **From** = `Joe Perks <orders@joeperks.com>`; **Reply-To** = `support@joeperks.com`.
-3. Create free Google Workspace **aliases** on the single `joe@` seat: `support@`, `hello@`,
-   `noreply@`, `orders@` → all route to `joe@joeperks.com`. No extra seat needed.
-4. Set `RESEND_TOKEN` + `RESEND_FROM` in Vercel **production** for `web`, `roaster`, `admin`.
+**Switchover steps** (completed)
+1. ✅ Created the Joe Perks Resend account; verified **root `joeperks.com`**. Resend DKIM CNAMEs
+   + merged SPF + `_dmarc` added at GoDaddy per §1. *(Alternative for max reputation isolation:
+   verify a `send.joeperks.com` subdomain instead — From becomes `@send.joeperks.com`.)*
+2. ✅ **From** = `Joe Perks <orders@joeperks.com>`; **Reply-To** = `support@joeperks.com`.
+3. ✅ Google Workspace **aliases** on the single `joe@` seat: `support@`, `hello@`, `noreply@`,
+   `orders@` → all route to `joe@joeperks.com`. No extra seat needed.
+4. ✅ Set `RESEND_TOKEN` + `RESEND_FROM` in Vercel **production** for `web`, `roaster`, `admin`.
 
-**Verify**: deliverability test to Gmail/Outlook/Yahoo (runbook §A.6); DKIM passes; sender is
-no longer any Locuvi/temporary value.
+**Verify**: ✅ `pnpm --filter @joe-perks/email smoke` passed (`resend_plus_db`); internal send to
+`orders@joeperks.com` received (dedupe confirmed — 1 of 2 delivered). ✅ External deliverability
+check (2026-06-07) — landed in inbox, DKIM/SPF/DMARC pass, and Reply-To (`support@joeperks.com`)
+routes to the `joe@` seat. ⬜ Revoke the old Locuvi key in the Locuvi account.
 
 ## 5. Neon (database) — Owner: Eng
 
@@ -269,8 +272,9 @@ chosen portal(s) and a submitted post is attributed to the signed-in user.
 ## Tier 3 — Must stay UNSET in production (guardrail)
 
 These are dormant Next-Forge scaffolding with **zero app usage**. Confirm production has **no
-value** set for any of them, and that no borrowed/leftover key (à la the Locuvi Resend key)
-is sitting in production:
+value** set for any of them, and that no borrowed/leftover key is sitting in production. *(The
+Locuvi Resend key — the original offender — was removed on 2026-06-07; see §4. Still revoke it
+in the Locuvi account.)*
 
 | Service | Env var(s) | Note |
 |---|---|---|
