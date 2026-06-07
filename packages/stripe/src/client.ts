@@ -2,7 +2,9 @@ import "server-only";
 
 import Stripe from "stripe";
 
-let stripeSingleton: Stripe | undefined;
+type StripeClient = InstanceType<typeof Stripe>;
+
+let stripeSingleton: StripeClient | undefined;
 
 /**
  * Refuses live secret keys when not running in a production deployment.
@@ -22,21 +24,19 @@ export function assertStripeSecretKeyAllowed(secretKey: string): void {
   }
 }
 
-function createStripe(): Stripe {
+function createStripe(): StripeClient {
   const key = process.env.STRIPE_SECRET_KEY?.trim();
   if (!key) {
     throw new Error("STRIPE_SECRET_KEY is not set");
   }
   assertStripeSecretKeyAllowed(key);
-  return new Stripe(key, {
-    apiVersion: "2026-02-25.clover",
-  });
+  return new Stripe(key);
 }
 
 /**
  * Lazily initialized Stripe client (singleton). Throws if `STRIPE_SECRET_KEY` is missing.
  */
-export function getStripe(): Stripe {
+export function getStripe(): StripeClient {
   if (!stripeSingleton) {
     stripeSingleton = createStripe();
   }

@@ -1,4 +1,4 @@
-import type Stripe from "stripe";
+import type { RecipientAccountStatus } from "./connect";
 
 /** Mirrors Prisma `StripeOnboardingStatus` string values (no `@joe-perks/db` import). */
 export type MappedStripeOnboardingStatus =
@@ -7,11 +7,20 @@ export type MappedStripeOnboardingStatus =
   | "COMPLETE"
   | "RESTRICTED";
 
+export interface LegacyStripeAccountStatusInput {
+  charges_enabled?: boolean;
+  details_submitted?: boolean;
+  payouts_enabled?: boolean;
+  requirements?: {
+    disabled_reason?: string | null;
+  } | null;
+}
+
 /**
  * Maps a Stripe Connect Account to onboarding status for `Roaster` / `Org` rows.
  */
 export function mapStripeAccountToOnboardingStatus(
-  account: Stripe.Account
+  account: LegacyStripeAccountStatusInput
 ): MappedStripeOnboardingStatus {
   if (account.requirements?.disabled_reason) {
     return "RESTRICTED";
@@ -26,5 +35,27 @@ export function mapStripeAccountToOnboardingStatus(
   if (!account.details_submitted) {
     return "NOT_STARTED";
   }
+  return "PENDING";
+}
+
+export function mapRecipientAccountStatusToOnboardingStatus(
+  status: RecipientAccountStatus
+): MappedStripeOnboardingStatus {
+  if (
+    status.transferStatus === "restricted" ||
+    status.transferStatus === "unsupported" ||
+    status.requirementsStatus === "past_due"
+  ) {
+    return "RESTRICTED";
+  }
+
+  if (status.readyToReceivePayments && status.onboardingComplete) {
+    return "COMPLETE";
+  }
+
+  if (status.requirementsStatus === "currently_due") {
+    return "NOT_STARTED";
+  }
+
   return "PENDING";
 }

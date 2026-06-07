@@ -1,4 +1,4 @@
-# US-02-03 — Stripe Connect Express Onboarding for Roasters
+# US-02-03 — Stripe Connect Onboarding for Roasters
 
 **Story ID:** US-02-03 | **Epic:** EP-02 (Roaster Onboarding)
 **Points:** 5 | **Priority:** High
@@ -7,17 +7,19 @@
 **Dependencies:** US-02-02 (Admin Approval Queue)
 **Depends on this:** US-02-04 (Product and Variant Creation)
 
+**Current implementation note (2026-06-07):** This story originally shipped on legacy Connect Express APIs. The current code uses Stripe Connect V2 recipient accounts with Express dashboard access; see [`../../testing/2026-06-07-connect-v2-migration-smoke.md`](../../testing/2026-06-07-connect-v2-migration-smoke.md).
+
 ---
 
 ## Goal
 
-Wire the scaffold page at `apps/roaster/app/(authenticated)/onboarding/page.tsx` into a real Stripe Connect Express onboarding experience. The backend route (`POST /api/stripe/connect`) already works. This story builds the UI: redirect to Stripe, handle return/refresh, and display Connect status.
+Wire the scaffold page at `apps/roaster/app/(authenticated)/onboarding/page.tsx` into a real Stripe Connect onboarding experience. The backend route (`POST /api/stripe/connect`) already works. This story builds the UI: redirect to Stripe, handle return/refresh, and display Connect status.
 
 ---
 
 ## Diagram references
 
-- **Approval chain:** [`docs/05-approval-chain.mermaid`](../../05-approval-chain.mermaid) — nodes **RA6** (Stripe Express account created), **RA7** (Roaster completes Stripe KYC), **RA8** (account.updated webhook, charges_enabled + payouts_enabled = true, Roaster.status = ACTIVE)
+- **Approval chain:** [`docs/05-approval-chain.mermaid`](../../05-approval-chain.mermaid) — nodes **RA6** (Stripe Connect account created), **RA7** (Roaster completes Stripe KYC), **RA8** (Connect webhook/status update, recipient transfers ready, Roaster.status = ACTIVE)
 - **Stripe payment flow:** [`docs/07-stripe-payment-flow.mermaid`](../../07-stripe-payment-flow.mermaid) — Connect onboarding flow
 - **Database ERD:** [`docs/06-database-schema.mermaid`](../../06-database-schema.mermaid) — `Roaster` model (`stripeAccountId`, `stripeOnboarding`, `chargesEnabled`, `payoutsEnabled`)
 
@@ -30,10 +32,10 @@ Wire the scaffold page at `apps/roaster/app/(authenticated)/onboarding/page.tsx`
 - `apps/roaster/app/(authenticated)/onboarding/_components/start-onboarding-button.tsx` — **implemented**: calls `POST /api/stripe/connect`, loading state, browser redirect
 - `apps/roaster/app/(authenticated)/onboarding/_lib/fetch-stripe-connect-url.ts` — **implemented**: shared fetch helper for the Connect API route
 - `apps/roaster/app/(authenticated)/onboarding/_hooks/use-stripe-refresh-redirect.ts` — **implemented**: auto-re-initiates on `?stripe_refresh=1`
-- `apps/roaster/app/api/stripe/connect/route.ts` is **fully implemented**: authenticates via Clerk, loads User + Roaster, creates Express account if needed, returns Account Link URL
-- `packages/stripe/src/connect.ts` exports `createExpressConnectedAccount`, `createExpressAccountLink`
-- `packages/stripe/src/stripe-account-status.ts` exports `mapStripeAccountToOnboardingStatus`
-- `apps/web/app/api/webhooks/stripe/route.ts` handles `account.updated` — updates `Roaster.stripeOnboarding`, `chargesEnabled`, `payoutsEnabled`, and promotes `Roaster.status` from `ONBOARDING` → `ACTIVE` when all three are true (guarded: never overrides `SUSPENDED`)
+- `apps/roaster/app/api/stripe/connect/route.ts` is **fully implemented**: authenticates via Clerk, loads User + Roaster, creates or refreshes a Connect V2 recipient account, returns Account Link URL
+- `packages/stripe/src/connect.ts` exports `createRecipientConnectedAccount`, `createRecipientAccountLink`, `retrieveRecipientAccountStatus`, and `normalizeRecipientAccountStatus`
+- `packages/stripe/src/stripe-account-status.ts` exports legacy `mapStripeAccountToOnboardingStatus` plus V2 `mapRecipientAccountStatusToOnboardingStatus`
+- `apps/web/app/api/webhooks/stripe/route.ts` handles legacy `account.updated` during migration plus V2 thin account events — updates `Roaster.stripeOnboarding`, `chargesEnabled`, `payoutsEnabled`, and promotes/demotes `Roaster.status` based on recipient transfer readiness (guarded: never overrides `SUSPENDED`)
 - The Connect route already sets return URL to `/onboarding?stripe_return=1` and refresh URL to `/onboarding?stripe_refresh=1`
 - Smoke tests at `packages/db/scripts/smoke-onboarding.ts` — 7 tests (DB state, API auth, webhook, tenant isolation)
 

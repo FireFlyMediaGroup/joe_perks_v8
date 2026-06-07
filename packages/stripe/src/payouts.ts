@@ -4,6 +4,8 @@ import type Stripe from "stripe";
 
 import { getStripe } from "./client";
 
+type StripeClient = InstanceType<typeof Stripe>;
+
 export interface TransferToConnectedAccountParams {
   amountCents: number;
   destinationStripeAccountId: string;
@@ -17,7 +19,7 @@ export interface TransferToConnectedAccountParams {
  */
 export function transferToConnectedAccount(
   params: TransferToConnectedAccountParams
-): Promise<Stripe.Transfer> {
+): ReturnType<StripeClient["transfers"]["create"]> {
   const stripe = getStripe();
   return stripe.transfers.create({
     amount: params.amountCents,
@@ -38,7 +40,7 @@ export interface RefundChargeParams {
 
 export function refundCharge(
   params: RefundChargeParams
-): Promise<Stripe.Refund> {
+): ReturnType<StripeClient["refunds"]["create"]> {
   const stripe = getStripe();
   return stripe.refunds.create({
     charge: params.chargeId,

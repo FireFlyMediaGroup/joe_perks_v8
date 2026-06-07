@@ -1,8 +1,10 @@
 import { database } from "@joe-perks/db";
 import {
-  createExpressAccountLink,
-  createExpressConnectedAccount,
-  mapStripeAccountToOnboardingStatus,
+  createRecipientAccountLink,
+  createRecipientConnectedAccount,
+  mapRecipientAccountStatusToOnboardingStatus,
+  normalizeRecipientAccountStatus,
+  retrieveRecipientAccountStatus,
 } from "@joe-perks/stripe";
 import { auth } from "@repo/auth/server";
 import { NextResponse } from "next/server";
@@ -22,7 +24,7 @@ function resolveAppOrigin(): string {
 }
 
 /**
- * Starts or resumes Stripe Connect Express onboarding for the signed-in roaster.
+ * Starts or resumes Stripe Connect V2 recipient onboarding for the signed-in roaster.
  * Returns a Stripe-hosted URL (redirect the browser there).
  */
 export async function POST() {
@@ -39,6 +41,9 @@ export async function POST() {
   }
 
   const roaster = await database.roaster.findUnique({
+    include: {
+      application: { select: { businessName: true } },
+    },
     where: { id: dbUser.roasterId },
   });
   if (!roaster) {
@@ -51,19 +56,38 @@ export async function POST() {
 
   let stripeAccountId = roaster.stripeAccountId;
   let onboardingStatus = roaster.stripeOnboarding;
+  let readyToReceivePayments = roaster.payoutsEnabled;
 
-  if (!stripeAccountId) {
-    const account = await createExpressConnectedAccount({
+  if (stripeAccountId) {
+    const status = await retrieveRecipientAccountStatus(stripeAccountId);
+    onboardingStatus = mapRecipientAccountStatusToOnboardingStatus(status);
+    readyToReceivePayments = status.readyToReceivePayments;
+    await database.roaster.update({
+      where: { id: roaster.id },
+      data: {
+        chargesEnabled: readyToReceivePayments,
+        payoutsEnabled: readyToReceivePayments,
+        stripeOnboarding: onboardingStatus,
+      },
+    });
+  } else {
+    const account = await createRecipientConnectedAccount({
+      country: "US",
+      displayName: roaster.application.businessName,
       email: roaster.email,
       metadata: {
         joe_perks_roaster_id: roaster.id,
       },
     });
     stripeAccountId = account.id;
-    onboardingStatus = mapStripeAccountToOnboardingStatus(account);
+    const status = normalizeRecipientAccountStatus(account);
+    onboardingStatus = mapRecipientAccountStatusToOnboardingStatus(status);
+    readyToReceivePayments = status.readyToReceivePayments;
     await database.roaster.update({
       where: { id: roaster.id },
       data: {
+        chargesEnabled: readyToReceivePayments,
+        payoutsEnabled: readyToReceivePayments,
         stripeAccountId,
         stripeOnboarding: onboardingStatus,
       },
@@ -72,8 +96,14 @@ export async function POST() {
 
   const linkType =
     onboardingStatus === "COMPLETE" ? "account_update" : "account_onboarding";
+  if (!stripeAccountId) {
+    return NextResponse.json(
+      { error: "Stripe account was not created" },
+      { status: 500 }
+    );
+  }
 
-  const accountLink = await createExpressAccountLink({
+  const accountLink = await createRecipientAccountLink({
     accountId: stripeAccountId,
     refreshUrl,
     returnUrl,

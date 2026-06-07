@@ -26,7 +26,7 @@ Build the first real user-facing onboarding flows: roaster application form, adm
 |----------|-------|-----|----------|--------------|-------------|
 | US-02-01 | Roaster application form (5 steps) on main site | 8 | High | US-01-02, US-01-04 | `apps/web` |
 | US-02-02 | Admin approval queue for roaster applications | 5 | High | US-02-01, US-01-03 | `apps/admin` |
-| US-02-03 | Stripe Connect Express onboarding for roasters | 5 | High | US-02-02 | `apps/roaster` |
+| US-02-03 | Stripe Connect onboarding for roasters (current implementation: Connect V2 recipient accounts with Express dashboard access) | 5 | High | US-02-02 | `apps/roaster` |
 | US-02-04 | Product and variant creation with wholesale/retail pricing | 8 | High | US-02-03 | `apps/roaster` |
 | US-02-05 | Roaster shipping rate configuration | 5 | High | US-02-04 | `apps/roaster` |
 | US-02-06 | Slug reservation blocklist validation | 3 | Medium | US-01-02 | `apps/web`, `packages/types` |
@@ -135,7 +135,7 @@ These mermaid diagrams are the source of truth for Sprint 2 flows. Every story r
 | Approval Chain | [`docs/05-approval-chain.mermaid`](../05-approval-chain.mermaid) | Primary reference for US-02-01, US-02-02, US-02-03, US-03-01 — defines the full roaster and org onboarding state machines |
 | Database Schema | [`docs/06-database-schema.mermaid`](../06-database-schema.mermaid) | All stories — ERD for `RoasterApplication`, `Roaster`, `Product`, `ProductVariant`, `RoasterShippingRate`, `OrgApplication`, `RoasterOrgRequest`, `Org` |
 | Project Structure | [`docs/01-project-structure.mermaid`](../01-project-structure.mermaid) | Route and file layout reference for all apps |
-| Stripe Payment Flow | [`docs/07-stripe-payment-flow.mermaid`](../07-stripe-payment-flow.mermaid) | US-02-03 — Connect Express onboarding flow |
+| Stripe Payment Flow | [`docs/07-stripe-payment-flow.mermaid`](../07-stripe-payment-flow.mermaid) | US-02-03 — Connect onboarding flow; current code uses Connect V2 recipient accounts with Express dashboard access |
 | Package Dependencies | [`docs/03-package-dependencies.mermaid`](../03-package-dependencies.mermaid) | Import relationships between apps and packages |
 
 ---

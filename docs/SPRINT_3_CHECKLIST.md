@@ -18,12 +18,12 @@ Before starting Sprint 3 work, verify these Sprint 2 deliverables are in place (
 
 - [x] `apps/web/app/[locale]/orgs/apply/` -- Org application form creates `OrgApplication` + `RoasterOrgRequest` records (US-03-01)
 - [x] `apps/admin/app/approvals/roasters/` -- Admin roaster approval queue with approve/reject actions (US-02-02)
-- [x] `apps/roaster/app/(authenticated)/onboarding/` -- Stripe Connect Express onboarding (US-02-03)
+- [x] `apps/roaster/app/(authenticated)/onboarding/` -- Stripe Connect onboarding (originally Express; current implementation is Connect V2 recipient accounts with Express dashboard access) (US-02-03)
 - [x] `apps/roaster/app/(authenticated)/products/` -- Product + variant CRUD with soft deletes (US-02-04)
 - [x] `apps/roaster/app/(authenticated)/settings/shipping/` -- Shipping rate config with default management (US-02-05)
 - [x] `packages/email/templates/` -- Application lifecycle email templates (US-08-06)
 - [x] `packages/types/src/slug-validation.ts` -- Slug validation utilities (US-02-06)
-- [x] `packages/stripe/` -- `calculateSplits()`, `createExpressConnectedAccount()`, `createExpressAccountLink()`, rate limiters
+- [x] `packages/stripe/` -- `calculateSplits()`, Connect V2 recipient-account helpers, rate limiters
 - [x] `apps/web/app/api/checkout/create-intent/route.ts` -- Checkout API (validates campaign, creates PI + Order; response includes `clientSecret`, `paymentIntentId`, `grossAmount`, …)
 - [x] `apps/web/app/api/order-status/route.ts` -- Order lookup by PI ID or order ID (includes `orgName` for confirmation UI)
 - [x] `apps/web/app/api/webhooks/stripe/route.ts` -- Handles `account.updated`, `payment_intent.succeeded` (order confirmation email to buyer)

@@ -1,4 +1,8 @@
 import { database } from "@joe-perks/db";
+import {
+  mapRecipientAccountStatusToOnboardingStatus,
+  retrieveRecipientAccountStatus,
+} from "@joe-perks/stripe";
 import { auth } from "@repo/auth/server";
 
 import { ConnectStatus } from "./_components/connect-status";
@@ -43,6 +47,8 @@ export default async function RoasterOnboardingPage({
   const roaster = await database.roaster.findUnique({
     where: { id: dbUser.roasterId },
     select: {
+      id: true,
+      stripeAccountId: true,
       stripeOnboarding: true,
       chargesEnabled: true,
       payoutsEnabled: true,
@@ -60,10 +66,35 @@ export default async function RoasterOnboardingPage({
     );
   }
 
-  const fullyOnboarded =
-    roaster.stripeOnboarding === "COMPLETE" &&
-    roaster.chargesEnabled &&
-    roaster.payoutsEnabled;
+  let stripeOnboarding = roaster.stripeOnboarding;
+  let onboardingComplete = stripeOnboarding === "COMPLETE";
+  let readyToReceivePayments = roaster.payoutsEnabled;
+
+  if (roaster.stripeAccountId) {
+    const stripeStatus = await retrieveRecipientAccountStatus(
+      roaster.stripeAccountId
+    );
+    stripeOnboarding = mapRecipientAccountStatusToOnboardingStatus(stripeStatus);
+    onboardingComplete = stripeStatus.onboardingComplete;
+    readyToReceivePayments = stripeStatus.readyToReceivePayments;
+
+    if (
+      stripeOnboarding !== roaster.stripeOnboarding ||
+      readyToReceivePayments !== roaster.payoutsEnabled ||
+      readyToReceivePayments !== roaster.chargesEnabled
+    ) {
+      await database.roaster.update({
+        where: { id: roaster.id },
+        data: {
+          chargesEnabled: readyToReceivePayments,
+          payoutsEnabled: readyToReceivePayments,
+          stripeOnboarding,
+        },
+      });
+    }
+  }
+
+  const fullyOnboarded = stripeOnboarding === "COMPLETE";
 
   return (
     <div className="p-6">
@@ -74,10 +105,10 @@ export default async function RoasterOnboardingPage({
       </p>
 
       <ConnectStatus
-        chargesEnabled={roaster.chargesEnabled}
         fullyOnboarded={fullyOnboarded}
-        payoutsEnabled={roaster.payoutsEnabled}
-        stripeOnboarding={roaster.stripeOnboarding}
+        onboardingComplete={onboardingComplete}
+        readyToReceivePayments={readyToReceivePayments}
+        stripeOnboarding={stripeOnboarding}
         stripeRefresh={stripeRefresh}
         stripeReturn={stripeReturn}
       />

@@ -1,4 +1,8 @@
 import { database } from "@joe-perks/db";
+import {
+  mapRecipientAccountStatusToOnboardingStatus,
+  retrieveRecipientAccountStatus,
+} from "@joe-perks/stripe";
 import { auth } from "@repo/auth/server";
 
 import { ConnectStatus } from "./_components/connect-status";
@@ -43,6 +47,8 @@ export default async function OrgOnboardingPage({
   const org = await database.org.findUnique({
     where: { id: dbUser.orgId },
     select: {
+      id: true,
+      stripeAccountId: true,
       stripeOnboarding: true,
       chargesEnabled: true,
       payoutsEnabled: true,
@@ -60,10 +66,35 @@ export default async function OrgOnboardingPage({
     );
   }
 
-  const fullyOnboarded =
-    org.stripeOnboarding === "COMPLETE" &&
-    org.chargesEnabled &&
-    org.payoutsEnabled;
+  let stripeOnboarding = org.stripeOnboarding;
+  let onboardingComplete = stripeOnboarding === "COMPLETE";
+  let readyToReceivePayments = org.payoutsEnabled;
+
+  if (org.stripeAccountId) {
+    const stripeStatus = await retrieveRecipientAccountStatus(
+      org.stripeAccountId
+    );
+    stripeOnboarding = mapRecipientAccountStatusToOnboardingStatus(stripeStatus);
+    onboardingComplete = stripeStatus.onboardingComplete;
+    readyToReceivePayments = stripeStatus.readyToReceivePayments;
+
+    if (
+      stripeOnboarding !== org.stripeOnboarding ||
+      readyToReceivePayments !== org.payoutsEnabled ||
+      readyToReceivePayments !== org.chargesEnabled
+    ) {
+      await database.org.update({
+        where: { id: org.id },
+        data: {
+          chargesEnabled: readyToReceivePayments,
+          payoutsEnabled: readyToReceivePayments,
+          stripeOnboarding,
+        },
+      });
+    }
+  }
+
+  const fullyOnboarded = stripeOnboarding === "COMPLETE";
 
   return (
     <div className="p-6">
@@ -75,10 +106,10 @@ export default async function OrgOnboardingPage({
       </p>
 
       <ConnectStatus
-        chargesEnabled={org.chargesEnabled}
         fullyOnboarded={fullyOnboarded}
-        payoutsEnabled={org.payoutsEnabled}
-        stripeOnboarding={org.stripeOnboarding}
+        onboardingComplete={onboardingComplete}
+        readyToReceivePayments={readyToReceivePayments}
+        stripeOnboarding={stripeOnboarding}
         stripeRefresh={stripeRefresh}
         stripeReturn={stripeReturn}
       />

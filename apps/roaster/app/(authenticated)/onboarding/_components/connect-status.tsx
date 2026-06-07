@@ -21,9 +21,9 @@ export type StripeOnboardingState =
   | "RESTRICTED";
 
 interface ConnectStatusProps {
-  readonly chargesEnabled: boolean;
   readonly fullyOnboarded: boolean;
-  readonly payoutsEnabled: boolean;
+  readonly onboardingComplete: boolean;
+  readonly readyToReceivePayments: boolean;
   readonly stripeOnboarding: StripeOnboardingState;
   readonly stripeRefresh: boolean;
   readonly stripeReturn: boolean;
@@ -110,9 +110,9 @@ function OnboardingSuccessCard() {
 
 export function ConnectStatus({
   stripeOnboarding,
-  chargesEnabled,
-  payoutsEnabled,
   fullyOnboarded,
+  onboardingComplete,
+  readyToReceivePayments,
   stripeReturn,
   stripeRefresh,
 }: ConnectStatusProps) {
@@ -178,7 +178,7 @@ export function ConnectStatus({
         <CardHeader>
           <CardTitle className="text-lg">Connection status</CardTitle>
           <CardDescription>
-            Stripe Express onboarding for payouts.
+            Stripe Express recipient onboarding for delayed transfers.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -189,14 +189,20 @@ export function ConnectStatus({
             </Badge>
           </div>
           <div className="space-y-2 border-t pt-4">
-            <FlagRow enabled={chargesEnabled} label="Charges enabled" />
-            <FlagRow enabled={payoutsEnabled} label="Payouts enabled" />
+            <FlagRow
+              enabled={readyToReceivePayments}
+              label="Recipient transfers active"
+            />
+            <FlagRow
+              enabled={onboardingComplete}
+              label="Required information complete"
+            />
           </div>
           {!fullyOnboarded && stripeOnboarding !== "RESTRICTED" ? (
             <p className="text-muted-foreground text-sm">
               {stripeOnboarding === "NOT_STARTED"
                 ? "Connect your bank account and business details with Stripe to receive payouts."
-                : "Finish the remaining steps in Stripe to enable charges and payouts."}
+                : "Finish the remaining steps in Stripe to activate recipient transfers."}
             </p>
           ) : null}
         </CardContent>

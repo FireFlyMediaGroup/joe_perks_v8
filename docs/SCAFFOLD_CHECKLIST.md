@@ -21,8 +21,8 @@
 - [x] **CI** at `.github/workflows/ci.yml`: pnpm 10, `pnpm install --frozen-lockfile`, **`pnpm check`** (Ultracite), **`pnpm turbo build`** with secrets `DATABASE_URL_DEV`, `BASEHUB_TOKEN`, and `SKIP_ENV_VALIDATION=true`.
 - [x] **Dependabot** at `.github/dependabot.yml` (npm + GitHub Actions).
 - [x] Optional integration env vars: empty strings treated as unset in `packages/*/keys.ts` where applicable so **`pnpm dev`** can start without every vendor key filled in.
-- [x] **API routes** on `apps/web`: `api/checkout/create-intent` (PaymentIntent + Order creation with frozen splits, rate limiting), `api/order-status` (GET by PI id or order id), `api/webhooks/stripe` (signature verification, idempotency, handlers for `account.updated`, `payment_intent.succeeded`, `payment_intent.payment_failed`), `api/inngest` (Inngest **`serve()`** — `sla-check`, `payout-release`, `cart-cleanup`). Local smoke test verified with `stripe trigger` (webhooks) and `GET /api/inngest` (function registration).
-- [x] **`@joe-perks/stripe`** package complete: `getStripe()` singleton, `calculateSplits()` / `calculateStripeFeeCents()`, Upstash checkout rate limiter, Connect Express helpers, `mapStripeAccountToOnboardingStatus`, `assertStripeSecretKeyAllowed`. Unit tests passing.
+- [x] **API routes** on `apps/web`: `api/checkout/create-intent` (PaymentIntent + Order creation with frozen splits, rate limiting), `api/order-status` (GET by PI id or order id), `api/webhooks/stripe` (signature verification, idempotency, handlers for payment/refund/dispute events plus Connect V2 thin account events), `api/inngest` (Inngest **`serve()`** — `sla-check`, `payout-release`, `cart-cleanup`). Local smoke test verified with Stripe test-mode webhooks and V2 thin-event replay.
+- [x] **`@joe-perks/stripe`** package complete: `getStripe()` singleton, `calculateSplits()` / `calculateStripeFeeCents()`, Upstash checkout rate limiter, Connect V2 recipient-account helpers, legacy and V2 status mapping, `assertStripeSecretKeyAllowed`. Unit tests passing.
 - [x] **`@joe-perks/email`**: **`sendEmail()`** uses Resend + **`EmailLog`** dedupe `(entityType, entityId, template)`; web contact form uses `@joe-perks/email/send` (see `docs/AGENTS.md`).
 - [x] **Middleware API exclusion**: `apps/web/proxy.ts` matcher excludes `api` paths so i18n/auth/Arcjet middleware does not intercept route handlers.
 - [x] **Root `.env` loading**: `apps/web/load-root-env.ts` (imported in `next.config.ts`) loads root `.env` into the web app process — required because Next.js only auto-loads `.env` from the app directory.
@@ -136,9 +136,14 @@ payment_intent.succeeded
 payment_intent.payment_failed
 charge.dispute.created
 charge.dispute.closed
-account.updated
-transfer.failed
+charge.refunded
+v2.core.account[requirements].updated
+v2.core.account[configuration.recipient].capability_status_updated
 ```
+
+Keep `account.updated` subscribed only during the Connect V2 migration window for legacy Express accounts; new Connect status updates should come from the V2 thin events above.
+
+Stripe CLI `1.42.1` still does not support `stripe trigger v2.core.account[...]`; local Connect V2 webhook smoke uses real V2 event ids from `stripe.v2.core.events.list()` plus locally signed thin notification payloads. See [`testing/2026-06-07-connect-v2-migration-smoke.md`](./testing/2026-06-07-connect-v2-migration-smoke.md).
 
 ### 3.3 Clerk (authentication) — two separate apps 🔴 SPRINT 1 BLOCKER
 - [ ] Create account at [clerk.com](https://clerk.com)

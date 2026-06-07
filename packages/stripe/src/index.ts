@@ -6,10 +6,16 @@ export {
   isStripeConfigured,
 } from "./client";
 export {
-  type CreateExpressAccountLinkParams,
-  type CreateExpressAccountParams,
-  createExpressAccountLink,
-  createExpressConnectedAccount,
+  type CreateRecipientAccountLinkParams,
+  type CreateRecipientAccountParams,
+  type RecipientAccount,
+  type RecipientAccountStatus,
+  type RecipientRequirementsStatus,
+  type RecipientTransferStatus,
+  createRecipientAccountLink,
+  createRecipientConnectedAccount,
+  normalizeRecipientAccountStatus,
+  retrieveRecipientAccountStatus,
 } from "./connect";
 export {
   type ReverseTransferIfPossibleInput,
@@ -51,6 +57,8 @@ export {
   STRIPE_FEE_PERCENT_NUMERATOR,
 } from "./splits";
 export {
+  type LegacyStripeAccountStatusInput,
   type MappedStripeOnboardingStatus,
   mapStripeAccountToOnboardingStatus,
+  mapRecipientAccountStatusToOnboardingStatus,
 } from "./stripe-account-status";

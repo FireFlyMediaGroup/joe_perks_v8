@@ -222,10 +222,11 @@ Use a **main-first** workflow by default. A long-lived `develop` branch is **opt
 - **Never import Stripe directly in an app** — always use the client from `@joe-perks/stripe`.
 - **Split math in client components:** import `calculateSplits` (and related types) from **`@joe-perks/stripe/splits`** only. The main `@joe-perks/stripe` entry re-exports server-only modules and must not be bundled into client components.
 - The Stripe client is initialized once as a module-level singleton.
-- Webhook handlers must call `stripe.webhooks.constructEvent()` before any processing.
+- Webhook handlers must verify signatures before any processing: legacy snapshot events use `stripe.webhooks.constructEvent()`; Stripe Connect V2 thin events use `stripe.parseEventNotification()` and then retrieve the full event with `stripe.v2.core.events.retrieve()`.
 - Every webhook handler must check `StripeEvent` table for idempotency before processing.
 - `transfer_group` must be set to `order.id` on every Stripe transfer — required for reconciliation.
-- **Handled webhook events** (`apps/web/app/api/webhooks/stripe/route.ts`): `account.updated`, `payment_intent.succeeded`, `payment_intent.payment_failed`, `charge.dispute.created`, `charge.dispute.closed`, `charge.refunded`. `charge.refunded` flips the order to `REFUNDED`, halts a pending payout (leaves an already-transferred payout intact + logs a clawback alert), and is idempotent with the SLA auto-refund job.
+- **Handled webhook events** (`apps/web/app/api/webhooks/stripe/route.ts`): legacy `account.updated` during migration; Connect V2 thin events `v2.core.account[requirements].updated` and `v2.core.account[configuration.recipient].capability_status_updated`; plus `payment_intent.succeeded`, `payment_intent.payment_failed`, `charge.dispute.created`, `charge.dispute.closed`, `charge.refunded`. `charge.refunded` flips the order to `REFUNDED`, halts a pending payout (leaves an already-transferred payout intact + logs a clawback alert), and is idempotent with the SLA auto-refund job.
+- **Connect V2 local testing caveat:** Stripe CLI `1.42.1` still cannot `stripe trigger v2.core.account[...]` thin account events. For local V2 webhook smoke tests, create a real test-mode V2 account, read real V2 event ids with `stripe.v2.core.events.list({ object_id })`, locally sign a thin notification payload, and POST it to `/api/webhooks/stripe`; the route then retrieves the full event from Stripe. Evidence and exact results are in [`docs/testing/2026-06-07-connect-v2-migration-smoke.md`](./testing/2026-06-07-connect-v2-migration-smoke.md).
 - **`transfer.paid` / `transfer.failed` are NOT valid events in the current Stripe API** — do not add cases for them (TypeScript will reject the literals). Transfer-creation failures are handled synchronously in the payout-release job (`payoutStatus=FAILED` + `PAYOUT_FAILED`); dispute clawbacks go through `reverseTransferIfPossible`. The modern post-hoc signals, if ever needed, are `transfer.reversed` and connected-account `payout.failed`.
 - **Checkout kill-switch:** `apps/web/.../checkout/create-intent` returns 503 when `FEATURE_CHECKOUT_ENABLED=false` (default/unset = enabled). This is the launch-runbook rollback lever to freeze new orders during a Stripe incident — keep it honored.
 
@@ -311,11 +312,12 @@ ROASTER_APP_ORIGIN=  # optional — public **roaster portal** base URL for appro
 ```
 
 ### Stripe and Stripe Connect
-- **`@joe-perks/stripe`** implements the shared client, split math, checkout rate limiting, and Connect Express helpers. Apps must not import the Stripe SDK directly — use this package.
+- **`@joe-perks/stripe`** implements the shared client, split math, checkout rate limiting, and Connect V2 recipient-account helpers. Apps must not import the Stripe SDK directly — use this package.
 - **Secret key** (`STRIPE_SECRET_KEY`) and **webhook signing secret** (`STRIPE_WEBHOOK_SECRET`) live in the **root `.env`** so `apps/web` (webhooks) and any server route using `getStripe()` can read them via Turbo.
 - **Publishable key** (`NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`) goes in **`apps/web/.env.local`** (buyer UI / Elements later). Use the same mode as the secret key (`pk_test_` with `sk_test_`, or live keys only in production).
 - **Connect onboarding** (`POST /api/stripe/connect` on the roaster app) needs the secret key in the environment roaster runs with (typically same root `.env`). Set **`ROASTER_APP_ORIGIN`** in **`apps/roaster/.env.local`** for deployed previews (e.g. `https://roasters.joeperks.com`).
-- Enable **Stripe Connect** in the Dashboard (**Settings → Connect**) before creating Express accounts. For webhooks, add an endpoint pointing at **`/api/webhooks/stripe`** on the marketing/storefront app and subscribe at least to **`account.updated`** (see `docs/SCAFFOLD_CHECKLIST.md`). Local testing: `stripe listen --forward-to localhost:3000/api/webhooks/stripe` and paste the CLI signing secret as `STRIPE_WEBHOOK_SECRET`.
+- Enable **Stripe Connect** in the Dashboard (**Settings → Connect**) before creating V2 Express-dashboard recipient accounts. For webhooks, add an endpoint pointing at **`/api/webhooks/stripe`** on the marketing/storefront app and subscribe to payment/refund/dispute snapshot events plus Connect V2 thin events **`v2.core.account[requirements].updated`** and **`v2.core.account[configuration.recipient].capability_status_updated`**. Keep legacy **`account.updated`** during migration until existing Express accounts are verified. Local testing: `stripe listen --forward-to localhost:3000/api/webhooks/stripe` and paste the CLI signing secret as `STRIPE_WEBHOOK_SECRET`.
+- Hosted Express onboarding smoke on 2026-06-07 confirmed that a completed V2 recipient account maps to `stripeOnboarding = COMPLETE`, `chargesEnabled = true`, and `payoutsEnabled = true`; incomplete accounts map to restricted/not payable. Authenticated portal click-through still requires a real Clerk browser session mapped to `User.externalAuthId` (seeded `clerk_pending:*` users must be merged by Clerk webhook or manually updated).
 
 ---
 
@@ -418,10 +420,9 @@ All thresholds are configurable in `PlatformSettings` singleton — never hardco
 
 ## Stripe Connect account types
 
-- **Roasters and orgs** both use Express accounts.
-- Account type: `stripe.accounts.create({ type: 'express', ... })`
-- Charge model: Destination charges — all payments flow through platform account first.
-- `application_fee_amount` on PaymentIntent = `platform_amount` (stays with platform automatically).
+- **Roasters and orgs** both use Stripe Connect V2 recipient accounts with Express dashboard access.
+- Account creation uses `stripe.v2.core.accounts.create()` with `dashboard: "express"` and `configuration.recipient.capabilities.stripe_balance.stripe_transfers.requested = true`.
+- Charge model: PaymentIntents on the platform account, followed by delayed separate transfers after the hold period.
 - Roaster and org transfers are created manually by the payout job after the hold period.
 - `transfer_group` must equal `order.id` on every transfer for reconciliation.
 

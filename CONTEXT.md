@@ -9,13 +9,13 @@ an org-branded storefront, and a share of every sale is routed to the org automa
 ### Actors
 
 **Roaster**:
-A specialty coffee business that owns a product catalog and fulfills orders. Onboards via Stripe
-Connect Express and is the default fulfiller.
+A specialty coffee business that owns a product catalog and fulfills orders. Onboards via a Stripe
+Connect V2 recipient account with Express dashboard access and is the default fulfiller.
 _Avoid_: Vendor, seller, supplier, merchant.
 
 **Org**:
 The financial entity that runs fundraisers and gets paid — e.g. a school, club, or nonprofit. An
-org owns one Stripe Connect account, one storefront slug, and one or more campaigns. Sub-groups
+org owns one Stripe Connect V2 recipient account with Express dashboard access, one storefront slug, and one or more campaigns. Sub-groups
 (a school's boys' and girls' teams) are campaigns under the org, not orgs themselves; all their
 funds pool to the org's account.
 _Avoid_: Organization (spelled out), customer, group, account, team, nonprofit (an org need not be
@@ -80,7 +80,7 @@ depends on it. See [ADR 0006](./docs/adr/0006-reserved-collab-and-platform-fulfi
 _Avoid_: Collaboration, special, co-brand.
 
 > **Org-level fund aggregation.** All funds raised across an org's campaigns are collected by the
-> one org (its single Stripe Connect account) — even when concurrent campaigns nominally raise for
+> one org (its single Stripe Connect V2 recipient account) — even when concurrent campaigns nominally raise for
 > different sub-causes (the boys' vs girls' team). Sub-causes are modeled as separate Campaigns
 > under one Org, not as separate Orgs; the org is responsible for any downstream distribution.
 

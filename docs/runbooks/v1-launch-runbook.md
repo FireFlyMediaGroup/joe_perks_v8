@@ -22,6 +22,8 @@
 >
 > **Also resolved (2026-06-06):** browser e2e harness (A.3) — `e2e.yml` stands up an ephemeral Neon branch per run + Playwright + signed-webhook settlement; MP-01 money-path scenario implemented. Needs the e2e CI secrets added once; remaining MP/EC scenarios are incremental follow-ups.
 >
+> **Also resolved (2026-06-07):** Stripe Connect V2 migration implemented and sandbox-smoked — helper-level account create/status/link, hosted Express onboarding (`COMPLETE` + active recipient transfers), and V2 thin-event webhook replay for restricted and completed recipient states. Evidence: [`../testing/2026-06-07-connect-v2-migration-smoke.md`](../testing/2026-06-07-connect-v2-migration-smoke.md).
+>
 > **Open work is now incremental, not structural:** remaining MP-02..EC-24 e2e scenarios (on the new harness) and the launch-day manual/business checklist items (legal copy, DPAs, DNS, pilots).
 
 **Related**
@@ -29,6 +31,7 @@
 - [`../../SCAFFOLD_CHECKLIST.md`](../../SCAFFOLD_CHECKLIST.md) — execution tracker (Phase 10 is the gate for this runbook)
 - [`../testing/money-path-e2e-scenarios.md`](../testing/money-path-e2e-scenarios.md) — E2E test coverage
 - [`../testing/v1-launch-money-path-e2e-execution.md`](../testing/v1-launch-money-path-e2e-execution.md) — current sandbox results, runnable commands, and pre-production rotation checklist
+- [`../testing/2026-06-07-connect-v2-migration-smoke.md`](../testing/2026-06-07-connect-v2-migration-smoke.md) — Connect V2 migration and sandbox smoke evidence
 - [`../observability/launch-observability-gap-analysis.md`](../observability/launch-observability-gap-analysis.md) — observability findings, recommendations, and go-live review checklist
 - [`./v1-production-bootstrap-checklist.md`](./v1-production-bootstrap-checklist.md) — production-safe first-data bootstrap process for true beta
 - [`./v1-production-beta-tester-worksheet.md`](./v1-production-beta-tester-worksheet.md) — fillable worksheet for each live production beta tester
@@ -122,11 +125,12 @@ Do **not** rotate Stripe / Clerk / Resend / Inngest / Upstash / Sentry values to
 - [ ] Pilot worksheet ready for each tester: use [`./v1-production-beta-tester-worksheet.md`](./v1-production-beta-tester-worksheet.md).
 
 ### A.7 Webhooks
-- [ ] Stripe webhooks registered for **preview** and **production**: `payment_intent.succeeded`, `payment_intent.payment_failed`, `charge.refunded`, `charge.dispute.created`, `charge.dispute.closed`, `account.updated` (for Connect). ✅ Code (2026-06-05): `charge.refunded` handler added (`apps/web/.../webhooks/stripe/route.ts`) — flips order to `REFUNDED`, stops pending payout (leaves an already-transferred payout intact and alerts for clawback), logs `REFUND_COMPLETED`; idempotent with the SLA auto-refund job. The other five events were already handled.
+- [ ] Stripe webhooks registered for **preview** and **production**: `payment_intent.succeeded`, `payment_intent.payment_failed`, `charge.refunded`, `charge.dispute.created`, `charge.dispute.closed`, plus Connect V2 thin events `v2.core.account[requirements].updated` and `v2.core.account[configuration.recipient].capability_status_updated`. Keep legacy `account.updated` subscribed during the migration window until existing Express accounts are verified. ✅ Code (2026-06-05): `charge.refunded` handler added (`apps/web/.../webhooks/stripe/route.ts`) — flips order to `REFUNDED`, stops pending payout (leaves an already-transferred payout intact and alerts for clawback), logs `REFUND_COMPLETED`; idempotent with the SLA auto-refund job. ✅ Code (2026-06-06): Connect V2 thin events are parsed with `parseEventNotification()`, full V2 events are retrieved from Stripe, and roaster/org recipient-transfer readiness is mirrored to the existing Stripe readiness fields. ✅ Smoke (2026-06-07): real test-mode hosted onboarding generated `v2.core.account[requirements].updated` and `v2.core.account[configuration.recipient].capability_status_updated`; signed thin-event replay returned 200 and updated local DB rows for both restricted and complete recipient states.
   - ⚠️ **Taxonomy correction:** `transfer.paid` and `transfer.failed` (in the original list) are **not events in the current Stripe API** — TypeScript rejects them as event types, so they can never be registered or handled. Roaster/org **transfer creation failures are already handled synchronously** in the payout-release job (`payoutStatus=FAILED` + `PAYOUT_FAILED` event), and dispute-driven clawbacks go through `reverseTransferIfPossible`. If post-hoc transfer-failure visibility is wanted later, the real modern signals are `transfer.reversed` (platform side) and `payout.failed` on the **connected account's** Connect webhook — both deferred to avoid double-handling the dispute reversal path.
 - [ ] Clerk webhooks registered for **roaster** and **org** apps (preview + prod): `user.created`, `user.updated`, `session.*` as needed.
 - [ ] Inngest app synced with production env; jobs visible in dashboard.
 - [ ] Stripe CLI smoke test: `stripe trigger payment_intent.succeeded --api-key sk_test_...` → preview webhook returns 200, `OrderEvent` created.
+- [x] Stripe Connect V2 sandbox smoke test: create a new roaster/org recipient account, complete hosted onboarding, confirm live Stripe status, then deliver `v2.core.account[requirements].updated` and `v2.core.account[configuration.recipient].capability_status_updated` thin events to `/api/webhooks/stripe` and confirm the matching `Roaster`/`Org` row updates. ✅ 2026-06-07 local sandbox: helper create/status/link passed; hosted Express onboarding completed and returned `COMPLETE`/active recipient transfers; local webhook replay updated rows from restricted→complete and active→onboarding for readiness changes. Remaining preview gate: repeat through a real Clerk-authenticated portal click in B.1.
 - [ ] **Local dev**: forwarding + signing secret sync for `web` is documented in [`../testing/v1-launch-money-path-e2e-execution.md`](../testing/v1-launch-money-path-e2e-execution.md) (Stripe listen, `STRIPE_WEBHOOK_SECRET`, `pnpm e2e:stripe-listen` / `pnpm e2e:sprint3`).
 
 ### A.8 Abort criteria for Phase A

@@ -1,8 +1,10 @@
 import { database } from "@joe-perks/db";
 import {
-  createExpressAccountLink,
-  createExpressConnectedAccount,
-  mapStripeAccountToOnboardingStatus,
+  createRecipientAccountLink,
+  createRecipientConnectedAccount,
+  mapRecipientAccountStatusToOnboardingStatus,
+  normalizeRecipientAccountStatus,
+  retrieveRecipientAccountStatus,
 } from "@joe-perks/stripe";
 import { auth } from "@repo/auth/server";
 import { NextResponse } from "next/server";
@@ -22,7 +24,7 @@ function resolveOrgAppOrigin(): string {
 }
 
 /**
- * Starts or resumes Stripe Connect Express onboarding for the signed-in org.
+ * Starts or resumes Stripe Connect V2 recipient onboarding for the signed-in org.
  */
 export async function POST() {
   const { userId } = await auth();
@@ -38,6 +40,9 @@ export async function POST() {
   }
 
   const org = await database.org.findUnique({
+    include: {
+      application: { select: { orgName: true } },
+    },
     where: { id: dbUser.orgId },
   });
   if (!org) {
@@ -50,19 +55,38 @@ export async function POST() {
 
   let stripeAccountId = org.stripeAccountId;
   let onboardingStatus = org.stripeOnboarding;
+  let readyToReceivePayments = org.payoutsEnabled;
 
-  if (!stripeAccountId) {
-    const account = await createExpressConnectedAccount({
+  if (stripeAccountId) {
+    const status = await retrieveRecipientAccountStatus(stripeAccountId);
+    onboardingStatus = mapRecipientAccountStatusToOnboardingStatus(status);
+    readyToReceivePayments = status.readyToReceivePayments;
+    await database.org.update({
+      where: { id: org.id },
+      data: {
+        chargesEnabled: readyToReceivePayments,
+        payoutsEnabled: readyToReceivePayments,
+        stripeOnboarding: onboardingStatus,
+      },
+    });
+  } else {
+    const account = await createRecipientConnectedAccount({
+      country: "US",
+      displayName: org.application.orgName,
       email: org.email,
       metadata: {
         joe_perks_org_id: org.id,
       },
     });
     stripeAccountId = account.id;
-    onboardingStatus = mapStripeAccountToOnboardingStatus(account);
+    const status = normalizeRecipientAccountStatus(account);
+    onboardingStatus = mapRecipientAccountStatusToOnboardingStatus(status);
+    readyToReceivePayments = status.readyToReceivePayments;
     await database.org.update({
       where: { id: org.id },
       data: {
+        chargesEnabled: readyToReceivePayments,
+        payoutsEnabled: readyToReceivePayments,
         stripeAccountId,
         stripeOnboarding: onboardingStatus,
       },
@@ -71,8 +95,14 @@ export async function POST() {
 
   const linkType =
     onboardingStatus === "COMPLETE" ? "account_update" : "account_onboarding";
+  if (!stripeAccountId) {
+    return NextResponse.json(
+      { error: "Stripe account was not created" },
+      { status: 500 }
+    );
+  }
 
-  const accountLink = await createExpressAccountLink({
+  const accountLink = await createRecipientAccountLink({
     accountId: stripeAccountId,
     refreshUrl,
     returnUrl,

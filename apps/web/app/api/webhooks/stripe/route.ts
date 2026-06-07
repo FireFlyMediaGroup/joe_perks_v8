@@ -17,17 +17,28 @@ import OrderConfirmationEmail from "@joe-perks/email/templates/order-confirmatio
 import {
   getStripe,
   mapStripeAccountToOnboardingStatus,
+  mapRecipientAccountStatusToOnboardingStatus,
   reverseTransferIfPossible,
+  retrieveRecipientAccountStatus,
+  type Stripe,
 } from "@joe-perks/stripe";
 import { createPaymentLog } from "@repo/observability/payment-log";
 import { NextResponse } from "next/server";
 import { createElement } from "react";
-import type Stripe from "stripe";
 
 export const runtime = "nodejs";
 
+type StripeClient = ReturnType<typeof getStripe>;
+type StripeV2Event = Awaited<
+  ReturnType<StripeClient["v2"]["core"]["events"]["retrieve"]>
+>;
+
 const ROASTER_APP_ORIGIN_DEFAULT = "http://localhost:3001";
 const TRAILING_SLASH = /\/$/;
+const V2_CONNECT_ACCOUNT_EVENT_TYPES = new Set([
+  "v2.core.account[requirements].updated",
+  "v2.core.account[configuration.recipient].capability_status_updated",
+]);
 
 function getDisputeChargeId(dispute: Stripe.Dispute): string | null {
   if (typeof dispute.charge === "string") {
@@ -295,6 +306,94 @@ async function handleAccountUpdated(account: Stripe.Account): Promise<void> {
       });
     }
   }
+}
+
+async function handleRecipientAccountStatusUpdated(
+  accountId: string
+): Promise<void> {
+  const status = await retrieveRecipientAccountStatus(accountId);
+  const onboarding = mapRecipientAccountStatusToOnboardingStatus(status);
+  const readyToReceivePayments = status.readyToReceivePayments;
+  const fullyOnboarded = onboarding === "COMPLETE";
+
+  const roaster = await database.roaster.findFirst({
+    where: { stripeAccountId: accountId },
+  });
+  if (roaster) {
+    const nextStatus = nextConnectStatus(roaster.status, fullyOnboarded);
+    await database.roaster.update({
+      data: {
+        chargesEnabled: readyToReceivePayments,
+        payoutsEnabled: readyToReceivePayments,
+        stripeOnboarding: onboarding,
+        ...(nextStatus && { status: nextStatus }),
+      },
+      where: { id: roaster.id },
+    });
+    if (nextStatus === "ONBOARDING") {
+      logConnectDemotion("roaster", {
+        accountId,
+        charges: readyToReceivePayments,
+        entityId: roaster.id,
+        onboarding,
+        payouts: readyToReceivePayments,
+      });
+    }
+    return;
+  }
+
+  const org = await database.org.findFirst({
+    where: { stripeAccountId: accountId },
+  });
+  if (org) {
+    const nextStatus = nextConnectStatus(org.status, fullyOnboarded);
+    await database.org.update({
+      data: {
+        chargesEnabled: readyToReceivePayments,
+        payoutsEnabled: readyToReceivePayments,
+        stripeOnboarding: onboarding,
+        ...(nextStatus && { status: nextStatus }),
+      },
+      where: { id: org.id },
+    });
+    if (nextStatus === "ONBOARDING") {
+      logConnectDemotion("org", {
+        accountId,
+        charges: readyToReceivePayments,
+        entityId: org.id,
+        onboarding,
+        payouts: readyToReceivePayments,
+      });
+    }
+  }
+}
+
+function getV2EventAccountId(event: StripeV2Event): string | null {
+  if ("related_object" in event && event.related_object?.type === "v2.core.account") {
+    return event.related_object.id;
+  }
+
+  const data = "data" in event ? event.data : null;
+  if (data && typeof data === "object" && "account_id" in data) {
+    const accountId = data.account_id;
+    return typeof accountId === "string" ? accountId : null;
+  }
+
+  return null;
+}
+
+async function handleV2ConnectAccountEvent(eventId: string): Promise<void> {
+  const event = await getStripe().v2.core.events.retrieve(eventId);
+  const accountId = getV2EventAccountId(event);
+  if (!accountId) {
+    createPaymentLog({}).error("stripe v2 webhook: account id not found", {
+      event_type: event.type,
+      stripe_event_id: event.id,
+    });
+    return;
+  }
+
+  await handleRecipientAccountStatusUpdated(accountId);
 }
 
 async function sendBuyerOrderConfirmationEmail(orderId: string): Promise<void> {
@@ -783,56 +882,82 @@ export async function POST(request: Request) {
   }
 
   const rawBody = await request.text();
-  let event: Stripe.Event;
+  let legacyEvent: Stripe.Event | null = null;
+  let eventId: string;
+  let eventType: string;
+  const stripe = getStripe();
+  const maybeV2Event =
+    rawBody.includes('"v2.core.') || rawBody.includes('"object":"v2.core.event"');
+
   try {
-    event = getStripe().webhooks.constructEvent(
-      rawBody,
-      signature,
-      webhookSecret
-    );
+    if (maybeV2Event) {
+      const eventNotification = stripe.parseEventNotification(
+        rawBody,
+        signature,
+        webhookSecret
+      );
+      eventId = eventNotification.id;
+      eventType = eventNotification.type;
+    } else {
+      legacyEvent = stripe.webhooks.constructEvent(
+        rawBody,
+        signature,
+        webhookSecret
+      );
+      eventId = legacyEvent.id;
+      eventType = legacyEvent.type;
+    }
   } catch {
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
 
   const existing = await database.stripeEvent.findUnique({
-    where: { stripeEventId: event.id },
+    where: { stripeEventId: eventId },
   });
   if (existing) {
     return NextResponse.json({ received: true });
   }
 
   try {
-    switch (event.type) {
-      case "account.updated":
-        await handleAccountUpdated(event.data.object as Stripe.Account);
-        break;
-      case "payment_intent.succeeded":
-        await handlePaymentIntentSucceeded(
-          event.data.object as Stripe.PaymentIntent
-        );
-        break;
-      case "payment_intent.payment_failed":
-        await handlePaymentIntentFailed(
-          event.data.object as Stripe.PaymentIntent
-        );
-        break;
-      case "charge.dispute.closed":
-        await handleChargeDisputeClosed(event.data.object as Stripe.Dispute);
-        break;
-      case "charge.dispute.created":
-        await handleChargeDisputeCreated(event.data.object as Stripe.Dispute);
-        break;
-      case "charge.refunded":
-        await handleChargeRefunded(event.data.object as Stripe.Charge);
-        break;
-      default:
-        break;
+    if (V2_CONNECT_ACCOUNT_EVENT_TYPES.has(eventType)) {
+      await handleV2ConnectAccountEvent(eventId);
+    } else if (legacyEvent) {
+      switch (legacyEvent.type) {
+        case "account.updated":
+          await handleAccountUpdated(legacyEvent.data.object as Stripe.Account);
+          break;
+        case "payment_intent.succeeded":
+          await handlePaymentIntentSucceeded(
+            legacyEvent.data.object as Stripe.PaymentIntent
+          );
+          break;
+        case "payment_intent.payment_failed":
+          await handlePaymentIntentFailed(
+            legacyEvent.data.object as Stripe.PaymentIntent
+          );
+          break;
+        case "charge.dispute.closed":
+          await handleChargeDisputeClosed(
+            legacyEvent.data.object as Stripe.Dispute
+          );
+          break;
+        case "charge.dispute.created":
+          await handleChargeDisputeCreated(
+            legacyEvent.data.object as Stripe.Dispute
+          );
+          break;
+        case "charge.refunded":
+          await handleChargeRefunded(legacyEvent.data.object as Stripe.Charge);
+          break;
+        default:
+          break;
+      }
     }
   } catch (e) {
     createPaymentLog({}).error("stripe webhook processing failed", {
       error: e instanceof Error ? e.message : "unknown",
-      event_type: event.type,
-      stripe_event_id: event.id,
+      event_type: eventType,
+      stripe_event_id: eventId,
     });
     return NextResponse.json({ error: "Processing failed" }, { status: 500 });
   }
@@ -840,8 +965,8 @@ export async function POST(request: Request) {
   try {
     await database.stripeEvent.create({
       data: {
-        stripeEventId: event.id,
-        eventType: event.type,
+        stripeEventId: eventId,
+        eventType,
       },
     });
   } catch (error) {

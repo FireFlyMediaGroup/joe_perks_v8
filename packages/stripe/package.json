@@ -12,7 +12,7 @@
     "@upstash/ratelimit": "^2.0.8",
     "@upstash/redis": "^1.36.3",
     "server-only": "^0.0.1",
-    "stripe": "^20.4.1",
+    "stripe": "^22.2.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {

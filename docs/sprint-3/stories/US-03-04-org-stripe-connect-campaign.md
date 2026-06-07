@@ -7,17 +7,19 @@
 **Dependencies:** US-03-03 (Roaster Magic Link Org Review), US-02-03 (Roaster Stripe Connect -- pattern reference)
 **Depends on this:** US-04-01 (Public Org Storefront)
 
+**Current implementation note (2026-06-07):** This story originally mirrored legacy Connect Express APIs. The current code uses Stripe Connect V2 recipient accounts with Express dashboard access; see [`../../testing/2026-06-07-connect-v2-migration-smoke.md`](../../testing/2026-06-07-connect-v2-migration-smoke.md).
+
 ---
 
 ## Goal
 
-Wire the org portal onboarding and campaign pages. After a roaster approves an org (US-03-03), the org admin signs in to `orgs.joeperks.com`, completes Stripe Connect Express onboarding (mirroring the roaster flow from US-02-03), and creates a campaign by selecting products from the approved roaster's catalog. When the campaign is activated, the storefront goes live at `joeperks.com/[slug]`.
+Wire the org portal onboarding and campaign pages. After a roaster approves an org (US-03-03), the org admin signs in to `orgs.joeperks.com`, completes Stripe Connect onboarding (mirroring the roaster flow from US-02-03), and creates a campaign by selecting products from the approved roaster's catalog. When the campaign is activated, the storefront goes live at `joeperks.com/[slug]`.
 
 ---
 
 ## Diagram references
 
-- **Approval chain:** [`docs/05-approval-chain.mermaid`](../../05-approval-chain.mermaid) -- nodes **OA11** (Org completes Stripe Express at `orgs.joeperks.com/onboarding`), **OA12** (Org creates campaign, sets org_pct, selects roaster products), **OA13** (Campaign.status = ACTIVE, storefront live at `joeperks.com/[slug]`)
+- **Approval chain:** [`docs/05-approval-chain.mermaid`](../../05-approval-chain.mermaid) -- nodes **OA11** (Org completes Stripe Connect onboarding at `orgs.joeperks.com/onboarding`), **OA12** (Org creates campaign, sets org_pct, selects roaster products), **OA13** (Campaign.status = ACTIVE, storefront live at `joeperks.com/[slug]`)
 - **Database ERD:** [`docs/06-database-schema.mermaid`](../../06-database-schema.mermaid) -- `Org`, `Campaign`, `CampaignItem`, `Product`, `ProductVariant` models
 - **Stripe payment flow:** [`docs/07-stripe-payment-flow.mermaid`](../../07-stripe-payment-flow.mermaid) -- Connect onboarding context
 - **Project structure:** [`docs/01-project-structure.mermaid`](../../01-project-structure.mermaid) -- org app routes
@@ -35,9 +37,9 @@ Wire the org portal onboarding and campaign pages. After a roaster approves an o
 - `apps/org/app/api/webhooks/clerk/route.ts` exists for Clerk user sync
 - `apps/roaster/app/(authenticated)/onboarding/` is **fully implemented** (US-02-03) -- pattern reference
 - `apps/roaster/app/api/stripe/connect/route.ts` is **fully implemented** -- mirrored for org
-- `packages/stripe/src/connect.ts` exports `createExpressConnectedAccount()`, `createExpressAccountLink()`
-- `packages/stripe/src/stripe-account-status.ts` exports `mapStripeAccountToOnboardingStatus()`
-- `apps/web/app/api/webhooks/stripe/route.ts` handles `account.updated` for **roasters and orgs** (org: `chargesEnabled`/`payoutsEnabled`, ONBOARDING→ACTIVE when fully onboarded)
+- `packages/stripe/src/connect.ts` exports `createRecipientConnectedAccount()`, `createRecipientAccountLink()`, `retrieveRecipientAccountStatus()`, and `normalizeRecipientAccountStatus()`
+- `packages/stripe/src/stripe-account-status.ts` exports legacy `mapStripeAccountToOnboardingStatus()` plus V2 `mapRecipientAccountStatusToOnboardingStatus()`
+- `apps/web/app/api/webhooks/stripe/route.ts` handles legacy `account.updated` during migration plus V2 thin account events for **roasters and orgs** (org: `chargesEnabled`/`payoutsEnabled`, status ACTIVE/ONBOARDING follows recipient transfer readiness)
 - `Org` model: `slug`, `status` (`OrgStatus`), `stripeAccountId`, `stripeOnboarding` (`StripeOnboardingStatus`), `chargesEnabled`, `payoutsEnabled`, `applicationId`
 - `Campaign` model: `orgId`, `name`, `status` (`CampaignStatus`: `DRAFT`, `ACTIVE`, `PAUSED`, `ENDED`), `orgPct`, `goalCents`, `totalRaised`
 - `CampaignItem` model: `campaignId`, `productId`, `variantId`, `retailPrice`, `wholesalePrice`, `isFeatured`, `@@unique([campaignId, variantId])`
@@ -47,7 +49,7 @@ Wire the org portal onboarding and campaign pages. After a roaster approves an o
 
 ## AGENTS.md rules that apply
 
-- **Stripe:** Never import Stripe directly in an app -- use `@joe-perks/stripe`. `createExpressConnectedAccount()` and `createExpressAccountLink()` for Connect onboarding.
+- **Stripe:** Never import Stripe directly in an app -- use `@joe-perks/stripe`. Use `createRecipientConnectedAccount()` and `createRecipientAccountLink()` for Connect V2 recipient onboarding.
 - **Tenant isolation:** Every org portal query must include `WHERE orgId = session.orgId`. Never trust `orgId` from request body.
 - **Money as cents:** `CampaignItem.retailPrice`, `wholesalePrice`, `goalCents` are `Int` cents.
 - **Price snapshotting:** When creating `CampaignItem` records, snapshot `retailPrice` and `wholesalePrice` from `ProductVariant` at campaign creation time. The storefront reads `CampaignItem` prices, not variant prices.

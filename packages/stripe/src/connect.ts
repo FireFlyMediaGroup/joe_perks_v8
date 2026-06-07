@@ -4,47 +4,134 @@ import type Stripe from "stripe";
 
 import { getStripe } from "./client";
 
-export interface CreateExpressAccountParams {
+type StripeClient = InstanceType<typeof Stripe>;
+
+export interface CreateRecipientAccountParams {
   /** ISO country code; Joe Perks MVP is US-only unless extended. */
-  country?: string;
+  country: string;
+  displayName: string;
   email: string;
   metadata: Record<string, string>;
 }
 
 /**
- * Creates a Stripe Connect **Express** connected account (see `docs/AGENTS.md`).
+ * Creates a Stripe Connect V2 recipient account for separate charges and transfers.
  */
-export function createExpressConnectedAccount(
-  params: CreateExpressAccountParams
-): Promise<Stripe.Account> {
+export function createRecipientConnectedAccount(
+  params: CreateRecipientAccountParams
+): ReturnType<StripeClient["v2"]["core"]["accounts"]["create"]> {
   const stripe = getStripe();
-  return stripe.accounts.create({
-    type: "express",
-    country: params.country ?? "US",
-    email: params.email,
-    capabilities: {
-      card_payments: { requested: true },
-      transfers: { requested: true },
+
+  return stripe.v2.core.accounts.create({
+    configuration: {
+      recipient: {
+        capabilities: {
+          stripe_balance: {
+            stripe_transfers: { requested: true },
+          },
+        },
+      },
     },
+    contact_email: params.email,
+    dashboard: "express",
+    defaults: {
+      responsibilities: {
+        fees_collector: "application_express",
+        losses_collector: "application",
+      },
+    },
+    display_name: params.displayName,
+    identity: { country: params.country },
+    include: ["configuration.recipient", "requirements"],
     metadata: params.metadata,
   });
 }
 
-export interface CreateExpressAccountLinkParams {
+export interface CreateRecipientAccountLinkParams {
   accountId: string;
   refreshUrl: string;
   returnUrl: string;
   type?: "account_onboarding" | "account_update";
 }
 
-export function createExpressAccountLink(
-  params: CreateExpressAccountLinkParams
-): Promise<Stripe.AccountLink> {
+export function createRecipientAccountLink(
+  params: CreateRecipientAccountLinkParams
+): ReturnType<StripeClient["v2"]["core"]["accountLinks"]["create"]> {
   const stripe = getStripe();
-  return stripe.accountLinks.create({
+
+  return stripe.v2.core.accountLinks.create({
     account: params.accountId,
-    refresh_url: params.refreshUrl,
-    return_url: params.returnUrl,
-    type: params.type ?? "account_onboarding",
+    use_case:
+      params.type === "account_update"
+        ? {
+            account_update: {
+              configurations: ["recipient"],
+              refresh_url: params.refreshUrl,
+              return_url: params.returnUrl,
+            },
+            type: "account_update",
+          }
+        : {
+            account_onboarding: {
+              configurations: ["recipient"],
+              refresh_url: params.refreshUrl,
+              return_url: params.returnUrl,
+            },
+            type: "account_onboarding",
+          },
   });
+}
+
+export async function retrieveRecipientAccountStatus(
+  accountId: string
+): Promise<RecipientAccountStatus> {
+  const stripe = getStripe();
+  const account = await stripe.v2.core.accounts.retrieve(accountId, {
+    include: ["configuration.recipient", "requirements"],
+  });
+
+  return normalizeRecipientAccountStatus(account);
+}
+
+export type RecipientAccount = Awaited<
+  ReturnType<StripeClient["v2"]["core"]["accounts"]["retrieve"]>
+>;
+
+export type RecipientTransferStatus =
+  | "active"
+  | "pending"
+  | "restricted"
+  | "unsupported";
+
+export type RecipientRequirementsStatus =
+  | "currently_due"
+  | "eventually_due"
+  | "past_due";
+
+export interface RecipientAccountStatus {
+  account: RecipientAccount;
+  onboardingComplete: boolean;
+  readyToReceivePayments: boolean;
+  requirementsStatus: RecipientRequirementsStatus | null;
+  transferStatus: RecipientTransferStatus | null;
+}
+
+export function normalizeRecipientAccountStatus(
+  account: RecipientAccount
+): RecipientAccountStatus {
+  const transferStatus =
+    account.configuration?.recipient?.capabilities?.stripe_balance
+      ?.stripe_transfers?.status ?? null;
+  const requirementsStatus =
+    account.requirements?.summary?.minimum_deadline?.status ?? null;
+
+  return {
+    account,
+    onboardingComplete:
+      requirementsStatus !== "currently_due" &&
+      requirementsStatus !== "past_due",
+    readyToReceivePayments: transferStatus === "active",
+    requirementsStatus,
+    transferStatus,
+  };
 }
