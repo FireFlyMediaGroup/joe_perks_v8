@@ -145,8 +145,8 @@ publishable keys differ (confirms three distinct apps).
 
 ✅ **DONE (2026-06-07): migrated off the borrowed Locuvi key + domain to a dedicated Joe Perks
 Resend account.** The Locuvi credential is no longer present in root `.env` or
-`.vercel/.env.preview.local`. Remaining follow-up: revoke the old Locuvi `re_…` key in the
-**Locuvi** Resend account, and run an external Gmail/Outlook/Yahoo deliverability check.
+`.vercel/.env.preview.local`, and the old Locuvi `re_…` key has been rotated/revoked in the
+**Locuvi** Resend account. Migration fully complete.
 
 | Item | Test/sandbox (old) | Live/prod (now) |
 |---|---|---|
@@ -165,7 +165,7 @@ Resend account.** The Locuvi credential is no longer present in root `.env` or
 **Verify**: ✅ `pnpm --filter @joe-perks/email smoke` passed (`resend_plus_db`); internal send to
 `orders@joeperks.com` received (dedupe confirmed — 1 of 2 delivered). ✅ External deliverability
 check (2026-06-07) — landed in inbox, DKIM/SPF/DMARC pass, and Reply-To (`support@joeperks.com`)
-routes to the `joe@` seat. ⬜ Revoke the old Locuvi key in the Locuvi account.
+routes to the `joe@` seat. ✅ Old Locuvi key rotated/revoked in the Locuvi account.
 
 ## 5. Neon (database) — Owner: Eng
 
@@ -273,8 +273,8 @@ chosen portal(s) and a submitted post is attributed to the signed-in user.
 
 These are dormant Next-Forge scaffolding with **zero app usage**. Confirm production has **no
 value** set for any of them, and that no borrowed/leftover key is sitting in production. *(The
-Locuvi Resend key — the original offender — was removed on 2026-06-07; see §4. Still revoke it
-in the Locuvi account.)*
+Locuvi Resend key — the original offender — was removed on 2026-06-07 and rotated/revoked in the
+Locuvi account; see §4.)*
 
 | Service | Env var(s) | Note |
 |---|---|---|
