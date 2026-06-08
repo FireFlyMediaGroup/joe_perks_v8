@@ -21,7 +21,7 @@
 
 Updated `packages/stripe/src/connect.ts` and exports in `packages/stripe/src/index.ts`:
 
-- Replaced legacy Express helper names with recipient-focused V2 helpers:
+- Replaced legacy Express helper names with marketplace V2 helpers:
   - `createRecipientConnectedAccount()`
   - `createRecipientAccountLink()`
   - `retrieveRecipientAccountStatus()`
@@ -32,12 +32,15 @@ Updated `packages/stripe/src/connect.ts` and exports in `packages/stripe/src/ind
   - `identity.country`
   - `dashboard: "express"`
   - `defaults.responsibilities`
+  - `configuration.merchant`
   - `configuration.recipient.capabilities.stripe_balance.stripe_transfers.requested = true`
 - Account links now use `stripe.v2.core.accountLinks.create()` with:
   - `use_case.type = "account_onboarding"` or `"account_update"`
-  - `configurations = ["recipient"]`
-- V2 account retrieve uses `include: ["configuration.recipient", "requirements"]`.
+  - `configurations = ["recipient", "merchant"]`
+- V2 account create/retrieve uses `include: ["configuration.customer", "configuration.merchant", "configuration.recipient", "defaults", "identity", "requirements"]`.
 - `packages/stripe/src/payouts.ts` had type-only return updates for the newer SDK; transfer/refund runtime behavior was not changed.
+
+Note: the sandbox evidence below was captured during the original recipient-only migration smoke. The code has since been hardened to create and onboard accounts with both `recipient` and `merchant` configurations; repeat the sandbox smoke before live beta and expect new disposable accounts to have `applied_configurations: ["recipient", "merchant"]`.
 
 ### Status mapping
 
@@ -73,7 +76,7 @@ Updated:
 Behavior now:
 
 - Existing accounts are refreshed directly from Stripe V2 status before account-link creation.
-- New accounts are created through V2 recipient helpers.
+- New accounts are created through V2 marketplace helpers that apply both merchant and recipient configurations.
 - Portal pages fetch live Stripe status when `stripeAccountId` exists and persist readiness back to DB.
 - UI language now describes recipient transfer readiness instead of legacy charges/payouts wording.
 
@@ -169,7 +172,7 @@ Idempotency and signature checks:
 - Bad signature returned `400`.
 - `StripeEvent` row was created only for the successfully processed event.
 
-Disposable DB rows/events were deleted after the smoke. The disposable Stripe test account was closed with `applied_configurations: ["recipient"]`.
+Disposable DB rows/events were deleted after the smoke. This pre-hardening disposable Stripe test account was closed with `applied_configurations: ["recipient"]`.
 
 ### Hosted Express onboarding smoke
 
@@ -195,7 +198,7 @@ A completed-account V2 thin notification was then replayed through local `/api/w
 - `chargesEnabled = true`
 - `payoutsEnabled = true`
 
-The disposable DB row/event was deleted after the smoke. The hosted-onboarding Stripe test account was closed with `applied_configurations: ["recipient"]`.
+The disposable DB row/event was deleted after the smoke. This pre-hardening hosted-onboarding Stripe test account was closed with `applied_configurations: ["recipient"]`.
 
 ## Local Testing Caveats
 

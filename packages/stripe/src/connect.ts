@@ -5,6 +5,15 @@ import type Stripe from "stripe";
 import { getStripe } from "./client";
 
 type StripeClient = InstanceType<typeof Stripe>;
+const CONNECT_ACCOUNT_INCLUDES = [
+  "configuration.customer",
+  "configuration.merchant",
+  "configuration.recipient",
+  "defaults",
+  "identity",
+  "requirements",
+] as const;
+const CONNECT_ONBOARDING_CONFIGURATIONS = ["recipient", "merchant"] as const;
 
 export interface CreateRecipientAccountParams {
   /** ISO country code; Joe Perks MVP is US-only unless extended. */
@@ -15,7 +24,10 @@ export interface CreateRecipientAccountParams {
 }
 
 /**
- * Creates a Stripe Connect V2 recipient account for separate charges and transfers.
+ * Creates a Stripe Connect V2 account for Joe Perks marketplace sellers/fundraisers.
+ *
+ * Payments stay on the platform first; after the fulfillment/dispute hold, Joe Perks
+ * sends separate transfers to connected accounts.
  */
 export function createRecipientConnectedAccount(
   params: CreateRecipientAccountParams
@@ -24,6 +36,7 @@ export function createRecipientConnectedAccount(
 
   return stripe.v2.core.accounts.create({
     configuration: {
+      merchant: {},
       recipient: {
         capabilities: {
           stripe_balance: {
@@ -36,13 +49,13 @@ export function createRecipientConnectedAccount(
     dashboard: "express",
     defaults: {
       responsibilities: {
-        fees_collector: "application_express",
+        fees_collector: "application",
         losses_collector: "application",
       },
     },
     display_name: params.displayName,
     identity: { country: params.country },
-    include: ["configuration.recipient", "requirements"],
+    include: [...CONNECT_ACCOUNT_INCLUDES],
     metadata: params.metadata,
   });
 }
@@ -65,7 +78,7 @@ export function createRecipientAccountLink(
       params.type === "account_update"
         ? {
             account_update: {
-              configurations: ["recipient"],
+              configurations: [...CONNECT_ONBOARDING_CONFIGURATIONS],
               refresh_url: params.refreshUrl,
               return_url: params.returnUrl,
             },
@@ -73,7 +86,7 @@ export function createRecipientAccountLink(
           }
         : {
             account_onboarding: {
-              configurations: ["recipient"],
+              configurations: [...CONNECT_ONBOARDING_CONFIGURATIONS],
               refresh_url: params.refreshUrl,
               return_url: params.returnUrl,
             },
@@ -87,7 +100,7 @@ export async function retrieveRecipientAccountStatus(
 ): Promise<RecipientAccountStatus> {
   const stripe = getStripe();
   const account = await stripe.v2.core.accounts.retrieve(accountId, {
-    include: ["configuration.recipient", "requirements"],
+    include: [...CONNECT_ACCOUNT_INCLUDES],
   });
 
   return normalizeRecipientAccountStatus(account);

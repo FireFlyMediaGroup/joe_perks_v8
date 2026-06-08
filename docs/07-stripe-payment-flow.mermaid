@@ -7,8 +7,8 @@ flowchart TD
     C1["Buyer submits checkout\njoeperks.com/[slug]/checkout"]:::action
     C2["Server: calculateSplits()\nproduct_subtotal + shipping_amount\nORG% + PLATFORM% + stripe_fee"]:::calc
     C3["All split amounts FROZEN on Order row\nbefore PaymentIntent created"]:::important
-    C4["stripe.paymentIntents.create({\n  amount: gross_amount,\n  application_fee_amount: platform_amount,\n  metadata: {order_id, campaign_id, roaster_id, org_id}\n})"]:::stripe
-    C5["Buyer pays via Stripe Elements\nCharge lands on PLATFORM account"]:::stripe
+    C4["stripe.paymentIntents.create({\n  amount: gross_amount,\n  transfer_group: order.id,\n  metadata: {order_id, campaign_id, roaster_id}\n})"]:::stripe
+    C5["Buyer pays via Stripe Elements\nFull charge lands on PLATFORM account\nNo destination transfer happens at checkout"]:::stripe
 
     C1 --> C2 --> C3 --> C4 --> C5
   end
@@ -16,12 +16,12 @@ flowchart TD
   %% ── Transfer to roaster + org (after hold) ───────────────────────
   subgraph TRANSFER["2. Transfer — after 7-day delivery hold"]
     T1["Inngest payout-release job\nruns daily at 09:00"]:::job
-    T2["Query: Orders WHERE\npayout_status=PENDING\nAND payout_eligible_at <= now()"]:::db
+    T2["Query: Orders WHERE\npayout_status=HELD\nAND status=DELIVERED\nAND payout_eligible_at <= now()"]:::db
     T3["calculateRoasterPayout()\nDeduct unsettled RoasterDebts\nfrom roaster_amount"]:::calc
     T4["stripe.transfers.create({\n  amount: net_roaster_amount,\n  destination: roaster.stripe_account_id,\n  source_transaction: stripe_charge_id,\n  transfer_group: order.id\n})"]:::stripe
     T5["stripe.transfers.create({\n  amount: org_amount,\n  destination: org.stripe_account_id,\n  source_transaction: stripe_charge_id,\n  transfer_group: order.id\n})"]:::stripe
     T6["Platform retains platform_amount\nNo transfer needed — stays in platform account"]:::stripe
-    T7["Order.payout_status = TRANSFERRED\nOrderEvent PAYOUT_TRANSFERRED created\nCampaign.total_raised += org_amount"]:::db
+    T7["Order.payout_status = TRANSFERRED\nOrderEvent PAYOUT_TRANSFERRED created\nCampaign.total_raised was already incremented at payment confirmation"]:::db
 
     T1 --> T2 --> T3 --> T4 & T5 & T6 --> T7
   end

@@ -17,7 +17,7 @@ sequenceDiagram
     B->>WEB: POST /api/checkout/create-intent<br/>{items, shipping_rate_id, buyer, campaign_id}
     WEB->>DB: Validate CampaignItem prices server-side
     WEB->>WEB: calculateSplits(subtotal, shipping, org_pct, settings)
-    WEB->>STR: stripe.paymentIntents.create({amount, application_fee_amount, metadata})
+    WEB->>STR: stripe.paymentIntents.create({amount, transfer_group, metadata})
     WEB->>DB: Create Order (status=PENDING, all splits frozen)
     WEB-->>B: {client_secret}
     B->>STR: stripe.confirmPayment(client_secret)
@@ -61,12 +61,12 @@ sequenceDiagram
 
   rect rgb(238,237,254)
     Note over INN,STR: PHASE 5 — Automated Payout (Inngest daily job)
-    INN->>DB: Query Orders WHERE status=DELIVERED<br/>AND payout_eligible_at <= now()<br/>AND payout_status=PENDING
+    INN->>DB: Query Orders WHERE status=DELIVERED<br/>AND payout_eligible_at <= now()<br/>AND payout_status=HELD
     INN->>DB: calculateRoasterPayout() — deduct unsettled RoasterDebts
     INN->>STR: stripe.transfers.create({roaster_amount → roaster.stripe_account_id})
     INN->>STR: stripe.transfers.create({org_amount → org.stripe_account_id})
     INN->>DB: Update Order (payout_status=TRANSFERRED)
-    INN->>DB: Update Campaign.total_raised += org_amount
+    Note over INN,DB: Campaign.total_raised was already incremented<br/>at payment confirmation
     INN->>DB: Settle applicable RoasterDebt rows
     INN->>DB: Create OrderEvent (PAYOUT_TRANSFERRED, actor=SYSTEM)
   end

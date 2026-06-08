@@ -56,7 +56,7 @@ describe("POST /api/stripe/connect (roaster)", () => {
     });
   });
 
-  it("creates a V2 recipient account and account link for a new roaster", async () => {
+  it("creates a V2 marketplace account and account link for a new roaster", async () => {
     const response = await POST();
     await expect(response.json()).resolves.toEqual({
       url: "https://connect.stripe.test/link",
