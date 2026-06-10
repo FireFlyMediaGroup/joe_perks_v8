@@ -340,3 +340,46 @@ export async function limitOrderStatus(identifier: string): Promise<{
   const { success } = await limiter.limit(identifier);
   return { success };
 }
+
+// Admin API surface guarded by the shared HTTP Basic credential. Keyed by IP and
+// kept tight to throttle online password guessing against the static credential.
+const ADMIN_API_PREFIX = "jp:admin-api";
+const ADMIN_API_LIMIT = 20;
+const ADMIN_API_WINDOW = "1 m";
+
+let adminApiLimiterSingleton: Ratelimit | undefined;
+let adminApiLimiterUnavailable = false;
+
+function getAdminApiLimiter(): Ratelimit | null {
+  if (adminApiLimiterUnavailable) {
+    return null;
+  }
+  if (adminApiLimiterSingleton) {
+    return adminApiLimiterSingleton;
+  }
+  if (!hasUpstashEnv()) {
+    adminApiLimiterUnavailable = true;
+    return null;
+  }
+  const redis = Redis.fromEnv();
+  adminApiLimiterSingleton = new Ratelimit({
+    limiter: Ratelimit.slidingWindow(ADMIN_API_LIMIT, ADMIN_API_WINDOW),
+    prefix: ADMIN_API_PREFIX,
+    redis,
+  });
+  return adminApiLimiterSingleton;
+}
+
+/**
+ * Runs admin-API rate limit when Redis is configured; otherwise allows the request.
+ */
+export async function limitAdminApi(identifier: string): Promise<{
+  success: boolean;
+}> {
+  const limiter = getAdminApiLimiter();
+  if (!limiter) {
+    return { success: true };
+  }
+  const { success } = await limiter.limit(identifier);
+  return { success };
+}

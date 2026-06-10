@@ -282,3 +282,13 @@ packages/database/generated
 # Playwright
 test-results/
 tests/e2e/frontend/.generated/
+.env*
+
+# Ops: never commit rendered secret material under ops/ (1Password sync output,
+# local env dumps, anything explicitly secret-named). Curated, non-secret docs
+# (README/inventory/checklist/manifest) remain trackable.
+ops/**/*.env
+ops/**/*.env.*
+ops/**/*.local
+ops/**/*secret*
+ops/**/*secrets*

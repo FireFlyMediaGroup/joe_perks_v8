@@ -33,6 +33,7 @@ export {
   checkoutLimiter,
   getCheckoutLimiter,
   isCheckoutRateLimitConfigured,
+  limitAdminApi,
   limitBuyerAuth,
   limitCheckout,
   limitGuestOrderLookup,

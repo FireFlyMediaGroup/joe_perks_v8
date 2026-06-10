@@ -603,8 +603,10 @@ After first deploy, verify each surface:
 - [ ] **Production:** migrations applied (`pnpm migrate:deploy:prod`) and smoke test passes (`pnpm db:smoke:prod`) — see `docs/AGENTS.md`
 
 ### 7.4 Sentry verification
-- [ ] `https://joeperks.com/api/test-sentry` → error appears in Sentry within 30 seconds
+- [ ] `/api/test-sentry` on a **Preview** deployment → error appears in Sentry within 30 seconds
 - [ ] Error shows correct project name and TypeScript source location (not compiled JS)
+
+> **Note (2026-06 security hardening):** `/api/test-sentry` returns **404 in any production runtime** (`NODE_ENV`/`VERCEL_ENV === "production"`) so an unauthenticated 500 generator isn't left open to abuse. Verify Sentry capture on a Preview deployment (same Sentry wiring). If a production-side check is unavoidable, temporarily comment out the guard in `apps/web/app/api/test-sentry/route.ts` (see inline comment), deploy, verify, then **revert and redeploy immediately**.
 
 ### 7.5 Stripe webhook verification
 - [ ] Locally: `stripe listen --forward-to localhost:3000/api/webhooks/stripe`
@@ -696,7 +698,7 @@ When using AI coding agents (Cursor, Claude Code, etc.):
 - [ ] Production Stripe keys are live keys — NOT test keys
 - [ ] All four subdomains have valid SSL certificates (green lock in browser)
 - [ ] Inngest jobs visible and synced in production dashboard
-- [ ] Sentry receiving production errors (test with `/api/test-sentry` on production URL)
+- [ ] Sentry receiving production errors — `/api/test-sentry` is **gated (404) in production**; verify via a Preview deployment, or confirm a real production error/event reaches Sentry. For an unavoidable prod-side smoke test, follow the temporary-ungate steps in §7.4 / the route's inline comment, then revert immediately
 - [ ] Observability go-live review completed: [`observability/launch-observability-gap-analysis.md`](./observability/launch-observability-gap-analysis.md) confirms dashboards/alerts can answer checkout health, webhook retry/dedupe, Inngest heartbeat, SLA backlog, deployment/env profile, and rollback-decision questions
 
 ---

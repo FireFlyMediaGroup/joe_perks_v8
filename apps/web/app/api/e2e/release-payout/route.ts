@@ -13,9 +13,21 @@ export const runtime = "nodejs";
  * Hard-gated on `NEXT_PUBLIC_E2E_TEST_MODE === "1"` (set only by the Playwright
  * web server). It is **inert (404) in any normal build**, including production,
  * where that variable is unset.
+ *
+ * Defense-in-depth: `NEXT_PUBLIC_*` flags are easy to misconfigure, so we also
+ * refuse outright in any production runtime. This route must never release money
+ * in production regardless of how the public flag is set.
  */
+function e2eDisabled(): boolean {
+  return (
+    process.env.NEXT_PUBLIC_E2E_TEST_MODE !== "1" ||
+    process.env.NODE_ENV === "production" ||
+    process.env.VERCEL_ENV === "production"
+  );
+}
+
 export async function POST(request: Request) {
-  if (process.env.NEXT_PUBLIC_E2E_TEST_MODE !== "1") {
+  if (e2eDisabled()) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 

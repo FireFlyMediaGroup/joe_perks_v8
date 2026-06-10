@@ -1,4 +1,5 @@
 import { database } from "@joe-perks/db";
+import { limitAdminApi } from "@joe-perks/stripe";
 import { NextResponse } from "next/server";
 
 import {
@@ -8,10 +9,25 @@ import {
 
 export const runtime = "nodejs";
 
+function getClientIp(request: Request): string {
+  const forwarded = request.headers.get("x-forwarded-for");
+  if (forwarded) {
+    return forwarded.split(",")[0].trim();
+  }
+  return request.headers.get("x-real-ip")?.trim() ?? "0.0.0.0";
+}
+
 export async function GET(
   request: Request,
   context: { params: Promise<{ id: string }> }
 ) {
+  // Throttle before touching credentials to cap online guessing of the shared
+  // admin Basic credential.
+  const { success } = await limitAdminApi(getClientIp(request));
+  if (!success) {
+    return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+  }
+
   if (!getAdminBasicAuth()) {
     return NextResponse.json(
       { error: "Admin credentials are not configured." },

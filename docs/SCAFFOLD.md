@@ -550,7 +550,7 @@ git push origin develop
 | /terms/roasters, /privacy-policy | PENDING LEGAL REVIEW banner |
 
 ### 7.3 Sentry
-Visit `/api/test-sentry` — error in Sentry within ~30s.
+Visit `/api/test-sentry` — error in Sentry within ~30s. **Dev/Preview only:** the route is gated to 404 in any production runtime (security hardening, 2026-06); see `SCAFFOLD_CHECKLIST.md` §7.4 and the inline comment in `apps/web/app/api/test-sentry/route.ts` for how to temporarily ungate it for a prod-side check.
 
 ### 7.4 Stripe webhook
 `stripe listen` + `stripe trigger payment_intent.succeeded` — StripeEvent in dev DB.
