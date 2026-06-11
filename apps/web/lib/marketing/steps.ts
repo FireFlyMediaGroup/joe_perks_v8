@@ -11,7 +11,7 @@ export const steps: Step[] = [
     iconVariant: "terra",
     title: "Org launches a campaign",
     description:
-      "A school, sports team, or nonprofit picks a local roaster, sets their fundraiser percentage, and gets a branded storefront link in minutes.",
+      "A school, sports team, or community organization picks a local roaster, sets their share of every sale, and gets a branded storefront link in minutes.",
   },
   {
     num: "02",

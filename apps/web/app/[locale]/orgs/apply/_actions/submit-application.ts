@@ -91,7 +91,7 @@ export async function submitOrgApplication(
   if (desiredOrgPct < minPct || desiredOrgPct > maxPct) {
     return {
       success: false,
-      error: `Fundraiser percentage must be between ${Math.round(minPct * 100)}% and ${Math.round(maxPct * 100)}%.`,
+      error: `Share percentage must be between ${Math.round(minPct * 100)}% and ${Math.round(maxPct * 100)}%.`,
       code: "INVALID_PCT",
     };
   }

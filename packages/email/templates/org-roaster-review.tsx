@@ -5,7 +5,7 @@ import { BaseEmailLayout } from "./base-layout";
  * Transactional email: platform approved org application → roaster reviews via magic link (US-03-02).
  */
 export const ORG_ROASTER_REVIEW_SUBJECT =
-  "Action needed: review a fundraising organization";
+  "Action needed: review a community organization";
 
 interface OrgRoasterReviewEmailProps {
   readonly contactName: string;
@@ -28,7 +28,7 @@ export const OrgRoasterReviewEmail = ({
     </Text>
     <Text className="m-0 text-zinc-600">
       Hi {roasterBusinessName}, an organization has been approved by Joe Perks
-      and is requesting to partner with you for fundraising.
+      and is requesting to partner with you on a coffee campaign.
     </Text>
     <Text className="mt-4 mb-1 font-semibold text-sm text-zinc-900">
       Organization
@@ -71,7 +71,7 @@ OrgRoasterReviewEmail.PreviewProps = {
   orgName: "Lincoln High School Boosters",
   contactName: "Jamie Chen",
   description:
-    "We run annual athletics fundraisers and would love to offer your coffee.",
+    "We run annual athletics campaigns and would love to offer your coffee.",
   reviewUrl: "https://roasters.joeperks.com/org-requests/abc123token",
 };
 

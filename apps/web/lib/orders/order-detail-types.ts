@@ -12,12 +12,12 @@ export interface OrderDetailView {
   readonly carrier: string | null;
   readonly deliveredAt: Date | null;
   readonly fulfillBy: Date;
-  readonly fundraiserName: string;
   readonly grossAmount: number;
   readonly id: string;
   readonly items: readonly OrderDetailItem[];
   readonly orderNumber: string;
   readonly orgAmount: number;
+  readonly orgName: string;
   readonly orgPctSnapshot: number;
   readonly placedAt: Date;
   readonly productSubtotal: number;

@@ -69,8 +69,8 @@ export const Footer = () => (
             </span>
           </Link>
           <p className="max-w-xs font-body text-sm text-white/50 leading-relaxed">
-            Coffee fundraising that works. Connecting roasters with communities
-            to fund what matters.
+            Coffee that supports local communities. Connecting craft roasters
+            with the organizations that matter.
           </p>
           {/* Social icons */}
           <div className="mt-2 flex gap-1">

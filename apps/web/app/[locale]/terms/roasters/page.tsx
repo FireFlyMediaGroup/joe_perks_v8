@@ -55,9 +55,9 @@ const RoasterTermsPage = () => (
       <h2>5. Revenue Split</h2>
       <p>
         Revenue is split on every order: the organization receives its
-        fundraiser percentage (5–25%), the platform retains a fee (5%, minimum
-        $1.00), and the roaster receives the remainder. Shipping costs are
-        passed through to the roaster and excluded from split calculations.
+        revenue-share percentage (5–25%), the platform retains a fee (5%,
+        minimum $1.00), and the roaster receives the remainder. Shipping costs
+        are passed through to the roaster and excluded from split calculations.
       </p>
 
       <h2>6. Payouts</h2>

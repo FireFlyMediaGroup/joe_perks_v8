@@ -19,7 +19,7 @@ export function EmptyOrdersState({ locale }: EmptyOrdersStateProps) {
       </h2>
       <p className="mt-3 max-w-2xl text-muted-foreground text-sm leading-6">
         When you place an order with this email address, it will appear here so
-        you can review the fundraiser impact and follow its status later.
+        you can review your community impact and follow its status later.
       </p>
       <Button
         asChild

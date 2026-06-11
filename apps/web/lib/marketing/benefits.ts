@@ -9,7 +9,7 @@ export const benefits: Benefit[] = [
     iconVariant: "terra",
     title: "Recurring, not one-time",
     description:
-      "Coffee is a repeat purchase. Unlike wrapping paper or popcorn, supporters come back month after month — compounding fundraiser impact.",
+      "Coffee is a repeat purchase. Unlike wrapping paper or popcorn, supporters come back month after month — compounding your org's earnings.",
   },
   {
     iconVariant: "teal",

@@ -270,9 +270,9 @@ export function OrderLookupForm({ locale }: OrderLookupFormProps) {
           </div>
 
           <OrderDetailHeader
-            fundraiserName={hydratedOrder.fundraiserName}
             locale={locale}
             orderNumber={hydratedOrder.orderNumber}
+            orgName={hydratedOrder.orgName}
             placedAt={hydratedOrder.placedAt}
             trackingState={trackingState}
           />
@@ -294,9 +294,9 @@ export function OrderLookupForm({ locale }: OrderLookupFormProps) {
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,0.9fr)]">
             <OrderItemsCard items={hydratedOrder.items} />
             <OrderSummaryCard
-              fundraiserName={hydratedOrder.fundraiserName}
               grossAmount={hydratedOrder.grossAmount}
               orgAmount={hydratedOrder.orgAmount}
+              orgName={hydratedOrder.orgName}
               orgPctSnapshot={hydratedOrder.orgPctSnapshot}
               productSubtotal={hydratedOrder.productSubtotal}
               shippingAmount={hydratedOrder.shippingAmount}

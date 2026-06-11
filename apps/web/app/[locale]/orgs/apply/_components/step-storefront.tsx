@@ -147,8 +147,8 @@ export function StepStorefront({
       <div>
         <h2 className="font-semibold text-lg">Your storefront URL</h2>
         <p className="mt-1 text-muted-foreground text-sm">
-          Choose a unique, memorable URL for your fundraising storefront. Buyers
-          will share this link to support your campaign.
+          Choose a unique, memorable URL for your storefront. Buyers will share
+          this link to support your campaign.
         </p>
       </div>
 

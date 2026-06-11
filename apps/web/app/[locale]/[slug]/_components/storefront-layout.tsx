@@ -24,8 +24,8 @@ export function StorefrontLayout({ children, locale }: StorefrontLayoutProps) {
               </span>
             </div>
             <p className="max-w-md font-body text-jp-muted text-xs leading-relaxed">
-              Every cup makes a difference. Specialty coffee fundraising that
-              connects local organizations with craft roasters.
+              Every cup makes a difference. Specialty coffee that connects local
+              organizations with craft roasters.
             </p>
             <div className="flex gap-4 font-body text-jp-light text-xs">
               <Link

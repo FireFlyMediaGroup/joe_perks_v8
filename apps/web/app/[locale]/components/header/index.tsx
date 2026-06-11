@@ -169,7 +169,7 @@ export const Header = ({ dictionary: _dictionary, locale }: HeaderProps) => {
                 href="/orgs/apply"
                 onClick={() => setMobileOpen(false)}
               >
-                Start your fundraiser
+                Start your campaign
                 <MoveRight size={14} />
               </Link>
               <Link

@@ -30,7 +30,7 @@ export const Hero = () => (
               color: "var(--jp-chip-text)",
             }}
           >
-            Coffee Fundraising
+            Coffee for Communities
           </span>
           <span
             className="rounded-full px-3 py-1 font-jp-mono font-medium text-[10px] uppercase tracking-[0.14em]"
@@ -52,8 +52,8 @@ export const Hero = () => (
 
         {/* Subtitle */}
         <p className="reveal reveal-delay-2 mb-10 max-w-[560px] font-body text-[17px] text-[var(--jp-muted)] leading-[1.65] md:text-lg">
-          Connect local roasters with schools, sports teams, and nonprofits.
-          Every bag sold funds what matters — automatically.
+          Connect local roasters with schools, sports teams, and community
+          organizations. Every bag sold supports what matters — automatically.
         </p>
 
         {/* Dual CTA cards */}
@@ -67,7 +67,7 @@ export const Hero = () => (
               For organizations
             </span>
             <span className="font-bold font-display text-xl">
-              Fund what matters
+              Support what matters
             </span>
             <span className="font-body text-sm text-white/80 leading-relaxed">
               Turn coffee into recurring revenue for your school, team, or

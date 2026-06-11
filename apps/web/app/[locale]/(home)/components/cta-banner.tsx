@@ -18,8 +18,8 @@ export const CtaBanner = () => (
           Ready to brew <em className="text-jp-terra-light">something good</em>?
         </h2>
         <p className="mx-auto mb-8 max-w-md font-body text-base text-white/60 leading-relaxed">
-          Whether you run an org or roast the beans, Joe Perks makes fundraising
-          feel less like work and more like community.
+          Whether you run an org or roast the beans, Joe Perks turns great
+          coffee into real support for your community.
         </p>
 
         <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
@@ -27,7 +27,7 @@ export const CtaBanner = () => (
             className="group inline-flex items-center gap-2 rounded-[var(--jp-radius-md)] bg-jp-terra px-6 py-3 font-body font-semibold text-sm text-white shadow-[var(--jp-shadow-sm)] transition-all hover:-translate-y-px hover:bg-jp-terra-dark hover:shadow-[0_6px_20px_rgba(212,96,58,0.35)]"
             href="/orgs/apply"
           >
-            Start your fundraiser
+            Start your campaign
             <MoveRight
               className="transition-transform group-hover:translate-x-0.5"
               size={14}

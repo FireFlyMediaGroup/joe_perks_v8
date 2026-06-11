@@ -169,7 +169,7 @@ export function OrgApplyForm({
         <CheckCircle2 className="mx-auto h-16 w-16 text-green-600" />
         <h2 className="mt-6 font-semibold text-2xl">Application submitted!</h2>
         <p className="mt-3 text-muted-foreground">
-          Thanks for applying to run a fundraiser with Joe Perks. We&apos;ll
+          Thanks for applying to run a campaign with Joe Perks. We&apos;ll
           review your application and reach out within{" "}
           <strong>2–3 business days</strong>.
         </p>

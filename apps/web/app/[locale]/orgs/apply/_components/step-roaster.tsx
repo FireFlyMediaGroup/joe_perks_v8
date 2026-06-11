@@ -163,10 +163,10 @@ export function StepRoaster({
         ) : null}
       </div>
 
-      {/* Fundraiser percentage */}
+      {/* Org share percentage */}
       <div className="space-y-4">
         <div>
-          <h2 className="font-semibold text-lg">Fundraiser percentage</h2>
+          <h2 className="font-semibold text-lg">Your share percentage</h2>
           <p className="mt-1 text-muted-foreground text-sm">
             Choose the percentage of each sale that goes directly to your
             organization. Platform allows {minPct}%–{maxPct}%.

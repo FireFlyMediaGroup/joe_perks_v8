@@ -3,15 +3,15 @@
 import { useEffect, useState } from "react";
 
 const quotes = [
-  "Behind every great fundraiser is an even greater cup of coffee.",
-  "Life's too short for bad coffee and boring fundraisers.",
+  "Behind every great community is an even greater cup of coffee.",
+  "Life's too short for bad coffee.",
   "First we drink the coffee, then we change the world — one bag at a time.",
-  "Decaf? No thanks, I have fundraisers to run.",
+  "Decaf? No thanks, I have a community to caffeinate.",
   "Good ideas start with brainstorming. Great ideas start with coffee.",
   "Coffee doesn't ask silly questions. Coffee understands.",
   "A yawn is a silent scream for coffee.",
-  "Espresso yourself — and fund what matters.",
-  "But first, coffee. Then we'll talk fundraising goals.",
+  "Espresso yourself — and support what matters.",
+  "But first, coffee. Then we'll talk campaign goals.",
   "Powered by passion, fueled by really good beans.",
 ];
 

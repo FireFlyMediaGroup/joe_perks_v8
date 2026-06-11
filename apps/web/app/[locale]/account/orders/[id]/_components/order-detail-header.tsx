@@ -2,17 +2,17 @@ import type { BuyerOrderTrackingStateCopy } from "../_lib/order-detail";
 import { formatBuyerOrderDate } from "../_lib/order-detail";
 
 interface OrderDetailHeaderProps {
-  readonly fundraiserName: string;
   readonly locale: string;
   readonly orderNumber: string;
+  readonly orgName: string;
   readonly placedAt: Date;
   readonly trackingState: BuyerOrderTrackingStateCopy;
 }
 
 export function OrderDetailHeader({
-  fundraiserName,
   locale,
   orderNumber,
+  orgName,
   placedAt,
   trackingState,
 }: OrderDetailHeaderProps) {
@@ -30,7 +30,7 @@ export function OrderDetailHeader({
       </div>
       <p className="max-w-3xl text-muted-foreground text-sm leading-6 sm:text-base">
         Placed {formatBuyerOrderDate(placedAt, locale)} for{" "}
-        <span className="font-medium text-foreground">{fundraiserName}</span>.
+        <span className="font-medium text-foreground">{orgName}</span>.
       </p>
     </header>
   );
