@@ -53,80 +53,209 @@
       "env": "production",
       "vars": {
         "DATABASE_URL": { "item": "neon", "field": "DATABASE_URL" },
-        "NEXT_PUBLIC_APP_URL": { "item": "origins", "field": "WEB_NEXT_PUBLIC_APP_URL" },
-        "NEXT_PUBLIC_WEB_URL": { "item": "origins", "field": "NEXT_PUBLIC_WEB_URL" },
-        "NEXT_PUBLIC_API_URL": { "item": "origins", "field": "NEXT_PUBLIC_API_URL" },
-        "NEXT_PUBLIC_DOCS_URL": { "item": "origins", "field": "NEXT_PUBLIC_DOCS_URL" },
-        "ROASTER_APP_ORIGIN": { "item": "origins", "field": "ROASTER_APP_ORIGIN" },
+        "NEXT_PUBLIC_APP_URL": {
+          "item": "origins",
+          "field": "WEB_NEXT_PUBLIC_APP_URL"
+        },
+        "NEXT_PUBLIC_WEB_URL": {
+          "item": "origins",
+          "field": "NEXT_PUBLIC_WEB_URL"
+        },
+        "NEXT_PUBLIC_API_URL": {
+          "item": "origins",
+          "field": "NEXT_PUBLIC_API_URL"
+        },
+        "NEXT_PUBLIC_DOCS_URL": {
+          "item": "origins",
+          "field": "NEXT_PUBLIC_DOCS_URL"
+        },
+        "ROASTER_APP_ORIGIN": {
+          "item": "origins",
+          "field": "ROASTER_APP_ORIGIN"
+        },
         "STRIPE_SECRET_KEY": { "item": "stripe", "field": "STRIPE_SECRET_KEY" },
-        "STRIPE_WEBHOOK_SECRET": { "item": "stripe", "field": "STRIPE_WEBHOOK_SECRET" },
-        "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY": { "item": "stripe", "field": "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY" },
+        "STRIPE_WEBHOOK_SECRET": {
+          "item": "stripe",
+          "field": "STRIPE_WEBHOOK_SECRET"
+        },
+        "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY": {
+          "item": "stripe",
+          "field": "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY"
+        },
         "RESEND_TOKEN": { "item": "resend", "field": "RESEND_TOKEN" },
         "RESEND_FROM": { "item": "resend", "field": "RESEND_FROM" },
-        "INNGEST_SIGNING_KEY": { "item": "inngest", "field": "INNGEST_SIGNING_KEY" },
-        "INNGEST_EVENT_KEY": { "item": "inngest", "field": "INNGEST_EVENT_KEY" },
-        "UPSTASH_REDIS_REST_URL": { "item": "upstash", "field": "UPSTASH_REDIS_REST_URL" },
-        "UPSTASH_REDIS_REST_TOKEN": { "item": "upstash", "field": "UPSTASH_REDIS_REST_TOKEN" },
-        "NEXT_PUBLIC_POSTHOG_KEY": { "item": "posthog", "field": "NEXT_PUBLIC_POSTHOG_KEY" },
-        "NEXT_PUBLIC_POSTHOG_HOST": { "item": "posthog", "field": "NEXT_PUBLIC_POSTHOG_HOST" },
+        "INNGEST_SIGNING_KEY": {
+          "item": "inngest",
+          "field": "INNGEST_SIGNING_KEY"
+        },
+        "INNGEST_EVENT_KEY": {
+          "item": "inngest",
+          "field": "INNGEST_EVENT_KEY"
+        },
+        "UPSTASH_REDIS_REST_URL": {
+          "item": "upstash",
+          "field": "UPSTASH_REDIS_REST_URL"
+        },
+        "UPSTASH_REDIS_REST_TOKEN": {
+          "item": "upstash",
+          "field": "UPSTASH_REDIS_REST_TOKEN"
+        },
+        "NEXT_PUBLIC_POSTHOG_KEY": {
+          "item": "posthog",
+          "field": "NEXT_PUBLIC_POSTHOG_KEY"
+        },
+        "NEXT_PUBLIC_POSTHOG_HOST": {
+          "item": "posthog",
+          "field": "NEXT_PUBLIC_POSTHOG_HOST"
+        },
         "SENTRY_AUTH_TOKEN": { "item": "sentry", "field": "SENTRY_AUTH_TOKEN" },
         "SENTRY_ORG": { "item": "sentry", "field": "SENTRY_ORG" },
         "SENTRY_PROJECT": { "item": "sentry", "field": "WEB_SENTRY_PROJECT" },
-        "NEXT_PUBLIC_SENTRY_DSN": { "item": "sentry", "field": "WEB_NEXT_PUBLIC_SENTRY_DSN" },
+        "NEXT_PUBLIC_SENTRY_DSN": {
+          "item": "sentry",
+          "field": "WEB_NEXT_PUBLIC_SENTRY_DSN"
+        },
         "ARCJET_KEY": { "item": "arcjet", "field": "ARCJET_KEY" },
-        "SESSION_SECRET": { "item": "appSecrets", "field": "WEB_SESSION_SECRET" },
-        "FLAGS_SECRET": { "item": "appSecrets", "field": "FLAGS_SECRET", "optional": true },
-        "PLATFORM_ALERT_EMAIL": { "item": "ops", "field": "PLATFORM_ALERT_EMAIL" }
+        "SESSION_SECRET": {
+          "item": "appSecrets",
+          "field": "WEB_SESSION_SECRET"
+        },
+        "FLAGS_SECRET": {
+          "item": "appSecrets",
+          "field": "FLAGS_SECRET",
+          "optional": true
+        },
+        "PLATFORM_ALERT_EMAIL": {
+          "item": "ops",
+          "field": "PLATFORM_ALERT_EMAIL"
+        }
       }
     },
     "roaster": {
       "env": "production",
       "vars": {
         "DATABASE_URL": { "item": "neon", "field": "DATABASE_URL" },
-        "NEXT_PUBLIC_APP_URL": { "item": "origins", "field": "ROASTER_NEXT_PUBLIC_APP_URL" },
-        "NEXT_PUBLIC_WEB_URL": { "item": "origins", "field": "NEXT_PUBLIC_WEB_URL" },
-        "NEXT_PUBLIC_DOCS_URL": { "item": "origins", "field": "NEXT_PUBLIC_DOCS_URL" },
-        "ROASTER_APP_ORIGIN": { "item": "origins", "field": "ROASTER_APP_ORIGIN" },
+        "NEXT_PUBLIC_APP_URL": {
+          "item": "origins",
+          "field": "ROASTER_NEXT_PUBLIC_APP_URL"
+        },
+        "NEXT_PUBLIC_WEB_URL": {
+          "item": "origins",
+          "field": "NEXT_PUBLIC_WEB_URL"
+        },
+        "NEXT_PUBLIC_DOCS_URL": {
+          "item": "origins",
+          "field": "NEXT_PUBLIC_DOCS_URL"
+        },
+        "ROASTER_APP_ORIGIN": {
+          "item": "origins",
+          "field": "ROASTER_APP_ORIGIN"
+        },
         "ORG_APP_ORIGIN": { "item": "origins", "field": "ORG_APP_ORIGIN" },
-        "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY": { "item": "clerkRoaster", "field": "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY" },
-        "CLERK_SECRET_KEY": { "item": "clerkRoaster", "field": "CLERK_SECRET_KEY" },
-        "CLERK_WEBHOOK_SECRET": { "item": "clerkRoaster", "field": "CLERK_WEBHOOK_SECRET" },
-        "NEXT_PUBLIC_CLERK_SIGN_IN_URL": { "item": "clerkRoaster", "field": "NEXT_PUBLIC_CLERK_SIGN_IN_URL" },
-        "NEXT_PUBLIC_CLERK_SIGN_UP_URL": { "item": "clerkRoaster", "field": "NEXT_PUBLIC_CLERK_SIGN_UP_URL" },
-        "NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL": { "item": "clerkRoaster", "field": "NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL" },
-        "NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL": { "item": "clerkRoaster", "field": "NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL" },
+        "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY": {
+          "item": "clerkRoaster",
+          "field": "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY"
+        },
+        "CLERK_SECRET_KEY": {
+          "item": "clerkRoaster",
+          "field": "CLERK_SECRET_KEY"
+        },
+        "CLERK_WEBHOOK_SECRET": {
+          "item": "clerkRoaster",
+          "field": "CLERK_WEBHOOK_SECRET"
+        },
+        "NEXT_PUBLIC_CLERK_SIGN_IN_URL": {
+          "item": "clerkRoaster",
+          "field": "NEXT_PUBLIC_CLERK_SIGN_IN_URL"
+        },
+        "NEXT_PUBLIC_CLERK_SIGN_UP_URL": {
+          "item": "clerkRoaster",
+          "field": "NEXT_PUBLIC_CLERK_SIGN_UP_URL"
+        },
+        "NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL": {
+          "item": "clerkRoaster",
+          "field": "NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL"
+        },
+        "NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL": {
+          "item": "clerkRoaster",
+          "field": "NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL"
+        },
         "STRIPE_SECRET_KEY": { "item": "stripe", "field": "STRIPE_SECRET_KEY" },
         "RESEND_TOKEN": { "item": "resend", "field": "RESEND_TOKEN" },
         "RESEND_FROM": { "item": "resend", "field": "RESEND_FROM" },
         "SENTRY_AUTH_TOKEN": { "item": "sentry", "field": "SENTRY_AUTH_TOKEN" },
         "SENTRY_ORG": { "item": "sentry", "field": "SENTRY_ORG" },
-        "SENTRY_PROJECT": { "item": "sentry", "field": "ROASTER_SENTRY_PROJECT" },
-        "NEXT_PUBLIC_SENTRY_DSN": { "item": "sentry", "field": "ROASTER_NEXT_PUBLIC_SENTRY_DSN" },
+        "SENTRY_PROJECT": {
+          "item": "sentry",
+          "field": "ROASTER_SENTRY_PROJECT"
+        },
+        "NEXT_PUBLIC_SENTRY_DSN": {
+          "item": "sentry",
+          "field": "ROASTER_NEXT_PUBLIC_SENTRY_DSN"
+        },
         "ARCJET_KEY": { "item": "arcjet", "field": "ARCJET_KEY" },
-        "FLAGS_SECRET": { "item": "appSecrets", "field": "FLAGS_SECRET", "optional": true },
-        "UPLOADTHING_TOKEN": { "item": "uploadthing", "field": "UPLOADTHING_TOKEN", "optional": true }
+        "FLAGS_SECRET": {
+          "item": "appSecrets",
+          "field": "FLAGS_SECRET",
+          "optional": true
+        },
+        "UPLOADTHING_TOKEN": {
+          "item": "uploadthing",
+          "field": "UPLOADTHING_TOKEN",
+          "optional": true
+        }
       }
     },
     "org": {
       "env": "production",
       "vars": {
         "DATABASE_URL": { "item": "neon", "field": "DATABASE_URL" },
-        "NEXT_PUBLIC_APP_URL": { "item": "origins", "field": "ORG_NEXT_PUBLIC_APP_URL" },
-        "NEXT_PUBLIC_WEB_URL": { "item": "origins", "field": "NEXT_PUBLIC_WEB_URL" },
-        "NEXT_PUBLIC_DOCS_URL": { "item": "origins", "field": "NEXT_PUBLIC_DOCS_URL" },
+        "NEXT_PUBLIC_APP_URL": {
+          "item": "origins",
+          "field": "ORG_NEXT_PUBLIC_APP_URL"
+        },
+        "NEXT_PUBLIC_WEB_URL": {
+          "item": "origins",
+          "field": "NEXT_PUBLIC_WEB_URL"
+        },
+        "NEXT_PUBLIC_DOCS_URL": {
+          "item": "origins",
+          "field": "NEXT_PUBLIC_DOCS_URL"
+        },
         "ORG_APP_ORIGIN": { "item": "origins", "field": "ORG_APP_ORIGIN" },
-        "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY": { "item": "clerkOrg", "field": "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY" },
+        "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY": {
+          "item": "clerkOrg",
+          "field": "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY"
+        },
         "CLERK_SECRET_KEY": { "item": "clerkOrg", "field": "CLERK_SECRET_KEY" },
-        "CLERK_WEBHOOK_SECRET": { "item": "clerkOrg", "field": "CLERK_WEBHOOK_SECRET" },
-        "NEXT_PUBLIC_CLERK_SIGN_IN_URL": { "item": "clerkOrg", "field": "NEXT_PUBLIC_CLERK_SIGN_IN_URL" },
-        "NEXT_PUBLIC_CLERK_SIGN_UP_URL": { "item": "clerkOrg", "field": "NEXT_PUBLIC_CLERK_SIGN_UP_URL" },
-        "NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL": { "item": "clerkOrg", "field": "NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL" },
-        "NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL": { "item": "clerkOrg", "field": "NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL" },
+        "CLERK_WEBHOOK_SECRET": {
+          "item": "clerkOrg",
+          "field": "CLERK_WEBHOOK_SECRET"
+        },
+        "NEXT_PUBLIC_CLERK_SIGN_IN_URL": {
+          "item": "clerkOrg",
+          "field": "NEXT_PUBLIC_CLERK_SIGN_IN_URL"
+        },
+        "NEXT_PUBLIC_CLERK_SIGN_UP_URL": {
+          "item": "clerkOrg",
+          "field": "NEXT_PUBLIC_CLERK_SIGN_UP_URL"
+        },
+        "NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL": {
+          "item": "clerkOrg",
+          "field": "NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL"
+        },
+        "NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL": {
+          "item": "clerkOrg",
+          "field": "NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL"
+        },
         "STRIPE_SECRET_KEY": { "item": "stripe", "field": "STRIPE_SECRET_KEY" },
         "SENTRY_AUTH_TOKEN": { "item": "sentry", "field": "SENTRY_AUTH_TOKEN" },
         "SENTRY_ORG": { "item": "sentry", "field": "SENTRY_ORG" },
         "SENTRY_PROJECT": { "item": "sentry", "field": "ORG_SENTRY_PROJECT" },
-        "NEXT_PUBLIC_SENTRY_DSN": { "item": "sentry", "field": "ORG_NEXT_PUBLIC_SENTRY_DSN" },
+        "NEXT_PUBLIC_SENTRY_DSN": {
+          "item": "sentry",
+          "field": "ORG_NEXT_PUBLIC_SENTRY_DSN"
+        },
         "ARCJET_KEY": { "item": "arcjet", "field": "ARCJET_KEY" }
       }
     },
@@ -134,21 +263,43 @@
       "env": "production",
       "vars": {
         "DATABASE_URL": { "item": "neon", "field": "DATABASE_URL" },
-        "ROASTER_APP_ORIGIN": { "item": "origins", "field": "ROASTER_APP_ORIGIN" },
+        "ROASTER_APP_ORIGIN": {
+          "item": "origins",
+          "field": "ROASTER_APP_ORIGIN"
+        },
         "ORG_APP_ORIGIN": { "item": "origins", "field": "ORG_APP_ORIGIN" },
-        "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY": { "item": "clerkAdmin", "field": "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY" },
-        "CLERK_SECRET_KEY": { "item": "clerkAdmin", "field": "CLERK_SECRET_KEY" },
-        "NEXT_PUBLIC_CLERK_SIGN_IN_URL": { "item": "clerkAdmin", "field": "NEXT_PUBLIC_CLERK_SIGN_IN_URL" },
-        "NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL": { "item": "clerkAdmin", "field": "NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL" },
+        "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY": {
+          "item": "clerkAdmin",
+          "field": "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY"
+        },
+        "CLERK_SECRET_KEY": {
+          "item": "clerkAdmin",
+          "field": "CLERK_SECRET_KEY"
+        },
+        "NEXT_PUBLIC_CLERK_SIGN_IN_URL": {
+          "item": "clerkAdmin",
+          "field": "NEXT_PUBLIC_CLERK_SIGN_IN_URL"
+        },
+        "NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL": {
+          "item": "clerkAdmin",
+          "field": "NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL"
+        },
         "STRIPE_SECRET_KEY": { "item": "stripe", "field": "STRIPE_SECRET_KEY" },
         "RESEND_TOKEN": { "item": "resend", "field": "RESEND_TOKEN" },
         "RESEND_FROM": { "item": "resend", "field": "RESEND_FROM" },
         "SENTRY_AUTH_TOKEN": { "item": "sentry", "field": "SENTRY_AUTH_TOKEN" },
         "SENTRY_ORG": { "item": "sentry", "field": "SENTRY_ORG" },
         "SENTRY_PROJECT": { "item": "sentry", "field": "ADMIN_SENTRY_PROJECT" },
-        "NEXT_PUBLIC_SENTRY_DSN": { "item": "sentry", "field": "ADMIN_NEXT_PUBLIC_SENTRY_DSN" },
+        "NEXT_PUBLIC_SENTRY_DSN": {
+          "item": "sentry",
+          "field": "ADMIN_NEXT_PUBLIC_SENTRY_DSN"
+        },
         "ARCJET_KEY": { "item": "arcjet", "field": "ARCJET_KEY" },
-        "CLERK_WEBHOOK_SECRET": { "item": "clerkAdmin", "field": "CLERK_WEBHOOK_SECRET", "optional": true }
+        "CLERK_WEBHOOK_SECRET": {
+          "item": "clerkAdmin",
+          "field": "CLERK_WEBHOOK_SECRET",
+          "optional": true
+        }
       }
     }
   }
