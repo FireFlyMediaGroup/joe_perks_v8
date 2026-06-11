@@ -5,7 +5,7 @@ import { OrgApplyForm } from "./_components/org-apply-form";
 export const metadata = {
   title: "Apply — Organization | Joe Perks",
   description:
-    "Apply to run a fundraising campaign with Joe Perks. Choose a roaster partner, set your storefront URL, and start earning for your organization.",
+    "Apply to run a coffee campaign with Joe Perks. Choose a roaster partner, set your storefront URL, and start earning for your organization.",
 };
 
 export default async function OrgsApplyPage() {
@@ -30,7 +30,7 @@ export default async function OrgsApplyPage() {
     <main className="mx-auto max-w-2xl px-4 pt-24 pb-10 sm:pt-32 sm:pb-16">
       <header className="mb-10 text-center">
         <h1 className="font-semibold text-3xl tracking-tight">
-          Apply to fundraise with Joe Perks
+          Apply to partner with Joe Perks
         </h1>
         <p className="mt-3 text-muted-foreground">
           Partner with a local roaster, create your storefront, and earn a

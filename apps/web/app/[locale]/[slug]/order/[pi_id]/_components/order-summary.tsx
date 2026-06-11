@@ -65,7 +65,7 @@ export function OrderSummary({
           Your order supports{" "}
           <span className="font-medium text-foreground">{orgName}</span> —{" "}
           <span className="font-medium text-foreground">{pctDisplay}%</span> (
-          {formatCentsAsDollars(orgAmount)}) goes to the fundraiser from your
+          {formatCentsAsDollars(orgAmount)}) goes to the organization from your
           coffee subtotal.
         </p>
       </div>

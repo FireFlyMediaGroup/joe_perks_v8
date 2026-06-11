@@ -54,7 +54,7 @@ export function OrderHistoryList({ locale, orders }: OrderHistoryListProps) {
                   <p className="text-muted-foreground text-sm leading-6">
                     Placed {formatBuyerDashboardDate(order.placedAt)} for{" "}
                     <span className="font-medium text-foreground">
-                      {order.fundraiserName}
+                      {order.orgName}
                     </span>
                     .
                   </p>
@@ -69,8 +69,7 @@ export function OrderHistoryList({ locale, orders }: OrderHistoryListProps) {
                     {formatCentsAsDollars(order.totalCents)}
                   </p>
                   <p className="text-muted-foreground text-sm">
-                    {formatCentsAsDollars(order.impactCents)} raised for the
-                    fundraiser
+                    {formatCentsAsDollars(order.impactCents)} earned for the org
                   </p>
                 </div>
               </div>

@@ -24,7 +24,7 @@ export const OrgApprovedEmail = ({
     </Text>
     <Text className="m-0 text-zinc-600">
       Hi {contactName}, great news — a roaster partner has approved{" "}
-      <strong>{orgName}</strong> to fundraise on Joe Perks.
+      <strong>{orgName}</strong> to run campaigns on Joe Perks.
     </Text>
     <Text className="m-0 mt-4 text-zinc-600">
       Sign in to the organization portal to connect payouts (Stripe Express) and

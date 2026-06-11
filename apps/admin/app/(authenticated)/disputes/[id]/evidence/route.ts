@@ -86,7 +86,7 @@ export async function GET(
       carrier: dispute.order.carrier,
       deliveredAt: dispute.order.deliveredAt?.toISOString() ?? null,
       fulfillBy: dispute.order.fulfillBy.toISOString(),
-      fundraiser: orgLabel,
+      organization: orgLabel,
       items: dispute.order.items.map((item) => ({
         lineTotal: item.lineTotal,
         productName: item.productName,

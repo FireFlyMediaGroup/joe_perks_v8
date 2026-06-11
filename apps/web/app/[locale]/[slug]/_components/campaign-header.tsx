@@ -64,7 +64,7 @@ export function CampaignHeader({
           <div className="mx-auto mt-10 max-w-lg">
             <div className="mb-2.5 flex items-baseline justify-between gap-4">
               <span className="font-jp-mono text-[10px] text-jp-muted uppercase tracking-[0.14em]">
-                Fundraiser progress
+                Campaign progress
               </span>
               <span className="font-body font-medium text-jp-text text-sm tabular-nums">
                 {formatDollars(totalRaisedCents)}

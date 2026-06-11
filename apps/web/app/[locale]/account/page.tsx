@@ -16,7 +16,7 @@ interface BuyerAccountPageProps {
 export async function generateMetadata(): Promise<Metadata> {
   return createMetadata({
     title: "Your account",
-    description: "Review your Joe Perks order history and fundraiser impact.",
+    description: "Review your Joe Perks order history and community impact.",
   });
 }
 

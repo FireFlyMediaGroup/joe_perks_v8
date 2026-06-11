@@ -47,7 +47,7 @@ export const OrgApplicationReceivedEmail = ({
     <Text className="m-0 mt-4 text-zinc-600">
       <strong>What happens next:</strong> our team reviews your application
       (typically within a few business days). After approval, you will choose
-      roaster partners and we will coordinate next steps for your fundraising
+      roaster partners and we will coordinate next steps for your branded
       storefront.
     </Text>
     <Text className="m-0 mt-4 text-sm text-zinc-600">

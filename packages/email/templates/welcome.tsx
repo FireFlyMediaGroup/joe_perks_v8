@@ -14,7 +14,7 @@ const roleLabels = {
 const roleDescriptions = {
   roaster:
     "You can now set up your products, configure shipping rates, and start receiving orders from organization campaigns.",
-  org: "You can now create fundraising campaigns, select coffee products, and share your storefront link to start raising funds.",
+  org: "You can now create coffee campaigns, select products, and share your storefront link to start earning for your organization.",
 } as const;
 
 const nextSteps = {

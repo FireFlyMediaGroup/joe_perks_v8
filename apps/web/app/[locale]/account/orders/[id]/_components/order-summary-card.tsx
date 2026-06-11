@@ -1,23 +1,23 @@
 import { formatCentsAsDollars } from "../../../../[slug]/_lib/format";
 
 interface OrderSummaryCardProps {
-  readonly fundraiserName: string;
   readonly grossAmount: number;
   readonly orgAmount: number;
+  readonly orgName: string;
   readonly orgPctSnapshot: number;
   readonly productSubtotal: number;
   readonly shippingAmount: number;
 }
 
 export function OrderSummaryCard({
-  fundraiserName,
   grossAmount,
   orgAmount,
+  orgName,
   orgPctSnapshot,
   productSubtotal,
   shippingAmount,
 }: OrderSummaryCardProps) {
-  const fundraiserPercent = orgPctSnapshot * 100;
+  const orgPercent = orgPctSnapshot * 100;
 
   return (
     <section className="rounded-3xl border bg-card p-5 shadow-sm sm:p-6">
@@ -26,8 +26,8 @@ export function OrderSummaryCard({
           Order totals
         </h2>
         <p className="text-muted-foreground text-sm leading-6">
-          This order raised {formatCentsAsDollars(orgAmount)} for{" "}
-          {fundraiserName} at {fundraiserPercent}% of the product subtotal.
+          This order earned {formatCentsAsDollars(orgAmount)} for {orgName} at{" "}
+          {orgPercent}% of the product subtotal.
         </p>
       </div>
 
@@ -45,7 +45,7 @@ export function OrderSummaryCard({
           </dd>
         </div>
         <div className="flex items-center justify-between gap-4 rounded-2xl bg-muted/60 px-4 py-3">
-          <dt className="text-muted-foreground">Fundraiser impact</dt>
+          <dt className="text-muted-foreground">Org earnings</dt>
           <dd className="font-medium text-foreground tabular-nums">
             {formatCentsAsDollars(orgAmount)}
           </dd>

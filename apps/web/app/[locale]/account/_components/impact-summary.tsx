@@ -22,9 +22,9 @@ const SUMMARY_ITEMS: Array<{
     label: "Total spent",
   },
   {
-    description: "Raised for fundraisers from the frozen order snapshots.",
+    description: "Earned for organizations from the frozen order snapshots.",
     key: "totalImpactCents",
-    label: "Raised for causes",
+    label: "Earned for orgs",
   },
 ];
 

@@ -178,7 +178,7 @@ export function CartDrawer({
                     <div className="flex items-baseline justify-between gap-2">
                       <span className="flex items-center gap-1.5 text-jp-terra-dark text-sm">
                         <Heart className="size-3.5" />
-                        Est. fundraiser for {orgName}
+                        Est. earnings for {orgName}
                       </span>
                       <span className="font-semibold text-jp-terra-dark tabular-nums">
                         {formatCentsAsDollars(splitPreview.orgAmount)}
@@ -190,7 +190,7 @@ export function CartDrawer({
                   </div>
                 ) : (
                   <p className="text-jp-light text-xs">
-                    Fundraiser estimate unavailable for this cart.
+                    Org earnings estimate unavailable for this cart.
                   </p>
                 )}
 

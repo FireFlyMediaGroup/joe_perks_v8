@@ -45,7 +45,7 @@ export function StepTerms({
             Privacy Policy
           </Link>
           . After approval, your organization will be connected with your chosen
-          roaster partner and a fundraising storefront will be created.
+          roaster partner and a branded storefront will be created.
         </p>
       </div>
 

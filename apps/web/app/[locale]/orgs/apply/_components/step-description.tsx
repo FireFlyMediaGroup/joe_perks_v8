@@ -19,7 +19,7 @@ export function StepDescription({
       <div>
         <h2 className="font-semibold text-lg">About your organization</h2>
         <p className="mt-1 text-muted-foreground text-sm">
-          Help us understand who you are and why fundraising with Joe Perks is a
+          Help us understand who you are and why partnering with Joe Perks is a
           good fit. This is shown to our team during review — buyers won&apos;t
           see it.
         </p>
@@ -32,7 +32,7 @@ export function StepDescription({
           id="org-description"
           maxLength={2000}
           onChange={(e) => onDescription(e.target.value)}
-          placeholder="Tell us about your organization — your mission, how many members you have, what the fundraiser will support, etc."
+          placeholder="Tell us about your organization — your mission, how many members you have, what your campaign earnings will support, etc."
           value={description}
         />
         <p className="text-muted-foreground text-xs">

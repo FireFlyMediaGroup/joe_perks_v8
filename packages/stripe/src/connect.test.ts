@@ -113,14 +113,14 @@ describe("Connect V2 helper payloads", () => {
       },
     });
 
-    await expect(retrieveRecipientAccountStatus("acct_123")).resolves.toMatchObject(
-      {
-        onboardingComplete: true,
-        readyToReceivePayments: true,
-        requirementsStatus: "eventually_due",
-        transferStatus: "active",
-      }
-    );
+    await expect(
+      retrieveRecipientAccountStatus("acct_123")
+    ).resolves.toMatchObject({
+      onboardingComplete: true,
+      readyToReceivePayments: true,
+      requirementsStatus: "eventually_due",
+      transferStatus: "active",
+    });
 
     expect(mocks.accountsRetrieve).toHaveBeenCalledWith("acct_123", {
       include: expectedAccountIncludes,

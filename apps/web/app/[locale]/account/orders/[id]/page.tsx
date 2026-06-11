@@ -43,9 +43,9 @@ export default async function BuyerOrderDetailPage({
       <div className="mx-auto flex max-w-5xl flex-col gap-6">
         <BackToOrdersLink locale={locale} />
         <OrderDetailHeader
-          fundraiserName={order.fundraiserName}
           locale={locale}
           orderNumber={order.orderNumber}
+          orgName={order.orgName}
           placedAt={order.placedAt}
           trackingState={trackingState}
         />
@@ -67,9 +67,9 @@ export default async function BuyerOrderDetailPage({
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,0.9fr)]">
           <OrderItemsCard items={order.items} />
           <OrderSummaryCard
-            fundraiserName={order.fundraiserName}
             grossAmount={order.grossAmount}
             orgAmount={order.orgAmount}
+            orgName={order.orgName}
             orgPctSnapshot={order.orgPctSnapshot}
             productSubtotal={order.productSubtotal}
             shippingAmount={order.shippingAmount}

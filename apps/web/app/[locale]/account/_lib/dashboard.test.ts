@@ -7,20 +7,20 @@ import {
 
 const ORDERS: BuyerDashboardOrder[] = [
   {
-    fundraiserName: "Lincoln PTA",
     id: "ord_1",
     impactCents: 525,
     orderNumber: "JP-00021",
+    orgName: "Lincoln PTA",
     placedAt: new Date("2026-04-05T12:00:00.000Z"),
     status: "SHIPPED",
     totalCents: 3895,
     unitsCount: 2,
   },
   {
-    fundraiserName: "City Soccer Club",
     id: "ord_2",
     impactCents: 900,
     orderNumber: "JP-00018",
+    orgName: "City Soccer Club",
     placedAt: new Date("2026-03-29T12:00:00.000Z"),
     status: "DELIVERED",
     totalCents: 5400,

@@ -26,7 +26,7 @@ const OrgTermsPage = () => (
       <h2>1. Overview</h2>
       <p>
         These Terms of Service ("Terms") govern your use of the Joe Perks
-        platform as a fundraising organization ("Organization"). By creating an
+        platform as a community organization ("Organization"). By creating an
         account, you agree to be bound by these Terms.
       </p>
 
@@ -34,21 +34,21 @@ const OrgTermsPage = () => (
       <p>
         Organizations must complete the onboarding process, including selecting
         a roaster partner and setting up a Stripe Express account for receiving
-        fundraiser earnings. Joe Perks reserves the right to approve or reject
-        any organization application.
+        campaign earnings. Joe Perks reserves the right to approve or reject any
+        organization application.
       </p>
 
       <h2>3. Campaigns</h2>
       <p>
-        Organizations create fundraising campaigns with a unique storefront
-        slug. Campaigns include a curated selection of products from an approved
+        Organizations create sales campaigns with a unique storefront slug.
+        Campaigns include a curated selection of products from an approved
         roaster partner. Campaign start and end dates are managed by the
         organization.
       </p>
 
       <h2>4. Revenue Split</h2>
       <p>
-        Organizations receive a fundraiser percentage (5–25% of product
+        Organizations receive a revenue-share percentage (5–25% of product
         subtotal) on every order placed through their campaign storefront. The
         exact percentage is agreed upon during onboarding and frozen at the time
         of each order.

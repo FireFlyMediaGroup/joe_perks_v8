@@ -37,7 +37,7 @@ function OrderDeliveredEmail({
         <span className="font-semibold text-zinc-900">${orgDollars}</span> (
         {pct}% of product total) goes directly to{" "}
         <span className="font-semibold text-zinc-900">{orgName}</span>. Every
-        cup helps your community fundraiser.
+        cup supports your community.
       </Text>
 
       <Hr className="my-4" />

@@ -8,7 +8,12 @@ import { promisify } from "node:util";
 const execFileAsync = promisify(execFile);
 const DEFAULT_MANIFEST = "ops/1password/vercel-production-envs.json";
 const DEFAULT_OUT_DIR = ".vercel/env";
-const VALUE_OPTIONS = new Set(["--manifest", "--out-dir", "--vault", "--project"]);
+const VALUE_OPTIONS = new Set([
+  "--manifest",
+  "--out-dir",
+  "--vault",
+  "--project",
+]);
 
 function printUsage() {
   console.log(`Usage:
@@ -131,7 +136,13 @@ function isPlaceholder(value, placeholders) {
   return placeholders.includes(value.trim());
 }
 
-async function collectProjectEnv({ manifest, placeholders, projectName, projectConfig, vault }) {
+async function collectProjectEnv({
+  manifest,
+  placeholders,
+  projectName,
+  projectConfig,
+  vault,
+}) {
   const entries = [];
   const skippedOptional = [];
   const problems = [];
@@ -139,7 +150,9 @@ async function collectProjectEnv({ manifest, placeholders, projectName, projectC
   for (const [key, source] of Object.entries(projectConfig.vars)) {
     const item = manifest.items[source.item];
     if (!item) {
-      problems.push(`${projectName}.${key}: unknown item alias "${source.item}"`);
+      problems.push(
+        `${projectName}.${key}: unknown item alias "${source.item}"`
+      );
       continue;
     }
 
@@ -194,7 +207,9 @@ async function main() {
   const manifest = loadManifest(manifestPath);
   const vault = args.vault ?? manifest.vault;
   const placeholders = manifest.placeholderValues ?? ["", "__SET_ME__"];
-  const projectNames = args.projects.length ? args.projects : Object.keys(manifest.projects);
+  const projectNames = args.projects.length
+    ? args.projects
+    : Object.keys(manifest.projects);
   const allProblems = [];
 
   for (const projectName of projectNames) {
@@ -227,7 +242,9 @@ async function main() {
       });
     }
 
-    const skipped = skippedOptional.length ? ` (skipped optional: ${skippedOptional.join(", ")})` : "";
+    const skipped = skippedOptional.length
+      ? ` (skipped optional: ${skippedOptional.join(", ")})`
+      : "";
     console.log(
       `${projectName}: ${args.checkOnly ? "validated" : "rendered"} ${entries.length} vars${skipped}`
     );

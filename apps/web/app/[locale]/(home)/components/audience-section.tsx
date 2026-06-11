@@ -4,7 +4,7 @@ import Link from "next/link";
 const orgBullets = [
   "Launch a branded storefront in minutes",
   "Earn 5–25% of every order automatically",
-  "Real-time fundraiser dashboard and totals",
+  "Real-time campaign dashboard and earnings",
   "No inventory, no shipping, no upfront cost",
   "Coffee people actually want to buy — not candles",
 ];
@@ -54,7 +54,7 @@ export const AudienceSection = () => (
             className="group inline-flex w-fit items-center gap-2 rounded-[var(--jp-radius-md)] bg-white px-6 py-3 font-body font-semibold text-jp-terra text-sm shadow-[var(--jp-shadow-sm)] transition-all hover:-translate-y-px hover:shadow-[var(--jp-shadow-md)]"
             href="/orgs/apply"
           >
-            Start your fundraiser
+            Start your campaign
             <MoveRight
               className="transition-transform group-hover:translate-x-0.5"
               size={14}

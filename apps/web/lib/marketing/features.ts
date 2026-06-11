@@ -27,7 +27,7 @@ export const features: Feature[] = [
     iconVariant: "terra",
     title: "Live impact tracking",
     description:
-      "Orgs see real-time fundraiser totals, order counts, and progress toward goals. Buyers see their contribution on the order confirmation page.",
+      "Orgs see real-time campaign earnings, order counts, and progress toward goals. Buyers see their impact on the order confirmation page.",
   },
   {
     iconVariant: "teal",

@@ -85,7 +85,7 @@ export const BenefitsSection = () => (
         <div className="flex flex-col gap-8">
           <div>
             <span className="mb-3 inline-block font-jp-mono font-medium text-[10px] text-[var(--jp-muted)] uppercase tracking-[0.14em]">
-              Why coffee fundraising?
+              Why coffee?
             </span>
             <h2 className="max-w-md font-black font-display text-[clamp(32px,4vw,42px)] text-[var(--jp-text)] leading-[1.1] tracking-[-0.025em]">
               Better than a bake sale.
