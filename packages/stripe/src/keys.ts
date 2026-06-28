@@ -16,9 +16,14 @@ export const keys = () =>
         emptyToUndefined,
         z.string().startsWith("whsec_").optional()
       ),
+      STRIPE_WEBHOOK_SECRET_THIN: z.preprocess(
+        emptyToUndefined,
+        z.string().startsWith("whsec_").optional()
+      ),
     },
     runtimeEnv: {
       STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
       STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,
+      STRIPE_WEBHOOK_SECRET_THIN: process.env.STRIPE_WEBHOOK_SECRET_THIN,
     },
   });

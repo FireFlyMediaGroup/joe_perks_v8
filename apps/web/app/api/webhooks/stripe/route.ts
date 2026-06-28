@@ -40,6 +40,64 @@ const V2_CONNECT_ACCOUNT_EVENT_TYPES = new Set([
   "v2.core.account[configuration.recipient].capability_status_updated",
 ]);
 
+function getStripeWebhookSecrets(): string[] {
+  const secrets = [
+    process.env.STRIPE_WEBHOOK_SECRET?.trim(),
+    process.env.STRIPE_WEBHOOK_SECRET_THIN?.trim(),
+  ].filter((secret): secret is string => Boolean(secret));
+  return [...new Set(secrets)];
+}
+
+interface VerifiedStripeWebhook {
+  eventId: string;
+  eventType: string;
+  legacyEvent: Stripe.Event | null;
+}
+
+function verifyStripeWebhookPayload(
+  stripe: StripeClient,
+  rawBody: string,
+  signature: string,
+  secrets: string[],
+  maybeV2Event: boolean
+): VerifiedStripeWebhook | null {
+  for (const secret of secrets) {
+    if (maybeV2Event) {
+      try {
+        const eventNotification = stripe.parseEventNotification(
+          rawBody,
+          signature,
+          secret
+        );
+        return {
+          eventId: eventNotification.id,
+          eventType: eventNotification.type,
+          legacyEvent: null,
+        };
+      } catch {
+        // Try the next signing secret for this thin payload.
+      }
+    }
+
+    try {
+      const legacyEvent = stripe.webhooks.constructEvent(
+        rawBody,
+        signature,
+        secret
+      );
+      return {
+        eventId: legacyEvent.id,
+        eventType: legacyEvent.type,
+        legacyEvent,
+      };
+    } catch {
+      // Try the next signing secret for this snapshot payload.
+    }
+  }
+
+  return null;
+}
+
 function getDisputeChargeId(dispute: Stripe.Dispute): string | null {
   if (typeof dispute.charge === "string") {
     return dispute.charge;
@@ -868,8 +926,8 @@ async function handleChargeRefunded(charge: Stripe.Charge): Promise<void> {
 }
 
 export async function POST(request: Request) {
-  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET?.trim();
-  if (!webhookSecret) {
+  const webhookSecrets = getStripeWebhookSecrets();
+  if (webhookSecrets.length === 0) {
     return NextResponse.json(
       { error: "STRIPE_WEBHOOK_SECRET is not configured" },
       { status: 503 }
@@ -885,35 +943,23 @@ export async function POST(request: Request) {
   }
 
   const rawBody = await request.text();
-  let legacyEvent: Stripe.Event | null = null;
-  let eventId: string;
-  let eventType: string;
   const stripe = getStripe();
   const maybeV2Event =
     rawBody.includes('"v2.core.') ||
     rawBody.includes('"object":"v2.core.event"');
 
-  try {
-    if (maybeV2Event) {
-      const eventNotification = stripe.parseEventNotification(
-        rawBody,
-        signature,
-        webhookSecret
-      );
-      eventId = eventNotification.id;
-      eventType = eventNotification.type;
-    } else {
-      legacyEvent = stripe.webhooks.constructEvent(
-        rawBody,
-        signature,
-        webhookSecret
-      );
-      eventId = legacyEvent.id;
-      eventType = legacyEvent.type;
-    }
-  } catch {
+  const verified = verifyStripeWebhookPayload(
+    stripe,
+    rawBody,
+    signature,
+    webhookSecrets,
+    maybeV2Event
+  );
+  if (!verified) {
     return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
   }
+
+  const { eventId, eventType, legacyEvent } = verified;
 
   const existing = await database.stripeEvent.findUnique({
     where: { stripeEventId: eventId },
