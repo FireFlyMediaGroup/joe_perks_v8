@@ -27,6 +27,7 @@
 > **Open work is now incremental, not structural:** remaining MP-02..EC-24 e2e scenarios (on the new harness) and the launch-day manual/business checklist items (legal copy, DPAs, DNS, pilots).
 
 **Related**
+- [`../v1-go-live-guide.md`](../v1-go-live-guide.md) — **day-to-day step-by-step checklist** with dated progress tracker (action layer for this runbook; update as steps complete)
 - [`../pre-mortems/2026-04-19-v1-launch.md`](../pre-mortems/2026-04-19-v1-launch.md) — risk analysis that produced this runbook
 - [`../../SCAFFOLD_CHECKLIST.md`](../../SCAFFOLD_CHECKLIST.md) — execution tracker (Phase 10 is the gate for this runbook)
 - [`../testing/money-path-e2e-scenarios.md`](../testing/money-path-e2e-scenarios.md) — E2E test coverage

@@ -466,6 +466,7 @@ Added in April 2026 after the v1 pre-mortem. These are the live docs for shippin
 | ------------------------------ | ----------------------------------------------- | ----------------------------------------------------------------------------------------- |
 | v1 Pre-Mortem (dated snapshot) | `docs/pre-mortems/2026-04-19-v1-launch.md`      | Understand why each launch-blocking Tiger exists. Immutable snapshot — do not edit.       |
 | v1 Launch Runbook              | `docs/runbooks/v1-launch-runbook.md`            | Opened during launch week. Phased pre-/dress-rehearsal/launch/watch steps + rollback.     |
+| v1 Go-Live Guide               | `docs/v1-go-live-guide.md`                      | Day-to-day checklist with **dated progress tracker** — update as each step completes.     |
 | DB Schema Reconciliation Note  | `docs/runbooks/2026-04-database-schema-reconciliation.md` | Reference when dev/prod DB shape or seed data appears inconsistent during testing. |
 | Money-Path E2E Test Scenarios  | `docs/testing/money-path-e2e-scenarios.md`      | When implementing LB-7 E2E tests. Happy paths, edge cases (EC-01…EC-24), invariants.      |
 | Pilot Outreach Scripts         | `docs/gtm/pilot-outreach.md`                    | When sourcing the first 3 roasters + 3 orgs (Elephant E-1). Discovery + pilot agreements. |
