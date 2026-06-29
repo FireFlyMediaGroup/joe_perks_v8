@@ -10,7 +10,6 @@ import {
   PAY_BUTTON_PATTERN,
   PAYMENT_INTENT_IN_URL,
   requireBaseUrl,
-  THANK_YOU,
 } from "./_helpers/prod-checkout-flow";
 import { waitForFulfillmentLink } from "./_helpers/resolve-fulfillment-link";
 import {
@@ -107,10 +106,12 @@ test("live money path: checkout, fulfillment magic link, ship, optional refund",
   const paymentIntentId = paymentIntentIdFromUrl(page.url());
   expect(paymentIntentId).toMatch(PAYMENT_INTENT_ID);
 
-  await expect(page.getByText(THANK_YOU)).toBeVisible({ timeout: SETTLE_TIMEOUT_MS });
-
   const confirmed = await pollOrderStatus(paymentIntentId, "CONFIRMED");
   expect(confirmed.orderNumber).toBeTruthy();
+
+  await expect(
+    page.getByText(new RegExp(`thank you!|${confirmed.orderNumber}`, "i"))
+  ).toBeVisible({ timeout: 15_000 });
 
   const fulfillmentLink = await waitForFulfillmentLink(confirmed.id);
   expect(fulfillmentLink.emailLog).toBeTruthy();

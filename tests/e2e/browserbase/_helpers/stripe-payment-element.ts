@@ -7,7 +7,8 @@ export interface SmokeCardDetails {
   zip?: string;
 }
 
-const STRIPE_PAYMENT_FRAME = 'iframe[title="Secure payment input frame"]';
+const STRIPE_PAYMENT_FRAME =
+  'iframe[title="Secure payment input frame"]';
 const CARD_NUMBER = /1234|Card number/i;
 const CARD_EXP = /MM \/ YY|Expiration/i;
 const CARD_CVC = /CVC|Security code/i;
@@ -42,12 +43,31 @@ export function resolveSmokeCardDetails(): SmokeCardDetails {
   );
 }
 
+/** Stripe Payment Element may show Card / Bank / … tabs before card fields mount. */
+async function selectStripeCardTab(page: Page): Promise<void> {
+  const deadline = Date.now() + 30_000;
+  while (Date.now() < deadline) {
+    for (const frame of page.frames()) {
+      const cardTab = frame.getByRole("button", { name: /^Card$/i });
+      if ((await cardTab.count()) > 0) {
+        await cardTab.first().click();
+        return;
+      }
+    }
+    await page.waitForTimeout(500);
+  }
+}
+
 export async function fillStripePaymentElement(
   page: Page,
   card: SmokeCardDetails
 ): Promise<void> {
-  const frame = page.frameLocator(STRIPE_PAYMENT_FRAME);
-  await expect(frame.locator("input").first()).toBeVisible({ timeout: 30_000 });
+  await selectStripeCardTab(page);
+
+  const frame = page.frameLocator(STRIPE_PAYMENT_FRAME).first();
+  await expect(frame.getByRole("textbox", { name: CARD_NUMBER })).toBeVisible({
+    timeout: 30_000,
+  });
 
   await frame.getByRole("textbox", { name: CARD_NUMBER }).fill(card.number);
   await frame.getByRole("textbox", { name: CARD_EXP }).fill(card.exp);
