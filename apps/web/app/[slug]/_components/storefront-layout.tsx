@@ -27,10 +27,10 @@ export function StorefrontLayout({ children }: StorefrontLayoutProps) {
               organizations with craft roasters.
             </p>
             <div className="flex gap-4 font-body text-jp-light text-xs">
-              <Link className="hover:text-jp-text" href="/legal/terms">
+              <Link className="hover:text-jp-text" href="/terms/orgs">
                 Terms
               </Link>
-              <Link className="hover:text-jp-text" href="/legal/privacy">
+              <Link className="hover:text-jp-text" href="/privacy-policy">
                 Privacy
               </Link>
             </div>
