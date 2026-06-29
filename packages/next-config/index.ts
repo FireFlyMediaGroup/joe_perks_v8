@@ -9,6 +9,16 @@ export const config: NextConfig = {
         protocol: "https",
         hostname: "img.clerk.com",
       },
+      /** UploadThing CDN — roaster product images + storefront display */
+      {
+        protocol: "https",
+        hostname: "utfs.io",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "**.ufs.sh",
+      },
     ],
   },
 

@@ -59,8 +59,7 @@ export function mapRecipientAccountStatusToOnboardingStatus(
 
   if (
     status.transferStatus === "restricted" &&
-    status.onboardingComplete &&
-    status.requirementsStatus !== "past_due"
+    status.onboardingComplete
   ) {
     return "PENDING";
   }

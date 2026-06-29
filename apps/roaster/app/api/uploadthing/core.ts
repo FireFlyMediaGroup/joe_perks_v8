@@ -29,7 +29,8 @@ const roasterFileRouterDefinition = {
       return { roasterId: user.roasterId };
     })
     .onUploadComplete(({ file }) => {
-      return { url: file.ufsUrl };
+      const url = file.ufsUrl ?? file.url;
+      return { url };
     }),
 } satisfies FileRouter;
 

@@ -2,9 +2,11 @@
 
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
+import Image from "next/image";
 import { useId, useState } from "react";
 
 import { RoasterUploadButton } from "@/lib/uploadthing";
+import { extractUploadedImageUrl } from "@/lib/uploadthing-url";
 
 interface ProductImageFieldProps {
   readonly imageUrl: string;
@@ -23,6 +25,18 @@ export function ProductImageField({
   return (
     <div className="space-y-2">
       <Label htmlFor={urlInputId}>Product image</Label>
+      {imageUrl ? (
+        <div className="relative h-24 w-24 overflow-hidden rounded-lg border bg-muted">
+          <Image
+            alt="Product image preview"
+            className="object-cover"
+            fill
+            sizes="96px"
+            src={imageUrl}
+            unoptimized
+          />
+        </div>
+      ) : null}
       {uploadThingEnabled ? (
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
           <div className="shrink-0">
@@ -30,17 +44,14 @@ export function ProductImageField({
               endpoint="productImage"
               onClientUploadComplete={(res) => {
                 setUploadError(null);
-                const first = res[0];
-                const url =
-                  first &&
-                  typeof first === "object" &&
-                  "url" in first &&
-                  typeof first.url === "string"
-                    ? first.url
-                    : undefined;
+                const url = extractUploadedImageUrl(res[0]);
                 if (url) {
                   onImageUrlChange(url);
+                  return;
                 }
+                setUploadError(
+                  "Upload finished but no image URL was returned. Try again or paste a URL."
+                );
               }}
               onUploadError={(err) => {
                 setUploadError(err.message);
