@@ -14,10 +14,10 @@ const RootLayout = ({ children }: RootLayoutProperties) => (
       <DesignSystemProvider
         helpUrl={env.NEXT_PUBLIC_DOCS_URL}
         privacyUrl={new URL(
-          "/legal/privacy",
+          "/privacy-policy",
           env.NEXT_PUBLIC_WEB_URL
         ).toString()}
-        termsUrl={new URL("/legal/terms", env.NEXT_PUBLIC_WEB_URL).toString()}
+        termsUrl={new URL("/terms/orgs", env.NEXT_PUBLIC_WEB_URL).toString()}
       >
         {children}
       </DesignSystemProvider>
