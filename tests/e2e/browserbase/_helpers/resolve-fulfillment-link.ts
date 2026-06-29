@@ -16,6 +16,41 @@ export interface FulfillmentLinkResult {
   usedAt: string | null;
 }
 
+function parseFulfillmentOutput(
+  output: string
+): FulfillmentLinkResult | null {
+  // Defensive: the script writes JSON on its own line, but env loaders or
+  // tooling may emit preamble lines to stdout. Parse the last JSON object.
+  const jsonLine = output
+    .split("\n")
+    .map((line) => line.trim())
+    .reverse()
+    .find((line) => line.startsWith("{") && line.endsWith("}"));
+
+  return jsonLine ? (JSON.parse(jsonLine) as FulfillmentLinkResult) : null;
+}
+
+// Exit code 2 from the script means "magic link not created yet" — retry.
+// Any other failure should surface immediately.
+function rethrowUnlessPending(error: unknown): void {
+  const record =
+    typeof error === "object" && error !== null
+      ? (error as { status?: unknown; stderr?: unknown })
+      : null;
+
+  const exitCode =
+    record && typeof record.status === "number" ? record.status : null;
+  if (exitCode === 2) {
+    return;
+  }
+
+  const message =
+    record && typeof record.stderr === "string"
+      ? record.stderr
+      : String(error);
+  throw new Error(`Failed to resolve fulfillment link: ${message}`);
+}
+
 function requireDatabaseUrl(): string {
   const url = process.env.DATABASE_URL;
   if (!url) {
@@ -48,26 +83,13 @@ export async function waitForFulfillmentLink(
       }).trim();
 
       if (output) {
-        return JSON.parse(output) as FulfillmentLinkResult;
+        const parsed = parseFulfillmentOutput(output);
+        if (parsed) {
+          return parsed;
+        }
       }
     } catch (error) {
-      const exitCode =
-        typeof error === "object" &&
-        error !== null &&
-        "status" in error &&
-        typeof error.status === "number"
-          ? error.status
-          : null;
-      if (exitCode !== 2) {
-        const message =
-          typeof error === "object" &&
-          error !== null &&
-          "stderr" in error &&
-          typeof error.stderr === "string"
-            ? error.stderr
-            : String(error);
-        throw new Error(`Failed to resolve fulfillment link: ${message}`);
-      }
+      rethrowUnlessPending(error);
     }
 
     await new Promise((resolveDelay) => setTimeout(resolveDelay, 2000));

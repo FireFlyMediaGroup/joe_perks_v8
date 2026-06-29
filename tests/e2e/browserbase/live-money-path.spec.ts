@@ -110,7 +110,9 @@ test("live money path: checkout, fulfillment magic link, ship, optional refund",
   expect(confirmed.orderNumber).toBeTruthy();
 
   await expect(
-    page.getByText(new RegExp(`thank you!|${confirmed.orderNumber}`, "i"))
+    page
+      .getByText(new RegExp(`thank you!|${confirmed.orderNumber}`, "i"))
+      .first()
   ).toBeVisible({ timeout: 15_000 });
 
   const fulfillmentLink = await waitForFulfillmentLink(confirmed.id);
