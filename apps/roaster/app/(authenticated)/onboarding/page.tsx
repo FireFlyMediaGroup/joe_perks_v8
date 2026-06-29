@@ -2,6 +2,7 @@ import { database } from "@joe-perks/db";
 import {
   isPlaceholderConnectAccountId,
   mapRecipientAccountStatusToOnboardingStatus,
+  resolveConnectAttentionForPortal,
   retrieveRecipientAccountStatus,
 } from "@joe-perks/stripe";
 import { auth } from "@repo/auth/server";
@@ -70,6 +71,7 @@ export default async function RoasterOnboardingPage({
   let stripeOnboarding = roaster.stripeOnboarding;
   let onboardingComplete = stripeOnboarding === "COMPLETE";
   let readyToReceivePayments = roaster.payoutsEnabled;
+  let attention = resolveConnectAttentionForPortal(null);
 
   if (isPlaceholderConnectAccountId(roaster.stripeAccountId)) {
     // E2E seed placeholder — not a live Stripe account; show start onboarding UI.
@@ -85,6 +87,9 @@ export default async function RoasterOnboardingPage({
         mapRecipientAccountStatusToOnboardingStatus(stripeStatus);
       onboardingComplete = stripeStatus.onboardingComplete;
       readyToReceivePayments = stripeStatus.readyToReceivePayments;
+      attention = resolveConnectAttentionForPortal(stripeStatus, {
+        supportEntity: "business",
+      });
 
       if (
         stripeOnboarding !== roaster.stripeOnboarding ||
@@ -119,6 +124,7 @@ export default async function RoasterOnboardingPage({
       </p>
 
       <ConnectStatus
+        attention={attention}
         fullyOnboarded={fullyOnboarded}
         onboardingComplete={onboardingComplete}
         readyToReceivePayments={readyToReceivePayments}

@@ -22,6 +22,7 @@
   },
   "exports": {
     ".": "./src/index.ts",
+    "./connect-attention": "./src/connect-attention.ts",
     "./keys": "./src/keys.ts",
     "./splits": "./src/splits.ts"
   }

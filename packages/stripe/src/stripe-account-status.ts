@@ -41,11 +41,11 @@ export function mapStripeAccountToOnboardingStatus(
 export function mapRecipientAccountStatusToOnboardingStatus(
   status: RecipientAccountStatus
 ): MappedStripeOnboardingStatus {
-  if (
-    status.transferStatus === "restricted" ||
-    status.transferStatus === "unsupported" ||
-    status.requirementsStatus === "past_due"
-  ) {
+  if (status.requirementsStatus === "past_due") {
+    return "RESTRICTED";
+  }
+
+  if (status.transferStatus === "unsupported") {
     return "RESTRICTED";
   }
 
@@ -55,6 +55,18 @@ export function mapRecipientAccountStatusToOnboardingStatus(
 
   if (status.requirementsStatus === "currently_due") {
     return "NOT_STARTED";
+  }
+
+  if (
+    status.transferStatus === "restricted" &&
+    status.onboardingComplete &&
+    status.requirementsStatus !== "past_due"
+  ) {
+    return "PENDING";
+  }
+
+  if (status.transferStatus === "restricted") {
+    return "RESTRICTED";
   }
 
   return "PENDING";

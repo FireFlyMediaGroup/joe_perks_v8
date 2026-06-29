@@ -2,6 +2,7 @@ import { database } from "@joe-perks/db";
 import {
   isPlaceholderConnectAccountId,
   mapRecipientAccountStatusToOnboardingStatus,
+  resolveConnectAttentionForPortal,
   retrieveRecipientAccountStatus,
 } from "@joe-perks/stripe";
 import { auth } from "@repo/auth/server";
@@ -70,6 +71,7 @@ export default async function OrgOnboardingPage({
   let stripeOnboarding = org.stripeOnboarding;
   let onboardingComplete = stripeOnboarding === "COMPLETE";
   let readyToReceivePayments = org.payoutsEnabled;
+  let attention = resolveConnectAttentionForPortal(null);
 
   if (isPlaceholderConnectAccountId(org.stripeAccountId)) {
     stripeOnboarding = "NOT_STARTED";
@@ -84,6 +86,9 @@ export default async function OrgOnboardingPage({
         mapRecipientAccountStatusToOnboardingStatus(stripeStatus);
       onboardingComplete = stripeStatus.onboardingComplete;
       readyToReceivePayments = stripeStatus.readyToReceivePayments;
+      attention = resolveConnectAttentionForPortal(stripeStatus, {
+        supportEntity: "organization",
+      });
 
       if (
         stripeOnboarding !== org.stripeOnboarding ||
@@ -116,6 +121,7 @@ export default async function OrgOnboardingPage({
       </p>
 
       <ConnectStatus
+        attention={attention}
         fullyOnboarded={fullyOnboarded}
         onboardingComplete={onboardingComplete}
         readyToReceivePayments={readyToReceivePayments}

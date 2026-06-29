@@ -6,6 +6,14 @@ export {
   isStripeConfigured,
 } from "./client";
 export {
+  type ConnectAttentionContext,
+  type ConnectAttentionTier,
+  type ConnectAttentionVariant,
+  extractPendingRequirementDescriptions,
+  resolveConnectAttentionContext,
+  resolveConnectAttentionForPortal,
+} from "./connect-attention";
+export {
   type CreateRecipientAccountLinkParams,
   type CreateRecipientAccountParams,
   createRecipientAccountLink,

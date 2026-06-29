@@ -10,6 +10,7 @@ const CONNECT_ACCOUNT_INCLUDES = [
   "configuration.merchant",
   "configuration.recipient",
   "defaults",
+  "future_requirements",
   "identity",
   "requirements",
 ] as const;

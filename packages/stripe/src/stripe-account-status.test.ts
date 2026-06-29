@@ -73,7 +73,7 @@ describe("mapRecipientAccountStatusToOnboardingStatus", () => {
   it("returns RESTRICTED for restricted recipient transfer capability", () => {
     const status = {
       account: {} as never,
-      onboardingComplete: true,
+      onboardingComplete: false,
       readyToReceivePayments: false,
       requirementsStatus: null,
       transferStatus: "restricted",
@@ -82,5 +82,17 @@ describe("mapRecipientAccountStatusToOnboardingStatus", () => {
     expect(mapRecipientAccountStatusToOnboardingStatus(status)).toBe(
       "RESTRICTED"
     );
+  });
+
+  it("returns PENDING for soft-restricted accounts with completed onboarding", () => {
+    const status = {
+      account: {} as never,
+      onboardingComplete: true,
+      readyToReceivePayments: false,
+      requirementsStatus: "eventually_due",
+      transferStatus: "restricted",
+    } as const;
+
+    expect(mapRecipientAccountStatusToOnboardingStatus(status)).toBe("PENDING");
   });
 });

@@ -34,6 +34,7 @@ const expectedAccountIncludes = [
   "configuration.merchant",
   "configuration.recipient",
   "defaults",
+  "future_requirements",
   "identity",
   "requirements",
 ];
