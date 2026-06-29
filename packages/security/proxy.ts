@@ -11,6 +11,11 @@ export const noseconeOptions: Options = {
   // https://www.next-forge.com/packages/security/headers for guidance on how
   // to configure it.
   contentSecurityPolicy: false,
+  // Default COEP (`require-corp`) blocks cross-origin assets without CORP
+  // headers — breaks UploadThing product images (utfs.io / *.ufs.sh), Clerk
+  // avatars, and other third-party embeds. Joe Perks does not rely on
+  // cross-origin isolation (SharedArrayBuffer).
+  crossOriginEmbedderPolicy: false,
 };
 
 export const noseconeOptionsWithToolbar: Options =
