@@ -9,6 +9,10 @@ import { createMetadata } from "@repo/seo/metadata";
 import type { Metadata } from "next";
 import Link from "next/link";
 
+// Rendered on demand: the CMS Feed requires BASEHUB_TOKEN, which is optional.
+// Prerendering at build would throw when the token is absent.
+export const dynamic = "force-dynamic";
+
 export const generateMetadata = async (): Promise<Metadata> => {
   const dictionary = await getDictionary("en");
 

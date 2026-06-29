@@ -9,6 +9,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Sidebar } from "@/components/sidebar";
 
+// Rendered on demand: the CMS Feed requires BASEHUB_TOKEN, which is optional.
+// Prerendering at build would throw when the token is absent.
+export const dynamic = "force-dynamic";
+
 interface LegalPageProperties {
   readonly params: Promise<{
     slug: string;

@@ -18,6 +18,10 @@ const protocol = env.VERCEL_PROJECT_PRODUCTION_URL?.startsWith("https")
   : "http";
 const url = new URL(`${protocol}://${env.VERCEL_PROJECT_PRODUCTION_URL}`);
 
+// Rendered on demand: the CMS Feed requires BASEHUB_TOKEN, which is optional.
+// Prerendering at build would throw when the token is absent.
+export const dynamic = "force-dynamic";
+
 interface BlogPostProperties {
   readonly params: Promise<{
     slug: string;
