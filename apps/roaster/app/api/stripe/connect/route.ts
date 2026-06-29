@@ -4,6 +4,7 @@ import {
   createRecipientConnectedAccount,
   mapRecipientAccountStatusToOnboardingStatus,
   normalizeRecipientAccountStatus,
+  resolveLiveConnectAccountId,
   retrieveRecipientAccountStatus,
 } from "@joe-perks/stripe";
 import { auth } from "@repo/auth/server";
@@ -54,7 +55,7 @@ export async function POST() {
   const refreshUrl = `${base}/onboarding?stripe_refresh=1`;
   const returnUrl = `${base}/onboarding?stripe_return=1`;
 
-  let stripeAccountId = roaster.stripeAccountId;
+  let stripeAccountId = resolveLiveConnectAccountId(roaster.stripeAccountId);
   let onboardingStatus = roaster.stripeOnboarding;
   let readyToReceivePayments = roaster.payoutsEnabled;
 

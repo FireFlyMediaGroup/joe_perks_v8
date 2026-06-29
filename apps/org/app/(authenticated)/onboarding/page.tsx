@@ -1,5 +1,6 @@
 import { database } from "@joe-perks/db";
 import {
+  isPlaceholderConnectAccountId,
   mapRecipientAccountStatusToOnboardingStatus,
   retrieveRecipientAccountStatus,
 } from "@joe-perks/stripe";
@@ -70,28 +71,36 @@ export default async function OrgOnboardingPage({
   let onboardingComplete = stripeOnboarding === "COMPLETE";
   let readyToReceivePayments = org.payoutsEnabled;
 
-  if (org.stripeAccountId) {
-    const stripeStatus = await retrieveRecipientAccountStatus(
-      org.stripeAccountId
-    );
-    stripeOnboarding =
-      mapRecipientAccountStatusToOnboardingStatus(stripeStatus);
-    onboardingComplete = stripeStatus.onboardingComplete;
-    readyToReceivePayments = stripeStatus.readyToReceivePayments;
+  if (isPlaceholderConnectAccountId(org.stripeAccountId)) {
+    stripeOnboarding = "NOT_STARTED";
+    onboardingComplete = false;
+    readyToReceivePayments = false;
+  } else if (org.stripeAccountId) {
+    try {
+      const stripeStatus = await retrieveRecipientAccountStatus(
+        org.stripeAccountId
+      );
+      stripeOnboarding =
+        mapRecipientAccountStatusToOnboardingStatus(stripeStatus);
+      onboardingComplete = stripeStatus.onboardingComplete;
+      readyToReceivePayments = stripeStatus.readyToReceivePayments;
 
-    if (
-      stripeOnboarding !== org.stripeOnboarding ||
-      readyToReceivePayments !== org.payoutsEnabled ||
-      readyToReceivePayments !== org.chargesEnabled
-    ) {
-      await database.org.update({
-        where: { id: org.id },
-        data: {
-          chargesEnabled: readyToReceivePayments,
-          payoutsEnabled: readyToReceivePayments,
-          stripeOnboarding,
-        },
-      });
+      if (
+        stripeOnboarding !== org.stripeOnboarding ||
+        readyToReceivePayments !== org.payoutsEnabled ||
+        readyToReceivePayments !== org.chargesEnabled
+      ) {
+        await database.org.update({
+          where: { id: org.id },
+          data: {
+            chargesEnabled: readyToReceivePayments,
+            payoutsEnabled: readyToReceivePayments,
+            stripeOnboarding,
+          },
+        });
+      }
+    } catch (error) {
+      console.error("[org/onboarding] Stripe Connect status sync failed:", error);
     }
   }
 

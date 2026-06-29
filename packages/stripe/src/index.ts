@@ -15,6 +15,8 @@ export {
   type RecipientAccountStatus,
   type RecipientRequirementsStatus,
   type RecipientTransferStatus,
+  isPlaceholderConnectAccountId,
+  resolveLiveConnectAccountId,
   retrieveRecipientAccountStatus,
 } from "./connect";
 export {

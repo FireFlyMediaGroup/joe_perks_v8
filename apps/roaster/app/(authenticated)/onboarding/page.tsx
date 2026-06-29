@@ -1,5 +1,6 @@
 import { database } from "@joe-perks/db";
 import {
+  isPlaceholderConnectAccountId,
   mapRecipientAccountStatusToOnboardingStatus,
   retrieveRecipientAccountStatus,
 } from "@joe-perks/stripe";
@@ -70,28 +71,40 @@ export default async function RoasterOnboardingPage({
   let onboardingComplete = stripeOnboarding === "COMPLETE";
   let readyToReceivePayments = roaster.payoutsEnabled;
 
-  if (roaster.stripeAccountId) {
-    const stripeStatus = await retrieveRecipientAccountStatus(
-      roaster.stripeAccountId
-    );
-    stripeOnboarding =
-      mapRecipientAccountStatusToOnboardingStatus(stripeStatus);
-    onboardingComplete = stripeStatus.onboardingComplete;
-    readyToReceivePayments = stripeStatus.readyToReceivePayments;
+  if (isPlaceholderConnectAccountId(roaster.stripeAccountId)) {
+    // E2E seed placeholder — not a live Stripe account; show start onboarding UI.
+    stripeOnboarding = "NOT_STARTED";
+    onboardingComplete = false;
+    readyToReceivePayments = false;
+  } else if (roaster.stripeAccountId) {
+    try {
+      const stripeStatus = await retrieveRecipientAccountStatus(
+        roaster.stripeAccountId
+      );
+      stripeOnboarding =
+        mapRecipientAccountStatusToOnboardingStatus(stripeStatus);
+      onboardingComplete = stripeStatus.onboardingComplete;
+      readyToReceivePayments = stripeStatus.readyToReceivePayments;
 
-    if (
-      stripeOnboarding !== roaster.stripeOnboarding ||
-      readyToReceivePayments !== roaster.payoutsEnabled ||
-      readyToReceivePayments !== roaster.chargesEnabled
-    ) {
-      await database.roaster.update({
-        where: { id: roaster.id },
-        data: {
-          chargesEnabled: readyToReceivePayments,
-          payoutsEnabled: readyToReceivePayments,
-          stripeOnboarding,
-        },
-      });
+      if (
+        stripeOnboarding !== roaster.stripeOnboarding ||
+        readyToReceivePayments !== roaster.payoutsEnabled ||
+        readyToReceivePayments !== roaster.chargesEnabled
+      ) {
+        await database.roaster.update({
+          where: { id: roaster.id },
+          data: {
+            chargesEnabled: readyToReceivePayments,
+            payoutsEnabled: readyToReceivePayments,
+            stripeOnboarding,
+          },
+        });
+      }
+    } catch (error) {
+      console.error(
+        "[roaster/onboarding] Stripe Connect status sync failed:",
+        error
+      );
     }
   }
 

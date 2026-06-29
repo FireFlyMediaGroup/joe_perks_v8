@@ -4,6 +4,7 @@ import {
   createRecipientConnectedAccount,
   mapRecipientAccountStatusToOnboardingStatus,
   normalizeRecipientAccountStatus,
+  resolveLiveConnectAccountId,
   retrieveRecipientAccountStatus,
 } from "@joe-perks/stripe";
 import { auth } from "@repo/auth/server";
@@ -53,7 +54,7 @@ export async function POST() {
   const refreshUrl = `${base}/onboarding?stripe_refresh=1`;
   const returnUrl = `${base}/onboarding?stripe_return=1`;
 
-  let stripeAccountId = org.stripeAccountId;
+  let stripeAccountId = resolveLiveConnectAccountId(org.stripeAccountId);
   let onboardingStatus = org.stripeOnboarding;
   let readyToReceivePayments = org.payoutsEnabled;
 

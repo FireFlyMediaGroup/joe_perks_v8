@@ -24,6 +24,8 @@ vi.mock("./client", () => ({
 import {
   createRecipientAccountLink,
   createRecipientConnectedAccount,
+  isPlaceholderConnectAccountId,
+  resolveLiveConnectAccountId,
   retrieveRecipientAccountStatus,
 } from "./connect";
 
@@ -39,6 +41,16 @@ const expectedAccountIncludes = [
 describe("Connect V2 helper payloads", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  it("detects E2E placeholder Connect account ids", () => {
+    expect(isPlaceholderConnectAccountId("acct_e2e_roaster_cmo7y03d")).toBe(
+      true
+    );
+    expect(isPlaceholderConnectAccountId("acct_1Nabc")).toBe(false);
+    expect(isPlaceholderConnectAccountId(null)).toBe(false);
+    expect(resolveLiveConnectAccountId("acct_e2e_org_abc")).toBeNull();
+    expect(resolveLiveConnectAccountId("acct_live123")).toBe("acct_live123");
   });
 
   it("creates merchant + recipient marketplace accounts for delayed transfers", () => {

@@ -95,6 +95,23 @@ export function createRecipientAccountLink(
   });
 }
 
+/** Dev/E2E seeds use fake ids when Stripe is unavailable — never call Stripe with these. */
+export function isPlaceholderConnectAccountId(
+  accountId: string | null | undefined
+): boolean {
+  return typeof accountId === "string" && accountId.startsWith("acct_e2e_");
+}
+
+/** Returns null for missing or placeholder ids so callers create a live Connect account. */
+export function resolveLiveConnectAccountId(
+  accountId: string | null | undefined
+): string | null {
+  if (!accountId || isPlaceholderConnectAccountId(accountId)) {
+    return null;
+  }
+  return accountId;
+}
+
 export async function retrieveRecipientAccountStatus(
   accountId: string
 ): Promise<RecipientAccountStatus> {

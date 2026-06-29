@@ -19,6 +19,8 @@ vi.mock("@joe-perks/stripe", () => ({
   mapRecipientAccountStatusToOnboardingStatus:
     mocks.mapRecipientAccountStatusToOnboardingStatus,
   normalizeRecipientAccountStatus: mocks.normalizeRecipientAccountStatus,
+  resolveLiveConnectAccountId: (id: string | null) =>
+    id?.startsWith("acct_e2e_") ? null : id,
   retrieveRecipientAccountStatus: vi.fn(),
 }));
 vi.mock("@repo/auth/server", () => ({ auth: mocks.auth }));
@@ -82,6 +84,28 @@ describe("POST /api/stripe/connect (roaster)", () => {
       refreshUrl: "https://roaster.test/onboarding?stripe_refresh=1",
       returnUrl: "https://roaster.test/onboarding?stripe_return=1",
       type: "account_update",
+    });
+  });
+
+  it("creates a live Connect account when the roaster has an E2E placeholder id", async () => {
+    mocks.database.roaster.findUnique.mockResolvedValue({
+      application: { businessName: "Demo Roaster" },
+      email: "owner@example.com",
+      id: "roaster_1",
+      payoutsEnabled: true,
+      stripeAccountId: "acct_e2e_roaster_cmo7y03d",
+      stripeOnboarding: "COMPLETE",
+    });
+
+    const response = await POST();
+    await expect(response.json()).resolves.toEqual({
+      url: "https://connect.stripe.test/link",
+    });
+
+    expect(mocks.createRecipientConnectedAccount).toHaveBeenCalled();
+    expect(mocks.database.roaster.update).toHaveBeenCalledWith({
+      data: expect.objectContaining({ stripeAccountId: "acct_v2" }),
+      where: { id: "roaster_1" },
     });
   });
 });
