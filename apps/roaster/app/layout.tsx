@@ -4,6 +4,7 @@ import { AnalyticsProvider } from "@repo/analytics/provider";
 import { DesignSystemProvider } from "@repo/design-system";
 import { fonts } from "@repo/design-system/lib/fonts";
 import { Toolbar } from "@repo/feature-flags/components/toolbar";
+import { Analytics } from "@vercel/analytics/next";
 import type { ReactNode } from "react";
 
 interface RootLayoutProperties {
@@ -26,6 +27,7 @@ const RootLayout = ({ children }: RootLayoutProperties) => (
         </DesignSystemProvider>
       </AnalyticsProvider>
       <Toolbar />
+      <Analytics />
     </body>
   </html>
 );
