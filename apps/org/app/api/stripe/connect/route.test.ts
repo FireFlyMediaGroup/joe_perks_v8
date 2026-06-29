@@ -19,6 +19,8 @@ vi.mock("@joe-perks/stripe", () => ({
   mapRecipientAccountStatusToOnboardingStatus:
     mocks.mapRecipientAccountStatusToOnboardingStatus,
   normalizeRecipientAccountStatus: mocks.normalizeRecipientAccountStatus,
+  resolveLiveConnectAccountId: (id: string | null) =>
+    id?.startsWith("acct_e2e_") ? null : id,
   retrieveRecipientAccountStatus: vi.fn(),
 }));
 vi.mock("@repo/auth/server", () => ({ auth: mocks.auth }));
@@ -80,6 +82,28 @@ describe("POST /api/stripe/connect (org)", () => {
       refreshUrl: "https://org.test/onboarding?stripe_refresh=1",
       returnUrl: "https://org.test/onboarding?stripe_return=1",
       type: "account_update",
+    });
+  });
+
+  it("creates a live Connect account when the org has an E2E placeholder id", async () => {
+    mocks.database.org.findUnique.mockResolvedValue({
+      application: { orgName: "Demo Org" },
+      email: "treasurer@example.com",
+      id: "org_1",
+      payoutsEnabled: true,
+      stripeAccountId: "acct_e2e_org_cmo7y279",
+      stripeOnboarding: "COMPLETE",
+    });
+
+    const response = await POST();
+    await expect(response.json()).resolves.toEqual({
+      url: "https://connect.stripe.test/link",
+    });
+
+    expect(mocks.createRecipientConnectedAccount).toHaveBeenCalled();
+    expect(mocks.database.org.update).toHaveBeenCalledWith({
+      data: expect.objectContaining({ stripeAccountId: "acct_v2" }),
+      where: { id: "org_1" },
     });
   });
 });
