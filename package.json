@@ -55,6 +55,8 @@
     "db:seed:smoke-lane:prod": "node ./scripts/run-smoke-lane-seed.mjs",
     "smoke-lane:verify": "node ./scripts/run-smoke-lane-verify.mjs",
     "repair:roaster-clerk-prod": "cd packages/db && PRISMA_DATABASE_PROFILE=production bun run ./scripts/repair-roaster-clerk-prod-link.ts",
+    "bootstrap:smoke-lane-org:prod": "cd packages/db && PRISMA_DATABASE_PROFILE=production bun run ./scripts/bootstrap-smoke-lane-org-prod.ts",
+    "repair:org-clerk-prod": "cd packages/db && PRISMA_DATABASE_PROFILE=production bun run ./scripts/repair-org-clerk-prod-link.ts",
     "db:push": "cd packages/db && bunx prisma format && bunx prisma generate && bunx prisma db push",
     "vercel:env:render:production": "node ./scripts/render-1password-vercel-envs.mjs",
     "vercel:env:sync": "node ./scripts/vercel-sync-envs.mjs",

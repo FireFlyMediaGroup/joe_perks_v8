@@ -66,7 +66,7 @@ Always verify **live** values in the Vercel project settings, not only the repo 
 | ID | Title | Status | Owner | Resolved |
 |---|---|---|---|---|
 | 01 | Roaster Google OAuth error | ✅ Resolved 2026-06-29 | | **Cause: invalid Google OAuth Client Secret in Clerk** (`oauth_token_exchange_error`/`invalid_client`). Fixed by re-entering correct secret; Google sign-in verified end-to-end (`/dashboard` loads). Dangling identity cleaned up. Only `/` 404 redeploy remains. |
-| 02 | Org “No organization is linked” | Open | | |
+| 02 | Org “No organization is linked” | In progress | | **Option A bootstrap done 2026-06-29.** Smoke-lane org + `clerk_pending` user created. Pending: org-portal Google sign-in, `STRIPE_SECRET_KEY` on `joe-perks-org` Vercel, Connect onboarding. |
 | 03 | Admin redirect loop | Open | | |
 
 Update this table as each issue is resolved.

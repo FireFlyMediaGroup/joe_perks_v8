@@ -198,6 +198,57 @@ Won’t help if the email row is already bound to admin Clerk id.
 
 ---
 
+## Execution log (2026-06-29)
+
+### Investigation A — DB state (confirmed)
+
+| Check | Result |
+|---|---|
+| `wearefireflymedia@gmail.com` User | `PLATFORM_ADMIN`, `orgId = null`, admin Clerk id `user_3DEsIVm…` |
+| `e2e-test-org` org admins | **0 rows** |
+| `internal-smoke-lane` | Did not exist before bootstrap |
+
+Root cause matches doc: **email reused across admin + org portals** under single-`externalAuthId` schema.
+
+### Investigation B — Org Clerk webhook
+
+`POST https://orgs.joeperks.com/api/webhooks/clerk` returns **400** `Invalid webhook signature` (not 503) → **`CLERK_WEBHOOK_SECRET` is configured** on production.
+
+### Investigation C — Vercel org env (from 1Password inventory)
+
+| Variable | In Vercel prod? | Blocks |
+|---|---|---|
+| Clerk keys + webhook secret | Yes | — |
+| `STRIPE_SECRET_KEY` | **No** (per `ops/1password/vercel-production-env-inventory.md`) | Connect onboarding after linkage |
+
+**Action:** sync `STRIPE_SECRET_KEY` (live) to `joe-perks-org` production via 1Password → `pnpm vercel:env:sync --env production` or Vercel dashboard.
+
+### Option A — Bootstrap executed
+
+Following smoke lane pattern (`wearefireflymedia+internal-smoke-lane@gmail.com`):
+
+```bash
+JOE_PERKS_CONFIRM_SMOKE_LANE_ORG_BOOTSTRAP=1 pnpm bootstrap:smoke-lane-org:prod
+# OrgApplication + Org (internal-smoke-lane) + ORG_ADMIN User with clerk_pending:*
+
+set -a && source apps/org/.env.local && set +a
+JOE_PERKS_CONFIRM_ORG_CLERK_REPAIR=1 pnpm repair:org-clerk-prod
+# No existing Clerk user for org email; pending id refreshed
+```
+
+Scripts added: `packages/db/scripts/bootstrap-smoke-lane-org-prod.ts`, `repair-org-clerk-prod-link.ts`.
+
+### Remaining manual steps
+
+1. **Clerk org instance:** Email → Password → **not required** (same fix as roaster issue 01).
+2. **Sign in:** incognito → `https://orgs.joeperks.com/sign-in` → Google as `wearefireflymedia+internal-smoke-lane@gmail.com` (**not** `wearefireflymedia@gmail.com`).
+3. **Verify:** `/onboarding` shows Connect UI; DB `User.externalAuthId` updates from `clerk_pending:` to org Clerk `user_…`.
+4. **Sync Stripe key** to `joe-perks-org` Vercel production if Connect button fails.
+5. **Complete Connect onboarding** in org portal; capture `acct_…` id.
+6. **Full smoke lane:** set `SMOKE_LANE_*_STRIPE_ACCOUNT_ID` in `.env.smoke-lane` → `pnpm db:seed:smoke-lane:prod`.
+
+---
+
 ## Files to inspect when implementing fixes
 
 | Path | Why |
