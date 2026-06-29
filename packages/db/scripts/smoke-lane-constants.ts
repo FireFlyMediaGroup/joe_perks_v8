@@ -4,14 +4,13 @@
  *
  * Use plus-addressed inboxes you control so fulfillment/refund mail stays internal.
  */
-export const SMOKE_LANE_ROASTER_EMAIL =
-  "chris+internal-smoke-roaster@chrisodomphoto.com";
+export const SMOKE_LANE_ROASTER_EMAIL = "chris@chrisodomphoto.com";
 export const SMOKE_LANE_ORG_EMAIL =
   "wearefireflymedia+internal-smoke-lane@gmail.com";
 export const SMOKE_LANE_ORG_SLUG = "internal-smoke-lane";
 
-/** Synthetic checkout buyer — not a Clerk user; safe to reuse across smoke runs. */
-export const SMOKE_LANE_BUYER_EMAIL = "live-smoke-buyer@joeperks.test";
+/** Checkout buyer for live smoke — receives order confirmation email. */
+export const SMOKE_LANE_BUYER_EMAIL = "joe@joeperks.com";
 
 export const SMOKE_LANE_ROASTER_BUSINESS_NAME = "Internal Smoke Lane Roaster";
 export const SMOKE_LANE_ORG_NAME = "Internal Smoke Lane Org";

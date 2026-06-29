@@ -26,7 +26,7 @@ import {
 const ORG_SLUG = resolveSmokeLaneOrgSlug();
 const BUYER_NAME = process.env.LIVE_SMOKE_BUYER_NAME ?? "Live Smoke Buyer";
 const BUYER_EMAIL =
-  process.env.LIVE_SMOKE_BUYER_EMAIL ?? "live-smoke-buyer@joeperks.test";
+  process.env.LIVE_SMOKE_BUYER_EMAIL ?? "joe@joeperks.com";
 const SETTLE_TIMEOUT_MS = Number(process.env.LIVE_SMOKE_SETTLE_TIMEOUT_MS ?? "120000");
 const PAYMENT_INTENT_ID = /^pi_/;
 

@@ -12,9 +12,9 @@
 |---|---|
 | Org slug | `internal-smoke-lane` |
 | Storefront | `https://joeperks.com/en/internal-smoke-lane` |
-| Roaster email | `chris+internal-smoke-roaster@chrisodomphoto.com` |
+| Roaster email | `chris@chrisodomphoto.com` |
 | Org email | `wearefireflymedia+internal-smoke-lane@gmail.com` |
-| Buyer (synthetic) | `live-smoke-buyer@joeperks.test` |
+| Buyer (order confirmation) | `joe@joeperks.com` |
 
 Constants live in `packages/db/scripts/smoke-lane-constants.ts`.
 
