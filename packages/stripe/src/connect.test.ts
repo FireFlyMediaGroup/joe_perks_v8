@@ -22,6 +22,7 @@ vi.mock("./client", () => ({
 }));
 
 import {
+  CONNECT_ACCOUNT_LINK_COLLECTION_OPTIONS,
   createRecipientAccountLink,
   createRecipientConnectedAccount,
   isPlaceholderConnectAccountId,
@@ -99,11 +100,34 @@ describe("Connect V2 helper payloads", () => {
       account: "acct_123",
       use_case: {
         account_onboarding: {
+          collection_options: CONNECT_ACCOUNT_LINK_COLLECTION_OPTIONS,
           configurations: ["recipient", "merchant"],
           refresh_url: "https://roasters.test/onboarding?stripe_refresh=1",
           return_url: "https://roasters.test/onboarding?stripe_return=1",
         },
         type: "account_onboarding",
+      },
+    });
+  });
+
+  it("includes future requirements in account update links", () => {
+    createRecipientAccountLink({
+      accountId: "acct_123",
+      refreshUrl: "https://roasters.test/onboarding?stripe_refresh=1",
+      returnUrl: "https://roasters.test/onboarding?stripe_return=1",
+      type: "account_update",
+    });
+
+    expect(mocks.accountLinksCreate).toHaveBeenCalledWith({
+      account: "acct_123",
+      use_case: {
+        account_update: {
+          collection_options: CONNECT_ACCOUNT_LINK_COLLECTION_OPTIONS,
+          configurations: ["recipient", "merchant"],
+          refresh_url: "https://roasters.test/onboarding?stripe_refresh=1",
+          return_url: "https://roasters.test/onboarding?stripe_return=1",
+        },
+        type: "account_update",
       },
     });
   });

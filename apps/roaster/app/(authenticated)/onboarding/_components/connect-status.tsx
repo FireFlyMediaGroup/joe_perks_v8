@@ -129,6 +129,9 @@ function AttentionAlert({
               </ul>
             </div>
           ) : null}
+          {attention.legalNote ? (
+            <p className="text-xs opacity-90">{attention.legalNote}</p>
+          ) : null}
         </div>
       </div>
     </div>

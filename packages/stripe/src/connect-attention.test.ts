@@ -71,6 +71,7 @@ describe("resolveConnectAttentionContext", () => {
     expect(context.tier).toBe("verification_pending");
     expect(context.variant).toBe("warning");
     expect(context.showStripeButton).toBe(true);
+    expect(context.legalNote).toContain("Joe Perks notifies you");
     expect(context.stripeButtonLabel).toBe("Update details in Stripe");
     expect(context.pendingItems).toHaveLength(2);
   });

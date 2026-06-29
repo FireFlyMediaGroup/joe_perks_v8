@@ -14,6 +14,7 @@ export {
   resolveConnectAttentionForPortal,
 } from "./connect-attention";
 export {
+  CONNECT_ACCOUNT_LINK_COLLECTION_OPTIONS,
   type CreateRecipientAccountLinkParams,
   type CreateRecipientAccountParams,
   createRecipientAccountLink,

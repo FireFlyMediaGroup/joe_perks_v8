@@ -16,6 +16,49 @@ const CONNECT_ACCOUNT_INCLUDES = [
 ] as const;
 const CONNECT_ONBOARDING_CONFIGURATIONS = ["recipient", "merchant"] as const;
 
+/**
+ * Stripe-hosted Connect collection policy for Joe Perks.
+ *
+ * Joe Perks must not collect SSN, DOB, or bank details in our own UI — Stripe
+ * collects and stores verification data on their domain. These options apply to
+ * every account link (onboarding + update) so roasters can submit future
+ * requirements (e.g. volume-triggered verification) before payouts stall.
+ */
+export const CONNECT_ACCOUNT_LINK_COLLECTION_OPTIONS = {
+  fields: "eventually_due",
+  future_requirements: "include",
+} as const;
+
+function connectAccountLinkUseCase(params: {
+  refreshUrl: string;
+  returnUrl: string;
+  type: "account_onboarding" | "account_update";
+}) {
+  const collectionOptions = { ...CONNECT_ACCOUNT_LINK_COLLECTION_OPTIONS };
+
+  if (params.type === "account_update") {
+    return {
+      account_update: {
+        collection_options: collectionOptions,
+        configurations: [...CONNECT_ONBOARDING_CONFIGURATIONS],
+        refresh_url: params.refreshUrl,
+        return_url: params.returnUrl,
+      },
+      type: "account_update" as const,
+    };
+  }
+
+  return {
+    account_onboarding: {
+      collection_options: collectionOptions,
+      configurations: [...CONNECT_ONBOARDING_CONFIGURATIONS],
+      refresh_url: params.refreshUrl,
+      return_url: params.returnUrl,
+    },
+    type: "account_onboarding" as const,
+  };
+}
+
 export interface CreateRecipientAccountParams {
   /** ISO country code; Joe Perks MVP is US-only unless extended. */
   country: string;
@@ -75,24 +118,11 @@ export function createRecipientAccountLink(
 
   return stripe.v2.core.accountLinks.create({
     account: params.accountId,
-    use_case:
-      params.type === "account_update"
-        ? {
-            account_update: {
-              configurations: [...CONNECT_ONBOARDING_CONFIGURATIONS],
-              refresh_url: params.refreshUrl,
-              return_url: params.returnUrl,
-            },
-            type: "account_update",
-          }
-        : {
-            account_onboarding: {
-              configurations: [...CONNECT_ONBOARDING_CONFIGURATIONS],
-              refresh_url: params.refreshUrl,
-              return_url: params.returnUrl,
-            },
-            type: "account_onboarding",
-          },
+    use_case: connectAccountLinkUseCase({
+      refreshUrl: params.refreshUrl,
+      returnUrl: params.returnUrl,
+      type: params.type ?? "account_onboarding",
+    }),
   });
 }
 
