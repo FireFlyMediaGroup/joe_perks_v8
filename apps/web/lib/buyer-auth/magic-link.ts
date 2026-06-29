@@ -14,7 +14,6 @@ import { sanitizeBuyerRedirect } from "./redirect";
 
 interface RequestBuyerMagicLinkInput {
   email: string;
-  locale: string;
   origin: string;
   redirect?: string | null;
   requestIp: string;
@@ -79,7 +78,7 @@ export async function requestBuyerMagicLink(
     return { ok: false, reason: "rate_limited" };
   }
 
-  const safeRedirect = sanitizeBuyerRedirect(input.locale, input.redirect);
+  const safeRedirect = sanitizeBuyerRedirect(input.redirect);
   const buyer = await database.buyer.findFirst({
     where: {
       email: {
@@ -118,10 +117,7 @@ export async function requestBuyerMagicLink(
     },
   });
 
-  const authUrl = new URL(
-    `/${input.locale}/account/auth/${link.token}`,
-    input.origin
-  );
+  const authUrl = new URL(`/account/auth/${link.token}`, input.origin);
   authUrl.searchParams.set("redirect", safeRedirect);
 
   try {

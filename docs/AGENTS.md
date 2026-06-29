@@ -49,9 +49,9 @@ joe-perks/
     └── …             → @repo/* (design-system, auth, cms, observability, etc.)
 ```
 
-See `docs/01-project-structure.mermaid` for routes, API paths, and file-level detail. `apps/web` uses **`app/[locale]/…`** for pages and **`app/api/…`** for route handlers (next-forge i18n).
+See `docs/01-project-structure.mermaid` for routes, API paths, and file-level detail. `apps/web` uses **`app/…`** for pages and **`app/api/…`** for route handlers. **Internationalization was removed (June 2026):** the app is English-only, so there is **no `[locale]` route segment** and **no i18n middleware**. The `[locale]` rewrite (`next-international`) had a nondeterministic race in the `@rescale/nemo` chain that intermittently dropped the rewrite, letting `[locale]` greedily capture an org `slug` and render the marketing homepage instead of the storefront. Static English content still comes from `@repo/internationalization`'s `getDictionary("en")`. Do **not** reintroduce a `[locale]` segment or the i18n middleware unless real multi-locale support is being added.
 
-**Middleware (proxy.ts):** `apps/web/proxy.ts` composes i18n, Clerk auth, Arcjet, and security headers via `@rescale/nemo`. The matcher **must** exclude `api` paths — `/((?!api|_next/static|…)…)` — so route handlers in `app/api/` are not intercepted by the i18n rewrite or auth middleware. **Important:** Next.js 16 does not allow both `middleware.ts` and `proxy.ts` in the same app. `middleware.ts` was removed from `apps/web`, `apps/roaster`, `apps/org`, and `apps/admin`; `proxy.ts` is the sole middleware entry point.
+**Middleware (proxy.ts):** `apps/web/proxy.ts` composes Clerk auth, Arcjet, and security headers via `@rescale/nemo` (i18n is no longer in the chain). The matcher **must** exclude `api` paths — `/((?!api|_next/static|…)…)` — so route handlers in `app/api/` are not intercepted by the auth middleware. **Important:** Next.js 16 does not allow both `middleware.ts` and `proxy.ts` in the same app. `middleware.ts` was removed from `apps/web`, `apps/roaster`, `apps/org`, and `apps/admin`; `proxy.ts` is the sole middleware entry point.
 
 ---
 

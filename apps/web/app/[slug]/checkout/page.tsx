@@ -1,0 +1,67 @@
+import { RESERVED_SLUGS } from "@joe-perks/types";
+import { createMetadata } from "@repo/seo/metadata";
+import type { Metadata } from "next";
+import { notFound, redirect } from "next/navigation";
+import { getStorefrontData } from "../_lib/queries";
+import { CheckoutForm } from "./_components/checkout-form";
+import { getCheckoutBuyerContext } from "./_lib/buyer-context";
+
+interface Props {
+  params: Promise<{ slug: string }>;
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params;
+  if (RESERVED_SLUGS.includes(slug)) {
+    return createMetadata({
+      title: "Not found",
+      description: "This page does not exist.",
+    });
+  }
+  const data = await getStorefrontData(slug);
+  if (!data) {
+    return createMetadata({
+      title: "Checkout",
+      description: "Checkout is unavailable.",
+    });
+  }
+  return createMetadata({
+    title: `Checkout — ${data.org.orgName}`,
+    description: `Complete your order to support ${data.org.orgName}.`,
+  });
+}
+
+export default async function CheckoutPage({ params }: Props) {
+  const { slug } = await params;
+  if (RESERVED_SLUGS.includes(slug)) {
+    notFound();
+  }
+
+  const data = await getStorefrontData(slug);
+  if (!data) {
+    notFound();
+  }
+
+  if (!data.hasShippingRates) {
+    redirect(`/${slug}?error=no-shipping`);
+  }
+
+  const defaultRateId =
+    data.shippingRates.find((r) => r.isDefault)?.id ??
+    data.shippingRates[0]?.id ??
+    null;
+  const buyerContext = await getCheckoutBuyerContext(defaultRateId);
+
+  return (
+    <main className="min-h-screen bg-jp-bg-page px-4 py-8 md:py-12">
+      <CheckoutForm
+        buyerContext={buyerContext}
+        campaignId={data.campaign.id}
+        defaultShippingRateId={defaultRateId}
+        orgName={data.org.orgName}
+        shippingRates={data.shippingRates}
+        slug={slug}
+      />
+    </main>
+  );
+}

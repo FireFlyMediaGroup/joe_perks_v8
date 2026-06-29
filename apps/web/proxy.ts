@@ -1,5 +1,4 @@
 import { authMiddleware } from "@repo/auth/proxy";
-import { internationalizationMiddleware } from "@repo/internationalization/proxy";
 import { parseError } from "@repo/observability/error";
 import { secure } from "@repo/security";
 import {
@@ -53,10 +52,7 @@ const arcjetMiddleware = async (request: NextRequest) => {
   }
 };
 
-const beforeMiddleware = [
-  internationalizationMiddleware,
-  arcjetMiddleware,
-] as unknown as NemoMiddleware[];
+const beforeMiddleware = [arcjetMiddleware] as unknown as NemoMiddleware[];
 
 // Compose non-Clerk middleware with Nemo
 const composedMiddleware = createNEMO(

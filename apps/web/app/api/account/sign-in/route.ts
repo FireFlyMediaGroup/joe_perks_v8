@@ -10,10 +10,6 @@ export const runtime = "nodejs";
 
 const buyerSignInRequestSchema = z.object({
   email: z.string().trim().email().max(320),
-  locale: z
-    .string()
-    .trim()
-    .regex(/^[a-z]{2}(?:-[A-Z]{2})?$/),
   redirect: z.string().trim().max(2048).optional(),
 });
 
@@ -39,7 +35,6 @@ export async function POST(request: Request) {
 
   const result = await requestBuyerMagicLink({
     email: parsed.data.email,
-    locale: parsed.data.locale,
     origin: getBuyerAuthRequestOrigin(request),
     redirect: parsed.data.redirect,
     requestIp: getBuyerAuthRequestIp(request),

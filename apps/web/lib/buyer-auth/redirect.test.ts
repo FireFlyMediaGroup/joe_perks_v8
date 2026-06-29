@@ -3,38 +3,36 @@ import { buildBuyerSignInPath, sanitizeBuyerRedirect } from "./redirect";
 
 describe("buyer auth redirect helpers", () => {
   test("defaults to the buyer dashboard when no redirect is provided", () => {
-    expect(sanitizeBuyerRedirect("en")).toBe(
-      "/en/account?focus=orders-heading"
+    expect(sanitizeBuyerRedirect()).toBe("/account?focus=orders-heading");
+  });
+
+  test("keeps internal redirects", () => {
+    expect(sanitizeBuyerRedirect("/account/orders/ord_123")).toBe(
+      "/account/orders/ord_123"
     );
   });
 
-  test("keeps same-locale redirects", () => {
-    expect(sanitizeBuyerRedirect("en", "/en/account/orders/ord_123")).toBe(
-      "/en/account/orders/ord_123"
-    );
-  });
-
-  test("prefixes locale onto internal redirects without one", () => {
-    expect(sanitizeBuyerRedirect("en", "/account/orders/ord_123")).toBe(
-      "/en/account/orders/ord_123"
+  test("preserves query and hash on internal redirects", () => {
+    expect(sanitizeBuyerRedirect("/account?focus=orders-heading")).toBe(
+      "/account?focus=orders-heading"
     );
   });
 
   test("rejects absolute redirects", () => {
-    expect(sanitizeBuyerRedirect("en", "https://evil.example/steal")).toBe(
-      "/en/account?focus=orders-heading"
+    expect(sanitizeBuyerRedirect("https://evil.example/steal")).toBe(
+      "/account?focus=orders-heading"
     );
   });
 
-  test("rejects mismatched locale redirects", () => {
-    expect(sanitizeBuyerRedirect("en", "/fr/account")).toBe(
-      "/en/account?focus=orders-heading"
+  test("rejects protocol-relative redirects", () => {
+    expect(sanitizeBuyerRedirect("//evil.example/steal")).toBe(
+      "/account?focus=orders-heading"
     );
   });
 
   test("builds sign-in path with safe redirect", () => {
-    expect(buildBuyerSignInPath("en", "/account")).toBe(
-      "/en/account/sign-in?redirect=%2Fen%2Faccount"
+    expect(buildBuyerSignInPath("/account")).toBe(
+      "/account/sign-in?redirect=%2Faccount"
     );
   });
 });

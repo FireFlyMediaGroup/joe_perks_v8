@@ -37,19 +37,17 @@ export async function getCurrentBuyer(): Promise<CurrentBuyer | null> {
 }
 
 interface RequireCurrentBuyerInput {
-  readonly locale: string;
   readonly redirectTo?: string | null;
 }
 
 export async function requireCurrentBuyer({
-  locale,
   redirectTo,
-}: RequireCurrentBuyerInput): Promise<CurrentBuyer> {
+}: RequireCurrentBuyerInput = {}): Promise<CurrentBuyer> {
   const buyer = await getCurrentBuyer();
   if (buyer) {
     return buyer;
   }
 
-  const safeRedirect = sanitizeBuyerRedirect(locale, redirectTo);
-  redirect(buildBuyerSignInPath(locale, safeRedirect));
+  const safeRedirect = sanitizeBuyerRedirect(redirectTo);
+  redirect(buildBuyerSignInPath(safeRedirect));
 }
