@@ -282,6 +282,8 @@ packages/database/generated
 # Playwright
 test-results/
 tests/e2e/frontend/.generated/
+playwright-report/
+playwright-report-*/
 .env*
 
 # Ops: never commit rendered secret material under ops/ (1Password sync output,

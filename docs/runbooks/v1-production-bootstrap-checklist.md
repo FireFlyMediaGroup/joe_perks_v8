@@ -254,8 +254,10 @@ For each beta org:
 
 Do this before opening the frontend beta broadly.
 
-- [ ] choose one named pilot roaster
-- [ ] choose one named org/campaign
+**Recommended path**: use the isolated production smoke lane + Browserbase recording — see [`./prod-smoke-lane.md`](./prod-smoke-lane.md) (`internal-smoke-lane` slug, `pnpm test:e2e:browserbase:live-smoke`).
+
+- [ ] choose one named pilot roaster **or** use internal smoke lane roaster only for this step
+- [ ] choose one named org/campaign **or** use `internal-smoke-lane` for automated pre-beta proof
 - [ ] choose one internal buyer
 - [ ] place the smallest acceptable live order
 - [ ] confirm webhook delivery
