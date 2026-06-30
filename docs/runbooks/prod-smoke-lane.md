@@ -20,7 +20,7 @@ Constants live in `packages/db/scripts/smoke-lane-constants.ts`.
 
 ## Prerequisites
 
-1. Neon **production** snapshot taken (record snapshot ID).
+1. Neon **production** snapshot taken — **Console (recommended):** project → **`main`** branch → **Backup & restore** → **Create snapshot**; copy snapshot ID into go-live guide step **1**. Full steps: [`neon-production-snapshot.md`](./neon-production-snapshot.md).
 2. Schema + singletons applied:
 
 ```bash
@@ -103,5 +103,6 @@ If smoke lane data is wrong:
 
 ## Related
 
+- [`neon-production-snapshot.md`](./neon-production-snapshot.md) — Block A step 1 (Console + API)
 - Smoke lane passed on production 2026-06-29 (order JP-00012): [`../v1-go-live-guide.md`](../v1-go-live-guide.md) steps 13–15; evidence [`./launch-day-evidence/2026-06-29-smoke-lane-jp-00012.md`](./launch-day-evidence/2026-06-29-smoke-lane-jp-00012.md)
 - [`../testing/v1-launch-money-path-e2e-execution.md`](../testing/v1-launch-money-path-e2e-execution.md) — sandbox CI money path (separate from this prod lane)
