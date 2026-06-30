@@ -103,5 +103,5 @@ If smoke lane data is wrong:
 
 ## Related
 
+- Smoke lane passed on production 2026-06-29 (order JP-00012): [`../v1-go-live-guide.md`](../v1-go-live-guide.md) steps 13–15; evidence [`./launch-day-evidence/2026-06-29-smoke-lane-jp-00012.md`](./launch-day-evidence/2026-06-29-smoke-lane-jp-00012.md)
 - [`../testing/v1-launch-money-path-e2e-execution.md`](../testing/v1-launch-money-path-e2e-execution.md) — sandbox CI money path (separate from this prod lane)
-- [`../v1-go-live-guide.md`](../v1-go-live-guide.md) — P-13 / P-14 tracking

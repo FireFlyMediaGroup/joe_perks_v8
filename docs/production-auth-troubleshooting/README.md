@@ -73,5 +73,5 @@ Update this table as each issue is resolved.
 
 ## Related runbooks
 
-- Smoke lane (blocked until auth works): [`docs/runbooks/prod-smoke-lane.md`](../runbooks/prod-smoke-lane.md)
+- Smoke lane: **passed** on production 2026-06-29 (JP-00012) — [`docs/runbooks/prod-smoke-lane.md`](../runbooks/prod-smoke-lane.md)
 - Production bootstrap: [`docs/runbooks/v1-production-bootstrap-checklist.md`](../runbooks/v1-production-bootstrap-checklist.md)
