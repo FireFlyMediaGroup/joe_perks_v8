@@ -1,7 +1,7 @@
 # Joe Perks v1 — Go-Live Step-by-Step Guide
 
 **Purpose**: Single checklist for getting from today's production cutover state to a fully live soft launch.  
-**Last updated**: 2026-06-27  
+**Last updated**: 2026-06-30  
 **Owner**: Chris (business) + Eng lead (execution)
 
 This guide is the **action layer** on top of the full operational runbook. Use it day-to-day; drill into linked docs for scripts, evidence, and rollback detail.
@@ -26,22 +26,22 @@ This guide is the **action layer** on top of the full operational runbook. Use i
 
 ### Snapshot
 
-| Field                    | Value                                                             |
-| ------------------------ | ----------------------------------------------------------------- |
-| **Last progress update** | 2026-06-27                                                        |
-| **Runbook phase**        | Late **B.2** (cutover in progress)                                |
-| **Steps done**           | 11 done · 2 in progress · 36 not started (49 total in master log) |
-| **Current focus**        | Steps **9–10** — live Connect + thin webhook → DB                 |
-| **Next gate**            | Block **C** complete before soft launch (B.3)                     |
+| Field                    | Value                                                                                      |
+| ------------------------ | ------------------------------------------------------------------------------------------ |
+| **Last progress update** | 2026-06-30                                                                                 |
+| **Runbook phase**        | **B.2 complete** (internal smoke lane); **B.3** not started                                |
+| **Steps done**           | 22 done · 3 in progress · 24 not started (49 total in master log)                          |
+| **Current focus**        | Block **A** rollback card (step 4) + Block **B** real pilot bootstrap                      |
+| **Next gate**            | Block **D** (Go/No-Go + soft launch) after Block **B** pilot records + open Block **E** gaps |
 
 ```text
-Phase A (Prepare)     ████████████░░  ~85%  — engineering mostly done; legal/observability/pilots open
-Phase B.2 (Cutover)   ████████░░░░░░  ~60%  — deploy + webhooks ✅; bootstrap + live smoke ❌
-Phase B.3 (Go-live)   ░░░░░░░░░░░░░░   0%   — not started
-Phase C (Watch)       ░░░░░░░░░░░░░░   —     — starts after first real order
+Phase A (Prepare)     █████████████░  ~92%  — Neon snapshot ✅; rollback card + legal/obs open
+Phase B.2 (Cutover)   ████████████░░  ~85%  — internal smoke lane ✅ (JP-00012); pilot bootstrap ❌
+Phase B.3 (Go-live)   ░░░░░░░░░░░░░░   0%   — not started (Block D)
+Phase C (Watch)       ░░░░░░░░░░░░░░   —     — starts after first non-smoke pilot order
 ```
 
-**Do not announce soft launch (B.3) until Block C (steps 9–15) is Done in the master log.**
+**Block C (steps 9–15) is Done** for the internal smoke lane (JP-00012, 2026-06-29). Do not announce soft launch (B.3) until Block **B** real pilot bootstrap + Block **D** are complete.
 
 ### Master log
 
@@ -58,21 +58,21 @@ Phase C (Watch)       ░░░░░░░░░░░░░░   —     — s
 | **P-09** | Money-path code guards (invariants, kill-switch, refund handler, logging, PII scrub) | Pre   | Done               | 2026-06-05 | Eng | Runbook A.3 / A.4 resolution pass                                                                            |
 | **P-10** | Production migrate workflow (GitHub Action)                                          | Pre   | Done               | 2026-06-06 | Eng | `.github/workflows/migrate-prod.yml`                                                                         |
 | **P-11** | MP-01 + core EC scenarios in CI e2e harness                                          | Pre   | Done               | 2026-06-06 | Eng | `.github/workflows/e2e.yml`                                                                                  |
-| **1**    | Neon production snapshot; record snapshot ID                                         | A     | Not started        |            |     | ID: `__________________`                                                                                     |
-| **2**    | Migrate (production) GitHub Action; schema current                                   | A     | Not started        |            |     | Type `DEPLOY` in Actions                                                                                     |
-| **3**    | Foundational seed (`pnpm db:seed:prod`)                                              | A     | Not started        |            |     | `PlatformSettings` + `OrderSequence`                                                                         |
-| **4**    | Rollback card (Vercel redeploy + Neon restore owners)                                | A     | Not started        |            |     | Prev deployment ID: `________`                                                                               |
+| **1**    | Neon production snapshot; record snapshot ID                                         | A     | Done               | 2026-06-30 | Chris | `snap-tiny-paper-a40a9das` — name `pre-pilot-bootstrap-2026-06-30`; project `misty-snow-51612153`; branch `main` |
+| **2**    | Migrate (production) GitHub Action; schema current                                   | A     | Done               | 2026-06-29 | Eng | Schema current for smoke lane; `pnpm migrate:deploy:prod` + `pnpm db:smoke:prod` passed per [`prod-smoke-lane.md`](./runbooks/prod-smoke-lane.md) prerequisites |
+| **3**    | Foundational seed (`pnpm db:seed:prod`)                                              | A     | Done               | 2026-06-29 | Eng | `PlatformSettings` + `OrderSequence` confirmed (`JP-00012` order number issued) |
+| **4**    | Rollback card (Vercel redeploy + Neon restore owners)                                | A     | Not started        |            |     | Prev deployment ID: `________`; Neon snapshot: `snap-tiny-paper-a40a9das` |
 | **5**    | DNS TTL 300s on production domains                                                   | A     | Not started        |            |     |                                                                                                              |
-| **6**    | Name pilot roster (≥1 roaster + 1 org)                                               | B     | Not started        |            |     | Target 3+3 for full soft launch                                                                              |
-| **7**    | Create production bootstrap records                                                  | B     | Not started        |            |     | See bootstrap checklist                                                                                      |
+| **6**    | Name pilot roster (≥1 roaster + 1 org)                                               | B     | Not started        |            |     | Target 3+3 for full soft launch; internal smoke lane does not substitute |
+| **7**    | Create production bootstrap records                                                  | B     | In progress        | 2026-06-29 | Eng | **Smoke lane only** (`internal-smoke-lane` via `pnpm db:seed:smoke-lane:prod`); real pilot entities pending |
 | **8**    | Fill beta tester worksheet(s)                                                        | B     | Not started        |            |     | One per pilot                                                                                                |
-| **9**    | Pilot roaster: live Connect onboarding                                               | C     | Not started        |            |     | `roasters.joeperks.com` → live `acct_…`                                                                      |
-| **10**   | Thin webhook updates roaster DB row                                                  | C     | Not started        |            |     | `chargesEnabled`, `payoutsEnabled`, onboarding status                                                        |
-| **11**   | Org Connect onboarding (if org receives transfers)                                   | C     | N/A or Not started |            |     | Skip if org payout not in v1 scope                                                                           |
-| **12**   | Admin approvals (roaster + campaign live on storefront)                              | C     | Not started        |            |     |                                                                                                              |
-| **13**   | $5 live smoke checkout                                                               | C     | Not started        |            |     | Real charge; watch Stripe + DB + email                                                                       |
-| **14**   | Immediate refund of smoke order                                                      | C     | Not started        |            |     | Order → `REFUNDED`                                                                                           |
-| **15**   | Fulfillment spot-check (magic link → shipped)                                        | C     | Not started        |            |     | Resend + magic link on prod                                                                                  |
+| **9**    | Pilot roaster: live Connect onboarding                                               | C     | Done               | 2026-06-29 | Eng | `chris@chrisodomphoto.com` → live `acct_…`; roaster portal sign-in fixed — [`production-auth-troubleshooting/01-roaster-sign-in-google-oauth.md`](./production-auth-troubleshooting/01-roaster-sign-in-google-oauth.md) |
+| **10**   | Thin webhook updates roaster DB row                                                  | C     | Done               | 2026-06-29 | Eng | `chargesEnabled` + `payoutsEnabled` true; verified via `pnpm smoke-lane:verify` (portal thin-event replay not separately recorded) |
+| **11**   | Org Connect onboarding (if org receives transfers)                                   | C     | Done               | 2026-06-29 | Eng | Live org `acct_…` in smoke-lane seed; org **portal** Connect UI still open — [`production-auth-troubleshooting/02-org-stripe-connect-no-organization-linked.md`](./production-auth-troubleshooting/02-org-stripe-connect-no-organization-linked.md) |
+| **12**   | Admin approvals (roaster + campaign live on storefront)                              | C     | Done               | 2026-06-29 | Eng | Smoke lane seed sets ACTIVE roaster/org/campaign (admin UI bypassed for internal tenant) |
+| **13**   | $5 live smoke checkout                                                               | C     | Done               | 2026-06-29 | Eng | Order **JP-00012** → `CONFIRMED`; `pnpm test:e2e:browserbase:live-smoke` commit `5da6a1d` |
+| **14**   | Immediate refund of smoke order                                                      | C     | Done               | 2026-06-29 | Eng | JP-00012 → `REFUNDED` via auto-refund + `charge.refunded` webhook |
+| **15**   | Fulfillment spot-check (magic link → shipped)                                        | C     | Done               | 2026-06-29 | Eng | JP-00012 magic link → `SHIPPED`; evidence [`runbooks/launch-day-evidence/2026-06-29-smoke-lane-jp-00012.md`](./runbooks/launch-day-evidence/2026-06-29-smoke-lane-jp-00012.md) |
 | **16**   | Go/No-Go meeting + sign-off                                                          | D     | Not started        |            |     | Runbook template                                                                                             |
 | **17**   | Soft launch announced to pilot orgs                                                  | D     | Not started        |            |     |                                                                                                              |
 | **18**   | On-call declared (72h)                                                               | D     | Not started        |            |     | Primary Eng; secondary Chris                                                                                 |
@@ -83,11 +83,11 @@ Phase C (Watch)       ░░░░░░░░░░░░░░   —     — s
 | **E-03** | Counsel-reviewed ToS + Privacy (no `PENDING LEGAL REVIEW`)                           | E     | Not started        |            |     | LB-4                                                                                                         |
 | **E-04** | Vendor DPAs signed                                                                   | E     | Not started        |            |     | Stripe, Clerk, Resend, Neon, Inngest, Upstash, Sentry, PostHog                                               |
 | **E-05** | 3 roasters + 3 orgs signed as pilots                                                 | E     | Not started        |            |     | E-1                                                                                                          |
-| **E-06** | Clerk prod flows verified E2E (not just keys)                                        | E     | In progress        | 2026-06-27 | Eng | Keys live; portal click-through pending                                                                      |
-| **E-07** | `org-tenant-isolation.test.ts` green in CI                                           | E     | Not started        |            |     | LB-2                                                                                                         |
+| **E-06** | Clerk prod flows verified E2E (not just keys)                                        | E     | In progress        | 2026-06-29 | Eng | Roaster ✅ (2026-06-29); org portal pending (issue 02); admin redirect loop open (issue 03) — [`production-auth-troubleshooting/README.md`](./production-auth-troubleshooting/README.md) |
+| **E-07** | `org-tenant-isolation.test.ts` green in CI                                           | E     | Done               | 2026-06-06 | Eng | Gated via `pnpm turbo test` in `.github/workflows/ci.yml` (LB-2) |
 | **E-08** | Admin auth + Vercel deployment protection                                            | E     | Not started        |            |     | LB-3                                                                                                         |
 | **E-09** | Full dress rehearsal on preview (B.1 script)                                         | E     | Not started        |            |     | LB-5                                                                                                         |
-| **E-10** | Production dress rehearsal after Block C smoke                                       | E     | Not started        |            |     | LB-5                                                                                                         |
+| **E-10** | Production dress rehearsal after Block C smoke                                       | E     | In progress        | 2026-06-29 | Eng | Browserbase live money path ✅ (JP-00012); full runbook B.1 script (payout/dispute steps) not yet run (LB-5) |
 | **E-11** | BetterStack / uptime monitors (5 domains)                                            | E     | Not started        |            |     | FF-5                                                                                                         |
 | **E-12** | Public status page                                                                   | E     | Not started        |            |     | `status.joeperks.com`                                                                                        |
 | **E-13** | On-call rotation documented                                                          | E     | Not started        |            |     | FF-5                                                                                                         |
@@ -105,6 +105,10 @@ Short narrative for major milestones — newest first.
 
 | Date       | Milestone                                                                                              |
 | ---------- | ------------------------------------------------------------------------------------------------------ |
+| 2026-06-30 | Block **A** step 1 Done — Neon snapshot `snap-tiny-paper-a40a9das` (`pre-pilot-bootstrap-2026-06-30`) |
+| 2026-06-30 | Progress tracker synced: Block **C** Done (JP-00012); Block **A** steps 2–3 Done; evidence file added |
+| 2026-06-29 | Production live money path green: checkout → CONFIRMED → fulfill → SHIPPED → REFUNDED (JP-00012); roaster auth fixed |
+| 2026-06-28 | Smoke lane runbook + prod auth troubleshooting docs; org bootstrap scripts for issue 02 |
 | 2026-06-27 | Production cutover: deploy `323b179`, Clerk + Stripe live, dual webhook secrets, endpoint verification |
 | 2026-06-07 | Connect V2 migration sandbox-smoked; thin-event DB sync proven locally                                 |
 | 2026-06-06 | Prod migrate GH Action + e2e harness (MP-01) landed                                                    |
@@ -136,6 +140,12 @@ These map to **P-01…P-11** in the progress tracker. Re-open a row if a regress
 - **P-10** Production migration workflow (GitHub Action).
 - **P-11** MP-01 + core EC scenarios in CI e2e harness.
 
+### Internal smoke lane (Block C — 2026-06-29)
+
+- **Steps 9–15** Production live money path verified on isolated tenant `internal-smoke-lane`.
+- **Order JP-00012:** checkout → `CONFIRMED` → fulfillment magic link → `SHIPPED` → auto-refund → `REFUNDED`.
+- **Evidence:** commit `5da6a1d`; [`runbooks/launch-day-evidence/2026-06-29-smoke-lane-jp-00012.md`](./runbooks/launch-day-evidence/2026-06-29-smoke-lane-jp-00012.md); runbook [`runbooks/prod-smoke-lane.md`](./runbooks/prod-smoke-lane.md).
+
 ---
 
 ## Part 2 — Remaining before fully live
@@ -148,7 +158,7 @@ These are runbook **B.2** items that should be recorded even though the app is a
 
 | Step  | Action                                                                                                                         | Owner       | Progress ID |
 | ----- | ------------------------------------------------------------------------------------------------------------------------------ | ----------- | ----------- |
-| **1** | **Neon snapshot** — take a snapshot of production DB; record snapshot ID in master log **Notes**                               | Eng         | **1**       |
+| **1** | **Neon snapshot** — Neon Console → `main` → **Backup & restore** → **Create snapshot**; record ID in master log **Notes** ([`runbooks/neon-production-snapshot.md`](./runbooks/neon-production-snapshot.md)) | Eng         | **1**       |
 | **2** | **Migrations** — trigger **Migrate (production)** GitHub Action (type `DEPLOY`); confirm `_prisma_migrations` matches repo     | Eng         | **2**       |
 | **3** | **Foundational seed** — run `pnpm db:seed:prod` if `PlatformSettings` + `OrderSequence` not confirmed                          | Eng         | **3**       |
 | **4** | **Rollback card** — confirm who can re-promote previous Vercel deployment + restore Neon snapshot; note previous deployment ID | Eng + Chris | **4**       |
@@ -237,16 +247,15 @@ Track in master log: **E-16** … **E-18**
 
 ---
 
-## Part 3 — Recommended order this week
+## Part 3 — Recommended order from here
 
-Minimal path to **soft launch with one pilot**:
+**Block C (internal smoke lane) is Done.** Minimal path to **soft launch with real pilots**:
 
-1. Steps **1–4** (snapshot, migrate, rollback card) — same day, before more prod writes.
-2. Steps **6–8** (bootstrap one roaster + one org + campaign).
-3. Steps **9–10** (live Connect + thin webhook proof) — **your stated next step**.
-4. Steps **13–14** ($5 smoke + refund).
-5. Step **15** (fulfillment email) — same session if time allows.
-6. Steps **16–20** when ready to invite pilots beyond internal smoke.
+1. Steps **1 + 4** (Neon snapshot ID + rollback card) — before any further prod writes.
+2. Step **5** (DNS TTL 300s) — same session as snapshot if possible.
+3. Steps **6–8** (name pilots, bootstrap real roaster/org/campaign, beta worksheets).
+4. Close **E-06** org portal + **E-08** admin auth (required for non-seeded pilot approvals).
+5. Steps **16–20** (Go/No-Go, soft launch announcement, on-call, dashboards, first real pilot order).
 
 Legal (Block E) and observability can run in parallel but should not be deferred past the first **non-internal** pilot order.
 
@@ -256,18 +265,18 @@ Legal (Block E) and observability can run in parallel but should not be deferred
 
 Quick map to [`SCAFFOLD_CHECKLIST.md`](../SCAFFOLD_CHECKLIST.md) Phase 10:
 
-| Tiger    | Summary                                        | Status (2026-06-27)                                    |
-| -------- | ---------------------------------------------- | ------------------------------------------------------ |
-| **LB-1** | Legal entity + live Stripe + pilot Connect E2E | **Partial** — live keys ✅; live Connect E2E ❌          |
-| **LB-2** | Org Clerk + tenant isolation                   | **Partial** — Clerk prod ✅; confirm CI test            |
-| **LB-3** | Admin auth + deployment protection             | **Partial** — Clerk prod ✅; confirm protection         |
-| **LB-4** | Counsel-reviewed legal copy                    | **Open**                                               |
-| **LB-5** | Preview + prod dress rehearsal                 | **Partial** — prod webhook smoke ✅; full script ❌      |
-| **LB-6** | Migrate pipeline + snapshot discipline         | **Partial** — Action exists ✅; this cutover snapshot ❌ |
-| **LB-7** | Money-path E2E in CI                           | **Partial** — sandbox/MP-01 ✅; live prod path ❌        |
+| Tiger    | Summary                                        | Status (2026-06-30)                                                                 |
+| -------- | ---------------------------------------------- | ----------------------------------------------------------------------------------- |
+| **LB-1** | Legal entity + live Stripe + pilot Connect E2E | **Partial** — live keys ✅; smoke-lane Connect E2E ✅; LLC/EIN/bank ❌; real pilots ❌ |
+| **LB-2** | Org Clerk + tenant isolation                   | **Partial** — CI isolation test ✅; org portal E2E ❌ (issue 02)                     |
+| **LB-3** | Admin auth + deployment protection             | **Partial** — Clerk prod ✅; admin redirect loop ❌; Vercel protection unconfirmed   |
+| **LB-4** | Counsel-reviewed legal copy                    | **Open**                                                                            |
+| **LB-5** | Preview + prod dress rehearsal                 | **Partial** — Browserbase prod money path ✅ (JP-00012); full B.1 script ❌          |
+| **LB-6** | Migrate pipeline + snapshot discipline         | **Partial** — schema current ✅; snapshot recorded ✅ (`snap-tiny-paper-a40a9das`); rollback card open |
+| **LB-7** | Money-path E2E in CI                           | **Partial** — sandbox/MP-01 ✅; live prod path ✅ (JP-00012); not in CI (manual/Browserbase) |
 
 **Fully live** = all LB-* **Done** + Block C + Block D complete.  
-**Soft launch (pilots only)** = Block C smoke/refund + Block D steps 16–20 + conscious acceptance of open LB-4 / observability / pilot count.
+**Soft launch (pilots only)** = Block C ✅ (internal smoke) + Block **B** real pilots + Block D steps 16–20 + conscious acceptance of open LB-4 / observability / pilot count.
 
 ---
 
