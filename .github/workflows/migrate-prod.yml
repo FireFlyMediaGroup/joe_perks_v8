@@ -41,7 +41,7 @@ jobs:
           echo "::error::Refusing to run — type DEPLOY in the confirm input to proceed."
           exit 1
 
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v6
         with:
