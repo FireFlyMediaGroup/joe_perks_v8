@@ -14,7 +14,14 @@
 4. Click **Create snapshot**.
 5. Name it something traceable, e.g. `pre-pilot-bootstrap-2026-06-30`.
 6. Optional: set **expires at** (runbook recommends ≥ 7 days retention discipline; paid plans allow more manual snapshots).
-7. After creation, copy the **snapshot ID** from the snapshot list (or snapshot detail) into the go-live guide master log.
+7. After creation, copy the **snapshot ID** into the go-live guide master log.
+
+   The Console list shows the **name** (e.g. `pre-pilot-bootstrap-2026-06-30`) but often **not** the ID. To get the ID:
+
+   - **DevTools:** Backup & restore → Network → refresh → open the `snapshots` API response → find `"id"` (format e.g. `snap-tiny-paper-a40a9das`), or
+   - **API:** [`List project snapshots`](https://api-docs.neon.tech/reference/listsnapshots) with project id + API key (see below).
+
+   For **Console-only restore**, the name is enough; the ID is for the runbook audit trail and API rollback.
 
 **Restore later:** same page → select snapshot → **Restore** → choose one-step or multi-step per [Neon backup docs](https://neon.com/docs/guides/backup-restore).
 

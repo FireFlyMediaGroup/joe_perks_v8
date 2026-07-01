@@ -30,12 +30,12 @@ This guide is the **action layer** on top of the full operational runbook. Use i
 | ------------------------ | ------------------------------------------------------------------------------------------ |
 | **Last progress update** | 2026-06-30                                                                                 |
 | **Runbook phase**        | **B.2 complete** (internal smoke lane); **B.3** not started                                |
-| **Steps done**           | 21 done · 3 in progress · 25 not started (49 total in master log)                          |
-| **Current focus**        | Block **A** hygiene (snapshot ID, rollback card) + Block **B** real pilot bootstrap        |
+| **Steps done**           | 22 done · 3 in progress · 24 not started (49 total in master log)                          |
+| **Current focus**        | Block **A** rollback card (step 4) + Block **B** real pilot bootstrap                      |
 | **Next gate**            | Block **D** (Go/No-Go + soft launch) after Block **B** pilot records + open Block **E** gaps |
 
 ```text
-Phase A (Prepare)     █████████████░  ~90%  — cutover mostly done; snapshot ID + legal/obs open
+Phase A (Prepare)     █████████████░  ~92%  — Neon snapshot ✅; rollback card + legal/obs open
 Phase B.2 (Cutover)   ████████████░░  ~85%  — internal smoke lane ✅ (JP-00012); pilot bootstrap ❌
 Phase B.3 (Go-live)   ░░░░░░░░░░░░░░   0%   — not started (Block D)
 Phase C (Watch)       ░░░░░░░░░░░░░░   —     — starts after first non-smoke pilot order
@@ -58,10 +58,10 @@ Phase C (Watch)       ░░░░░░░░░░░░░░   —     — s
 | **P-09** | Money-path code guards (invariants, kill-switch, refund handler, logging, PII scrub) | Pre   | Done               | 2026-06-05 | Eng | Runbook A.3 / A.4 resolution pass                                                                            |
 | **P-10** | Production migrate workflow (GitHub Action)                                          | Pre   | Done               | 2026-06-06 | Eng | `.github/workflows/migrate-prod.yml`                                                                         |
 | **P-11** | MP-01 + core EC scenarios in CI e2e harness                                          | Pre   | Done               | 2026-06-06 | Eng | `.github/workflows/e2e.yml`                                                                                  |
-| **1**    | Neon production snapshot; record snapshot ID                                         | A     | Not started        |            |     | ID: `__________________` — Console: **Backup & restore** → **Create snapshot** on `main`; see [`runbooks/neon-production-snapshot.md`](./runbooks/neon-production-snapshot.md) |
+| **1**    | Neon production snapshot; record snapshot ID                                         | A     | Done               | 2026-06-30 | Chris | `snap-tiny-paper-a40a9das` — name `pre-pilot-bootstrap-2026-06-30`; project `misty-snow-51612153`; branch `main` |
 | **2**    | Migrate (production) GitHub Action; schema current                                   | A     | Done               | 2026-06-29 | Eng | Schema current for smoke lane; `pnpm migrate:deploy:prod` + `pnpm db:smoke:prod` passed per [`prod-smoke-lane.md`](./runbooks/prod-smoke-lane.md) prerequisites |
 | **3**    | Foundational seed (`pnpm db:seed:prod`)                                              | A     | Done               | 2026-06-29 | Eng | `PlatformSettings` + `OrderSequence` confirmed (`JP-00012` order number issued) |
-| **4**    | Rollback card (Vercel redeploy + Neon restore owners)                                | A     | Not started        |            |     | Prev deployment ID: `________`                                                                               |
+| **4**    | Rollback card (Vercel redeploy + Neon restore owners)                                | A     | Not started        |            |     | Prev deployment ID: `________`; Neon snapshot: `snap-tiny-paper-a40a9das` |
 | **5**    | DNS TTL 300s on production domains                                                   | A     | Not started        |            |     |                                                                                                              |
 | **6**    | Name pilot roster (≥1 roaster + 1 org)                                               | B     | Not started        |            |     | Target 3+3 for full soft launch; internal smoke lane does not substitute |
 | **7**    | Create production bootstrap records                                                  | B     | In progress        | 2026-06-29 | Eng | **Smoke lane only** (`internal-smoke-lane` via `pnpm db:seed:smoke-lane:prod`); real pilot entities pending |
@@ -105,6 +105,7 @@ Short narrative for major milestones — newest first.
 
 | Date       | Milestone                                                                                              |
 | ---------- | ------------------------------------------------------------------------------------------------------ |
+| 2026-06-30 | Block **A** step 1 Done — Neon snapshot `snap-tiny-paper-a40a9das` (`pre-pilot-bootstrap-2026-06-30`) |
 | 2026-06-30 | Progress tracker synced: Block **C** Done (JP-00012); Block **A** steps 2–3 Done; evidence file added |
 | 2026-06-29 | Production live money path green: checkout → CONFIRMED → fulfill → SHIPPED → REFUNDED (JP-00012); roaster auth fixed |
 | 2026-06-28 | Smoke lane runbook + prod auth troubleshooting docs; org bootstrap scripts for issue 02 |
@@ -271,7 +272,7 @@ Quick map to [`SCAFFOLD_CHECKLIST.md`](../SCAFFOLD_CHECKLIST.md) Phase 10:
 | **LB-3** | Admin auth + deployment protection             | **Partial** — Clerk prod ✅; admin redirect loop ❌; Vercel protection unconfirmed   |
 | **LB-4** | Counsel-reviewed legal copy                    | **Open**                                                                            |
 | **LB-5** | Preview + prod dress rehearsal                 | **Partial** — Browserbase prod money path ✅ (JP-00012); full B.1 script ❌          |
-| **LB-6** | Migrate pipeline + snapshot discipline         | **Partial** — schema current ✅; snapshot ID not recorded ❌                         |
+| **LB-6** | Migrate pipeline + snapshot discipline         | **Partial** — schema current ✅; snapshot recorded ✅ (`snap-tiny-paper-a40a9das`); rollback card open |
 | **LB-7** | Money-path E2E in CI                           | **Partial** — sandbox/MP-01 ✅; live prod path ✅ (JP-00012); not in CI (manual/Browserbase) |
 
 **Fully live** = all LB-* **Done** + Block C + Block D complete.  
